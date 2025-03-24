@@ -68,9 +68,6 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: prod-fss
-        - application: inngar
-          namespace: dab
-          cluster: prod-gcp
     outbound:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
