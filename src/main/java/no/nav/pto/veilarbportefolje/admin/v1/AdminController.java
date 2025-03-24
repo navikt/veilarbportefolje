@@ -26,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static no.nav.pto.veilarbportefolje.auth.AuthUtils.erSystemkallFraAzureAd;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -37,8 +36,8 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 @Tag(name = "Admin", description = "Admin-funksjonalitet som ikke er tilgjengelig for vanlige brukere. Funksjonaliteten er kun tilgjengelig for medlemmer av applikasjonens forvaltningsteam.")
 public class AdminController {
-    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
-            "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
+    private final String POAO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
+            "prod-gcp" : "dev-gcp", "poao", "poao-admin").toString();
     private final AktorClient aktorClient;
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
@@ -230,10 +229,10 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
-        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
+        boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
+        boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (erPtoAdmin && erSystemBrukerFraAzure) {
+        if (erPoaoAdmin && erInternBrukerFraAzure) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
