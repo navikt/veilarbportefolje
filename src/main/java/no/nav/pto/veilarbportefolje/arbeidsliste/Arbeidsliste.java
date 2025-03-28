@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
@@ -22,7 +21,6 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 @Data
 @Accessors(chain = true)
 @Getter
-@RequiredArgsConstructor
 public class Arbeidsliste {
 
     public enum Kategori {
@@ -40,6 +38,15 @@ public class Arbeidsliste {
     Boolean harVeilederTilgang;
     String aktoerid;
     String navkontorForArbeidsliste;
+
+    public Arbeidsliste(VeilederId sistEndretAv, ZonedDateTime endringstidspunkt, String overskrift, String kommentar, ZonedDateTime frist, Kategori kategori) {
+        this.sistEndretAv = sistEndretAv;
+        this.endringstidspunkt = endringstidspunkt;
+        this.overskrift = overskrift;
+        this.kommentar = kommentar;
+        this.frist = frist;
+        this.kategori = kategori;
+    }
 
     public static Arbeidsliste of(OppfolgingsBruker bruker) {
         Boolean arbeidslisteAktiv = bruker.isArbeidsliste_aktiv();

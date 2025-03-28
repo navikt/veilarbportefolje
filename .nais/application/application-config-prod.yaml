@@ -65,9 +65,6 @@ spec:
         - application: veilarbpersonflate
           namespace: poao
           cluster: prod-gcp
-        - application: pto-admin
-          namespace: pto
-          cluster: prod-fss
     outbound:
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
