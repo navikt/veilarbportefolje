@@ -27,8 +27,8 @@ import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraCont
 @RequiredArgsConstructor
 @Tag(name = "Admin V2", description = "Admin-funksjonalitet V2 som ikke er tilgjengelig for vanlige brukere. Funksjonaliteten er kun tilgjengelig for medlemmer av applikasjonens forvaltningsteam.")
 public class AdminV2Controller {
-    private final String PTO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
-            "prod-fss" : "dev-fss", "pto", "pto-admin").toString();
+    private final String POAO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
+            "prod-gcp" : "dev-gcp", "poao", "poao-admin").toString();
     private final AktorClient aktorClient;
     private final OpensearchIndexer opensearchIndexer;
     private final AuthContextHolder authContextHolder;
@@ -51,10 +51,10 @@ public class AdminV2Controller {
     }
 
     private void sjekkTilgangTilAdmin() {
-        boolean erSystemBrukerFraAzure = erSystemkallFraAzureAd(authContextHolder);
-        boolean erPtoAdmin = PTO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
+        boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
+        boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
 
-        if (erPtoAdmin && erSystemBrukerFraAzure) {
+        if (erPoaoAdmin && erInternBrukerFraAzure) {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);

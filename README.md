@@ -51,7 +51,7 @@ den gamle.
 #### Fremgangsmåte
 
 1. Gjør endringer i `src/main/resources/opensearch_settings.json`, commit, push og deploy
-2. Gå til pto-admin i riktig miljø (dev/prod) og velg "Veilarbportefolje" i dropdown
+2. Gå til poao-admin i riktig miljø (dev/prod) og velg "Veilarbportefolje" i dropdown
 3. Utfør en "Hovedindeksering". Bruk referansen i response til å følge med i loggene. Denne jobben gjør oppdatering av
    alle brukere i eksisterende indeks. Formålet er å se hvor lang tid det tar å indeksere alle brukerne.
 4. Når man oppretter ny indeks (neste steg), så vil ikke endringer som kommer underveis

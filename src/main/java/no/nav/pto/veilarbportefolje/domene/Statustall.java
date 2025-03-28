@@ -67,7 +67,7 @@ public class Statustall {
         this.utgatteVarsel = 0;
     }
 
-    public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets, boolean vedtakstottePilotErPa) {
+    public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
         this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();
@@ -85,7 +85,7 @@ public class Statustall {
         this.minArbeidslisteLilla = buckets.getMinArbeidslisteLilla().getDoc_count();
         this.minArbeidslisteGronn = buckets.getMinArbeidslisteGronn().getDoc_count();
         this.minArbeidslisteGul = buckets.getMinArbeidslisteGul().getDoc_count();
-        this.underVurdering = vedtakstottePilotErPa ? buckets.getUnderVurdering().getDoc_count() : 0;
+        this.underVurdering = buckets.getUnderVurdering().getDoc_count();
         this.mineHuskelapper = buckets.getMineHuskelapper().getDoc_count();
         this.fargekategoriA = buckets.getFargekategoriA().getDoc_count();
         this.fargekategoriB = buckets.getFargekategoriB().getDoc_count();

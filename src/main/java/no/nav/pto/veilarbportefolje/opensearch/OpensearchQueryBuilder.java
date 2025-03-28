@@ -832,14 +832,14 @@ public class OpensearchQueryBuilder {
         builder.sort(scriptBuilder);
     }
 
-    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet, boolean erVedtakstottePilotPa) {
+    static QueryBuilder leggTilFerdigFilter(Brukerstatus brukerStatus, List<String> veiledereMedTilgangTilEnhet) {
         QueryBuilder queryBuilder;
         switch (brukerStatus) {
             case UFORDELTE_BRUKERE:
                 queryBuilder = byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet);
                 break;
             case TRENGER_VURDERING:
-                queryBuilder = byggTrengerVurderingFilter(erVedtakstottePilotPa);
+                queryBuilder = byggTrengerVurderingFilter();
                 break;
             case INAKTIVE_BRUKERE:
                 queryBuilder = matchQuery("formidlingsgruppekode", "ISERV");
@@ -875,14 +875,10 @@ public class OpensearchQueryBuilder {
                 queryBuilder = byggMoteMedNavIdag();
                 break;
             case ER_SYKMELDT_MED_ARBEIDSGIVER:
-                queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
+                queryBuilder = byggErSykmeldtMedArbeidsgiverFilter();
                 break;
             case UNDER_VURDERING:
-                if (erVedtakstottePilotPa) {
-                    queryBuilder = existsQuery("utkast_14a_status");
-                } else {
-                    throw new IllegalStateException();
-                }
+                queryBuilder = existsQuery("utkast_14a_status");
                 break;
             case TILTAKSHENDELSER:
                 queryBuilder = existsQuery("tiltakshendelse");
@@ -898,26 +894,16 @@ public class OpensearchQueryBuilder {
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
-    static QueryBuilder byggTrengerVurderingFilter(boolean erVedtakstottePilotPa) {
-        if (erVedtakstottePilotPa) {
-            return boolQuery()
-                    .must(matchQuery("trenger_vurdering", true))
-                    .mustNot(existsQuery("utkast_14a_status"));
-        }
-
-        return matchQuery("trenger_vurdering", true);
-
+    static QueryBuilder byggTrengerVurderingFilter() {
+        return boolQuery()
+                .must(matchQuery("trenger_vurdering", true))
+                .mustNot(existsQuery("utkast_14a_status"));
     }
 
-    static QueryBuilder byggErSykmeldtMedArbeidsgiverFilter(boolean erVedtakstottePilotPa) {
-        if (erVedtakstottePilotPa) {
-            return boolQuery()
-                    .must(matchQuery("er_sykmeldt_med_arbeidsgiver", true))
-                    .mustNot(existsQuery("utkast_14a_status"));
-        }
-
-        return matchQuery("er_sykmeldt_med_arbeidsgiver", true);
-
+    static QueryBuilder byggErSykmeldtMedArbeidsgiverFilter() {
+        return boolQuery()
+                .must(matchQuery("er_sykmeldt_med_arbeidsgiver", true))
+                .mustNot(existsQuery("utkast_14a_status"));
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
@@ -1006,16 +992,16 @@ public class OpensearchQueryBuilder {
                 );
     }
 
-    static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet, boolean vedtakstottePilotErPa) {
+    static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
         FiltersAggregator.KeyedFilter[] filtre = new FiltersAggregator.KeyedFilter[]{
-                erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
+                erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
                 mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                 inaktiveBrukere(filtrereVeilederOgEnhet),
                 mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
                 mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
                 totalt(filtrereVeilederOgEnhet),
-                trengerVurderingFilter(filtrereVeilederOgEnhet, vedtakstottePilotErPa),
+                trengerVurderingFilter(filtrereVeilederOgEnhet),
                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
                 mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
@@ -1175,26 +1161,20 @@ public class OpensearchQueryBuilder {
                 .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
     }
 
-    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(termQuery("trenger_vurdering", true));
-
-        if (vedtakstottePilotErPa) {
-            boolQueryBuilder.mustNot(existsQuery("utkast_14a_status"));
-        }
+                .must(termQuery("trenger_vurdering", true))
+                .mustNot(existsQuery("utkast_14a_status"));
 
         return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
     }
 
-    private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet, boolean vedtakstottePilotErPa) {
+    private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(termQuery("er_sykmeldt_med_arbeidsgiver", true));
-
-        if (vedtakstottePilotErPa) {
-            boolQueryBuilder.mustNot(existsQuery("utkast_14a_status"));
-        }
+                .must(termQuery("er_sykmeldt_med_arbeidsgiver", true))
+                .mustNot(existsQuery("utkast_14a_status"));
 
         return new FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder);
     }
