@@ -59,9 +59,9 @@ spec:
           namespace: obo
         - application: veilarbpersonflate
           namespace: poao
-        - application: pto-admin
-          namespace: pto
-          cluster: prod-fss
+        - application: poao-admin
+          namespace: poao
+          cluster: prod-gcp
         - application: inngar
           namespace: dab
           cluster: prod-gcp
