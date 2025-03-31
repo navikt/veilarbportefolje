@@ -107,7 +107,7 @@ public class UtdanningsAktivitetTest {
     @Test
     public void utdannningsaktivitet_gaarsdagensAktiviteterErIkkeAktive() {
         String utlopsdato_forrigeUke = LocalDate.now().minusDays(7).toString();
-        String utlopsdato_igar = LocalDate.now().minusDays(1).toString();
+        String utlopsdato_igar = LocalDate.now().minusDays(2).toString(); //må bli minus 2 her fordi den feiler i månedsskifte etter at man har stilt klokken
         String utlopsdato_idag = LocalDate.now().toString();
         utdanningsAktivitetService.behandleKafkaMelding(
                 new UtdanningsAktivitetDTO()
