@@ -179,7 +179,6 @@ public class Bruker {
                 .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
                 .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
                 .setOppfolgingStartdato(oppfolgingStartDato)
-                .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
@@ -284,13 +283,6 @@ public class Bruker {
         }
         alleAktiviteter.put(type, utlopsdato);
         return this;
-    }
-
-    private static boolean trengerRevurdering(OppfolgingsBruker oppfolgingsBruker, boolean erVedtakstottePilotPa) {
-        if (erVedtakstottePilotPa) {
-            return oppfolgingsBruker.isTrenger_revurdering();
-        }
-        return false;
     }
 
     private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {

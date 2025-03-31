@@ -102,7 +102,6 @@ public class OppfolgingsBruker {
     String utkast_14a_status;
     String utkast_14a_status_endret;
     String utkast_14a_ansvarlig_veileder;
-    boolean trenger_revurdering;
     boolean er_sykmeldt_med_arbeidsgiver;
     List<String> brukers_situasjoner;
     LocalDate brukers_situasjon_sist_endret;

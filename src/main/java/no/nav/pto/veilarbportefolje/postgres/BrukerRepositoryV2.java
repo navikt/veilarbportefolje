@@ -123,7 +123,7 @@ public class BrukerRepositoryV2 {
                             )
                         order by ob.endret_dato desc
                         limit 1
-                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, bruker.getUtkast_14a_status(), rs), bruker.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, rs), bruker.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
@@ -214,7 +214,7 @@ public class BrukerRepositoryV2 {
         }
 
         // ARENA DB LENKE: skal fjernes på sikt
-        flettInnOppfolgingsbruker(bruker, utkast14aStatus, rs);
+        flettInnOppfolgingsbruker(bruker, rs);
 
         Date foedsels_dato = rs.getDate("foedselsdato");
         if (foedsels_dato != null) {
@@ -255,7 +255,7 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, String utkast14aStatus, ResultSet rs) {
+    private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, ResultSet rs) {
         String fnr = rs.getString(FODSELSNR_ARENA);
         if (fnr == null) {
             return bruker;
@@ -272,8 +272,7 @@ public class BrukerRepositoryV2 {
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .setTrenger_revurdering(OppfolgingUtils.trengerRevurderingVedtakstotte(formidlingsgruppekode, kvalifiseringsgruppekode, utkast14aStatus));
+                .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));
     }
 
     @SneakyThrows

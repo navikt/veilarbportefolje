@@ -74,28 +74,6 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void updateOppfolgingsbruker(AktorId aktoerId, OppfolgingsbrukerEntity oppfolgingsbruker, String utkast14aStatus) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("fnr", oppfolgingsbruker.fodselsnr())
-                .field("formidlingsgruppekode", oppfolgingsbruker.formidlingsgruppekode())
-                .field("iserv_fra_dato", toIsoUTC(oppfolgingsbruker.iserv_fra_dato()))
-                .field("enhet_id", oppfolgingsbruker.nav_kontor())
-                .field("kvalifiseringsgruppekode", oppfolgingsbruker.kvalifiseringsgruppekode())
-                .field("rettighetsgruppekode", oppfolgingsbruker.rettighetsgruppekode())
-                .field("hovedmaalkode", oppfolgingsbruker.hovedmaalkode())
-                .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
-                .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
-                .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
-
-                .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), utkast14aStatus))
-                .field("trenger_vurdering", OppfolgingUtils.trengerVurdering(oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode()))
-                .endObject();
-
-        update(aktoerId, content, "Oppdater oppfolgingsbruker");
-    }
-
-    @SneakyThrows
     public void updateHuskelapp(AktorId aktoerId, HuskelappForBruker huskelapp) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
