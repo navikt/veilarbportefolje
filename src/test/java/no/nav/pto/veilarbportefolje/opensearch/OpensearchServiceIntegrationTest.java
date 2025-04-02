@@ -178,36 +178,36 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getAntall()).isEqualTo(12);
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode6Bruker_0, true, false),
-                Bruker.of(kode6Bruker_1, true, false),
-                Bruker.of(kode6Bruker_2, true, false),
-                Bruker.of(kode6Bruker_3, true, false)
+                Bruker.of(kode6Bruker_0, true),
+                Bruker.of(kode6Bruker_1, true),
+                Bruker.of(kode6Bruker_2, true),
+                Bruker.of(kode6Bruker_3, true)
         );
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_0, true, false),
-                Bruker.of(kode7Bruker_1, true, false),
-                Bruker.of(kode7Bruker_2, true, false),
-                Bruker.of(kode7Bruker_3, true, false)
+                Bruker.of(kode7Bruker_0, true),
+                Bruker.of(kode7Bruker_1, true),
+                Bruker.of(kode7Bruker_2, true),
+                Bruker.of(kode7Bruker_3, true)
         );
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(egenAnsattBruker_0, true, false),
-                Bruker.of(egenAnsattBruker_1, true, false),
-                Bruker.of(egenAnsattBruker_2, true, false),
-                Bruker.of(egenAnsattBruker_3, true, false)
+                Bruker.of(egenAnsattBruker_0, true),
+                Bruker.of(egenAnsattBruker_1, true),
+                Bruker.of(egenAnsattBruker_2, true),
+                Bruker.of(egenAnsattBruker_3, true)
         );
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_0, true, false),
-                Bruker.of(kode7Bruker_1, true, false),
-                Bruker.of(kode7Bruker_2, true, false),
-                Bruker.of(kode7Bruker_3, true, false),
-                Bruker.of(egenAnsattBruker_0, true, false),
-                Bruker.of(egenAnsattBruker_1, true, false),
-                Bruker.of(egenAnsattBruker_2, true, false),
-                Bruker.of(egenAnsattBruker_3, true, false),
-                Bruker.of(egenAnsattOgKode7Bruker_0, true, false),
-                Bruker.of(egenAnsattOgKode7Bruker_1, true, false),
-                Bruker.of(egenAnsattOgKode7Bruker_2, true, false),
-                Bruker.of(egenAnsattOgKode7Bruker_3, true, false)
+                Bruker.of(kode7Bruker_0, true),
+                Bruker.of(kode7Bruker_1, true),
+                Bruker.of(kode7Bruker_2, true),
+                Bruker.of(kode7Bruker_3, true),
+                Bruker.of(egenAnsattBruker_0, true),
+                Bruker.of(egenAnsattBruker_1, true),
+                Bruker.of(egenAnsattBruker_2, true),
+                Bruker.of(egenAnsattBruker_3, true),
+                Bruker.of(egenAnsattOgKode7Bruker_0, true),
+                Bruker.of(egenAnsattOgKode7Bruker_1, true),
+                Bruker.of(egenAnsattOgKode7Bruker_2, true),
+                Bruker.of(egenAnsattOgKode7Bruker_3, true)
         );
     }
 
@@ -287,18 +287,18 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getAntall()).isEqualTo(3);
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode6Bruker_medVeileder0Tilordnet, false, false)
+                Bruker.of(kode6Bruker_medVeileder0Tilordnet, false)
         );
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_medVeileder1Tilordnet, false, false)
+                Bruker.of(kode7Bruker_medVeileder1Tilordnet, false)
         );
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(egenAnsattBruker_medVeileder2Tilordnet, false, false)
+                Bruker.of(egenAnsattBruker_medVeileder2Tilordnet, false)
         );
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.getBrukere()).containsExactlyInAnyOrder(
-                Bruker.of(kode7Bruker_medVeileder3Tilordnet, false, false),
-                Bruker.of(egenAnsattBruker_medVeileder3Tilordnet, false, false),
-                Bruker.of(egenAnsattOgKode7Bruker_medVeileder3Tilordnet, false, false)
+                Bruker.of(kode7Bruker_medVeileder3Tilordnet, false),
+                Bruker.of(egenAnsattBruker_medVeileder3Tilordnet, false),
+                Bruker.of(egenAnsattOgKode7Bruker_medVeileder3Tilordnet, false)
         );
     }
 

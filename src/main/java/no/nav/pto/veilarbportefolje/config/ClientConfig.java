@@ -38,16 +38,13 @@ public class ClientConfig {
 
     @Bean
     public VedtaksstotteClient vedtaksstotteClient(
-            AuthService authService,
             AzureAdMachineToMachineTokenClient tokenClient,
             EnvironmentProperties environmentProperties
     ) {
 
         return new VedtaksstotteClient(
                 environmentProperties.getVeilarbvedtaksstotteUrl(),
-                authService,
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope()),
-                environmentProperties
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope())
         );
     }
 
