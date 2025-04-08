@@ -1,4 +1,4 @@
-name: Deploy alerts for veilarbportefolje to prod-fss
+name: Deploy alerts for veilarbportefolje to prod-gcp
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy-alerts:
-    name: Deploy alerts to prod-fss
+    name: Deploy alerts to prod-gcp
     permissions:
       id-token: write
     runs-on: ubuntu-latest
@@ -19,8 +19,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to prod-fss
+      - name: Deploy to prod-gcp
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: prod-fss
+          CLUSTER: prod-gcp
           RESOURCE: .nais/alerts/alerts-config-prod.yaml
