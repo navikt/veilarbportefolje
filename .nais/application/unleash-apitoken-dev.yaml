@@ -2,10 +2,9 @@ apiVersion: unleash.nais.io/v1
 kind: ApiToken
 metadata:
   name: veilarbportefolje
-  namespace: pto
-  cluster: dev-fss
+  namespace: obo
   labels:
-    team: pto
+    team: obo
 spec:
   unleashInstance:
     apiVersion: unleash.nais.io/v1

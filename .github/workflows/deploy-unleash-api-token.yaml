@@ -7,8 +7,8 @@ on:
       - master
     paths:
       - '.github/workflows/deploy-unleash-api-token.yaml'
-      - '.nais/application/gcp/unleash-apitoken-dev.yaml'
-      - '.nais/application/gcp/unleash-apitoken-prod.yaml'
+      - '.nais/application/unleash-apitoken-dev.yaml'
+      - '.nais/application/unleash-apitoken-prod.yaml'
 
 permissions:
   id-token: write
@@ -24,7 +24,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: .nais/application/gcp/unleash-apitoken-dev.yaml
+          RESOURCE: .nais/application/unleash-apitoken-dev.yaml
           PRINT_PAYLOAD: true
 
   deploy-prod:
@@ -39,6 +39,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         env:
           CLUSTER: prod-gcp
-          RESOURCE: .nais/application/gcp/unleash-apitoken-prod.yaml
+          RESOURCE: .nais/application/unleash-apitoken-prod.yaml
           PRINT_PAYLOAD: true
 
