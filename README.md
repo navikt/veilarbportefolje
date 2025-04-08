@@ -67,14 +67,6 @@ den gamle.
    igjen (steg 3), siden endringer som kom inn mens jobben kjørte, før den feilet, kun blir skrivet til den nye
    indeksen.
 
-## PostgreSQL
-
-Innloggingsinformasjon til databasen:
-https://vault.adeo.no/
-
-* Dev: `vault read postgresql/preprod-fss/creds/veilarbportefolje-dev-admin`
-* Prod: `vault read postgresql/prod-fss/creds/veilarbportefolje-prod-readonly`
-*
 
 ## PostgreSQL GCP
 
