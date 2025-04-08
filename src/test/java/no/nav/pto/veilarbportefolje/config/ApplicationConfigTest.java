@@ -208,9 +208,7 @@ public class ApplicationConfigTest {
 
     @Bean
     public VedtaksstotteClient vedtaksstotteClient() {
-        VedtaksstotteClient vedtaksstotteClient = mock(VedtaksstotteClient.class);
-        when(vedtaksstotteClient.erVedtakstottePilotPa(any())).thenReturn(true);
-        return vedtaksstotteClient;
+        return mock(VedtaksstotteClient.class);
     }
 
     @Bean

@@ -118,7 +118,7 @@ public class Bruker {
     GjeldendeVedtak14a gjeldendeVedtak14a;
     Hendelse.HendelseInnhold utgattVarsel;
 
-    public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt, boolean erVedtakstottePilotPa) {
+    public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
@@ -136,7 +136,7 @@ public class Bruker {
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat, erVedtakstottePilotPa) : null)
+                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat) : null)
                 .setInnsatsgruppe(INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) ? kvalifiseringsgruppekode : null)
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
@@ -179,7 +179,6 @@ public class Bruker {
                 .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
                 .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
                 .setOppfolgingStartdato(oppfolgingStartDato)
-                .setTrengerRevurdering(trengerRevurdering(bruker, erVedtakstottePilotPa))
                 .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
@@ -284,13 +283,6 @@ public class Bruker {
         }
         alleAktiviteter.put(type, utlopsdato);
         return this;
-    }
-
-    private static boolean trengerRevurdering(OppfolgingsBruker oppfolgingsBruker, boolean erVedtakstottePilotPa) {
-        if (erVedtakstottePilotPa) {
-            return oppfolgingsBruker.isTrenger_revurdering();
-        }
-        return false;
     }
 
     private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
