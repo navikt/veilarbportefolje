@@ -896,7 +896,7 @@ public class OpensearchQueryBuilder {
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static QueryBuilder byggTrengerVurderingFilter() {
         return boolQuery()
-                .must(matchQuery("trenger_vurdering", true))
+                .mustNot(existsQuery("gjeldendeVedtak14a"))
                 .mustNot(existsQuery("utkast_14a_status"));
     }
 
@@ -1164,7 +1164,7 @@ public class OpensearchQueryBuilder {
     private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(termQuery("trenger_vurdering", true))
+                .mustNot(existsQuery("gjeldendeVedtak14a"))
                 .mustNot(existsQuery("utkast_14a_status"));
 
         return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
