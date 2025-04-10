@@ -87,8 +87,8 @@ public class OpensearchIndexerV2 {
                 .field("fodselsdato", FodselsnummerUtils.lagFodselsdato(oppfolgingsbruker.fodselsnr()))
                 .field("kjonn", FodselsnummerUtils.lagKjonn(oppfolgingsbruker.fodselsnr()))
                 .field("fodselsdag_i_mnd", Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(oppfolgingsbruker.fodselsnr())))
-
                 .field("trenger_revurdering", OppfolgingUtils.trengerRevurderingVedtakstotte(oppfolgingsbruker.formidlingsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode(), utkast14aStatus))
+                //Ikke i bruk
                 .field("trenger_vurdering", OppfolgingUtils.trengerVurdering(oppfolgingsbruker.rettighetsgruppekode(), oppfolgingsbruker.kvalifiseringsgruppekode()))
                 .endObject();
 

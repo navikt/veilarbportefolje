@@ -839,7 +839,7 @@ public class OpensearchQueryBuilder {
                 queryBuilder = byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet);
                 break;
             case TRENGER_VURDERING:
-                queryBuilder = byggTrengerVurderingFilter(erVedtakstottePilotPa);
+                queryBuilder = byggTrengerVurderingFilter();
                 break;
             case INAKTIVE_BRUKERE:
                 queryBuilder = matchQuery("formidlingsgruppekode", "ISERV");
@@ -878,11 +878,7 @@ public class OpensearchQueryBuilder {
                 queryBuilder = byggErSykmeldtMedArbeidsgiverFilter(erVedtakstottePilotPa);
                 break;
             case UNDER_VURDERING:
-                if (erVedtakstottePilotPa) {
-                    queryBuilder = existsQuery("utkast_14a_status");
-                } else {
-                    throw new IllegalStateException();
-                }
+                queryBuilder = existsQuery("utkast_14a_status");
                 break;
             case TILTAKSHENDELSER:
                 queryBuilder = existsQuery("tiltakshendelse");
@@ -892,20 +888,16 @@ public class OpensearchQueryBuilder {
                 break;
             default:
                 throw new IllegalStateException();
-
         }
         return queryBuilder;
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
-    static QueryBuilder byggTrengerVurderingFilter(boolean erVedtakstottePilotPa) {
-        if (erVedtakstottePilotPa) {
-            return boolQuery()
-                    .must(matchQuery("trenger_vurdering", true))
-                    .mustNot(existsQuery("utkast_14a_status"));
-        }
-
-        return matchQuery("trenger_vurdering", true);
+    static QueryBuilder byggTrengerVurderingFilter() {
+        return boolQuery()
+                .must(matchQuery("trenger_vurdering", true))
+                .mustNot(existsQuery("gjeldendeVedtak14a"))
+                .mustNot(existsQuery("utkast_14a_status"));
 
     }
 
