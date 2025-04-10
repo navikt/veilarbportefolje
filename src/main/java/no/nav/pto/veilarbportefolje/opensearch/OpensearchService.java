@@ -77,9 +77,8 @@ public class OpensearchService {
         List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         if (filtervalg.harAktiveFilter()) {
-            boolean erVedtakstottePilotPa = erVedtakstottePilotPa(EnhetId.of(enhetId));
             filtervalg.ferdigfilterListe.forEach(
-                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet, erVedtakstottePilotPa))
+                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
             );
 
             leggTilManuelleFilter(boolQuery, filtervalg);
@@ -109,15 +108,13 @@ public class OpensearchService {
 
         List<Bruker> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, enhetId))
+                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
     }
 
     public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId) {
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
-
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId))
@@ -127,12 +124,11 @@ public class OpensearchService {
             leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        SearchSourceBuilder request =
-                byggStatustallQuery(veilederOgEnhetQuery, emptyList(), vedtakstottePilotErPa);
+        SearchSourceBuilder request = byggStatustallQuery(veilederOgEnhetQuery, emptyList());
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new Statustall(buckets, vedtakstottePilotErPa);
+        return new Statustall(buckets);
     }
 
     public Statustall hentStatusTallForEnhetPortefolje(String enhetId, BrukerinnsynTilgangFilterType brukerinnsynTilgangFilterType) {
@@ -145,8 +141,6 @@ public class OpensearchService {
 
         List<String> veilederPaaEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
-        boolean vedtakstottePilotErPa = this.erVedtakstottePilotPa(EnhetId.of(enhetId));
-
         BoolQueryBuilder enhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
                 .must(termQuery("enhet_id", enhetId));
@@ -155,12 +149,11 @@ public class OpensearchService {
             leggTilBrukerinnsynTilgangFilter(enhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
         }
 
-        SearchSourceBuilder request =
-                byggStatustallQuery(enhetQuery, veilederPaaEnhet, vedtakstottePilotErPa);
+        SearchSourceBuilder request = byggStatustallQuery(enhetQuery, veilederPaaEnhet);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
-        return new Statustall(buckets, vedtakstottePilotErPa);
+        return new Statustall(buckets);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
@@ -213,8 +206,8 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg, String enhetId) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erUfordelt(oppfolgingsBruker, aktiveVeilederePaEnhet), erVedtakstottePilotPa(EnhetId.of(enhetId)));
+    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
+        Bruker bruker = Bruker.of(oppfolgingsBruker, erUfordelt(oppfolgingsBruker, aktiveVeilederePaEnhet));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
@@ -236,9 +229,5 @@ public class OpensearchService {
     private boolean erUfordelt(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
         boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
         return !harVeilederPaaSammeEnhet;
-    }
-
-    private boolean erVedtakstottePilotPa(EnhetId enhetId) {
-        return vedtaksstotteClient.erVedtakstottePilotPa(enhetId);
     }
 }

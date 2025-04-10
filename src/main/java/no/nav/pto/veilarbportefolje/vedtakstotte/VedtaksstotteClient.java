@@ -25,28 +25,17 @@ import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.rest.client.RestUtils.throwIfNotSuccessful;
 
 public class VedtaksstotteClient {
-    private final AuthService authService;
     private final String baseURL;
     private final OkHttpClient client;
     private final Supplier<String> machineToMachineTokenSupplier;
-    private final EnvironmentProperties environmentProperties;
 
     public VedtaksstotteClient(
             String baseUrl,
-            AuthService authService,
-            Supplier<String> machineToMachineTokenSupplier,
-            EnvironmentProperties environmentProperties
+            Supplier<String> machineToMachineTokenSupplier
     ) {
-        this.authService = authService;
         this.baseURL = baseUrl;
         this.client = baseClient();
         this.machineToMachineTokenSupplier = machineToMachineTokenSupplier;
-        this.environmentProperties = environmentProperties;
-    }
-
-    @Cacheable(CacheConfig.VEDTAKSSTOTTE_PILOT_TOGGLE_CACHE_NAME)
-    public boolean erVedtakstottePilotPa(EnhetId enhetId){
-        return erVedtakstottePilotPaRequest(enhetId);
     }
 
     @SneakyThrows
@@ -61,25 +50,6 @@ public class VedtaksstotteClient {
         try (Response response = client.newCall(request).execute()) {
             throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, Siste14aVedtakApiDto.class);
-        }
-    }
-
-    private boolean erVedtakstottePilotPaRequest(EnhetId enhetId) {
-        if (enhetId == null) {
-            return false;
-        }
-        String tokenScope = environmentProperties.getVeilarbvedtaksstotteScope();
-        Request request = new Request.Builder()
-                .url(UrlUtils.joinPaths(baseURL, "/api/utrulling/erUtrullet?enhetId=" + enhetId.get()))
-                .header(HttpHeaders.ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header("Authorization", "Bearer " + authService.getOboToken(tokenScope))
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponseOrThrow(response, Boolean.class);
-        } catch (Exception exception) {
-            return false;
         }
     }
 
