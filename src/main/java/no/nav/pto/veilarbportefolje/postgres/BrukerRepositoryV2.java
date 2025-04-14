@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.FodselsnummerUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,10 +44,6 @@ public class BrukerRepositoryV2 {
     private final KodeverkService kodeverskService;
 
     public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
-        return hentOppfolgingsBrukere(aktorIds, false);
-    }
-
-    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds, boolean logdiff) {
         List<OppfolgingsBruker> result = new ArrayList<>();
 
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
@@ -99,7 +94,7 @@ public class BrukerRepositoryV2 {
                         """,
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs, logdiff);
+                        OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs);
                         if (bruker.getFnr() == null) {
                             continue; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
@@ -133,11 +128,7 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs, boolean logDiff) {
-        if (logDiff) {
-            logDiff(rs);
-        }
-
+    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
         String fnr = rs.getString(FODSELSNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS);
 
@@ -146,7 +137,6 @@ public class BrukerRepositoryV2 {
         if (erSpesieltTilpassetInnsats) {
             aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp("YTELSE_ENDRET_DATO"), rs.getInt(AAPMAXTIDUKE), rs.getInt(ANTALLDAGERIGJEN));
         }
-
 
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
@@ -315,43 +305,5 @@ public class BrukerRepositoryV2 {
                 .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_gyldigtil") : null)
                 .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString("sikkerhetstiltak_beskrivelse") : null)
                 .setDiskresjonskode(rs.getString("diskresjonkode"));
-    }
-
-    @SneakyThrows
-    private void logDiff(ResultSet rs) {
-        Date foedsels_dato = rs.getDate("foedselsdato");
-        String aktoerId = rs.getString(AKTOERID);
-        String fnr = rs.getString(FODSELSNR);
-        if (foedsels_dato == null) {
-            secureLog.info("Arena/PDL: Har ikke PDL data på aktoer: {}", aktoerId);
-            return;
-        }
-        if (isDifferent(rs.getString("fornavn_pdl").toLowerCase(), rs.getString(FORNAVN).toLowerCase())) {
-            secureLog.info("Arena/PDL: fornavn feil bruker: {}", aktoerId);
-        }
-        if (isDifferent(rs.getString("etternavn_pdl").toLowerCase(), rs.getString(ETTERNAVN).toLowerCase())) {
-            secureLog.info("Arena/PDL: etternavn feil bruker: {}", aktoerId);
-        }
-        if (isDifferent(rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED))) {
-            secureLog.info("Arena/PDL: er_doed_pdl feil bruker: {}, pdl: {}, arena: {}", aktoerId, rs.getBoolean("er_doed_pdl"), rs.getBoolean(ER_DOED));
-        }
-        if (isDifferent(rs.getString("kjoenn").toLowerCase(), FodselsnummerUtils.lagKjonn(fnr).toLowerCase())) {
-            secureLog.info("Arena/PDL: kjønn feil bruker: {}", aktoerId);
-        }
-        if (isDifferent(lagFodselsdato(foedsels_dato.toLocalDate()), lagFodselsdato(fnr))) {
-            secureLog.info("Arena/PDL: Fodselsdato feil bruker: {}", aktoerId);
-        }
-        if (isDifferent(foedsels_dato.toLocalDate().getDayOfMonth(), Integer.parseInt(FodselsnummerUtils.lagFodselsdagIMnd(fnr)))) {
-            secureLog.info("Arena/PDL: Fodselsdag_i_mnd feil bruker: {}", aktoerId);
-        }
-    }
-
-    private boolean isDifferent(Object o, Object other) {
-        if (o == null && other == null) {
-            return false;
-        } else if (o == null || other == null) {
-            return true;
-        }
-        return !o.equals(other);
     }
 }
