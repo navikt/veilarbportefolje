@@ -13,7 +13,10 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.lucene.search.join.ScoreMode;
-import org.opensearch.index.query.*;
+import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.index.query.NestedQueryBuilder;
+import org.opensearch.index.query.QueryBuilder;
+import org.opensearch.index.query.RangeQueryBuilder;
 import org.opensearch.script.Script;
 import org.opensearch.search.aggregations.AggregationBuilders;
 import org.opensearch.search.aggregations.BucketOrder;
@@ -36,6 +39,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.opensearch.index.query.QueryBuilders.*;
@@ -995,34 +999,34 @@ public class OpensearchQueryBuilder {
     static SearchSourceBuilder byggStatustallQuery(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
         FiltersAggregator.KeyedFilter[] filtre = new FiltersAggregator.KeyedFilter[]{
                 erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
-                mustExistFilter(filtrereVeilederOgEnhet, "iavtaltAktivitet", "aktiviteter"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, "aktiviteter"),
                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                 inaktiveBrukere(filtrereVeilederOgEnhet),
-                mustBeTrueFilter(filtrereVeilederOgEnhet, "minArbeidsliste", "arbeidsliste_aktiv"),
-                mustBeTrueFilter(filtrereVeilederOgEnhet, "nyeBrukereForVeileder", "ny_for_veileder"),
+                mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE.key, "arbeidsliste_aktiv"),
+                mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key, "ny_for_veileder"),
                 totalt(filtrereVeilederOgEnhet),
                 trengerVurderingFilter(filtrereVeilederOgEnhet),
-                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraNAV", "venterpasvarfranav"),
-                mustExistFilter(filtrereVeilederOgEnhet, "venterPaSvarFraBruker", "venterpasvarfrabruker"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_NAV.key, "venterpasvarfranav"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_BRUKER.key, "venterpasvarfrabruker"),
                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
-                mustExistFilter(filtrereVeilederOgEnhet, "utlopteAktiviteter", "nyesteutlopteaktivitet"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTLOPTE_AKTIVITETER.key, "nyesteutlopteaktivitet"),
                 moterMedNavIdag(filtrereVeilederOgEnhet),
-                alleMoterMedNavIdag(filtrereVeilederOgEnhet),
-                mustExistFilter(filtrereVeilederOgEnhet, "underVurdering", "utkast_14a_status"),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteBla", "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteLilla", "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGronn", "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "minArbeidslisteGul", "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriA", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriB", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriC", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriD", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriE", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, "fargekategoriF", "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
-                mustNotExistFilter(filtrereVeilederOgEnhet, "fargekategoriIngenKategori", "fargekategori"),
-                mustExistFilter(filtrereVeilederOgEnhet, "mineHuskelapper", "huskelapp"),
-                mustExistFilter(filtrereVeilederOgEnhet, "tiltakshendelser", "tiltakshendelse"),
-                mustExistFilter(filtrereVeilederOgEnhet, "utgatteVarsel", "utgatt_varsel")
+                alleMoterMedNavIdag(filtrereVeilederOgEnhet) /* TODO: Denne kan fjernast då den ikkje er i bruk */,
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UNDER_VURDERING.key, "utkast_14a_status"),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_BLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_LILLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_GRONN.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_GUL.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_A.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_B.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_C.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_D.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_D.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_E.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_E.name()),
+                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_F.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_F.name()),
+                mustNotExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_INGEN_KATEGORI.key, "fargekategori"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
+                mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "utgatt_varsel")
         };
 
         return new SearchSourceBuilder()
@@ -1167,7 +1171,7 @@ public class OpensearchQueryBuilder {
                 .must(termQuery("trenger_vurdering", true))
                 .mustNot(existsQuery("utkast_14a_status"));
 
-        return new FiltersAggregator.KeyedFilter("trengerVurdering", boolQueryBuilder);
+        return new FiltersAggregator.KeyedFilter(StatustallAggregationKey.TRENGER_VURDERING.key, boolQueryBuilder);
     }
 
     private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
@@ -1193,7 +1197,7 @@ public class OpensearchQueryBuilder {
 
     private static FiltersAggregator.KeyedFilter moterMedNavIdag(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "moterMedNAVIdag",
+                StatustallAggregationKey.MOTER_MED_NAV_I_DAG.key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(byggMoteMedNavIdag())
@@ -1202,7 +1206,7 @@ public class OpensearchQueryBuilder {
 
     private static FiltersAggregator.KeyedFilter ufordelteBrukere(BoolQueryBuilder filtrereVeilederOgEnhet, List<String> veiledereMedTilgangTilEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "ufordelteBrukere",
+                StatustallAggregationKey.UFORDELTE_BRUKERE.key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet))
@@ -1211,25 +1215,25 @@ public class OpensearchQueryBuilder {
 
     private static FiltersAggregator.KeyedFilter totalt(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "totalt",
+                StatustallAggregationKey.TOTALT.key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String minArbeidsliste, String arbeidsliste_aktiv) {
+    private static FiltersAggregator.KeyedFilter mustBeTrueFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String term) {
         return new FiltersAggregator.KeyedFilter(
-                minArbeidsliste,
+                key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .must(termQuery(arbeidsliste_aktiv, true))
+                        .must(termQuery(term, true))
 
         );
     }
 
     private static FiltersAggregator.KeyedFilter inaktiveBrukere(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "inaktiveBrukere",
+                StatustallAggregationKey.INAKTIVE_BRUKERE.key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .must(matchQuery("formidlingsgruppekode", "ISERV"))
@@ -1248,7 +1252,7 @@ public class OpensearchQueryBuilder {
 
     private static FiltersAggregator.KeyedFilter ikkeIavtaltAktivitet(BoolQueryBuilder filtrereVeilederOgEnhet) {
         return new FiltersAggregator.KeyedFilter(
-                "ikkeIavtaltAktivitet",
+                StatustallAggregationKey.IKKE_I_AVTALT_AKTIVITET.key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
                         .mustNot(existsQuery("aktiviteter"))
@@ -1256,21 +1260,21 @@ public class OpensearchQueryBuilder {
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+    private static FiltersAggregator.KeyedFilter mustExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String term) {
         return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .must(existsQuery(value))
+                        .must(existsQuery(term))
         );
     }
 
-    private static FiltersAggregator.KeyedFilter mustNotExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String value) {
+    private static FiltersAggregator.KeyedFilter mustNotExistFilter(BoolQueryBuilder filtrereVeilederOgEnhet, String key, String term) {
         return new FiltersAggregator.KeyedFilter(
                 key,
                 boolQuery()
                         .must(filtrereVeilederOgEnhet)
-                        .mustNot(existsQuery(value))
+                        .mustNot(existsQuery(term))
         );
     }
 
