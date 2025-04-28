@@ -218,16 +218,6 @@ public class AdminController {
         return "ferdig";
     }
 
-
-    @PostMapping("/test/postgresIndeksering")
-    @Operation(summary = "Test indeksering av brukere", description = "Går gjennom alle brukere i løsningen og gjør en dry-run av mapping til datamodell som benyttes av søkemotoren (OpenSearch).")
-    public void testHentUnderOppfolging() {
-        sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
-        log.info("ferdig med dryrun");
-    }
-
     private void sjekkTilgangTilAdmin() {
         boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
         boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
