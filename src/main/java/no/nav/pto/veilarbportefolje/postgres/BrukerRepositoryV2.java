@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -197,7 +198,7 @@ public class BrukerRepositoryV2 {
         OppfolgingsBruker bruker = new OppfolgingsBruker()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID))
-                .setProfilering_resultat(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT))
+                .setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null))
                 .setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING))
                 .setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT))

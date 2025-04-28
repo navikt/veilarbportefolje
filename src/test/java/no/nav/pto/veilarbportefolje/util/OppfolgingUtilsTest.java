@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 import org.junit.Test;
 
@@ -44,21 +44,21 @@ public class OppfolgingUtilsTest {
 
     @Test
     public void bruker_med_oppgitt_hindringer_har_aevbehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", ProfilertTil.OPPGITT_HINDRINGER.name())).isEqualTo(VurderingsBehov.OPPGITT_HINDRINGER);
+        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", Profileringsresultat.OPPGITT_HINDRINGER)).isEqualTo(VurderingsBehov.OPPGITT_HINDRINGER);
     }
 
     @Test
     public void bruker_med_antatt_gode_muligheter_har_ikke_vurderingsbehov() {
-        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name())).isEqualTo(VurderingsBehov.ANTATT_GODE_MULIGHETER);
+        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", Profileringsresultat.ANTATT_GODE_MULIGHETER)).isEqualTo(VurderingsBehov.ANTATT_GODE_MULIGHETER);
     }
 
     @Test
     public void bruker_med_profilering_antatt_gode_muligheter_har_vurderingbehov_gode_muligheter() {
-        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", ProfilertTil.ANTATT_GODE_MULIGHETER.name())).isEqualTo(VurderingsBehov.ANTATT_GODE_MULIGHETER);
+        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", Profileringsresultat.ANTATT_GODE_MULIGHETER)).isEqualTo(VurderingsBehov.ANTATT_GODE_MULIGHETER);
     }
 
     @Test
     public void bruker_med_profilering_oppgitt_hindringer_har_vurderingbehov_opgitt_hindringer() {
-        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", ProfilertTil.OPPGITT_HINDRINGER.name())).isEqualTo(VurderingsBehov.OPPGITT_HINDRINGER);
+        assertThat(OppfolgingUtils.vurderingsBehov("dontcare", Profileringsresultat.OPPGITT_HINDRINGER)).isEqualTo(VurderingsBehov.OPPGITT_HINDRINGER);
     }
 }

@@ -232,7 +232,7 @@ public class PostgresOpensearchMapper {
                     bruker.setUtdanning_og_situasjon_sist_endret(opplysningerOmArbeidssoeker.getSendtInnTidspunkt().toLocalDate());
                 }
                 if (profilering != null) {
-                    bruker.setProfilering_resultat(profilering.getProfileringsresultat().name());
+                    bruker.setProfilering_resultat(profilering.getProfileringsresultat());
                 }
             });
         });
