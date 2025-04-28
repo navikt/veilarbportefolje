@@ -1011,7 +1011,6 @@ public class OpensearchQueryBuilder {
                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTLOPTE_AKTIVITETER.key, "nyesteutlopteaktivitet"),
                 moterMedNavIdag(filtrereVeilederOgEnhet),
-                alleMoterMedNavIdag(filtrereVeilederOgEnhet) /* TODO: Denne kan fjernast då den ikkje er i bruk */,
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UNDER_VURDERING.key, "utkast_14a_status"),
                 mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_BLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_LILLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
