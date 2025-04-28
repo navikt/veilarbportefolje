@@ -25,11 +25,7 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && kvalifiseringsgruppekode.equals("VURDI");
     }
 
-    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat) {
-        if ("ISERV".equals(formidlingsgruppekode)) {
-            return null;
-        }
-
+    public static VurderingsBehov vurderingsBehov(String kvalifiseringsgruppekode, String profileringsResultat) {
         //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
         return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat))
                 .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
