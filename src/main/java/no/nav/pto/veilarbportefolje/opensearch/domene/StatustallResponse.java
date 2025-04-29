@@ -22,6 +22,7 @@ public class StatustallResponse {
                 Bucket totalt;
                 Bucket ufordelteBrukere;
                 Bucket trengerVurdering;
+                Bucket trengerOppfolgingsvedtak;
                 Bucket nyeBrukereForVeileder;
                 Bucket inaktiveBrukere;
                 Bucket venterPaSvarFraNAV;
@@ -50,7 +51,6 @@ public class StatustallResponse {
                 Bucket fargekategoriIngenKategori;
                 Bucket tiltakshendelser;
                 Bucket utgatteVarsel;
-                Bucket trengerOppfolgingsvedtak;
             }
         }
     }
