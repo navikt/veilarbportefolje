@@ -38,9 +38,6 @@ public class StatustallResponse {
                 Bucket minArbeidslisteLilla;
                 Bucket minArbeidslisteGronn;
                 Bucket minArbeidslisteGul;
-                Bucket adressebeskyttelseEllerSkjermingTotalt;
-                Bucket adressebeskyttelseEllerSkjermingUfordelte;
-                Bucket adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV;
                 Bucket mineHuskelapper;
                 Bucket fargekategoriA;
                 Bucket fargekategoriB;
@@ -56,14 +53,18 @@ public class StatustallResponse {
     }
 
     /**
-        Disse verdiene korresponderer 1-til-1 med {@link StatustallAggregation.StatustallFilter.StatustallBuckets} sine klassefelter.
-        Brukes når vi gjør en keyed aggregation query mot OpenSearch.
-
-        Dvs. en {@link StatustallAggregationKey} er det vi ber OpenSearch om å bruke som navn for et gitt aggregation query,
-        og {@link StatustallAggregation.StatustallFilter.StatustallBuckets} er de samme navnene men deserialisert til klassefelt med samme navn.
-
-        Dersom vi ønsker en ny aggregation query (f.eks. et nytt statustall) så bør man lage en {@link StatustallAggregationKey}
-        som brukes i et faktisk query og oppdatere {@link StatustallAggregation.StatustallFilter.StatustallBuckets} med et tilsvarende nytt klassefelt.
+     * Disse verdiene korresponderer 1-til-1 med {@link StatustallAggregation.StatustallFilter.StatustallBuckets} og
+     * {@link no.nav.pto.veilarbportefolje.domene.Statustall} sine klassefelter. Brukes når vi gjør en keyed aggregation query mot OpenSearch.
+     * <br>
+     * <br>
+     * Dvs. en {@link StatustallAggregationKey} er det vi ber OpenSearch om å bruke som navn for et gitt aggregation query,
+     * og {@link StatustallAggregation.StatustallFilter.StatustallBuckets} er de samme navnene men deserialisert til klassefelt med samme navn.
+     * Disse mappes videre til korresponderende klassefelt i {@link no.nav.pto.veilarbportefolje.domene.Statustall}.
+     * <br>
+     * <br>
+     * Dersom vi ønsker en ny aggregation query (les: et nytt statustall) så bør man lage en {@link StatustallAggregationKey}
+     * som brukes i et faktisk query og oppdatere {@link StatustallAggregation.StatustallFilter.StatustallBuckets} med et
+     * tilsvarende nytt klassefelt, samt mappe feltet i konstruktøren {@link no.nav.pto.veilarbportefolje.domene.Statustall}.
      */
     public enum StatustallAggregationKey {
         TOTALT("totalt"),
@@ -85,9 +86,6 @@ public class StatustallResponse {
         MIN_ARBEIDSLISTE_LILLA("minArbeidslisteLilla"),
         MIN_ARBEIDSLISTE_GRONN("minArbeidslisteGronn"),
         MIN_ARBEIDSLISTE_GUL("minArbeidslisteGul"),
-        ADRESSEBESKYTTELSE_ELLER_SKJERMING_TOTALT("adressebeskyttelseEllerSkjermingTotalt"),
-        ADRESSEBESKYTTELSE_ELLER_SKJERMING_UFORDELTE("adressebeskyttelseEllerSkjermingUfordelte"),
-        ADRESSEBESKYTTELSE_ELLER_SKJERMING_VENTER_PA_SVAR_FRA_NAV("adressebeskyttelseEllerSkjermingVenterPaSvarFraNAV"),
         MINE_HUSKELAPPER("mineHuskelapper"),
         FARGEKATEGORI_A("fargekategoriA"),
         FARGEKATEGORI_B("fargekategoriB"),

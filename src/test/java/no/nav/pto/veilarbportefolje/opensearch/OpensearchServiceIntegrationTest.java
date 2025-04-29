@@ -991,12 +991,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        var veilederStatustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
-        var enhetStatustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
-        var enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
+        Statustall veilederStatustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        Statustall enhetStatustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        Statustall enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
 
         Arrays.stream(StatustallResponse.StatustallAggregationKey.values()).forEach(key -> {
-            assertDoesNotThrow(() -> Statustall.class.getDeclaredField(key.key));
+            assertDoesNotThrow(() -> veilederStatustall.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederHarInnsynsrettPå.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getClass().getDeclaredField(key.key));
         });
     }
 
