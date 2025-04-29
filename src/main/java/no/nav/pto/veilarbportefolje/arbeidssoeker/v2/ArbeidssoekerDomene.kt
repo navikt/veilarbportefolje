@@ -57,10 +57,3 @@ enum class Profileringsresultat {
     ANTATT_BEHOV_FOR_VEILEDNING,
     OPPGITT_HINDRINGER
 }
-
-
-
-
-
-
-

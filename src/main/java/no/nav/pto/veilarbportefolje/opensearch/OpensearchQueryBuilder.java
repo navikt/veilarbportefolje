@@ -1006,6 +1006,7 @@ public class OpensearchQueryBuilder {
                 mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key, "ny_for_veileder"),
                 totalt(filtrereVeilederOgEnhet),
                 trengerVurderingFilter(filtrereVeilederOgEnhet),
+                mustNotExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TRENGER_OPPFOLGINGSVEDTAK.key, "gjeldendeVedtak14a"),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_NAV.key, "venterpasvarfranav"),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_BRUKER.key, "venterpasvarfrabruker"),
                 ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
