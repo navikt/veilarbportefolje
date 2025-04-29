@@ -69,6 +69,7 @@ public class StatustallResponse {
         TOTALT("totalt"),
         UFORDELTE_BRUKERE("ufordelteBrukere"),
         TRENGER_VURDERING("trengerVurdering"),
+        TRENGER_OPPFOLGINGSVEDTAK("trengerOppfolgingsvedtak"),
         NYE_BRUKERE_FOR_VEILEDER("nyeBrukereForVeileder"),
         INAKTIVE_BRUKERE("inaktiveBrukere"),
         VENTER_PA_SVAR_FRA_NAV("venterPaSvarFraNAV"),
@@ -96,8 +97,7 @@ public class StatustallResponse {
         FARGEKATEGORI_F("fargekategoriF"),
         FARGEKATEGORI_INGEN_KATEGORI("fargekategoriIngenKategori"),
         TILTAKSHENDELSER("tiltakshendelser"),
-        UTGATTE_VARSEL("utgatteVarsel"),
-        TRENGER_OPPFOLGINGSVEDTAK("trengerOppfolgingsvedtak");
+        UTGATTE_VARSEL("utgatteVarsel");
 
         public final String key;
 

@@ -845,6 +845,9 @@ public class OpensearchQueryBuilder {
             case TRENGER_VURDERING:
                 queryBuilder = byggTrengerVurderingFilter();
                 break;
+            case TRENGER_OPPFOLGINGSVEDTAK:
+                queryBuilder = byggTrengerOppfolgingsvedtakFilter();
+                break;
             case INAKTIVE_BRUKERE:
                 queryBuilder = matchQuery("formidlingsgruppekode", "ISERV");
                 break;
@@ -902,6 +905,11 @@ public class OpensearchQueryBuilder {
         return boolQuery()
                 .must(matchQuery("trenger_vurdering", true))
                 .mustNot(existsQuery("utkast_14a_status"));
+    }
+
+    static QueryBuilder byggTrengerOppfolgingsvedtakFilter() {
+        return boolQuery()
+                .mustNot(existsQuery("gjeldendeVedtak14a"));
     }
 
     static QueryBuilder byggErSykmeldtMedArbeidsgiverFilter() {
