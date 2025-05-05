@@ -6,12 +6,14 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 
@@ -33,7 +35,15 @@ public class OppfolgingStartetService {
     //  Dette vil også muligens bidra til å gjøre usikkerheten rundt hvordan vi håndterer
     //  scenarier der AktorID/Fnr blir historisk før startOppfolging fullfører.
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
-        pdlService.hentOgLagrePdlData(aktorId);
+        try {
+            pdlService.hentOgLagrePdlData(aktorId);
+        } catch (PdlPersonValideringException e) {
+            if (isDevelopment().orElse(false)) {
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktorId), e);
+                return;
+            }
+            throw e;
+        }
 
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
 
