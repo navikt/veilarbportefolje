@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
@@ -13,15 +14,16 @@ import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 
@@ -57,7 +59,15 @@ public class OppfolgingAvsluttetService {
         cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
         pdlService.slettPdlData(aktoerId);
-        ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
+
+        try {
+            ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
+        } catch (IngenGjeldendeIdentException e) {
+            if (isDevelopment().orElse(false)) {
+                secureLog.info("Ignorerer dårlig datakvalitet i dev, bruker: {}", aktoerId, e);
+            }
+        }
+
         fargekategoriService.slettFargekategoriPaaBruker(aktoerId, maybeFnr);
         oppfolgingsbrukerServiceV2.slettOppfolgingsbruker(aktoerId, maybeFnr);
         arbeidssoekerService.slettArbeidssoekerData(aktoerId, maybeFnr);
