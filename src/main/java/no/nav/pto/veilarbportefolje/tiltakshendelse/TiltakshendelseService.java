@@ -10,6 +10,12 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -21,13 +27,19 @@ public class TiltakshendelseService extends KafkaCommonNonKeyedConsumerService<K
     @Override
     protected void behandleKafkaMeldingLogikk(KafkaTiltakshendelse tiltakshendelseData) {
 
-        AktorId aktorId = brukerServiceV2.hentAktorId(tiltakshendelseData.fnr())
-                .orElseThrow(() -> new RuntimeException("Kunne ikke hente aktørid for fnr"));
+        Optional<AktorId> aktorId = brukerServiceV2.hentAktorId(tiltakshendelseData.fnr());
+        if (aktorId.isEmpty()) {
+            if (isDevelopment().orElse(false)) {
+                return;
+            }
+
+            throw new RuntimeException("Kunne ikke hente aktørid for fnr");
+        }
 
         if (Boolean.TRUE.equals(tiltakshendelseData.aktiv())) {
-            behandleAktivHendelse(tiltakshendelseData, aktorId);
+            behandleAktivHendelse(tiltakshendelseData, aktorId.get());
         } else {
-            behandleInktivHendelse(tiltakshendelseData, aktorId);
+            behandleInktivHendelse(tiltakshendelseData, aktorId.get());
         }
     }
 
