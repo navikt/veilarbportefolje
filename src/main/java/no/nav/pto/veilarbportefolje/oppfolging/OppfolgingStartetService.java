@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.IngenOppfolgingsbrukerDataException;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
@@ -48,7 +49,15 @@ public class OppfolgingStartetService {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
 
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
-        oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
+
+        try {
+            oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
+        } catch (IngenOppfolgingsbrukerDataException e) {
+            if (isDevelopment().orElse(false)) {
+                secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker: %s", aktorId), e);
+                return;
+            }
+        }
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 
         opensearchIndexer.indekser(aktorId);
