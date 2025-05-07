@@ -39,19 +39,14 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
             return;
         }
 
-        fjernTidligereVedtakOmOvergangsstonad(melding.personIdent());
+        String personIdent = melding.personIdent();
 
-        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.personIdent());
+        fjernTidligereVedtakOmOvergangsstonad(personIdent);
+
+        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", personIdent);
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
 
-        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(melding.personIdent());
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.personIdent()));
-
-        if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
-            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
-        } else {
-            opensearchIndexerV2.deleteOvergansstonad(aktorId);
-        }
+        oppdaterOvergangsstonadIOpenSearch(personIdent);
     }
 
     public Optional<EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
@@ -95,11 +90,21 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         );
     }
 
-
     private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
         int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(personIdent);
         if (fjernTidligereVedtak > 0) {
             secureLog.info("Fjernet tidligere vedtak for bruker: {}", personIdent);
+        }
+    }
+
+    private void oppdaterOvergangsstonadIOpenSearch(String personIdent) {
+        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(personIdent);
+        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(personIdent));
+
+        if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
+            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
+        } else {
+            opensearchIndexerV2.deleteOvergansstonad(aktorId);
         }
     }
 }
