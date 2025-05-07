@@ -65,7 +65,6 @@ public class EnsligeForsorgereRepository {
             .build();
 
     public void lagreOvergangsstonad(VedtakOvergangsstønadArbeidsoppfølging vedtakOvergangsstønadArbeidsoppfølging) {
-
         long vedtakId = vedtakOvergangsstønadArbeidsoppfølging.vedtakId();
         Integer stonadstypeId = hentStonadstype(vedtakOvergangsstønadArbeidsoppfølging.stønadstype().toString());
         Integer vedtakResultatId = hentVedtakresultat(vedtakOvergangsstønadArbeidsoppfølging.vedtaksresultat().toString());

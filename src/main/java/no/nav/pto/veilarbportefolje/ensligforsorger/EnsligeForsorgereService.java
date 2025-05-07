@@ -34,8 +34,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
-        if (!melding.stønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
-            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.stønadstype());
+        if (!erStonadstypeOvergangsstonad(melding.stønadstype().toString())) {
             return;
         }
 
@@ -88,6 +87,15 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 ensligeForsorgerOvergangsstønadTiltak.til_dato(),
                 yngsteBarn.orElse(null)
         );
+    }
+
+    private boolean erStonadstypeOvergangsstonad(String stonadstype) {
+        if (stonadstype.equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
+            return true;
+        }
+
+        log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + stonadstype);
+        return false;
     }
 
     private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
