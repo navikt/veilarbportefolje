@@ -39,10 +39,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
             return;
         }
 
-        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(melding.personIdent());
-        if (fjernTidligereVedtak > 0) {
-            secureLog.info("Fjernet tidligere vedtak for bruker: {}", melding.personIdent());
-        }
+        fjernTidligereVedtakOmOvergangsstonad(melding.personIdent());
 
         secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.personIdent());
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
@@ -96,5 +93,13 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 ensligeForsorgerOvergangsstønadTiltak.til_dato(),
                 yngsteBarn.orElse(null)
         );
+    }
+
+
+    private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
+        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(personIdent);
+        if (fjernTidligereVedtak > 0) {
+            secureLog.info("Fjernet tidligere vedtak for bruker: {}", personIdent);
+        }
     }
 }
