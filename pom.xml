@@ -317,7 +317,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>11.2.0</version>
+            <version>11.8.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
