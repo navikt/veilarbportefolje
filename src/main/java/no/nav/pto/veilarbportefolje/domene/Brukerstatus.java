@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 public enum Brukerstatus {
     TRENGER_VURDERING,
+    TRENGER_OPPFOLGINGSVEDTAK,
     UFORDELTE_BRUKERE,
     INAKTIVE_BRUKERE,
     VENTER_PA_SVAR_FRA_NAV,

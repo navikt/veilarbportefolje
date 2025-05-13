@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -48,6 +49,8 @@ public class Bruker {
     boolean nyForEnhet;
     boolean trengerVurdering;
     VurderingsBehov vurderingsBehov;
+    boolean trengerOppfolgingsvedtak;
+    Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
     String manuellBrukerStatus;
@@ -123,10 +126,14 @@ public class Bruker {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
         String sikkerhetstiltak = bruker.getSikkerhetstiltak();
-        String profileringResultat = bruker.getProfilering_resultat();
+        Profileringsresultat profileringResultat = bruker.getProfilering_resultat();
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
+
         boolean trengerVurdering = bruker.isTrenger_vurdering();
+        VurderingsBehov vurderingsBehov = trengerVurdering ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
+        boolean trengerOppfolgingsvedtak = bruker.getGjeldendeVedtak14a() == null;
+
         boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
 
         return new Bruker()
@@ -135,8 +142,10 @@ public class Bruker {
                 .setAktoerid(bruker.getAktoer_id())
                 .setNyForVeileder(bruker.isNy_for_veileder())
                 .setTrengerVurdering(trengerVurdering)
+                .setVurderingsBehov(vurderingsBehov)
+                .setTrengerOppfolgingsvedtak(trengerOppfolgingsvedtak)
+                .setProfileringResultat(profileringResultat)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null)
                 .setInnsatsgruppe(INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) ? kvalifiseringsgruppekode : null)
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
