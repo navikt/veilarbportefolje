@@ -139,3 +139,7 @@ spec:
       value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+    - name: ENSLIG_FORSORGER_URL
+      value: "http://enslig-forsorger-api.team-familie"
+    - name: ENSLIG_FORSORGER_SCOPE
+      value: "api://dev-gcp.team-familie.enslig-forsorger-api/.default"

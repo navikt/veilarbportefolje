@@ -32,5 +32,7 @@ public class EnvironmentProperties {
     private String poaoTilgangScope;
     private String oppslagArbeidssoekerregisteretScope;
     private String oppslagArbeidssoekerregisteretUrl;
+    private String ensligForsorgerUrl;
+    private String ensligForsorgerScope;
 }
 
