@@ -12,6 +12,7 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -48,6 +49,7 @@ public class AdminController {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
+    private final EnsligeForsorgereService ensligForsorgerService;
 
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
@@ -226,6 +228,14 @@ public class AdminController {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    @PostMapping("/hentEnsligForsorgerData")
+    @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
+    public String hentEnsligForsorgerData(@RequestBody EnsligForsorgerBrukerRequest request) {
+        sjekkTilgangTilAdmin();
+        ensligForsorgerService.hentEnsligForsorgerDataFraApi(Fnr.ofValidFnr(request.fnr().get()));
+        return "Henting av ensligforsorgerdata har startet";
     }
 
     private void validerIndexName(String indexName) {

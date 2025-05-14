@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.*;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.EnsligForsorgerResponseDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -82,6 +83,27 @@ public class EnsligeForsorgereRepository {
         lagreEnsligeForsorgereVedtakPerioder(vedtakId, ensligeForsorgereVedtakPerioder);
 
         List<EnsligeForsorgereBarn> enslige_forsorgere_barn = vedtakOvergangsstønadArbeidsoppfølging.barn().stream().map(enslige_forsorgere_barn_dto -> new EnsligeForsorgereBarn(enslige_forsorgere_barn_dto.fødselsnummer(), enslige_forsorgere_barn_dto.termindato())).collect(Collectors.toList());
+        lagreDataForEnsligeForsorgereBarn(vedtakId, enslige_forsorgere_barn);
+    }
+
+    public void lagreOvergangsstonadApi(EnsligForsorgerResponseDto ensligForsorgerResponseDto) {
+        long vedtakId = ensligForsorgerResponseDto.getVedtakId();
+        Integer stonadstypeId = hentStonadstype(ensligForsorgerResponseDto.getStønadstype().toString());
+        Integer vedtakResultatId = hentVedtakresultat(ensligForsorgerResponseDto.getVedtaksresultat().toString());
+
+        String sql = """
+                INSERT INTO ENSLIGE_FORSORGERE(VEDTAKID, PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
+                VALUES (?, ?, ?, ?) ON CONFLICT (VEDTAKID)
+                DO UPDATE SET(PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
+                = (excluded.PERSONIDENT, excluded.STONADSTYPE, excluded.VEDTAKSRESULTAT);
+                """;
+        db.update(sql, vedtakId, ensligForsorgerResponseDto.getPersonIdent(),
+                stonadstypeId, vedtakResultatId);
+
+        List<EnsligeForsorgereVedtakPeriode> ensligeForsorgereVedtakPerioder = ensligForsorgerResponseDto.getPeriode().stream().map(vedtakPeriode -> new EnsligeForsorgereVedtakPeriode(vedtakId, vedtakPeriode.fom(), vedtakPeriode.tom(), hentPeriodetype(vedtakPeriode.periodetype().toString()), hentVedtakAktivitetstype(vedtakPeriode.aktivitetstype().toString()))).toList();
+        lagreEnsligeForsorgereVedtakPerioder(vedtakId, ensligeForsorgereVedtakPerioder);
+
+        List<EnsligeForsorgereBarn> enslige_forsorgere_barn = ensligForsorgerResponseDto.getBarn().stream().map(enslige_forsorgere_barn_dto -> new EnsligeForsorgereBarn(enslige_forsorgere_barn_dto.fødselsnummer(), enslige_forsorgere_barn_dto.termindato())).collect(Collectors.toList());
         lagreDataForEnsligeForsorgereBarn(vedtakId, enslige_forsorgere_barn);
     }
 
