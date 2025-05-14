@@ -224,7 +224,8 @@ public class Bruker {
                 .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
                 .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
                 .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a())
-                .setUtgattVarsel(bruker.getUtgatt_varsel());
+                .setUtgattVarsel(bruker.getUtgatt_varsel())
+                .setNesteUtlopsdatoAktivitet(null);
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
@@ -232,6 +233,10 @@ public class Bruker {
             return;
         }
         aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet));
+    }
+
+    public void kalkulerNesteUtlopsdatoAvValgtTiltakstype() {
+        nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get("tiltak"), nesteUtlopsdatoAktivitet);
     }
 
     public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
@@ -296,12 +301,11 @@ public class Bruker {
 
     private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
         if (aktivitetUlopsdato == null) {
-            return null;
+            return comp;
         }
-        if (comp == null) {
-            return aktivitetUlopsdato.toLocalDateTime();
-        } else if (comp.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
-            return aktivitetUlopsdato.toLocalDateTime();
+        LocalDateTime aktivitetDato = aktivitetUlopsdato.toLocalDateTime();
+        if (comp == null || comp.isAfter(aktivitetDato)) {
+            return aktivitetDato;
         }
         return comp;
     }
