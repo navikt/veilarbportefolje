@@ -777,6 +777,8 @@ public class OpensearchQueryBuilder {
         List<String> sorterings_aktiviter;
         if (filtervalg.harAktiviteterForenklet()) {
             sorterings_aktiviter = filtervalg.aktiviteterForenklet;
+        } else if (!filtervalg.tiltakstyper.isEmpty()) {
+            sorterings_aktiviter = List.of("TILTAK");
         } else {
             sorterings_aktiviter = filtervalg.aktiviteter.entrySet().stream()
                     .filter(entry -> JA.equals(entry.getValue()))
