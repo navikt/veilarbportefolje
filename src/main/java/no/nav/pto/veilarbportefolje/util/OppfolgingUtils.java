@@ -10,8 +10,6 @@ import static java.util.Arrays.asList;
 
 public class OppfolgingUtils {
     public static final List<String> INNSATSGRUPPEKODER = asList("IKVAL", "BFORM", "BATT", "VARIG");
-    private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
-
 
     //TODO BRUK PROFILERINGSRESULTAT
     public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
