@@ -842,9 +842,6 @@ public class OpensearchQueryBuilder {
             case UFORDELTE_BRUKERE:
                 queryBuilder = byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet);
                 break;
-            case TRENGER_VURDERING:
-                queryBuilder = byggTrengerVurderingFilter();
-                break;
             case TRENGER_OPPFOLGINGSVEDTAK:
                 queryBuilder = byggTrengerOppfolgingsvedtakFilter();
                 break;
@@ -898,12 +895,6 @@ public class OpensearchQueryBuilder {
 
         }
         return queryBuilder;
-    }
-
-    static QueryBuilder byggTrengerVurderingFilter() {
-        return boolQuery()
-                .must(matchQuery("trenger_vurdering", true))
-                .mustNot(existsQuery("utkast_14a_status"));
     }
 
     static QueryBuilder byggTrengerOppfolgingsvedtakFilter() {
