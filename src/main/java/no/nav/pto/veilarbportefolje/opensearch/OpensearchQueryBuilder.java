@@ -1003,7 +1003,6 @@ public class OpensearchQueryBuilder {
                 mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE.key, "arbeidsliste_aktiv"),
                 mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key, "ny_for_veileder"),
                 totalt(filtrereVeilederOgEnhet),
-                trengerVurderingFilter(filtrereVeilederOgEnhet),
                 mustNotExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TRENGER_OPPFOLGINGSVEDTAK.key, "gjeldendeVedtak14a"),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_NAV.key, "venterpasvarfranav"),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.VENTER_PA_SVAR_FRA_BRUKER.key, "venterpasvarfrabruker"),
@@ -1161,15 +1160,6 @@ public class OpensearchQueryBuilder {
         return rangeQuery("alle_aktiviteter_mote_startdato")
                 .gte(toIsoUTC(localDate.atStartOfDay()))
                 .lt(toIsoUTC(localDate.plusDays(1).atStartOfDay()));
-    }
-
-    private static FiltersAggregator.KeyedFilter trengerVurderingFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-                .must(filtrereVeilederOgEnhet)
-                .must(termQuery("trenger_vurdering", true))
-                .mustNot(existsQuery("utkast_14a_status"));
-
-        return new FiltersAggregator.KeyedFilter(StatustallAggregationKey.TRENGER_VURDERING.key, boolQueryBuilder);
     }
 
     private static FiltersAggregator.KeyedFilter erSykemeldtMedArbeidsgiverFilter(BoolQueryBuilder filtrereVeilederOgEnhet) {
