@@ -35,13 +35,14 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
         this.machineToMachineTokenSupplier = machineToMachineTokenSupplier;
         this.client = RestClient.baseClient();
     }
+
     @SneakyThrows
-    public Optional<EnsligForsorgerResponseDto> hentEnsligForsorgerOvergangsstonad(String personIdent) {
+    public Optional<EnsligForsorgerResponseDto> hentEnsligForsorgerOvergangsstonad(Fnr personIdent) {
         Request request = new Request.Builder()
                 .url(joinPaths(ensligForsorgerUrl, "/api/v1/ensligforsorger/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
-                .post(RequestBody.create(JsonUtils.toJson(new Fnr(personIdent)), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(personIdent), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

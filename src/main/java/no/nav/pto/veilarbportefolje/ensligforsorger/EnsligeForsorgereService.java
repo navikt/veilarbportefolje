@@ -117,8 +117,26 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
     }
 
-    public void hentEnsligForsorgerDataFraApi(Fnr fnr) {
-        EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr.get()).get();
-        ensligeForsorgereRepository.lagreOvergangsstonadApi(ensligForsorgerResponseDto);
+    public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
+        EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
+
+        if (erStonadstypeOvergangsstonad(ensligForsorgerResponseDto.getStønadstype().toString())) {
+            VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(ensligForsorgerResponseDto);
+            ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+        }
+
+        secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
+    }
+
+    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(EnsligForsorgerResponseDto ensligForsorgerResponseDto) {
+        return new VedtakOvergangsstønadArbeidsoppfølging(
+                ensligForsorgerResponseDto.getVedtakId(),
+                ensligForsorgerResponseDto.getPersonIdent(),
+                ensligForsorgerResponseDto.getBarn(),
+                ensligForsorgerResponseDto.getStønadstype(),
+                ensligForsorgerResponseDto.getPeriode(),
+                ensligForsorgerResponseDto.getVedtaksresultat()
+        );
     }
 }

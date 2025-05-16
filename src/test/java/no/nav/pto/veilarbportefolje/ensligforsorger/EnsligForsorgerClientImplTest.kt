@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.ensligforsorger
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
+import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClientImpl
 import org.assertj.core.api.Assertions
@@ -31,7 +32,9 @@ class EnsligForsorgerClientImplTest {
                 )
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(ensligForsorgerJson))
         )
-       val response = client.hentEnsligForsorgerOvergangsstonad(fnr)
-Assertions.assertThat(response).isEqualTo(ensligForsorgerJson)
+       val response = client.hentEnsligForsorgerOvergangsstonad(
+           Fnr.of(fnr));
+
+        Assertions.assertThat(response).isEqualTo(ensligForsorgerJson)
     }
 }
