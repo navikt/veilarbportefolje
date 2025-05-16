@@ -900,7 +900,6 @@ public class OpensearchQueryBuilder {
         return queryBuilder;
     }
 
-    // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     static QueryBuilder byggTrengerVurderingFilter() {
         return boolQuery()
                 .must(matchQuery("trenger_vurdering", true))
