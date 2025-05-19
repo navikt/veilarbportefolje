@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
+import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -22,6 +23,7 @@ class HendelseServiceTest(
     @BeforeEach
     fun `reset data`() {
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${OPPFOLGING_DATA.TABLE_NAME}")
     }
 
     @Test
