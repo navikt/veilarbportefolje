@@ -1,18 +1,20 @@
 {
-  "personIdent": ["12345678901"],
-  "periode": [
+  "personIdent": [
+    "string"
+  ],
+  "perioder": [
     {
-      "stønadFraOgMed": "2025-01-01",
-      "stønadTilOgMed": "2024-12-31",
-      "aktivitet": "BARN_UNDER_ETT_ÅR",
-      "periodetype": "HOVEDPERIODE",
-      "barn":[
+      "stønadFraOgMed": "2025-05-19",
+      "stønadTilOgMed": "2025-05-19",
+      "aktivitet": "MIGRERING",
+      "periodeType": "FORLENGELSE",
+      "barn": [
         {
-          "personIdent": "12345678901",
-          "fødselTermindato": "2025-05-01"
+          "personIdent": "string",
+          "fødselTermindato": "2025-05-19"
         }
       ],
-      "behandlingId": "9007199254740991",
+      "behandlingId": 9007199254740991,
       "harAktivitetsplikt": true
     }
   ]
