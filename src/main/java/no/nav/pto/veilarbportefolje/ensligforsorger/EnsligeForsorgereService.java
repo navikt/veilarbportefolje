@@ -7,9 +7,8 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
-import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.EnsligForsorgerResponseDto;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Stønadstype;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
@@ -17,10 +16,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.ensligforsorger.mapping.PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -119,24 +115,33 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
-        EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
 
-        if (erStonadstypeOvergangsstonad(ensligForsorgerResponseDto.getStønadstype().toString())) {
-            VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(ensligForsorgerResponseDto);
-            ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+        if(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
+            EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
+            List<EnsligForsorgerPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getEnsligForsorgerPeriode();
+            for(EnsligForsorgerPeriode periode: ensligForsorgerPeriode) {
+                VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
+                ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+            }
+        } else {
+            secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
         }
-
-        secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
     }
 
-    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(EnsligForsorgerResponseDto ensligForsorgerResponseDto) {
+    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(Fnr personIdent, EnsligForsorgerPeriode ensligForsorgerPeriode) {
+        Periode periode = new Periode(
+                ensligForsorgerPeriode.getStønadFraOgMed(),
+                ensligForsorgerPeriode.getStønadTilOgMed(),
+                ensligForsorgerPeriode.getPeriodetype(),
+                ensligForsorgerPeriode.getAktivitet());
+
         return new VedtakOvergangsstønadArbeidsoppfølging(
-                ensligForsorgerResponseDto.getVedtakId(),
-                ensligForsorgerResponseDto.getPersonIdent(),
-                ensligForsorgerResponseDto.getBarn(),
-                ensligForsorgerResponseDto.getStønadstype(),
-                ensligForsorgerResponseDto.getPeriode(),
-                ensligForsorgerResponseDto.getVedtaksresultat()
+                Long.getLong(ensligForsorgerPeriode.getBehandlingId()),
+                personIdent.get(),
+                ensligForsorgerPeriode.getBarn(),
+                Stønadstype.OVERGANGSSTØNAD,
+                List.of(periode),
+                Vedtaksresultat.INNVILGET
         );
     }
 }

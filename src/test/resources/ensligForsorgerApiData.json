@@ -1,20 +1,19 @@
 {
-  "behandlingsId": "123456789",
-  "personIdent": "12345678901",
-  "barn":[
-    {
-      "fødselsnummer": "12345678901",
-      "termindato": "2025-05-01T13:22:58.089Z"
-    }
-  ],
-  "stønadstype": "OVERGANGSSTØNAD",
+  "personIdent": ["12345678901"],
   "periode": [
     {
-      "fom": "2024-01-01T00:00:00.000Z",
-      "tom": "2024-12-31T00:00:00.000Z",
+      "stønadFraOgMed": "2025-01-01",
+      "stønadTilOgMed": "2024-12-31",
+      "aktivitet": "BARN_UNDER_ETT_ÅR",
       "periodetype": "HOVEDPERIODE",
-      "aktivitetstype": "BARN_UNDER_ETT_ÅR"
+      "barn":[
+        {
+          "personIdent": "12345678901",
+          "fødselTermindato": "2025-05-01"
+        }
+      ],
+      "behandlingId": "9007199254740991",
+      "harAktivitetsplikt": true
     }
-  ],
-  "vedtaksresultat": "INNVILGET"
+  ]
 }

@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -36,10 +37,9 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
         this.client = RestClient.baseClient();
     }
 
-    @SneakyThrows
     public Optional<EnsligForsorgerResponseDto> hentEnsligForsorgerOvergangsstonad(Fnr personIdent) {
         Request request = new Request.Builder()
-                .url(joinPaths(ensligForsorgerUrl, "/api/v1/ensligforsorger/"))
+                .url(joinPaths(ensligForsorgerUrl, "/api/ekstern/perioder/perioder-aktivitet"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
                 .post(RequestBody.create(JsonUtils.toJson(personIdent), MEDIA_TYPE_JSON))
@@ -48,6 +48,9 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, EnsligForsorgerResponseDto.class);
+        } catch (Exception exception) {
+            secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil med ", exception);
+            return Optional.empty();
         }
     }
 

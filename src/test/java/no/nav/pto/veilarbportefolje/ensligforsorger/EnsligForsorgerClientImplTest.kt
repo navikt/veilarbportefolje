@@ -17,7 +17,7 @@ class EnsligForsorgerClientImplTest {
 
     @Test
     fun hentEnsligForsorger_gir_forventet_respons_naar_bruker_eksisterer() {
-        val fnr = "12345678901"
+        val fnr = Fnr.of("12345678901")
         val ensligForsorgerJson = readTestResourceFile("ensligForsorgerApiData.json")
         val client = EnsligForsorgerClientImpl(
             "http://localhost:" + wireMockRule.port()
@@ -26,14 +26,13 @@ class EnsligForsorgerClientImplTest {
         println(ensligForsorgerJson)
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v1/ensligforsorger")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/api/ekstern/perioder/perioder-aktivitet")).withRequestBody(
                 WireMock.equalToJson(
-                    "{\"personIdent\":\"$fnr\"}"
+                    "{\"fnr\":\"$fnr\"}"
                 )
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(ensligForsorgerJson))
         )
-       val response = client.hentEnsligForsorgerOvergangsstonad(
-           Fnr.of(fnr));
+       val response = client.hentEnsligForsorgerOvergangsstonad(fnr);
 
         Assertions.assertThat(response).isEqualTo(ensligForsorgerJson)
     }
