@@ -13,9 +13,10 @@ import java.util.List;
 public class EnsligForsorgerPeriode {
     LocalDate stønadFraOgMed;
     LocalDate stønadTilOgMed;
-    Periodetype periodetype;
     Aktivitetstype aktivitet;
-    List<Barn> barn;
+    Periodetype periodeType;
+    List<EnsligForsorgersBarn> barn;
     String behandlingId;
     Boolean harAktivitetsplikt;
 }
+

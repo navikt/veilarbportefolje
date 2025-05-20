@@ -118,7 +118,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
         if(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
             EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
-            List<EnsligForsorgerPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getEnsligForsorgerPeriode();
+            List<EnsligForsorgerPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getPerioder();
             for(EnsligForsorgerPeriode periode: ensligForsorgerPeriode) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
@@ -132,13 +132,23 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         Periode periode = new Periode(
                 ensligForsorgerPeriode.getStønadFraOgMed(),
                 ensligForsorgerPeriode.getStønadTilOgMed(),
-                ensligForsorgerPeriode.getPeriodetype(),
+                ensligForsorgerPeriode.getPeriodeType(),
                 ensligForsorgerPeriode.getAktivitet());
+
+        List<EnsligForsorgersBarn> ensligForsorgersBarn =  ensligForsorgerPeriode.getBarn();
+        List<Barn> barnListe = new ArrayList<>();
+
+        for(EnsligForsorgersBarn barn: ensligForsorgersBarn) {
+            barnListe.add(new Barn(
+                    barn.getPersonIdent(),
+                    barn.getFødselTermindato()
+            ));
+        }
 
         return new VedtakOvergangsstønadArbeidsoppfølging(
                 Long.getLong(ensligForsorgerPeriode.getBehandlingId()),
                 personIdent.get(),
-                ensligForsorgerPeriode.getBarn(),
+                barnListe,
                 Stønadstype.OVERGANGSSTØNAD,
                 List.of(periode),
                 Vedtaksresultat.INNVILGET

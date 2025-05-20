@@ -29,6 +29,7 @@ class EnsligForsorgerClientImplTest {
         println(client)
         println(ensligForsorgerJson)
         val expected = fromJson(ensligForsorgerJson, EnsligForsorgerResponseDto::class.java);
+
         WireMock.givenThat(
             WireMock.post(WireMock.urlEqualTo("/api/ekstern/perioder/perioder-aktivitet"))
                 .withRequestBody(
