@@ -118,10 +118,13 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
         if(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
             EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
+            secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {}", aktorId);
             List<EnsligForsorgerPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getPerioder();
             for(EnsligForsorgerPeriode periode: ensligForsorgerPeriode) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
+                secureLog.info("Data til enslig forsørger med aktorId {} mappet", aktorId);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+                secureLog.info("Data til enslig forsørger med aktorId {} lagret is databasen", aktorId);
             }
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
