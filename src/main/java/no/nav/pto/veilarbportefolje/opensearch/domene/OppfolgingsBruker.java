@@ -2,13 +2,14 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 
 import java.time.LocalDate;
@@ -106,7 +107,7 @@ public class OppfolgingsBruker {
     List<String> brukers_situasjoner;
     LocalDate brukers_situasjon_sist_endret;
     LocalDate utdanning_og_situasjon_sist_endret;
-    String profilering_resultat;
+    Profileringsresultat profilering_resultat;
     String utdanning;
     String utdanning_bestatt;
     String utdanning_godkjent;

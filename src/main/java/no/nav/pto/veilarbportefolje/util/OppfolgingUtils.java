@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 
 import java.util.List;
@@ -25,16 +25,15 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && kvalifiseringsgruppekode.equals("VURDI");
     }
 
-    public static VurderingsBehov vurderingsBehov(String kvalifiseringsgruppekode, String profileringsResultat) {
+    public static VurderingsBehov vurderingsBehov(String kvalifiseringsgruppekode, Profileringsresultat profileringsResultat) {
         //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
         return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat))
                 .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
     }
 
 
-    private static VurderingsBehov profileringsResultatTilVurdering(String profileringsResultat) {
+    private static VurderingsBehov profileringsResultatTilVurdering(Profileringsresultat profileringsResultat) {
         return Optional.ofNullable(profileringsResultat)
-                .map(ProfilertTil::valueOf)
                 .map(profilertTil -> VurderingsBehov.valueOf(profilertTil.name()))
                 .orElse(null);
     }

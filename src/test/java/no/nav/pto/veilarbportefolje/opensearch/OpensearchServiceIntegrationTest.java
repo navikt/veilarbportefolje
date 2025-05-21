@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
@@ -941,7 +942,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_riktige_statustall_for_enhet() {
-
         var brukerUtenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().get())
@@ -957,7 +957,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var liste = List.of(brukerMedVeileder, brukerUtenVeileder);
 
-
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
@@ -969,6 +968,38 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
         assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isZero();
+    }
+
+    @Test
+    void skal_mappe_statustall_for_samtlige_aggregation_keys() {
+        var brukerUtenVeileder = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET);
+
+        var brukerMedVeileder = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0);
+
+        var liste = List.of(brukerMedVeileder, brukerUtenVeileder);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Statustall veilederStatustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        Statustall enhetStatustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        Statustall enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
+
+        Arrays.stream(StatustallResponse.StatustallAggregationKey.values()).forEach(key -> {
+            assertDoesNotThrow(() -> veilederStatustall.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederHarInnsynsrettPå.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getClass().getDeclaredField(key.key));
+        });
     }
 
     @Test
