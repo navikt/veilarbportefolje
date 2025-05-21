@@ -42,7 +42,7 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
                 .url(joinPaths(ensligForsorgerUrl, "/api/ekstern/perioder/perioder-aktivitet"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
-                .post(RequestBody.create(JsonUtils.toJson(personIdent), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(new EnsligForsorgerRequestParam(personIdent.get())), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

@@ -34,7 +34,7 @@ class EnsligForsorgerClientImplTest {
             WireMock.post(WireMock.urlEqualTo("/api/ekstern/perioder/perioder-aktivitet"))
                 .withRequestBody(
                     WireMock.equalToJson(
-                        "\"${fnr.get()}\""
+                        "{\"personIdent\":\"${fnr.get()}\"}"
                     )
                 )
                 .willReturn(WireMock.aResponse().withStatus(200).withBody(ensligForsorgerJson))
