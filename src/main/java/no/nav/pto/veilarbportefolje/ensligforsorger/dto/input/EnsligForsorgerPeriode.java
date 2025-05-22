@@ -16,7 +16,7 @@ public class EnsligForsorgerPeriode {
     Aktivitetstype aktivitet;
     Periodetype periodeType;
     List<EnsligForsorgersBarn> barn;
-    String behandlingId;
-    Boolean harAktivitetsplikt;
+    Long behandlingId;
+    boolean harAktivitetsplikt;
 }
 

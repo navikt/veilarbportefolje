@@ -150,7 +150,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
 
         return new VedtakOvergangsstønadArbeidsoppfølging(
-                Long.getLong(ensligForsorgerPeriode.getBehandlingId()),
+                ensligForsorgerPeriode.getBehandlingId(),
                 personIdent.get(),
                 barnListe,
                 Stønadstype.OVERGANGSSTØNAD,
