@@ -40,10 +40,7 @@ class EnsligForsorgerClientImplTest {
         )
         val response: Optional<OvergangsstønadResponseDto> = client.hentEnsligForsorgerOvergangsstonad(fnr);
 
-        if(response.isPresent) {
-            println(response.get())
-            Assertions.assertThat(response.get().data.personIdent[0]).isEqualTo(expected.data.personIdent[0])
-            Assertions.assertThat(response.get()).isEqualTo(expected)
-        }
+        Assertions.assertThat(response.get().data.personIdent[0]).isEqualTo(expected.data.personIdent[0])
+        Assertions.assertThat(response.get()).isEqualTo(expected)
     }
 }
