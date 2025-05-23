@@ -1,21 +1,28 @@
 {
-  "personIdent": [
-    "string"
-  ],
-  "perioder": [
-    {
-      "stønadFraOgMed": "2025-05-19",
-      "stønadTilOgMed": "2025-05-19",
-      "aktivitet": "MIGRERING",
-      "periodeType": "FORLENGELSE",
-      "barn": [
-        {
-          "personIdent": "string",
-          "fødselTermindato": "2025-05-19"
-        }
-      ],
-      "behandlingId": 9007199254740991,
-      "harAktivitetsplikt": true
-    }
-  ]
+  "data": {
+    "personIdent": [
+      "12518904661"
+    ],
+    "perioder": [
+      {
+        "stønadFraOgMed": "2025-05-01",
+        "stønadTilOgMed": "2026-04-30",
+        "aktivitet": "BARN_UNDER_ETT_ÅR",
+        "periodeType": "HOVEDPERIODE",
+        "barn": [
+          {
+            "personIdent": "24442564414",
+            "fødselTermindato": "2025-04-24"
+          }
+        ],
+        "behandlingId": 20532,
+        "harAktivitetsplikt": false
+      }
+    ]
+  },
+  "status": "SUKSESS",
+  "melding": "Innhenting av data var vellykket",
+  "frontendFeilmelding": null,
+  "stacktrace": null,
+  "callId": null
 }

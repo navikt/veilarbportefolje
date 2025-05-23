@@ -7,6 +7,9 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadBarn;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadPeriode;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadResponseDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Stønadstype;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
@@ -116,12 +119,12 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
 
-        if(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
-            EnsligForsorgerResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
+        if(fnr != null && ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
+            OvergangsstønadResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
             secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {} og response {}", aktorId, ensligForsorgerResponseDto);
-            List<EnsligForsorgerPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getPerioder();
+            List<OvergangsstønadPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getData().getPerioder();
             secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {} og periode {}", aktorId, ensligForsorgerPeriode);
-            for(EnsligForsorgerPeriode periode: ensligForsorgerPeriode) {
+            for(OvergangsstønadPeriode periode: ensligForsorgerPeriode) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 secureLog.info("Data til enslig forsørger med aktorId {} mappet med {}", aktorId, overgangsstønadDto);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
@@ -132,17 +135,17 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
     }
 
-    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(Fnr personIdent, EnsligForsorgerPeriode ensligForsorgerPeriode) {
+    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(Fnr personIdent, OvergangsstønadPeriode ensligForsorgerPeriode) {
         Periode periode = new Periode(
                 ensligForsorgerPeriode.getStønadFraOgMed(),
                 ensligForsorgerPeriode.getStønadTilOgMed(),
                 ensligForsorgerPeriode.getPeriodeType(),
                 ensligForsorgerPeriode.getAktivitet());
 
-        List<EnsligForsorgersBarn> ensligForsorgersBarn =  ensligForsorgerPeriode.getBarn();
+        List<OvergangsstønadBarn> ensligForsorgersBarn =  ensligForsorgerPeriode.getBarn();
         List<Barn> barnListe = new ArrayList<>();
 
-        for(EnsligForsorgersBarn barn: ensligForsorgersBarn) {
+        for(OvergangsstønadBarn barn: ensligForsorgersBarn) {
             barnListe.add(new Barn(
                     barn.getPersonIdent(),
                     barn.getFødselTermindato()

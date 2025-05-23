@@ -1,17 +1,13 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.client;
 
-import lombok.SneakyThrows;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.EnsligForsorgerResponseDto;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadResponseDto;
+import okhttp3.*;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -37,7 +33,7 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
         this.client = RestClient.baseClient();
     }
 
-    public Optional<EnsligForsorgerResponseDto> hentEnsligForsorgerOvergangsstonad(Fnr personIdent) {
+    public Optional<OvergangsstønadResponseDto> hentEnsligForsorgerOvergangsstonad(Fnr personIdent) {
         Request request = new Request.Builder()
                 .url(joinPaths(ensligForsorgerUrl, "/api/ekstern/perioder/perioder-aktivitet"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
@@ -46,8 +42,16 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, EnsligForsorgerResponseDto.class);
+            String responseBody = response.body() != null ? response.body().string() : "null";
+            secureLog.info("Response fra kall perioder-aktivitet: {} with body: {}", response, responseBody);
+
+            // Need to rebuild the response since body().string() consumes the body stream
+            Response response2 = response.newBuilder()
+                    .body(ResponseBody.create(responseBody, response.body().contentType()))
+                    .build();
+            RestUtils.throwIfNotSuccessful(response2);
+            secureLog.info("Parset responsen fra kall perioder-aktivitet: {} ", RestUtils.parseJsonResponse(response2, OvergangsstønadResponseDto.class).get());
+            return RestUtils.parseJsonResponse(response2, OvergangsstønadResponseDto.class);
         } catch (Exception exception) {
             secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil med ", exception);
             return Optional.empty();
