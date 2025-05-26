@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.opensearch.client.OpenSearchClient;
+import org.opensearch.transport.client.OpenSearchClient;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 

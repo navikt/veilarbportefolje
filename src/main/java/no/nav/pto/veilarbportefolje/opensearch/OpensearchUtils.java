@@ -2,15 +2,19 @@ package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.util.Timeout;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
+
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class OpensearchUtils {
@@ -20,18 +24,18 @@ public class OpensearchUtils {
 
     public static RestHighLevelClient createClient(OpensearchClientConfig config) {
         HttpHost httpHost = new HttpHost(
+                config.getScheme(),
                 config.getHostname(),
-                config.getPort(),
-                config.getScheme()
+                config.getPort()
         );
 
         return new RestHighLevelClient(RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(getHttpClientConfigCallback(config))
                 .setRequestConfigCallback(
                         requestConfig -> {
-                            requestConfig.setConnectTimeout(CONNECT_TIMEOUT);
-                            requestConfig.setSocketTimeout(SOCKET_TIMEOUT);
-                            requestConfig.setConnectionRequestTimeout(0); // http://www.github.com/elastic/elasticsearch/issues/24069
+                            requestConfig.setConnectionRequestTimeout(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS);
+                            requestConfig.setResponseTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+                            requestConfig.setConnectionRequestTimeout(Timeout.ZERO_MILLISECONDS); // http://www.github.com/elastic/elasticsearch/issues/24069
                             return requestConfig;
                         }
                 ));
@@ -51,11 +55,11 @@ public class OpensearchUtils {
             private CredentialsProvider createCredentialsProvider() {
                 UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
                         config.getUsername(),
-                        config.getPassword()
+                        config.getPassword().toCharArray()
                 );
 
                 BasicCredentialsProvider provider = new BasicCredentialsProvider();
-                provider.setCredentials(AuthScope.ANY, credentials);
+                provider.setCredentials(new AuthScope(null, -1), credentials);
                 return provider;
             }
         };
