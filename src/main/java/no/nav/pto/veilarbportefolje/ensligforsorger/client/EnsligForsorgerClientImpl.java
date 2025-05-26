@@ -42,16 +42,9 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            String responseBody = response.body() != null ? response.body().string() : "null";
-            secureLog.info("Response fra kall perioder-aktivitet: {} with body: {}", response, responseBody);
-
-            // Need to rebuild the response since body().string() consumes the body stream
-            Response response2 = response.newBuilder()
-                    .body(ResponseBody.create(responseBody, response.body().contentType()))
-                    .build();
-            RestUtils.throwIfNotSuccessful(response2);
-            secureLog.info("Parset responsen fra kall perioder-aktivitet: {} ", RestUtils.parseJsonResponse(response2, OvergangsstønadResponseDto.class).get());
-            return RestUtils.parseJsonResponse(response2, OvergangsstønadResponseDto.class);
+            RestUtils.throwIfNotSuccessful(response);
+            secureLog.info("Response fra kall perioder-aktivitet: {}", response);
+            return Optional.of(RestUtils.parseJsonResponseOrThrow(response, OvergangsstønadResponseDto.class));
         } catch (Exception exception) {
             secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil med ", exception);
             return Optional.empty();

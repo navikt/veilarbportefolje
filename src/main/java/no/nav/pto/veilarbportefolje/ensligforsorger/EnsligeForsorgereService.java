@@ -118,10 +118,9 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
+        secureLog.info("fnr: {}, aktorId: {}, ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent(): {}", fnr, aktorId,
+                ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent());
 
-        secureLog.info("fnr: {}, ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent(): {}", fnr, ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent());
-        secureLog.info("OvergangsstønadResponseDto present: {}",
-                ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get().getData());
         if(fnr != null && ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
             OvergangsstønadResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
             secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {} og response {}", aktorId, ensligForsorgerResponseDto);

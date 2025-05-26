@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
@@ -15,6 +16,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,12 +28,15 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static io.vavr.API.println;
 import static java.util.Optional.empty;
+import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.domene.EnsligeForsorgere.OVERGANGSSTONAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
@@ -51,6 +56,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
     @Autowired
     private AktorClient aktorClient;
+
+    @Autowired
+    EnsligForsorgerClient ensligForsorgerClient;
 
     @Autowired
     private JdbcTemplate postgres;
@@ -342,5 +350,19 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     @SneakyThrows
     private void skrivBrukereTilTestindeks(OppfolgingsBruker... brukere) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.getValue(), List.of(brukere));
+    }
+
+    @Test
+    public void testHentOgLagreEnsligForsorgerDataFraApi() {
+        Fnr fnr = Fnr.of("12518904661");
+        AktorId aktorId = AktorId.of("9938");
+        String ensligForsorgerJson = readTestResourceFile("ensligForsorgerApiData.json");
+        Optional<OvergangsstønadResponseDto> expected = Optional.of(fromJson(ensligForsorgerJson, OvergangsstønadResponseDto.class));
+        Mockito.when(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr)).thenReturn(expected);
+        Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+        String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> {return rs.getString("vedtakid");}, fnr.get());
+        assertThat(vedtakid).isNotNull();
+        assertThat(vedtakid).isEqualTo("20532");
     }
 }
