@@ -43,7 +43,6 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            secureLog.info("Response fra kall perioder-aktivitet: {}", response);
             return Optional.of(RestUtils.parseJsonResponseOrThrow(response, OvergangsstønadResponseDto.class));
         } catch (Exception exception) {
             secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil med ", exception);

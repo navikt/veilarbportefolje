@@ -118,19 +118,14 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
-        secureLog.info("fnr: {}, aktorId: {}, ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent(): {}", fnr, aktorId,
-                ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent());
+        Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
 
-        if(fnr != null && ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).isPresent()) {
-            OvergangsstønadResponseDto ensligForsorgerResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr).get();
-            secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {} og response {}", aktorId, ensligForsorgerResponseDto);
+        if(fnr != null && overgangsstønadResponseDto.isPresent()) {
+            OvergangsstønadResponseDto ensligForsorgerResponseDto = overgangsstønadResponseDto.get();
             List<OvergangsstønadPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getData().getPerioder();
-            secureLog.info("Kall til api enslig forsørger er gjennomført med aktorId {} og periode {}", aktorId, ensligForsorgerPeriode);
             for(OvergangsstønadPeriode periode: ensligForsorgerPeriode) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
-                secureLog.info("Data til enslig forsørger med aktorId {} mappet med {}", aktorId, overgangsstønadDto);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
-                secureLog.info("Data til enslig forsørger med aktorId {} lagret is databasen", aktorId);
             }
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
