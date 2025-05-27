@@ -89,7 +89,6 @@ public class EnsligeForsorgereRepository {
     private void lagreEnsligeForsorgereVedtakPerioder(long vedtakId, List<EnsligeForsorgereVedtakPeriode> vedtakPerioder) {
         if (!vedtakPerioder.isEmpty()) {
             vedtakPerioder.forEach(period -> lagreEnsligeForsorgereVedtakPeriod(vedtakId, period.periode_fra(), period.periode_til(), period.periodetype(), period.aktivitetstype()));
-            secureLog.info("Lagret enslig forsorger med vedtakId {}", vedtakId);
         }
     }
 
@@ -99,7 +98,6 @@ public class EnsligeForsorgereRepository {
                 VALUES (?, ?, ?, ?, ?)
                 """;
         db.update(sql, vedtakid, period_fom, period_tom, periodeType, aktivitetsType);
-        secureLog.info("Lagret enslig forsorger med vedtakId {}", vedtakid);
     }
 
     private void lagreDataForEnsligeForsorgereBarn(long vedtakId, List<EnsligeForsorgereBarn> enslige_forsorgere_barn) {
@@ -114,7 +112,6 @@ public class EnsligeForsorgereRepository {
         enslige_forsorgere_barn.forEach(enslige_forsorgere_barnet ->
                 lagreDataForEnsligeForsorgereBarnIDB(vedtakId, enslige_forsorgere_barnet.fnr(), enslige_forsorgere_barnet.terminDato())
         );
-        secureLog.info("Lagret enslig forsorgere barn med vedtakId {}", vedtakId);
     }
 
     private void lagreDataForEnsligeForsorgereBarnIDB(long vedtakId, String fnr, LocalDate terminDato) {
@@ -123,7 +120,6 @@ public class EnsligeForsorgereRepository {
                 VALUES (?, ?, ?)
                 """;
         db.update(sql, vedtakId, fnr, terminDato);
-        secureLog.info("Lagret enslig forsorger barn med vedtakId {}", vedtakId);
     }
 
     public int fjernTidligereOvergangsstønadVedtak(String fnr) {
