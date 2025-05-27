@@ -88,6 +88,8 @@ spec:
           namespace: poao
         - application: veilarbveileder
           namespace: obo
+        - application: familie-ef-sak
+          namespace: teamfamilie
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
