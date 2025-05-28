@@ -21,7 +21,6 @@ public class StatustallResponse {
             public static class StatustallBuckets {
                 Bucket totalt;
                 Bucket ufordelteBrukere;
-                Bucket trengerVurdering;
                 Bucket trengerOppfolgingsvedtak;
                 Bucket nyeBrukereForVeileder;
                 Bucket inaktiveBrukere;
@@ -69,7 +68,6 @@ public class StatustallResponse {
     public enum StatustallAggregationKey {
         TOTALT("totalt"),
         UFORDELTE_BRUKERE("ufordelteBrukere"),
-        TRENGER_VURDERING("trengerVurdering"),
         TRENGER_OPPFOLGINGSVEDTAK("trengerOppfolgingsvedtak"),
         NYE_BRUKERE_FOR_VEILEDER("nyeBrukereForVeileder"),
         INAKTIVE_BRUKERE("inaktiveBrukere"),
