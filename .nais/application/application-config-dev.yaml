@@ -17,6 +17,10 @@ spec:
     - https://veilarbportefolje.intern.dev.nav.no
   webproxy: true
   leaderElection: true
+  observability:
+    logging:
+      destinations:
+        - id: elastic
   secureLogs:
     enabled: true
   kafka:
