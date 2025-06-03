@@ -90,9 +90,12 @@ public class Bruker {
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
+
     String talespraaktolk;
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
+    Tolkebehov tolkebehov;
+
     String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
     boolean harFlereStatsborgerskap;
@@ -203,9 +206,10 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTalespraaktolk(bruker.getTalespraaktolk())
+                .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
+                .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setLandgruppe(bruker.getLandgruppe())
