@@ -211,7 +211,10 @@ public class OpensearchService {
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
+        } else if (!filtervalg.tiltakstyper.isEmpty()) {
+            bruker.kalkulerNesteUtlopsdatoAvValgtTiltakstype();
         }
+
         if (filtervalg.harAlleAktiviteterFilter()) {
             bruker.leggTilUtlopsdatoForAktiviteter(filtervalg.alleAktiviteter);
         }
