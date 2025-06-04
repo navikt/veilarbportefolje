@@ -24,14 +24,11 @@ public class HuskelappRepositoryTest {
     @Autowired
     private HuskelappRepository repo;
     @Autowired
-    private HuskelappService huskelappService;
-    @Autowired
     private JdbcTemplate jdbcTemplate;
 
 
     Fnr fnr1 = Fnr.ofValidFnr("01010101010");
     Fnr fnr2 = Fnr.ofValidFnr("01010101015");
-    Fnr fnr3 = Fnr.ofValidFnr("01010101012");
     Fnr fnr4 = Fnr.ofValidFnr("01010101013");
     LocalDate frist1 = LocalDate.of(2026, 1, 1);
 
@@ -45,9 +42,6 @@ public class HuskelappRepositoryTest {
 
     private final HuskelappOpprettRequest huskelapp2 = new HuskelappOpprettRequest(fnr2,
             LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"));
-
-    private final HuskelappOpprettRequest huskelapp3 = new HuskelappOpprettRequest(fnr3,
-            LocalDate.of(2026, 10, 11), ("Huskelapp nr.3 sin kommentar"));
 
     private final HuskelappOpprettRequest huskelappUtenKommentar = new HuskelappOpprettRequest(fnr4,
             LocalDate.of(2030, 1, 1), (null));
@@ -80,6 +74,7 @@ public class HuskelappRepositoryTest {
         assertThat(huskelappUtenKommentar_.get().kommentar()).isEqualTo(null);
         LocalDate nyFrist = LocalDate.of(2025, 10, 11);
         HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappUtenKommentar_.get().huskelappId(), huskelappUtenKommentar.brukerFnr(), nyFrist, null);
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappUtenKommentar_.get().huskelappId());
         repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010);
         Optional<Huskelapp> oppdatertHuskelappUtenKommentar = repo.hentAktivHuskelapp(fnr4);
         assertThat(oppdatertHuskelappUtenKommentar.isPresent()).isTrue();
@@ -104,6 +99,7 @@ public class HuskelappRepositoryTest {
         assertThat(huskelappFoer.isPresent()).isTrue();
         assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
         HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnr2, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
         repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
         List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
         assertThat(alleHuskelappRader.size()).isEqualTo(2);
@@ -121,8 +117,11 @@ public class HuskelappRepositoryTest {
         assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
 
         HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), huskelapp2.brukerFnr(), huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
         repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
         repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
         repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
 
         List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
