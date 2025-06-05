@@ -90,9 +90,12 @@ public class Bruker {
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
+
     String talespraaktolk;
     String tegnspraaktolk;
     LocalDate tolkBehovSistOppdatert;
+    Tolkebehov tolkebehov;
+
     String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
     boolean harFlereStatsborgerskap;
@@ -203,9 +206,10 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTalespraaktolk(bruker.getTalespraaktolk())
+                .setTegnspraaktolk(bruker.getTegnspraaktolk())
                 .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
+                .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setLandgruppe(bruker.getLandgruppe())
@@ -224,7 +228,8 @@ public class Bruker {
                 .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
                 .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
                 .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a())
-                .setUtgattVarsel(bruker.getUtgatt_varsel());
+                .setUtgattVarsel(bruker.getUtgatt_varsel())
+                .setNesteUtlopsdatoAktivitet(null);
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
@@ -232,6 +237,10 @@ public class Bruker {
             return;
         }
         aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet));
+    }
+
+    public void kalkulerNesteUtlopsdatoAvValgtTiltakstype() {
+        nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get("tiltak"), nesteUtlopsdatoAktivitet);
     }
 
     public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
@@ -296,12 +305,11 @@ public class Bruker {
 
     private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
         if (aktivitetUlopsdato == null) {
-            return null;
+            return comp;
         }
-        if (comp == null) {
-            return aktivitetUlopsdato.toLocalDateTime();
-        } else if (comp.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
-            return aktivitetUlopsdato.toLocalDateTime();
+        LocalDateTime aktivitetDato = aktivitetUlopsdato.toLocalDateTime();
+        if (comp == null || comp.isAfter(aktivitetDato)) {
+            return aktivitetDato;
         }
         return comp;
     }
