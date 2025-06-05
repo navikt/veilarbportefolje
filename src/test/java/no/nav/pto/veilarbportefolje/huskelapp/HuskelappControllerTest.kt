@@ -57,7 +57,6 @@ open class HuskelappControllerTest {
     private val pdlIdentRepository: PdlIdentRepository? = null
 
     @Test
-    @Throws(Exception::class)
     fun test_opprett_og_hent_huskelapp_for_bruker() {
         val fnr = Fnr.of("10987654321")
         val enhetId = EnhetId.of("1234")
@@ -124,7 +123,6 @@ open class HuskelappControllerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun test_at_vi_redigere_huskelapp() {
         val fnr = Fnr.of("12345678910")
         val enhetId = EnhetId.of("1234")
@@ -216,7 +214,6 @@ open class HuskelappControllerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun test_opprett_huskelapp_uten_kommentar_og_frist() {
         val fnr = Fnr.of("76543218457")
         val enhetId = EnhetId.of("1234")
@@ -250,7 +247,6 @@ open class HuskelappControllerTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun test_slett_huskelapp() {
         val fnr = Fnr.of("34567823456")
         val enhetId = EnhetId.of("1234")
