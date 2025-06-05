@@ -1,143 +1,173 @@
-package no.nav.pto.veilarbportefolje.huskelapp;
+package no.nav.pto.veilarbportefolje.huskelapp
 
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
-import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
+import no.nav.common.types.identer.EnhetId
+import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest
+import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
+import java.time.LocalDate
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest(classes = ApplicationConfigTest.class)
-public class HuskelappRepositoryTest {
+@SpringBootTest(classes = [ApplicationConfigTest::class])
+class HuskelappRepositoryTest {
     @Autowired
-    private HuskelappRepository repo;
+    private val repo: HuskelappRepository? = null
+
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private val jdbcTemplate: JdbcTemplate? = null
 
 
-    Fnr fnr1 = Fnr.ofValidFnr("01010101010");
-    Fnr fnr2 = Fnr.ofValidFnr("01010101015");
-    Fnr fnr4 = Fnr.ofValidFnr("01010101013");
-    LocalDate frist1 = LocalDate.of(2026, 1, 1);
+    private final var fnr1: Fnr = Fnr.ofValidFnr("01010101010")
+    private final var fnr2: Fnr = Fnr.ofValidFnr("01010101015")
+    private final var fnr4: Fnr = Fnr.ofValidFnr("01010101013")
+    private final var frist1: LocalDate = LocalDate.of(2026, 1, 1)
 
-    EnhetId enhet0010 = EnhetId.of("0010");
+    var enhet0010: EnhetId = EnhetId.of("0010")
 
-    VeilederId veilederA = VeilederId.of("Z123456");
-    VeilederId veilederB = VeilederId.of("Z987654");
+    var veilederA: VeilederId = VeilederId.of("Z123456")
+    var veilederB: VeilederId = VeilederId.of("Z987654")
 
-    private final HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1,
-            frist1, ("Huskelapp nr.1 sin kommentar"));
+    private val huskelapp1 = HuskelappOpprettRequest(
+        fnr1,
+        frist1, ("Huskelapp nr.1 sin kommentar")
+    )
 
-    private final HuskelappOpprettRequest huskelapp2 = new HuskelappOpprettRequest(fnr2,
-            LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar"));
+    private val huskelapp2 = HuskelappOpprettRequest(
+        fnr2,
+        LocalDate.of(2017, 2, 27), ("Huskelapp nr.2 sin kommentar")
+    )
 
-    private final HuskelappOpprettRequest huskelappUtenKommentar = new HuskelappOpprettRequest(fnr4,
-            LocalDate.of(2030, 1, 1), (null));
+    private val huskelappUtenKommentar = HuskelappOpprettRequest(
+        fnr4,
+        LocalDate.of(2030, 1, 1), (null)
+    )
 
     @BeforeEach
-    public void setUp() {
-        jdbcTemplate.execute("TRUNCATE TABLE HUSKELAPP");
-        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
-        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
-        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
+    fun setUp() {
+        jdbcTemplate!!.execute("TRUNCATE TABLE HUSKELAPP")
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2")
+        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer")
     }
 
 
     @Test
-    public void skalKunneOppretteOgHenteHuskelapp() {
-        repo.opprettHuskelapp(huskelapp1, veilederA, enhet0010);
-        Optional<Huskelapp> result = repo.hentAktivHuskelapp(fnr1);
-        assertThat(result.isPresent()).isTrue();
-        Optional<Huskelapp> result2 = repo.hentAktivHuskelapp(result.get().huskelappId());
-        assertThat(result2.isPresent()).isTrue();
-        assertThat(result.get().enhetId().toString()).isEqualTo("0010").isEqualTo(result2.get().enhetId().toString());
-        assertThat(result.get().frist()).isEqualTo(frist1).isEqualTo(result2.get().frist());
+    fun skalKunneOppretteOgHenteHuskelapp() {
+        repo!!.opprettHuskelapp(huskelapp1, veilederA, enhet0010)
+        val result = repo.hentAktivHuskelapp(fnr1)
+        Assertions.assertThat(result.isPresent).isTrue()
+        val result2 = repo.hentAktivHuskelapp(result.get().huskelappId)
+        Assertions.assertThat(result2.isPresent).isTrue()
+        Assertions.assertThat(result.get().enhetId.toString()).isEqualTo("0010")
+            .isEqualTo(result2.get().enhetId.toString())
+        Assertions.assertThat(result.get().frist).isEqualTo(frist1).isEqualTo(result2.get().frist)
     }
 
     @Test
-    public void skalKunneOppretteOgRedigereOgHenteHuskelappUtenKommentar() {
-        repo.opprettHuskelapp(huskelappUtenKommentar, veilederA, enhet0010);
-        Optional<Huskelapp> huskelappUtenKommentar_ = repo.hentAktivHuskelapp(huskelappUtenKommentar.brukerFnr());
-        assertThat(huskelappUtenKommentar_.isPresent()).isTrue();
-        assertThat(huskelappUtenKommentar_.get().kommentar()).isEqualTo(null);
-        LocalDate nyFrist = LocalDate.of(2025, 10, 11);
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappUtenKommentar_.get().huskelappId(), huskelappUtenKommentar.brukerFnr(), nyFrist, null);
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappUtenKommentar_.get().huskelappId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010);
-        Optional<Huskelapp> oppdatertHuskelappUtenKommentar = repo.hentAktivHuskelapp(fnr4);
-        assertThat(oppdatertHuskelappUtenKommentar.isPresent()).isTrue();
-        assertThat(oppdatertHuskelappUtenKommentar.get().kommentar()).isEqualTo(null);
+    fun skalKunneOppretteOgRedigereOgHenteHuskelappUtenKommentar() {
+        repo!!.opprettHuskelapp(huskelappUtenKommentar, veilederA, enhet0010)
+        val huskelappUtenKommentar = repo.hentAktivHuskelapp(huskelappUtenKommentar.brukerFnr)
+        Assertions.assertThat(huskelappUtenKommentar.isPresent).isTrue()
+        Assertions.assertThat(huskelappUtenKommentar.get().kommentar).isEqualTo(null)
+        val nyFrist = LocalDate.of(2025, 10, 11)
+        val huskelappRedigerRequest = HuskelappRedigerRequest(
+            huskelappUtenKommentar.get().huskelappId,
+            this.huskelappUtenKommentar.brukerFnr,
+            nyFrist,
+            null
+        )
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappUtenKommentar.get().huskelappId)
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederB, enhet0010)
+        val oppdatertHuskelappUtenKommentar = repo.hentAktivHuskelapp(fnr4)
+        Assertions.assertThat(oppdatertHuskelappUtenKommentar.isPresent).isTrue()
+        Assertions.assertThat(oppdatertHuskelappUtenKommentar.get().kommentar).isEqualTo(null)
     }
 
     @Test
-    public void skalKunneSletteHuskelapp() {
-        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
-        Optional<Huskelapp> huskelapp = repo.hentAktivHuskelapp(fnr2);
-        assertThat(huskelapp.isPresent()).isTrue();
-        assertThat(huskelapp.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
-        repo.settSisteHuskelappRadIkkeAktiv(huskelapp.get().huskelappId());
-        Optional<Huskelapp> huskelappEtter = repo.hentAktivHuskelapp(fnr2);
-        assertThat(huskelappEtter.isPresent()).isFalse();
+    fun skalKunneSletteHuskelapp() {
+        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
+        val huskelapp = repo.hentAktivHuskelapp(fnr2)
+        Assertions.assertThat(huskelapp.isPresent).isTrue()
+        Assertions.assertThat(huskelapp.get().kommentar).isEqualTo("Huskelapp nr.2 sin kommentar")
+        repo.settSisteHuskelappRadIkkeAktiv(huskelapp.get().huskelappId)
+        val huskelappEtter = repo.hentAktivHuskelapp(fnr2)
+        Assertions.assertThat(huskelappEtter.isPresent).isFalse()
     }
 
     @Test
-    public void skalKunneInaktivereNyesteHuskelappRadNaarFlereRader() {
-        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
-        Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(fnr2);
-        assertThat(huskelappFoer.isPresent()).isTrue();
-        assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), fnr2, huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
-        List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
-        assertThat(alleHuskelappRader.size()).isEqualTo(2);
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
-        Optional<Huskelapp> huskelappEtter = repo.hentAktivHuskelapp(fnr2);
-        assertThat(huskelappEtter.isPresent()).isFalse();
-    }
-
-
-    @Test
-    public void sletterAlleHuskelappRader() {
-        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
-        Optional<Huskelapp> huskelappFoer = repo.hentAktivHuskelapp(huskelapp2.brukerFnr());
-        assertThat(huskelappFoer.isPresent()).isTrue();
-        assertThat(huskelappFoer.get().kommentar()).isEqualTo("Huskelapp nr.2 sin kommentar");
-
-        HuskelappRedigerRequest huskelappRedigerRequest = new HuskelappRedigerRequest(huskelappFoer.get().huskelappId(), huskelapp2.brukerFnr(), huskelappFoer.get().frist(), "ny kommentar på huskelapp nr.2");
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
-        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId());
-        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010);
-
-        List<Huskelapp> alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
-        assertThat(alleHuskelappRader.size()).isEqualTo(4);
-
-        repo.slettAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr());
-
-        List<Huskelapp> alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId());
-        assertThat(alleHuskelappRader2.size()).isEqualTo(0);
+    fun skalKunneInaktivereNyesteHuskelappRadNaarFlereRader() {
+        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
+        val huskelappFoer = repo.hentAktivHuskelapp(fnr2)
+        Assertions.assertThat(huskelappFoer.isPresent).isTrue()
+        Assertions.assertThat(huskelappFoer.get().kommentar).isEqualTo("Huskelapp nr.2 sin kommentar")
+        val huskelappRedigerRequest = HuskelappRedigerRequest(
+            huskelappFoer.get().huskelappId,
+            fnr2,
+            huskelappFoer.get().frist,
+            "ny kommentar på huskelapp nr.2"
+        )
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId)
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010)
+        val alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
+        Assertions.assertThat(alleHuskelappRader.size).isEqualTo(2)
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId)
+        val huskelappEtter = repo.hentAktivHuskelapp(fnr2)
+        Assertions.assertThat(huskelappEtter.isPresent).isFalse()
     }
 
 
     @Test
-    public void faarHentetNavkontorPaHuskelapp() {
-        repo.opprettHuskelapp(huskelapp2, veilederA, enhet0010);
-        Optional<String> enhetId = repo.hentNavkontorPaHuskelapp(huskelapp2.brukerFnr());
-        assertThat(enhetId.isPresent()).isTrue();
+    fun sletterAlleHuskelappRader() {
+        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
+        val huskelappFoer = repo.hentAktivHuskelapp(huskelapp2.brukerFnr)
+        Assertions.assertThat(huskelappFoer.isPresent).isTrue()
+        Assertions.assertThat(huskelappFoer.get().kommentar).isEqualTo("Huskelapp nr.2 sin kommentar")
+
+        val huskelappRedigerRequest = HuskelappRedigerRequest(
+            huskelappFoer.get().huskelappId,
+            huskelapp2.brukerFnr,
+            huskelappFoer.get().frist,
+            "ny kommentar på huskelapp nr.2"
+        )
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId)
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010)
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId)
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010)
+        repo.settSisteHuskelappRadIkkeAktiv(huskelappFoer.get().huskelappId)
+        repo.redigerHuskelapp(huskelappRedigerRequest, veilederA, enhet0010)
+
+        val alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
+        Assertions.assertThat(alleHuskelappRader.size).isEqualTo(4)
+
+        repo.slettAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr)
+
+        val alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
+        Assertions.assertThat(alleHuskelappRader2.size).isEqualTo(0)
+    }
+
+
+    @Test
+    fun faarHentetNavkontorPaHuskelapp() {
+        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
+        val enhetId = repo.hentNavkontorPaHuskelapp(huskelapp2.brukerFnr)
+        Assertions.assertThat(enhetId.isPresent).isTrue()
+    }
+
+    @Test
+    fun kasterExceptionVedInsertAvToAktiveHuskelapperSammeBruker() {
+        repo!!.opprettHuskelapp(huskelapp1, veilederA, enhet0010)
+        val huskelapp = repo.hentAktivHuskelapp(fnr1)
+        Assertions.assertThat(huskelapp.isPresent).isTrue()
+        val exception = assertThrows(Exception::class.java) {
+            repo.opprettHuskelapp(huskelapp1, veilederA, enhet0010)
+        }
+        Assertions.assertThat(exception.message).contains("duplicate key value violates unique constraint \"unique_fnr_active_status\"")
     }
 }
