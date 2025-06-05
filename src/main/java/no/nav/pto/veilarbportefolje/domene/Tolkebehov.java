@@ -13,7 +13,7 @@ public record Tolkebehov(
         if(talespraaktolk != null || tegnspraaktolk != null || sistOppdatert != null){
             return new Tolkebehov(talespraaktolk, tegnspraaktolk, sistOppdatert);
         } else {
-            return null;
+            return new Tolkebehov("", "", null);
         }
     }
 
