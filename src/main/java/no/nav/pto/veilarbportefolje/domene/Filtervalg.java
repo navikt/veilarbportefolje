@@ -20,7 +20,7 @@ import static java.lang.Integer.parseInt;
 @Data()
 @Accessors(chain = true)
 public class Filtervalg {
-    public Brukerstatus brukerstatus;
+    public Brukerstatus brukerstatus; // finst ikkje i veilarbportefoljeflatefs
     public List<Brukerstatus> ferdigfilterListe;
     public YtelseFilter ytelse;
     public List<String> alder = new ArrayList<>();
@@ -43,7 +43,7 @@ public class Filtervalg {
     public List<String> arbeidslisteKategori = new ArrayList<>();
     public List<String> sisteEndringKategori = new ArrayList<>();
     public List<String> aktiviteterForenklet = new ArrayList<>();
-    public List<String> alleAktiviteter = new ArrayList<>();
+    public List<String> alleAktiviteter = new ArrayList<>(); // finst ikkje i veilarbportefoljeflatefs
     public String ulesteEndringer;
     public CVjobbprofil cvJobbprofil;
     public List<String> landgruppe;
