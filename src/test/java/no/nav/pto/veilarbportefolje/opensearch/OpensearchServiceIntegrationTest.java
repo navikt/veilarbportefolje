@@ -1782,8 +1782,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1800,7 +1800,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1817,8 +1817,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1836,7 +1836,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1853,7 +1853,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
     }
 
     @Test
