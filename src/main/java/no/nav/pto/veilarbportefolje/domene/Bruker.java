@@ -47,7 +47,6 @@ public class Bruker {
     LocalDateTime skjermetTil;
     boolean nyForVeileder;
     boolean nyForEnhet;
-    boolean trengerVurdering;
     VurderingsBehov vurderingsBehov;
     boolean trengerOppfolgingsvedtak;
     Profileringsresultat profileringResultat;
@@ -133,8 +132,7 @@ public class Bruker {
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
 
-        boolean trengerVurdering = bruker.isTrenger_vurdering();
-        VurderingsBehov vurderingsBehov = trengerVurdering ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
+        VurderingsBehov vurderingsBehov = bruker.isTrenger_vurdering() ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
         boolean trengerOppfolgingsvedtak = bruker.getGjeldendeVedtak14a() == null;
 
         boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
@@ -144,7 +142,6 @@ public class Bruker {
                 .setFnr(bruker.getFnr())
                 .setAktoerid(bruker.getAktoer_id())
                 .setNyForVeileder(bruker.isNy_for_veileder())
-                .setTrengerVurdering(trengerVurdering)
                 .setVurderingsBehov(vurderingsBehov)
                 .setTrengerOppfolgingsvedtak(trengerOppfolgingsvedtak)
                 .setProfileringResultat(profileringResultat)
