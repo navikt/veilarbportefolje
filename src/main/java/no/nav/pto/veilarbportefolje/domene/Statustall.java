@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
 public class Statustall {
     private long totalt;
     private long ufordelteBrukere;
-    private long trengerVurdering;
     private long trengerOppfolgingsvedtak;
     private long nyeBrukereForVeileder;
     private long inaktiveBrukere;
@@ -40,7 +39,6 @@ public class Statustall {
     public Statustall() {
         this.totalt = 0;
         this.ufordelteBrukere = 0;
-        this.trengerVurdering = 0;
         this.trengerOppfolgingsvedtak = 0;
         this.nyeBrukereForVeileder = 0;
         this.inaktiveBrukere = 0;
@@ -72,7 +70,6 @@ public class Statustall {
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets) {
         this.totalt = buckets.getTotalt().getDoc_count();
         this.ufordelteBrukere = buckets.getUfordelteBrukere().getDoc_count();
-        this.trengerVurdering = buckets.getTrengerVurdering().getDoc_count();
         this.trengerOppfolgingsvedtak = buckets.getTrengerOppfolgingsvedtak().getDoc_count();
         this.nyeBrukereForVeileder = buckets.getNyeBrukereForVeileder().getDoc_count();
         this.inaktiveBrukere = buckets.getInaktiveBrukere().getDoc_count();
