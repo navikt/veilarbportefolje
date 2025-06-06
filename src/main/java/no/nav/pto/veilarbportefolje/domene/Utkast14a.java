@@ -10,10 +10,10 @@ public record Utkast14a(
         String ansvarligVeileder
 ) {
     public static Utkast14a of(String status, LocalDateTime statusEndret, String ansvarligVeileder) {
-        if(status != null || statusEndret != null || ansvarligVeileder != null){
+        if (status != null || statusEndret != null || ansvarligVeileder != null) {
             return new Utkast14a(status, statusEndret, ansvarligVeileder);
         } else {
-            return new Utkast14a("", null, "");
+            return null;
         }
     }
 
