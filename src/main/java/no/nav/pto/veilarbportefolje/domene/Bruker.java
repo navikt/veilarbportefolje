@@ -82,12 +82,7 @@ public class Bruker {
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
-
-    String utkast14aStatus;
-    String utkast14aAnsvarligVeileder;
-    LocalDateTime utkast14aStatusEndret;
     Utkast14a utkast14a;
-
     boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
@@ -182,9 +177,6 @@ public class Bruker {
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
-                .setUtkast14aStatus(bruker.getUtkast_14a_status())
-                .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
-                .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
                         toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()),
