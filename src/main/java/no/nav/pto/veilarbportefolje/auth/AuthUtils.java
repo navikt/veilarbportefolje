@@ -5,6 +5,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.pto.veilarbportefolje.domene.Bruker;
+import no.nav.pto.veilarbportefolje.domene.Tolkebehov;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,8 +29,7 @@ public class AuthUtils {
                 .setSkjermetTil(null)
                 .setFoedeland(null)
                 .setLandgruppe(null)
-                .setTegnspraaktolk(null)
-                .setTalespraaktolk(null)
+                .setTolkebehov(Tolkebehov.of("", "", null))
                 .setHovedStatsborgerskap(null)
                 .setHarFlereStatsborgerskap(false)
                 .setBostedBydel(null)
