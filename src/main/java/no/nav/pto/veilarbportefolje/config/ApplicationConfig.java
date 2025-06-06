@@ -11,6 +11,8 @@ import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClientImpl;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappStats;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClientImpl;
@@ -100,5 +102,11 @@ public class ApplicationConfig {
     public KodeverkClient kodeverkClient(EnvironmentProperties environmentProperties, AzureAdMachineToMachineTokenClient tokenClient) {
         return new KodeverkClientImpl(environmentProperties.getKodeverkUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getKodeverkScope()));
+    }
+
+    @Bean
+    public EnsligForsorgerClient ensligForsorgerClient(EnvironmentProperties environmentProperties, AzureAdMachineToMachineTokenClient tokenClient) {
+        return new EnsligForsorgerClientImpl(environmentProperties.getEnsligForsorgerUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getEnsligForsorgerScope()));
     }
 }

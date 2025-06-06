@@ -30,6 +30,7 @@ import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
+import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
@@ -354,5 +355,10 @@ public class ApplicationConfigTest {
         LeaderElectionClient mockLeaderElectionClient = mock(LeaderElectionClient.class);
         when(mockLeaderElectionClient.isLeader()).thenReturn(true);
         return mockLeaderElectionClient;
+    }
+
+    @Bean
+    public EnsligForsorgerClient ensligForsorgerClient() {
+        return mock(EnsligForsorgerClient.class);
     }
 }
