@@ -1716,6 +1716,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(response.getBrukere().get(1).getUtkast14aAnsvarligVeileder()).isEqualTo("BVeileder");
         assertThat(response.getBrukere().get(2).getUtkast14aAnsvarligVeileder()).isEqualTo("CVeileder");
         assertThat(response.getBrukere().get(3).getUtkast14aAnsvarligVeileder()).isNull();
+
+        assertThat(response.getBrukere().get(0).getUtkast14a().ansvarligVeileder()).isEqualTo("AVeileder");
+        assertThat(response.getBrukere().get(1).getUtkast14a().ansvarligVeileder()).isEqualTo("BVeileder");
+        assertThat(response.getBrukere().get(2).getUtkast14a().ansvarligVeileder()).isEqualTo("CVeileder");
+        assertThat(response.getBrukere().get(3).getUtkast14a().ansvarligVeileder()).isNull();
     }
 
     @Test

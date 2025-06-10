@@ -82,9 +82,12 @@ public class Bruker {
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
+
     String utkast14aStatus;
     String utkast14aAnsvarligVeileder;
     LocalDateTime utkast14aStatusEndret;
+    Utkast14a utkast14a;
+
     boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
@@ -187,6 +190,10 @@ public class Bruker {
                 .setUtkast14aStatus(bruker.getUtkast_14a_status())
                 .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
                 .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
+                .setUtkast14a(Utkast14a.of(
+                        bruker.getUtkast_14a_status(),
+                        toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()),
+                        bruker.getUtkast_14a_ansvarlig_veileder()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
