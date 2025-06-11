@@ -1,0 +1,10 @@
+-- Topic: paw.arbeidssokerperioder-v1. Meldinger på historiske identer, meldingene er ikke relevante lenger.
+DELETE FROM kafka_consumer_record WHERE id = 545720;
+DELETE FROM kafka_consumer_record WHERE id = 541422;
+
+-- Topic: pto.siste-oppfolgingsperiode-v1. Sju meldinger kommet inn samtidig, aktør-id fins ikke. Gjelder oppfølgingsperioder fra før 2020.
+DELETE FROM kafka_consumer_record WHERE id IN (541600, 541601, 541602, 541603, 541604, 541605, 541606);
+
+-- Topic: obo.tiltakshendelse-v1. Meldinger på personer som ikke er under oppfølging lenger.
+DELETE FROM kafka_consumer_record WHERE id IN (133638, 178323, 163662, 143250, 170199, 186957, 143692, 149570, 176658, 138033, 164148, 136534);
+
