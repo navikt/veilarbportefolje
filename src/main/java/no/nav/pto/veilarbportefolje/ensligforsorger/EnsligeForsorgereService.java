@@ -121,12 +121,14 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
 
         if(fnr != null && overgangsstønadResponseDto.isPresent()) {
+
             OvergangsstønadResponseDto ensligForsorgerResponseDto = overgangsstønadResponseDto.get();
             List<OvergangsstønadPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getData().getPerioder();
             for(OvergangsstønadPeriode periode: ensligForsorgerPeriode) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
             }
+            secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, ensligForsorgerResponseDto.getData().getPerioder());
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
         }
