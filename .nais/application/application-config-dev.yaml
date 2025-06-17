@@ -17,6 +17,11 @@ spec:
     - https://veilarbportefolje.intern.dev.nav.no
   webproxy: true
   leaderElection: true
+  observability:
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
   secureLogs:
     enabled: true
   kafka:
@@ -93,6 +98,8 @@ spec:
           namespace: poao
         - application: veilarbveileder
           namespace: obo
+        - application: familie-ef-sak
+          namespace: teamfamilie
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
@@ -139,3 +146,7 @@ spec:
       value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+    - name: ENSLIG_FORSORGER_URL
+      value: "http://familie-ef-sak.teamfamilie"
+    - name: ENSLIG_FORSORGER_SCOPE
+      value: "api://dev-gcp.teamfamilie.familie-ef-sak/.default"

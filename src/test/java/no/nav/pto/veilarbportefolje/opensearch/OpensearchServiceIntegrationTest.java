@@ -21,11 +21,12 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
+import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
 import no.nav.pto.veilarbportefolje.util.BrukerComparator;
@@ -618,7 +619,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getInaktiveBrukere()).isEqualTo(1);
         assertThat(statustall.getMinArbeidsliste()).isEqualTo(1);
         assertThat(statustall.getNyeBrukereForVeileder()).isEqualTo(1);
-        assertThat(statustall.getTrengerVurdering()).isEqualTo(1);
         assertThat(statustall.getVenterPaSvarFraNAV()).isEqualTo(1);
         assertThat(statustall.getUtlopteAktiviteter()).isEqualTo(1);
         assertThat(statustall.getMineHuskelapper()).isEqualTo(1);
@@ -941,7 +941,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_hente_riktige_statustall_for_enhet() {
-
         var brukerUtenVeileder = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().get())
@@ -957,7 +956,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var liste = List.of(brukerMedVeileder, brukerUtenVeileder);
 
-
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
@@ -969,6 +967,38 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         assertThat(statustallForBrukereSomVeilederHarInnsynsrettPå.getUfordelteBrukere()).isEqualTo(1);
         assertThat(statustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getUfordelteBrukere()).isZero();
+    }
+
+    @Test
+    void skal_mappe_statustall_for_samtlige_aggregation_keys() {
+        var brukerUtenVeileder = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET);
+
+        var brukerMedVeileder = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().get())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0);
+
+        var liste = List.of(brukerMedVeileder, brukerUtenVeileder);
+
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Statustall veilederStatustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET);
+        Statustall enhetStatustallForBrukereSomVeilederHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+        Statustall enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå = opensearchService.hentStatusTallForEnhetPortefolje(TEST_ENHET, BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ);
+
+        Arrays.stream(StatustallResponse.StatustallAggregationKey.values()).forEach(key -> {
+            assertDoesNotThrow(() -> veilederStatustall.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederHarInnsynsrettPå.getClass().getDeclaredField(key.key));
+            assertDoesNotThrow(() -> enhetStatustallForBrukereSomVeilederIkkeHarInnsynsrettPå.getClass().getDeclaredField(key.key));
+        });
     }
 
     @Test
@@ -1116,8 +1146,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
         List<Brukerstatus> ferdigFiltere = List.of(
-                Brukerstatus.UFORDELTE_BRUKERE,
-                Brukerstatus.TRENGER_VURDERING
+                Brukerstatus.UFORDELTE_BRUKERE
         );
 
         var response = opensearchService.hentBrukere(
@@ -1683,10 +1712,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(userExistsInResponse(brukerMedVedtak2, response)).isTrue();
         assertThat(userExistsInResponse(brukerMedVedtakUtenAnsvarligVeileder, response)).isTrue();
 
-        assertThat(response.getBrukere().get(0).getUtkast14aAnsvarligVeileder()).isEqualTo("AVeileder");
-        assertThat(response.getBrukere().get(1).getUtkast14aAnsvarligVeileder()).isEqualTo("BVeileder");
-        assertThat(response.getBrukere().get(2).getUtkast14aAnsvarligVeileder()).isEqualTo("CVeileder");
-        assertThat(response.getBrukere().get(3).getUtkast14aAnsvarligVeileder()).isNull();
+        assertThat(response.getBrukere().get(0).getUtkast14a().ansvarligVeileder()).isEqualTo("AVeileder");
+        assertThat(response.getBrukere().get(1).getUtkast14a().ansvarligVeileder()).isEqualTo("BVeileder");
+        assertThat(response.getBrukere().get(2).getUtkast14a().ansvarligVeileder()).isEqualTo("CVeileder");
+        assertThat(response.getBrukere().get(3).getUtkast14a().ansvarligVeileder()).isNull();
     }
 
     @Test
@@ -1753,8 +1782,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1771,7 +1800,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1788,8 +1817,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
 
 
         filterValg = new Filtervalg()
@@ -1807,7 +1836,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1824,7 +1853,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTalespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkBehovSistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
     }
 
     @Test

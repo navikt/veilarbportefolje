@@ -5,9 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
-import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadBarn;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadPeriode;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadResponseDto;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Stønadstype;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
@@ -15,10 +19,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.ensligforsorger.mapping.PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -29,32 +30,22 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService<VedtakOvergangsstønadArbeidsoppfølging> {
     private final OpensearchIndexerV2 opensearchIndexerV2;
     private final EnsligeForsorgereRepository ensligeForsorgereRepository;
-
     private final AktorClient aktorClient;
+    private final EnsligForsorgerClient ensligForsorgerClient;
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
-        if (!melding.stønadstype().toString().equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
-            log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + melding.stønadstype());
+        if (!erStonadstypeOvergangsstonad(melding.stønadstype().toString())) {
             return;
         }
 
-        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(melding.personIdent());
-        if (fjernTidligereVedtak > 0) {
-            secureLog.info("Fjernet tidligere vedtak for bruker: {}", melding.personIdent());
-        }
+        String personIdent = melding.personIdent();
 
-        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", melding.personIdent());
+        fjernTidligereVedtakOmOvergangsstonad(personIdent);
+
+        secureLog.info("Oppdatere enslige forsorgere stønad for bruker: {}", personIdent);
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
-
-        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(melding.personIdent());
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(melding.personIdent()));
-
-        if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
-            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
-        } else {
-            opensearchIndexerV2.deleteOvergansstonad(aktorId);
-        }
+        oppdaterOvergangsstonadIOpenSearch(personIdent);
     }
 
     public Optional<EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
@@ -95,6 +86,78 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 harAktivitetsplikt.orElse(null),
                 ensligeForsorgerOvergangsstønadTiltak.til_dato(),
                 yngsteBarn.orElse(null)
+        );
+    }
+
+    private boolean erStonadstypeOvergangsstonad(String stonadstype) {
+        if (stonadstype.equals(Stønadstype.OVERGANGSSTØNAD.toString())) {
+            return true;
+        }
+
+        log.info("Vi støtter kun overgangstønad for enslige forsorgere. Fått: " + stonadstype);
+        return false;
+    }
+
+    private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
+        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(personIdent);
+        if (fjernTidligereVedtak > 0) {
+            secureLog.info("Fjernet tidligere vedtak for bruker: {}", personIdent);
+        }
+    }
+
+    private void oppdaterOvergangsstonadIOpenSearch(String personIdent) {
+        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(personIdent);
+        AktorId aktorId = aktorClient.hentAktorId(Fnr.of(personIdent));
+
+        if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
+            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
+        } else {
+            opensearchIndexerV2.deleteOvergansstonad(aktorId);
+        }
+    }
+
+    public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
+        Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
+
+        if(fnr != null && overgangsstønadResponseDto.isPresent()) {
+
+            OvergangsstønadResponseDto ensligForsorgerResponseDto = overgangsstønadResponseDto.get();
+            List<OvergangsstønadPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getData().getPerioder();
+            for(OvergangsstønadPeriode periode: ensligForsorgerPeriode) {
+                VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
+                ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+            }
+            secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, ensligForsorgerResponseDto.getData().getPerioder());
+        } else {
+            secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
+        }
+    }
+
+    private VedtakOvergangsstønadArbeidsoppfølging ensligForsorgerDataMapper(Fnr personIdent, OvergangsstønadPeriode ensligForsorgerPeriode) {
+        Periode periode = new Periode(
+                ensligForsorgerPeriode.getStønadFraOgMed(),
+                ensligForsorgerPeriode.getStønadTilOgMed(),
+                ensligForsorgerPeriode.getPeriodeType(),
+                ensligForsorgerPeriode.getAktivitet());
+
+        List<OvergangsstønadBarn> ensligForsorgersBarn =  ensligForsorgerPeriode.getBarn();
+        List<Barn> barnListe = new ArrayList<>();
+
+        for(OvergangsstønadBarn barn: ensligForsorgersBarn) {
+            barnListe.add(new Barn(
+                    barn.getPersonIdent(),
+                    barn.getFødselTermindato()
+            ));
+        }
+
+        return new VedtakOvergangsstønadArbeidsoppfølging(
+                ensligForsorgerPeriode.getBehandlingId(),
+                personIdent.get(),
+                barnListe,
+                Stønadstype.OVERGANGSSTØNAD,
+                List.of(periode),
+                Vedtaksresultat.INNVILGET
         );
     }
 }

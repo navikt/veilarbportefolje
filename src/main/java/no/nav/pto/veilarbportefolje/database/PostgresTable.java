@@ -1,76 +1,113 @@
 package no.nav.pto.veilarbportefolje.database;
 
 public class PostgresTable {
-    public static final class OpensearchData {
+    public static final class OPENSEARCHDATA {
 
-        private OpensearchData() { /* no-op */ }
+        private OPENSEARCHDATA() { /* no-op */ }
 
+        // OPPFOLGING_DATA
+        public static final String OPPFOLGING_DATA_AKTOERID = "OPPFOLGING_DATA_AKTOERID";
+        public static final String OPPFOLGING_DATA_STARTDATO = "OPPFOLGING_DATA_STARTDATO";
+        public static final String OPPFOLGING_DATA_NY_FOR_VEILEDER = "OPPFOLGING_DATA_NY_FOR_VEILEDER";
+        public static final String OPPFOLGING_DATA_VEILEDERID = "OPPFOLGING_DATA_VEILEDERID";
+        public static final String OPPFOLGING_DATA_MANUELL = "OPPFOLGING_DATA_MANUELL";
+        public static final String OPPFOLGING_DATA_OPPFOLGING = "OPPFOLGING_DATA_OPPFOLGING";
 
-        public static final String FODSELSNR = "FNR";
-        public static final String FODSELSNR_ARENA = "fodselsnr";
+        // AKTIVE_IDENTER
+        public static final String AKTIVE_IDENTER_FNR = "AKTIVE_IDENTER_FNR";
 
-        public static final String AKTOERID = "AKTOERID";
-        public static final String OPPFOLGING = "OPPFOLGING";
-        public static final String STARTDATO = "STARTDATO";
-        public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
-        public static final String VEILEDERID = "VEILEDERID";
-        public static final String MANUELL = "MANUELL";
-        public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
-        public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-        public static final String UTKAST_14A_STATUS = "VEDTAKSTATUS";
-        public static final String UTKAST_14A_ANSVARLIG_VEILDERNAVN = "VEDTAKSTATUS_ANSVARLIG_VEILDERNAVN";
-        public static final String UTKAST_14A_ENDRET_TIDSPUNKT = "VEDTAKSTATUS_ENDRET_TIDSPUNKT";
-        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
-        public static final String CV_EKSISTERER = "CV_EKSISTERER";
+        // OPPFOLGINGSBRUKER_ARENA_V2
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR = "OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR = "OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE = "OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE";
+        public static final String OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO";
 
-        public static final String ARB_SIST_ENDRET_AV_VEILEDERIDENT = "ARB_SIST_ENDRET_AV_VEILEDERIDENT";
-        public static final String ARB_ENDRINGSTIDSPUNKT = "ARB_ENDRINGSTIDSPUNKT";
-        public static final String ARB_FRIST = "ARB_FRIST";
-        public static final String ARB_KATEGORI = "ARB_KATEGORI";
-        public static final String ARB_OVERSKRIFT = "ARB_OVERSKRIFT";
-        public static final String ARB_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARB_NAV_KONTOR_FOR_ARBEIDSLISTE";
-        public static final String FAR_VERDI = "FAR_VERDI";
-        public static final String FAR_ENHET_ID = "FAR_ENHET_ID";
+        // NOM_SKJERMING
+        public static final String NOM_SKJERMING_ER_SKJERMET = "NOM_SKJERMING_ER_SKJERMET";
+        public static final String NOM_SKJERMING_SKJERMET_TIL = "NOM_SKJERMING_SKJERMET_TIL";
 
-        public static final String HL_FRIST = "HL_FRIST";
-        public static final String HL_KOMMENTAR = "HL_KOMMENTAR";
-        public static final String HL_ENDRET_DATO = "HL_ENDRET_DATO";
-        public static final String HL_ENDRET_AV = "HL_ENDRET_AV";
-        public static final String HL_HUSKELAPPID = "HL_HUSKELAPPID";
-        public static final String HL_ENHET_ID = "HL_ENHET_ID";
-        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
-        public static final String UTDANNING = "UTDANNING";
-        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
-        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-        public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
-        public static final String ENDRET_BRUKERS_SITUASJON = "ENDRET_BRUKERS_SITUASJON";
-        public static final String BRUKERS_SITUASJON_SIST_ENDRET = "BRUKERS_SITUASJON_SIST_ENDRET";
-        public static final String YTELSE = "YTELSE";
-        public static final String AAPMAXTIDUKE = "AAPMAXTIDUKE";
+        // BRUKER_DATA
+        public static final String BRUKER_DATA_FOEDSELSDATO = "BRUKER_DATA_FOEDSELSDATO";
+        public static final String BRUKER_DATA_FORNAVN = "BRUKER_DATA_FORNAVN";
+        public static final String BRUKER_DATA_MELLOMNAVN = "BRUKER_DATA_MELLOMNAVN";
+        public static final String BRUKER_DATA_ETTERNAVN = "BRUKER_DATA_ETTERNAVN";
+        public static final String BRUKER_DATA_ER_DOED = "BRUKER_DATA_ER_DOED";
+        public static final String BRUKER_DATA_KJOENN = "BRUKER_DATA_KJOENN";
+        public static final String BRUKER_DATA_FOEDELAND = "BRUKER_DATA_FOEDELAND";
+        public static final String BRUKER_DATA_TALESPRAAKTOLK = "BRUKER_DATA_TALESPRAAKTOLK";
+        public static final String BRUKER_DATA_TEGNSPRAAKTOLK = "BRUKER_DATA_TEGNSPRAAKTOLK";
+        public static final String BRUKER_DATA_TOLKBEHOVSISTOPPDATERT = "BRUKER_DATA_TOLKBEHOVSISTOPPDATERT";
+        public static final String BRUKER_DATA_DISKRESJONKODE = "BRUKER_DATA_DISKRESJONKODE";
+        public static final String BRUKER_DATA_SIKKERHETSTILTAK_TYPE = "BRUKER_DATA_SIKKERHETSTILTAK_TYPE";
+        public static final String BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA = "BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA";
+        public static final String BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL = "BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL";
+        public static final String BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE = "BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE";
+        public static final String BRUKER_DATA_BYDELSNUMMER = "BRUKER_DATA_BYDELSNUMMER";
+        public static final String BRUKER_DATA_KOMMUNENUMMER = "BRUKER_DATA_KOMMUNENUMMER";
+        public static final String BRUKER_DATA_BOSTEDSISTOPPDATERT = "BRUKER_DATA_BOSTEDSISTOPPDATERT";
+        public static final String BRUKER_DATA_UTENLANDSKADRESSE = "BRUKER_DATA_UTENLANDSKADRESSE";
+        public static final String BRUKER_DATA_HARUKJENTBOSTED = "BRUKER_DATA_HARUKJENTBOSTED";
 
-        public static final String ANTALLDAGERIGJEN = "ANTALLDAGERIGJEN";
+        // DIALOG
+        public static final String DIALOG_VENTER_PA_BRUKER = "DIALOG_VENTER_PA_BRUKER";
+        public static final String DIALOG_VENTER_PA_NAV = "DIALOG_VENTER_PA_NAV";
 
-        public static final String AAPUNNTAKDAGERIGJEN = "AAPUNNTAKDAGERIGJEN";
-        public static final String DAGPUTLOPUKE = "DAGPUTLOPUKE";
-        public static final String PERMUTLOPUKE = "PERMUTLOPUKE";
-        public static final String YTELSE_UTLOPSDATO = "YTELSE_UTLOPSDATO";
+        // UTKAST_14A_STATUS
+        public static final String UTKAST_14A_STATUS_VEDTAKSTATUS = "UTKAST_14A_STATUS_VEDTAKSTATUS";
+        public static final String UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN = "UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN";
+        public static final String UTKAST_14A_STATUS_ENDRET_TIDSPUNKT = "UTKAST_14A_STATUS_ENDRET_TIDSPUNKT";
 
-        public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
-        public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
-        public static final String ETTERNAVN = "ETTERNAVN";
-        public static final String FORNAVN = "FORNAVN";
-        public static final String NAV_KONTOR = "NAV_KONTOR";
-        public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
-        public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
-        public static final String HOVEDMAALKODE = "HOVEDMAALKODE";
-        public static final String SIKKERHETSTILTAK_TYPE_KODE = "SIKKERHETSTILTAK_TYPE_KODE";
-        public static final String DISKRESJONSKODE = "DISKRESJONSKODE";
-        public static final String SPERRET_ANSATT_ARENA = "SPERRET_ANSATT";
-        public static final String ER_DOED = "ER_DOED";
+        // ARBEIDSLISTE
+        public static final String ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT = "ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT";
+        public static final String ARBEIDSLISTE_ENDRINGSTIDSPUNKT = "ARBEIDSLISTE_ENDRINGSTIDSPUNKT";
+        public static final String ARBEIDSLISTE_OVERSKRIFT = "ARBEIDSLISTE_OVERSKRIFT";
+        public static final String ARBEIDSLISTE_FRIST = "ARBEIDSLISTE_FRIST";
+        public static final String ARBEIDSLISTE_KATEGORI = "ARBEIDSLISTE_KATEGORI";
+        public static final String ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE";
 
-        public static final String ER_SKJERMET = "ER_SKJERMET";
-        public static final String SKJERMET_TIL = "SKJERMET_TIL";
+        // BRUKER_PROFILERING
+        public static final String BRUKER_PROFILERING_PROFILERING_RESULTAT = "BRUKER_PROFILERING_PROFILERING_RESULTAT";
+
+        // BRUKER_CV
+        public static final String BRUKER_CV_HAR_DELT_CV = "BRUKER_CV_HAR_DELT_CV";
+        public static final String BRUKER_CV_CV_EKSISTERER = "BRUKER_CV_CV_EKSISTERER";
+
+        // BRUKER_REGISTRERING
+        public static final String BRUKER_REGISTRERING_BRUKERS_SITUASJON = "BRUKER_REGISTRERING_BRUKERS_SITUASJON";
+        public static final String BRUKER_REGISTRERING_REGISTRERING_OPPRETTET = "BRUKER_REGISTRERING_REGISTRERING_OPPRETTET";
+        public static final String BRUKER_REGISTRERING_UTDANNING = "BRUKER_REGISTRERING_UTDANNING";
+        public static final String BRUKER_REGISTRERING_UTDANNING_BESTATT = "BRUKER_REGISTRERING_UTDANNING_BESTATT";
+        public static final String BRUKER_REGISTRERING_UTDANNING_GODKJENT = "BRUKER_REGISTRERING_UTDANNING_GODKJENT";
+
+        // YTELSE_STATUS_FOR_BRUKER
+        public static final String YTELSE_STATUS_FOR_BRUKER_YTELSE = "YTELSE_STATUS_FOR_BRUKER_YTELSE";
+        public static final String YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE = "YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE";
+        public static final String YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN = "YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN";
+        public static final String YTELSE_STATUS_FOR_BRUKER_DAGPUTLOPUKE = "YTELSE_STATUS_FOR_BRUKER_DAGPUTLOPUKE";
+        public static final String YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE = "YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE";
+        public static final String YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO = "YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO";
+        public static final String YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN = "YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN";
+        public static final String YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO = "YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO";
+
+        // ENDRING_I_REGISTRERING
+        public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON";
+        public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET";
+
+        // FARGEKATEGORI
+        public static final String FARGEKATEGORI_VERDI = "FARGEKATEGORI_VERDI";
+        public static final String FARGEKATEGORI_ENHET_ID = "FARGEKATEGORI_ENHET_ID";
+
+        // HUSKELAPP
+        public static final String HUSKELAPP_FRIST = "HUSKELAPP_FRIST";
+        public static final String HUSKELAPP_KOMMENTAR = "HUSKELAPP_KOMMENTAR";
+        public static final String HUSKELAPP_ENDRET_DATO = "HUSKELAPP_ENDRET_DATO";
+        public static final String HUSKELAPP_ENDRET_AV_VEILEDER = "HUSKELAPP_ENDRET_AV_VEILEDER";
+        public static final String HUSKELAPP_HUSKELAPP_ID = "HUSKELAPP_HUSKELAPP_ID";
+        public static final String HUSKELAPP_ENHET_ID = "HUSKELAPP_ENHET_ID";
     }
 
     public static final class OPPFOLGING_DATA {

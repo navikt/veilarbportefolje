@@ -34,7 +34,7 @@ class HendelseService(
     /**
      * Behandle en [HendelseRecordValue] og tilhørende `hendelseId`:
      *
-     * * dersom brukeren gitt ved `hendelseRecordValue.personID` ikke er under oppfølging vil meldingen ignoreres
+     * * dersom brukeren gitt ved `hendelseRecordValue.personID` ikke er under oppfølging vil meldingen ignoreres, med unntak for stopp-meldinger
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.START] vil hendelsen kombineres med ID-en og lagres
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.OPPDATER] vil lagret hendelse identifisert med `hendelseId` oppdateres
      * * dersom `hendelseRecordValue.operasjon` = [Operasjon.STOPP] vil lagret hendelse identifisert med `hendelseId` slettes
@@ -46,7 +46,7 @@ class HendelseService(
 
         val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
 
-        if (!isUnderArbeidsrettetOppfolging) {
+        if (!isUnderArbeidsrettetOppfolging && operasjon != Operasjon.STOPP) {
             logger.info("Fikk melding/hendelse med hendelse ID $hendelseId for bruker som ikke er under oppfølging. Ignorerer melding.")
             return
         }
@@ -54,7 +54,7 @@ class HendelseService(
         when (operasjon) {
             Operasjon.START -> startHendelse(hendelse)
             Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
-            Operasjon.STOPP -> stoppHendelse(hendelse)
+            Operasjon.STOPP -> stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
         }
     }
 
@@ -117,7 +117,8 @@ class HendelseService(
 
         when (hendelse.kategori) {
             Kategori.UTGATT_VARSEL -> {
-                val eldsteUtgattVarselHendelse = hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
+                val eldsteUtgattVarselHendelse =
+                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
 
                 if (eldsteUtgattVarselHendelse.id == hendelse.id) {
                     oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
@@ -126,13 +127,14 @@ class HendelseService(
                     logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble oppdatert i DB")
                 }
             }
+
             Kategori.UDELT_SAMTALEREFERAT -> {
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
             }
         }
     }
 
-    private fun stoppHendelse(hendelse: Hendelse) {
+    private fun stoppHendelse(hendelse: Hendelse, isUnderArbeidsrettetOppfolging: Boolean = true) {
         val resultatAvDeleteHendelse = try {
             hendelseRepository.delete(hendelse.id)
         } catch (ex: IngenHendelseMedIdException) {
@@ -147,9 +149,12 @@ class HendelseService(
             logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP}, ID ${hendelse.id} og kategori ${hendelse.kategori}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
             return
         }
+        if (!isUnderArbeidsrettetOppfolging) {
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} for innbygger som ikke er i arbeidsrettet oppfølging, ble slettet")
+        }
 
         when (hendelse.kategori) {
-            Kategori.UTGATT_VARSEL ->  {
+            Kategori.UTGATT_VARSEL -> {
                 val resultatAvGetEldsteUtgattVarselHendelse = try {
                     hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
                 } catch (ex: IngenHendelseForPersonException) {
@@ -169,6 +174,7 @@ class HendelseService(
                     logger.info("Hendelse med id ${hendelse.id}  og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
                 }
             }
+
             Kategori.UDELT_SAMTALEREFERAT -> {
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB.")
             }

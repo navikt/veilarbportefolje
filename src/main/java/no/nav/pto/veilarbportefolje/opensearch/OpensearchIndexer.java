@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -130,11 +129,5 @@ public class OpensearchIndexer {
         if (brukere.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
         }
-    }
-
-    public void dryrunAvPostgresTilOpensearchMapping(List<AktorId> brukereUnderOppfolging) {
-        partition(brukereUnderOppfolging, BATCH_SIZE).forEach(bolk -> {
-            List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(bolk, true);
-        });
     }
 }

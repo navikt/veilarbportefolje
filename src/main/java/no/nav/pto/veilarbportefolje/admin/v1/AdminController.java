@@ -12,6 +12,7 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -48,6 +49,7 @@ public class AdminController {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
+    private final EnsligeForsorgereService ensligForsorgerService;
 
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
@@ -218,16 +220,6 @@ public class AdminController {
         return "ferdig";
     }
 
-
-    @PostMapping("/test/postgresIndeksering")
-    @Operation(summary = "Test indeksering av brukere", description = "Går gjennom alle brukere i løsningen og gjør en dry-run av mapping til datamodell som benyttes av søkemotoren (OpenSearch).")
-    public void testHentUnderOppfolging() {
-        sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        opensearchIndexer.dryrunAvPostgresTilOpensearchMapping(brukereUnderOppfolging);
-        log.info("ferdig med dryrun");
-    }
-
     private void sjekkTilgangTilAdmin() {
         boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
         boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
@@ -236,6 +228,15 @@ public class AdminController {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    @PostMapping("/hentEnsligForsorgerData")
+    @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
+    public String hentEnsligForsorgerData(@RequestBody EnsligForsorgerBrukerRequest request) {
+        sjekkTilgangTilAdmin();
+        AktorId aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get()));
+        ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+        return "Henting av ensligforsorgerdata har startet";
     }
 
     private void validerIndexName(String indexName) {

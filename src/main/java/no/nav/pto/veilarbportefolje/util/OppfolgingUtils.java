@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.VurderingsBehov;
 
 import java.util.List;
@@ -10,8 +10,6 @@ import static java.util.Arrays.asList;
 
 public class OppfolgingUtils {
     public static final List<String> INNSATSGRUPPEKODER = asList("IKVAL", "BFORM", "BATT", "VARIG");
-    private static List<String> OPPFOLGINGKODER = asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG");
-
 
     //TODO BRUK PROFILERINGSRESULTAT
     public static boolean trengerVurdering(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
@@ -25,20 +23,15 @@ public class OppfolgingUtils {
         return "IARBS".equals(formidlingsgruppekode) && kvalifiseringsgruppekode.equals("VURDI");
     }
 
-    public static VurderingsBehov vurderingsBehov(String formidlingsgruppekode, String kvalifiseringsgruppekode, String profileringsResultat) {
-        if ("ISERV".equals(formidlingsgruppekode)) {
-            return null;
-        }
-
+    public static VurderingsBehov vurderingsBehov(String kvalifiseringsgruppekode, Profileringsresultat profileringsResultat) {
         //kvalifiseringsgruppekodeTilVurdering brukes fordi inte alla brukare har aktorId og dærmed inte har profileringsresultat
         return Optional.ofNullable(profileringsResultatTilVurdering(profileringsResultat))
                 .orElse(kvalifiseringsgruppekodeTilVurdering(kvalifiseringsgruppekode));
     }
 
 
-    private static VurderingsBehov profileringsResultatTilVurdering(String profileringsResultat) {
+    private static VurderingsBehov profileringsResultatTilVurdering(Profileringsresultat profileringsResultat) {
         return Optional.ofNullable(profileringsResultat)
-                .map(ProfilertTil::valueOf)
                 .map(profilertTil -> VurderingsBehov.valueOf(profilertTil.name()))
                 .orElse(null);
     }

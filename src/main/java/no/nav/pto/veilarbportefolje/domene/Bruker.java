@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 
 import java.sql.Timestamp;
@@ -46,8 +47,9 @@ public class Bruker {
     LocalDateTime skjermetTil;
     boolean nyForVeileder;
     boolean nyForEnhet;
-    boolean trengerVurdering;
     VurderingsBehov vurderingsBehov;
+    boolean trengerOppfolgingsvedtak;
+    Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
     String manuellBrukerStatus;
@@ -80,16 +82,12 @@ public class Bruker {
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
-    String utkast14aStatus;
-    String utkast14aAnsvarligVeileder;
-    LocalDateTime utkast14aStatusEndret;
+    Utkast14a utkast14a;
     boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
-    String talespraaktolk;
-    String tegnspraaktolk;
-    LocalDate tolkBehovSistOppdatert;
+    Tolkebehov tolkebehov;
     String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
     boolean harFlereStatsborgerskap;
@@ -123,10 +121,13 @@ public class Bruker {
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
         String sikkerhetstiltak = bruker.getSikkerhetstiltak();
-        String profileringResultat = bruker.getProfilering_resultat();
+        Profileringsresultat profileringResultat = bruker.getProfilering_resultat();
         String diskresjonskode = bruker.getDiskresjonskode();
         LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
-        boolean trengerVurdering = bruker.isTrenger_vurdering();
+
+        VurderingsBehov vurderingsBehov = bruker.isTrenger_vurdering() ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
+        boolean trengerOppfolgingsvedtak = bruker.getGjeldendeVedtak14a() == null;
+
         boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
 
         return new Bruker()
@@ -134,9 +135,10 @@ public class Bruker {
                 .setFnr(bruker.getFnr())
                 .setAktoerid(bruker.getAktoer_id())
                 .setNyForVeileder(bruker.isNy_for_veileder())
-                .setTrengerVurdering(trengerVurdering)
+                .setVurderingsBehov(vurderingsBehov)
+                .setTrengerOppfolgingsvedtak(trengerOppfolgingsvedtak)
+                .setProfileringResultat(profileringResultat)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
-                .setVurderingsBehov(trengerVurdering ? vurderingsBehov(formidlingsgruppekode, kvalifiseringsgruppekode, profileringResultat) : null)
                 .setInnsatsgruppe(INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) ? kvalifiseringsgruppekode : null)
                 .setFornavn(bruker.getFornavn())
                 .setEtternavn(bruker.getEtternavn())
@@ -175,9 +177,10 @@ public class Bruker {
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
-                .setUtkast14aStatus(bruker.getUtkast_14a_status())
-                .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
-                .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
+                .setUtkast14a(Utkast14a.of(
+                        bruker.getUtkast_14a_status(),
+                        toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()),
+                        bruker.getUtkast_14a_ansvarlig_veileder()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
                 .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
@@ -194,9 +197,7 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setTegnspraaktolk(bruker.getTegnspraaktolk())
-                .setTalespraaktolk(bruker.getTalespraaktolk())
-                .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
+                .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setLandgruppe(bruker.getLandgruppe())
@@ -215,7 +216,8 @@ public class Bruker {
                 .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
                 .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
                 .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a())
-                .setUtgattVarsel(bruker.getUtgatt_varsel());
+                .setUtgattVarsel(bruker.getUtgatt_varsel())
+                .setNesteUtlopsdatoAktivitet(null);
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(List<String> aktiviteterForenklet) {
@@ -223,6 +225,10 @@ public class Bruker {
             return;
         }
         aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAktivitet));
+    }
+
+    public void kalkulerNesteUtlopsdatoAvValgtTiltakstype() {
+        nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get("tiltak"), nesteUtlopsdatoAktivitet);
     }
 
     public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
@@ -287,12 +293,11 @@ public class Bruker {
 
     private LocalDateTime nesteUtlopsdatoAktivitet(Timestamp aktivitetUlopsdato, LocalDateTime comp) {
         if (aktivitetUlopsdato == null) {
-            return null;
+            return comp;
         }
-        if (comp == null) {
-            return aktivitetUlopsdato.toLocalDateTime();
-        } else if (comp.isAfter(aktivitetUlopsdato.toLocalDateTime())) {
-            return aktivitetUlopsdato.toLocalDateTime();
+        LocalDateTime aktivitetDato = aktivitetUlopsdato.toLocalDateTime();
+        if (comp == null || comp.isAfter(aktivitetDato)) {
+            return aktivitetDato;
         }
         return comp;
     }
