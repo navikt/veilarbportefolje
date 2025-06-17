@@ -232,10 +232,10 @@ public class AdminController {
 
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public String hentEnsligForsorgerData(@RequestBody EnsligForsorgerBrukerRequest request) {
-        sjekkTilgangTilAdmin();
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get()));
-        ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+    public String hentEnsligForsorgerData() {
+     //   sjekkTilgangTilAdmin();
+     //   AktorId aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get()));
+     //   ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
         return "Henting av ensligforsorgerdata har startet";
     }
 
