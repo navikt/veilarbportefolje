@@ -233,15 +233,17 @@ public class AdminController {
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
     public String hentEnsligForsorgerBrukereIBatch() {
-           sjekkTilgangTilAdmin();
-           List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-           brukereUnderOppfolging.forEach(bruker -> {
+        sjekkTilgangTilAdmin();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+
+        log.info("Startet innlastning av Ensligforsørger brukerdata");
+        brukereUnderOppfolging.forEach(bruker -> {
             try {
                 ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(bruker);
             } catch (Exception e) {
                 secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
             }
-            });
+        });
         log.info("Ensligforsørger brukerdata: ferdig med innlastning");
         return "ferdig";
     }

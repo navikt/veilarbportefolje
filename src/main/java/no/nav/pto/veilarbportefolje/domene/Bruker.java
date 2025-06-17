@@ -82,22 +82,12 @@ public class Bruker {
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
-
-    String utkast14aStatus;
-    String utkast14aAnsvarligVeileder;
-    LocalDateTime utkast14aStatusEndret;
     Utkast14a utkast14a;
-
     boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
-
-    String talespraaktolk;
-    String tegnspraaktolk;
-    LocalDate tolkBehovSistOppdatert;
     Tolkebehov tolkebehov;
-
     String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
     boolean harFlereStatsborgerskap;
@@ -187,9 +177,6 @@ public class Bruker {
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
-                .setUtkast14aStatus(bruker.getUtkast_14a_status())
-                .setUtkast14aStatusEndret(toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()))
-                .setUtkast14aAnsvarligVeileder(bruker.getUtkast_14a_ansvarlig_veileder())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
                         toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()),
@@ -210,9 +197,6 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setTalespraaktolk(bruker.getTalespraaktolk())
-                .setTegnspraaktolk(bruker.getTegnspraaktolk())
-                .setTolkBehovSistOppdatert(bruker.getTolkBehovSistOppdatert())
                 .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
