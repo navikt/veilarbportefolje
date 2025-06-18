@@ -39,9 +39,9 @@ public class Bruker {
     String etternavn;
     String veilederId;
     List<String> sikkerhetstiltak;
-    String sikkerhetstiltak_gyldig_fra;
-    String sikkerhetstiltak_gyldig_til;
-    String sikkerhetstiltak_beskrivelse;
+//    String sikkerhetstiltak_gyldig_fra;
+//    String sikkerhetstiltak_gyldig_til;
+//    String sikkerhetstiltak_beskrivelse;
     String diskresjonskode;
     boolean egenAnsatt;
     LocalDateTime skjermetTil;
@@ -52,11 +52,11 @@ public class Bruker {
     Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
-    String manuellBrukerStatus;
-    int fodselsdagIMnd;
-    LocalDateTime fodselsdato;
+//    String manuellBrukerStatus;
+//    int fodselsdagIMnd;
+//    LocalDateTime fodselsdato;
     String foedeland;
-    String kjonn;
+//    String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
     Integer dagputlopUke;
@@ -64,40 +64,40 @@ public class Bruker {
     Integer aapmaxtidUke;
     Integer aapUnntakUkerIgjen;
     LocalDate aapordinerutlopsdato;
-    Arbeidsliste arbeidsliste;
+//    Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
-    LocalDateTime aktivitetStart;
-    LocalDateTime nesteAktivitetStart;
-    LocalDateTime forrigeAktivitetStart;
-    LocalDateTime oppfolgingStartdato;
-    LocalDateTime nesteUtlopsdatoAktivitet;
-    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
-    List<String> brukertiltak;
+        LocalDateTime aktivitetStart;
+        LocalDateTime nesteAktivitetStart;
+        LocalDateTime forrigeAktivitetStart;
+        LocalDateTime oppfolgingStartdato;
+        LocalDateTime nesteUtlopsdatoAktivitet;
+//    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
+//    List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
-    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
+//    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
-    LocalDateTime moteSluttTid;
+//    LocalDateTime moteSluttTid;
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     Utkast14a utkast14a;
-    boolean trengerRevurdering;
+//    boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
     Tolkebehov tolkebehov;
-    String landgruppe;
+//    String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
-    boolean harFlereStatsborgerskap;
+//    boolean harFlereStatsborgerskap;
     String bostedKommune;
     String bostedBydel;
     LocalDate bostedSistOppdatert;
     boolean harUtelandsAddresse;
     boolean harUkjentBosted;
 
-    String nesteCvKanDelesStatus;
+//    String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
@@ -105,7 +105,7 @@ public class Bruker {
 
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
-    LocalDate brukersSituasjonSistEndret;
+//    LocalDate brukersSituasjonSistEndret;
     LocalDate utdanningOgSituasjonSistEndret;
 
     HuskelappForBruker huskelapp;
@@ -148,13 +148,13 @@ public class Bruker {
                 .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
-                .setSikkerhetstiltak_gyldig_fra(bruker.getSikkerhetstiltak_gyldig_fra())
-                .setSikkerhetstiltak_gyldig_til(bruker.getSikkerhetstiltak_gyldig_til())
-                .setSikkerhetstiltak_beskrivelse(bruker.getSikkerhetstiltak_beskrivelse())
-                .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
-                .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
+//                .setSikkerhetstiltak_gyldig_fra(bruker.getSikkerhetstiltak_gyldig_fra())
+//                .setSikkerhetstiltak_gyldig_til(bruker.getSikkerhetstiltak_gyldig_til())
+//                .setSikkerhetstiltak_beskrivelse(bruker.getSikkerhetstiltak_beskrivelse())
+//                .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
+//                .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
                 .setFoedeland(bruker.getFoedelandFulltNavn())
-                .setKjonn(bruker.getKjonn())
+//                .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
                 .setDagputlopUke(bruker.getDagputlopuke())
@@ -162,20 +162,20 @@ public class Bruker {
                 .setAapmaxtidUke(bruker.getAapmaxtiduke())
                 .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
                 .setAapordinerutlopsdato(bruker.getAapordinerutlopsdato())
-                .setArbeidsliste(Arbeidsliste.of(bruker))
+//                .setArbeidsliste(Arbeidsliste.of(bruker))
                 .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
                 .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))
                 .setNyesteUtlopteAktivitet(toLocalDateTimeOrNull(bruker.getNyesteutlopteaktivitet()))
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
-                .setManuellBrukerStatus(bruker.getManuell_bruker())
+//                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
+//                .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
-                .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
+//                .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
+//                .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
@@ -198,9 +198,9 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
-                .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
+//                .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
-                .setLandgruppe(bruker.getLandgruppe())
+//                .setLandgruppe(bruker.getLandgruppe())
                 .setBostedBydel(bruker.getBydelsnummer())
                 .setBostedKommune(bruker.getKommunenummer())
                 .setHarUtelandsAddresse(harUtenlandskAdresse)
@@ -209,7 +209,7 @@ public class Bruker {
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
                 .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
-                .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
+//                .setBrukersSituasjonSistEndret(bruker.getBrukers_situasjon_sist_endret())
                 .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
                 .setHuskelapp(bruker.getHuskelapp())
                 .setFargekategori(bruker.getFargekategori())
@@ -235,7 +235,9 @@ public class Bruker {
         if (aktiviteterForenklet == null) {
             return;
         }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter));
+        aktiviteterForenklet.forEach(navnPaaAktivitet -> {
+            nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter);
+        });
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
