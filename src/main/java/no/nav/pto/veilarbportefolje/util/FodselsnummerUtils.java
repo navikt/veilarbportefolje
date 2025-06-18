@@ -9,22 +9,4 @@ public class FodselsnummerUtils {
     public static String lagFodselsdato(LocalDate foedselsDato) {
         return foedselsDato.format(DateTimeFormatter.ofPattern("uuuu-MM-dd")) + DATO_POSTFIX;
     }
-
-    public static String lagKjonn(String fnr) {
-        if (fnr == null) {
-            return null;
-        }
-        int kjonnsNr = Integer.parseInt(fnr.substring(8, 9));
-        return kjonnsNr % 2 == 0 ? "K" : "M";
-    }
-
-    static boolean erDNummer(String fnr) {
-        return Integer.parseInt(fnr.substring(0, 1)) > 3;
-    }
-
-    static String konverterDNummerTilFodselsnummer(String dnr) {
-        int forsteSiffer = Integer.parseInt(dnr.substring(0, 1));
-        forsteSiffer -= 4;
-        return forsteSiffer + dnr.substring(1);
-    }
 }
