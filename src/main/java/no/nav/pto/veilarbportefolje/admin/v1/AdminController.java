@@ -236,7 +236,7 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
 
-        log.info("Startet innlastning av Ensligforsørger brukerdata");
+        log.info("Startet: Innlastning av Ensligforsørger brukerdata");
         brukereUnderOppfolging.forEach(bruker -> {
             try {
                 ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(bruker);
@@ -244,8 +244,8 @@ public class AdminController {
                 secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
             }
         });
-        log.info("Ensligforsørger brukerdata: ferdig med innlastning");
-        return "ferdig";
+        log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
+        return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
     private void validerIndexName(String indexName) {
