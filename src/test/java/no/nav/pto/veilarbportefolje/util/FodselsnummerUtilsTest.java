@@ -2,11 +2,14 @@ package no.nav.pto.veilarbportefolje.util;
 
 import org.junit.Test;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FodselsnummerUtilsTest {
-    private String fodselsnummer = "10108000399"; //TESTFAMILIE
-    private String dnummer = "50108000399"; //TESTFAMILIE
+    private final String fodselsnummer = "10108000399"; //TESTFAMILIE
+    private final String dnummer = "50108000399"; //TESTFAMILIE
+    private final LocalDate fodselsdato = LocalDate.of(1980, 10, 10);
 
     @Test
     public void skalReturnereTrueHvisDNummer() {
@@ -49,31 +52,6 @@ public class FodselsnummerUtilsTest {
 
     @Test
     public void skalLageFodselsdatoStringPaaUTCFormat() {
-        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsnummer)).isEqualTo("1980-10-10T00:00:00Z");
-        assertThat(FodselsnummerUtils.lagFodselsdato(dnummer)).isEqualTo("1980-10-10T00:00:00Z");
-    }
-
-    @Test
-    public void skalLageFodselsdatoStringFraBoostNr() {
-        String fodselsnummer1 = "10308000399"; //TESTFAMILIE BOOST
-        String fodselsnummer2 = "10218000399"; //TESTFAMILIE BOOST
-        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsnummer1)).isEqualTo("1980-10-10T00:00:00Z");
-        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsnummer2)).isEqualTo("1980-01-10T00:00:00Z");
-    }
-
-    @Test
-    public void skalLageAarstallFraFodselsnummer() {
-        String fodselsnummer1900a = "00001849900";
-        String fodselsnummer1900b = "00000249900";
-        String fodselsnummer2000a = "00001850000";
-        String fodselsnummer2000b = "00000250000";
-
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(fodselsnummer)).isEqualTo(1980);
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(dnummer)).isEqualTo(1980);
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(fodselsnummer1900a)).isEqualTo(1918);
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(fodselsnummer1900b)).isEqualTo(1902);
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(fodselsnummer2000a)).isEqualTo(2018);
-        assertThat(FodselsnummerUtils.lagAarstallFraFodselsnummer(fodselsnummer2000b)).isEqualTo(2002);
-
+        assertThat(FodselsnummerUtils.lagFodselsdato(fodselsdato)).isEqualTo("1980-10-10T00:00:00Z");
     }
 }
