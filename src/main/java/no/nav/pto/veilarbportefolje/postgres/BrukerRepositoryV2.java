@@ -32,7 +32,6 @@ import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konv
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPENSEARCHDATA.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
-import static no.nav.pto.veilarbportefolje.util.FodselsnummerUtils.lagFodselsdato;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
