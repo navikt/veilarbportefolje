@@ -6,13 +6,6 @@ import java.time.format.DateTimeFormatter;
 public class FodselsnummerUtils {
     private static final String DATO_POSTFIX = "T00:00:00Z";
 
-    public static String lagFodselsdagIMnd(String fnr) {
-        if (erDNummer(fnr)) {
-            fnr = konverterDNummerTilFodselsnummer(fnr);
-        }
-        return fnr.substring(0, 2);
-    }
-
     public static String lagFodselsdato(LocalDate foedselsDato) {
         return foedselsDato.format(DateTimeFormatter.ofPattern("uuuu-MM-dd")) + DATO_POSTFIX;
     }

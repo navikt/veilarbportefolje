@@ -32,25 +32,6 @@ public class FodselsnummerUtilsTest {
     }
 
     @Test
-    public void skalLageFodselsdagIMndFraForsteNummerIFodselsnummerOgHandtereDNummer() {
-        String fodselsnummer2 = "10108000397"; //TESTFAMILIE
-        String fodselsnummer3 = "10108000398"; //TESTFAMILIE
-        String fodselsnummer4 = "10108000399"; //TESTFAMILIE
-        String dnummer1 = "50108000397"; //TESTFAMILIE
-        String dnummer2 = "50108000398"; //TESTFAMILIE
-        String dnummer3 = "50108000399"; //TESTFAMILIE
-
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer2)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer3)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(fodselsnummer4)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer1)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer2)).isEqualTo("10");
-        assertThat(FodselsnummerUtils.lagFodselsdagIMnd(dnummer3)).isEqualTo("10");
-    }
-
-    @Test
     public void skalLageFodselsdatoStringPaaUTCFormat() {
         assertThat(FodselsnummerUtils.lagFodselsdato(fodselsdato)).isEqualTo("1980-10-10T00:00:00Z");
     }
