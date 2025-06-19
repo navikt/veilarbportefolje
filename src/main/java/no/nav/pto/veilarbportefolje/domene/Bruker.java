@@ -78,7 +78,6 @@ public class Bruker {
     Map<String, Timestamp> aktiviteter = new HashMap<>();
     Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
-    LocalDateTime moteSluttTid;
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
@@ -172,7 +171,6 @@ public class Bruker {
                 .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
                 .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
-                .setMoteSluttTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_utlopsdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
