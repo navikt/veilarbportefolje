@@ -52,7 +52,6 @@ public class Bruker {
     Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
-    String manuellBrukerStatus;
     int fodselsdagIMnd;
     LocalDateTime fodselsdato;
     String foedeland;
@@ -169,7 +168,6 @@ public class Bruker {
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
                 .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
-                .setManuellBrukerStatus(bruker.getManuell_bruker())
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
