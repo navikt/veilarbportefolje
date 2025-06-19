@@ -79,7 +79,6 @@ public class Bruker {
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     Utkast14a utkast14a;
-    boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
