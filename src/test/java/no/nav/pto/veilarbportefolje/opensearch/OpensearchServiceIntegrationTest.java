@@ -4355,60 +4355,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_indeksere_arbeidsliste_data_riktig() {
-        ArbeidslisteDTO arb1 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101010"))
-                .setAktorId(AktorId.of("22222222"))
-                .setVeilederId(VeilederId.of("X11111"))
-                .setNavKontorForArbeidsliste(TEST_ENHET)
-                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Arbeidsliste 1 kommentar")
-                .setOverskrift("Dette er en overskrift")
-                .setKategori(Arbeidsliste.Kategori.BLA)
-                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
-        ArbeidslisteDTO arb2 = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
-                .setAktorId(AktorId.of("22222223"))
-                .setVeilederId(VeilederId.of("X11112"))
-                .setNavKontorForArbeidsliste(TEST_ENHET)
-                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Arbeidsliste 2 kommentar")
-                .setKategori(Arbeidsliste.Kategori.GRONN)
-                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
-        ArbeidslisteDTO arb2MedTomKategori = new ArbeidslisteDTO(Fnr.ofValidFnr("01010101011"))
-                .setAktorId(AktorId.of("22222223"))
-                .setVeilederId(VeilederId.of("X11112"))
-                .setNavKontorForArbeidsliste(TEST_ENHET)
-                .setFrist(Timestamp.from(Instant.parse("2017-10-11T00:00:00Z")))
-                .setKommentar("Arbeidsliste 2 kommentar")
-                .setKategori(null)
-                .setEndringstidspunkt(toTimestamp(ZonedDateTime.now()));
-
-        // Bruker som har arbeidsliste liggende kun i ARBEIDSLISTE-tabell
-        insertArbeidsliste(arb1, db);
-        // Bruker som har arbeidsliste i ARBEIDSLISTE-tabell og kategori i FARGEKATEGORI-tabell
-        insertArbeidsliste(arb2MedTomKategori, db);
-        insertFargekategori(arb2, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb1, db);
-        ArbeidslisteRepositoryV2Test.insertOppfolgingsInformasjon(arb2, db);
-        opensearchIndexer.indekser(arb1.getAktorId());
-        opensearchIndexer.indekser(arb2.getAktorId());
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == 2);
-
-        BrukereMedAntall respons = opensearchService.hentBrukere(
-                TEST_ENHET,
-                empty(),
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.IKKE_SATT,
-                new Filtervalg().setFerdigfilterListe(emptyList()),
-                null,
-                null
-        );
-
-        assertThat(respons.getAntall()).isEqualTo(2);
-        assertEquals(Arbeidsliste.Kategori.BLA, respons.getBrukere().get(0).getArbeidsliste().getKategori());
-        assertEquals(Arbeidsliste.Kategori.GRONN, respons.getBrukere().get(1).getArbeidsliste().getKategori());
-    }
-
-    @Test
     public void skal_hente_brukere_med_gjeldendeVedtak14a() {
         Fnr brukerMedSiste14aVedtakFnr = randomFnr();
         Fnr brukerUtenSiste14aVedtakFnr = randomFnr();

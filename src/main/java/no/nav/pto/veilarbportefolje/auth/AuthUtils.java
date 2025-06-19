@@ -25,7 +25,6 @@ public class AuthUtils {
     static Bruker fjernKonfidensiellInfo(Bruker bruker) {
         return bruker.setFnr("").setKjonn("")
                 .setEtternavn("").setFornavn("")
-                .setArbeidsliste(emptyArbeidsliste())
                 .setSkjermetTil(null)
                 .setFoedeland(null)
                 .setTolkebehov(Tolkebehov.of("", "", null))
