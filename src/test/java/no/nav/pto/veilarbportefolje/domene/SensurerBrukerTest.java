@@ -144,7 +144,6 @@ public class SensurerBrukerTest {
         assertThat(bruker.getFornavn()).isEqualTo("");
         assertThat(bruker.getSkjermetTil()).isNull();
         assertThat(bruker.getFoedeland()).isNull();
-        assertThat(bruker.getLandgruppe()).isNull();
         assertThat(bruker.getTolkebehov().talespraaktolk()).isEqualTo("");
         assertThat(bruker.getTolkebehov().tegnspraaktolk()).isEqualTo("");
         assertThat(bruker.getHovedStatsborgerskap()).isNull();

@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DateUtilsTest {
+    private final LocalDate fodselsdato = LocalDate.of(1980, 10, 10);
 
     @Test
     public void skal_kalkulere_riktig_tidsintervall_basert_paa_timestamp() {
@@ -156,17 +157,17 @@ public class DateUtilsTest {
         Integer age12 = alderFraFodselsdato(fodselsdatoFylt12Aar);
         Integer age13 = alderFraFodselsdato(fodselsdatoFylt13Aar);
 
-        Assertions.assertTrue(age12.equals(12));
-        Assertions.assertTrue(age13.equals(13));
+        Assertions.assertEquals(12, (int) age12);
+        Assertions.assertEquals(13, (int) age13);
     }
 
     @Test
     public void testToLocalDateOrNull() {
         LocalDate localDate = DateUtils.toLocalDateOrNull("2023-08-02");
         Assertions.assertNotNull(localDate);
-        Assertions.assertEquals(localDate.getYear(), 2023);
-        Assertions.assertEquals(localDate.getMonthValue(), 8);
-        Assertions.assertEquals(localDate.getDayOfMonth(), 2);
+        Assertions.assertEquals(2023, localDate.getYear());
+        Assertions.assertEquals(8, localDate.getMonthValue());
+        Assertions.assertEquals(2, localDate.getDayOfMonth());
         Assertions.assertFalse(localDate.isAfter(LocalDate.now()));
     }
 
@@ -183,10 +184,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void dateToTimestamp() {
-    }
-
-    @Test
-    public void toLocalDateOrNull() {
+    public void skalLageFodselsdatoStringPaaUTCFormat() {
+        assertThat(DateUtils.lagFodselsdato(fodselsdato)).isEqualTo("1980-10-10T00:00:00Z");
     }
 }
