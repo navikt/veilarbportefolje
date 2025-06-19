@@ -45,7 +45,7 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
             RestUtils.throwIfNotSuccessful(response);
             return Optional.of(RestUtils.parseJsonResponseOrThrow(response, OvergangsstønadResponseDto.class));
         } catch (Exception exception) {
-            secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil med ", exception);
+            secureLog.info("hentEnsligForsorgerOvergangsstonad returnerer feil for brukeren {} med ", personIdent, exception);
             return Optional.empty();
         }
     }
