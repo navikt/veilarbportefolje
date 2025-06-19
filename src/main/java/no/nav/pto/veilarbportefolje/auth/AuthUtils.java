@@ -28,7 +28,6 @@ public class AuthUtils {
                 .setArbeidsliste(emptyArbeidsliste())
                 .setSkjermetTil(null)
                 .setFoedeland(null)
-                .setLandgruppe(null)
                 .setTolkebehov(Tolkebehov.of("", "", null))
                 .setHovedStatsborgerskap(null)
                 .setBostedBydel(null)

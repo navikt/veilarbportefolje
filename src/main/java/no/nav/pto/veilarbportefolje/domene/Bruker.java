@@ -86,7 +86,6 @@ public class Bruker {
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
     Tolkebehov tolkebehov;
-    String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
     String bostedKommune;
     String bostedBydel;
@@ -193,7 +192,6 @@ public class Bruker {
                 .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
-                .setLandgruppe(bruker.getLandgruppe())
                 .setBostedBydel(bruker.getBydelsnummer())
                 .setBostedKommune(bruker.getKommunenummer())
                 .setHarUtelandsAddresse(harUtenlandskAdresse)
