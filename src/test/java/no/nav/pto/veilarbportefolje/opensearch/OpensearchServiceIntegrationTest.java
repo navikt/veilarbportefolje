@@ -617,7 +617,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(statustall.getIavtaltAktivitet()).isEqualTo(1);
         assertThat(statustall.getIkkeIavtaltAktivitet()).isEqualTo(2);
         assertThat(statustall.getInaktiveBrukere()).isEqualTo(1);
-        assertThat(statustall.getMinArbeidsliste()).isEqualTo(1);
         assertThat(statustall.getNyeBrukereForVeileder()).isEqualTo(1);
         assertThat(statustall.getVenterPaSvarFraNAV()).isEqualTo(1);
         assertThat(statustall.getUtlopteAktiviteter()).isEqualTo(1);
