@@ -72,10 +72,8 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
     LocalDateTime nesteUtlopsdatoAktivitet;
-    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
     List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
-    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
@@ -184,12 +182,6 @@ public class Bruker {
                 .addAvtaltAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("behandling", dateToTimestamp(bruker.getAlle_aktiviteter_behandling_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAlle_aktiviteter_sokeavtale_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("stilling", dateToTimestamp(bruker.getAlle_aktiviteter_stilling_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
                 .setBostedBydel(bruker.getBydelsnummer())
@@ -219,13 +211,6 @@ public class Bruker {
 
     public void kalkulerNesteUtlopsdatoAvValgtTiltakstype() {
         nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get("tiltak"), nesteUtlopsdatoAktivitet);
-    }
-
-    public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
-        if (aktiviteterForenklet == null) {
-            return;
-        }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter));
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
@@ -270,14 +255,6 @@ public class Bruker {
             return this;
         }
         aktiviteter.put(type, utlopsdato);
-        return this;
-    }
-
-    private Bruker addAlleAktiviteterUtlopsdato(String type, Timestamp utlopsdato) {
-        if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
-            return this;
-        }
-        alleAktiviteter.put(type, utlopsdato);
         return this;
     }
 
