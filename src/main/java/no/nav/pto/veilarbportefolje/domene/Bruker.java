@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -39,7 +38,7 @@ public class Bruker {
     String etternavn;
     String veilederId;
     List<String> sikkerhetstiltak;
-//    String sikkerhetstiltak_gyldig_fra;
+    //    String sikkerhetstiltak_gyldig_fra;
 //    String sikkerhetstiltak_gyldig_til;
 //    String sikkerhetstiltak_beskrivelse;
     String diskresjonskode;
@@ -52,11 +51,11 @@ public class Bruker {
     Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
-//    String manuellBrukerStatus;
+    //    String manuellBrukerStatus;
 //    int fodselsdagIMnd;
 //    LocalDateTime fodselsdato;
     String foedeland;
-//    String kjonn;
+    //    String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
     Integer dagputlopUke;
@@ -64,40 +63,40 @@ public class Bruker {
     Integer aapmaxtidUke;
     Integer aapUnntakUkerIgjen;
     LocalDate aapordinerutlopsdato;
-//    Arbeidsliste arbeidsliste;
+    //    Arbeidsliste arbeidsliste;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
-        LocalDateTime aktivitetStart;
-        LocalDateTime nesteAktivitetStart;
-        LocalDateTime forrigeAktivitetStart;
-        LocalDateTime oppfolgingStartdato;
-        LocalDateTime nesteUtlopsdatoAktivitet;
-//    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
+    LocalDateTime aktivitetStart;
+    LocalDateTime nesteAktivitetStart;
+    LocalDateTime forrigeAktivitetStart;
+    LocalDateTime oppfolgingStartdato;
+    LocalDateTime nesteUtlopsdatoAktivitet;
+    //    LocalDateTime nesteUtlopsdatoAlleAktiviteter;
 //    List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
-//    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
+    //    Map<String, Timestamp> alleAktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
-//    LocalDateTime moteSluttTid;
+    //    LocalDateTime moteSluttTid;
     LocalDateTime alleMoterStartTid;
     LocalDateTime alleMoterSluttTid;
     boolean erSykmeldtMedArbeidsgiver;
     Utkast14a utkast14a;
-//    boolean trengerRevurdering;
+    //    boolean trengerRevurdering;
     String sisteEndringKategori;
     LocalDateTime sisteEndringTidspunkt;
     String sisteEndringAktivitetId;
     Tolkebehov tolkebehov;
-//    String landgruppe;
+    //    String landgruppe;
     Statsborgerskap hovedStatsborgerskap;
-//    boolean harFlereStatsborgerskap;
+    //    boolean harFlereStatsborgerskap;
     String bostedKommune;
     String bostedBydel;
     LocalDate bostedSistOppdatert;
     boolean harUtelandsAddresse;
     boolean harUkjentBosted;
 
-//    String nesteCvKanDelesStatus;
+    //    String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
@@ -105,7 +104,7 @@ public class Bruker {
 
     EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
 
-//    LocalDate brukersSituasjonSistEndret;
+    //    LocalDate brukersSituasjonSistEndret;
     LocalDate utdanningOgSituasjonSistEndret;
 
     HuskelappForBruker huskelapp;
@@ -191,12 +190,12 @@ public class Bruker {
                 .addAvtaltAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
                 .addAvtaltAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("behandling", dateToTimestamp(bruker.getAlle_aktiviteter_behandling_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAlle_aktiviteter_sokeavtale_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("stilling", dateToTimestamp(bruker.getAlle_aktiviteter_stilling_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
-                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("behandling", dateToTimestamp(bruker.getAlle_aktiviteter_behandling_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAlle_aktiviteter_sokeavtale_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("stilling", dateToTimestamp(bruker.getAlle_aktiviteter_stilling_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("ijobb", dateToTimestamp(bruker.getAlle_aktiviteter_ijobb_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("egen", dateToTimestamp(bruker.getAlle_aktiviteter_egen_utlopsdato()))
+//                .addAlleAktiviteterUtlopsdato("mote", dateToTimestamp(bruker.getAlle_aktiviteter_mote_utlopsdato()))
                 .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
 //                .setHarFlereStatsborgerskap(bruker.isHarFlereStatsborgerskap())
                 .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
@@ -229,15 +228,6 @@ public class Bruker {
 
     public void kalkulerNesteUtlopsdatoAvValgtTiltakstype() {
         nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(aktiviteter.get("tiltak"), nesteUtlopsdatoAktivitet);
-    }
-
-    public void leggTilUtlopsdatoForAktiviteter(List<String> aktiviteterForenklet) {
-        if (aktiviteterForenklet == null) {
-            return;
-        }
-        aktiviteterForenklet.forEach(navnPaaAktivitet -> {
-            nesteUtlopsdatoAlleAktiviteter = nesteUtlopsdatoAktivitet(alleAktiviteter.get(navnPaaAktivitet.toLowerCase()), nesteUtlopsdatoAlleAktiviteter);
-        });
     }
 
     public void kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(Map<String, AktivitetFiltervalg> aktiviteterAvansert) {
@@ -282,14 +272,6 @@ public class Bruker {
             return this;
         }
         aktiviteter.put(type, utlopsdato);
-        return this;
-    }
-
-    private Bruker addAlleAktiviteterUtlopsdato(String type, Timestamp utlopsdato) {
-        if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
-            return this;
-        }
-        alleAktiviteter.put(type, utlopsdato);
         return this;
     }
 
