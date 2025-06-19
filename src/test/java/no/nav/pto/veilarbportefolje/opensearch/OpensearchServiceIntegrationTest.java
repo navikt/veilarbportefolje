@@ -1002,49 +1002,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_sortere_brukere_pa_arbeidslisteikon() {
-
-        var blaBruker = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setEnhet_id(TEST_ENHET)
-                .setArbeidsliste_aktiv(true)
-                .setArbeidsliste_kategori(Arbeidsliste.Kategori.BLA.name());
-
-        var lillaBruker = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setEnhet_id(TEST_ENHET)
-                .setArbeidsliste_aktiv(true)
-                .setArbeidsliste_kategori(Arbeidsliste.Kategori.LILLA.name());
-
-        var liste = List.of(blaBruker, lillaBruker);
-
-        skrivBrukereTilTestindeks(blaBruker, lillaBruker);
-
-        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
-
-        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
-                TEST_ENHET,
-                Optional.empty(),
-                Sorteringsrekkefolge.SYNKENDE,
-                Sorteringsfelt.ARBEIDSLISTE_KATEGORI,
-                new Filtervalg(),
-                null,
-                null
-        );
-
-        List<Bruker> brukere = brukereMedAntall.getBrukere();
-
-        assertThat(brukere.size()).isEqualTo(2);
-        assertThat(brukere.get(0).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.LILLA);
-        assertThat(brukere.get(1).getArbeidsliste().getKategori()).isEqualTo(Arbeidsliste.Kategori.BLA);
-
-    }
-
-    @Test
     void skal_sortere_brukere_pa_aktivteter() {
         String tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1));
         String tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2));

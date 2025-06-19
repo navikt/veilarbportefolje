@@ -415,11 +415,11 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQuery = boolQuery();
 
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                       && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             }
@@ -500,10 +500,6 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("nyesteutlopteaktivitet", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-            case ARBEIDSLISTE_FRIST -> {
-                searchSourceBuilder.sort("arbeidsliste_frist", sorteringsrekkefolgeOpenSearch);
-                yield searchSourceBuilder;
-            }
             case AAP_TYPE -> {
                 searchSourceBuilder.sort("ytelse", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
@@ -532,16 +528,8 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("utkast_14a_status", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-            case ARBEIDSLISTE_KATEGORI -> {
-                searchSourceBuilder.sort("arbeidsliste_kategori", sorteringsrekkefolgeOpenSearch);
-                yield searchSourceBuilder;
-            }
             case SISTE_ENDRING_DATO -> {
                 sorterSisteEndringTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch, filtervalg);
-                yield searchSourceBuilder;
-            }
-            case ARBEIDSLISTE_OVERSKRIFT -> {
-                sorterArbeidslisteOverskrift(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case FODELAND -> {
@@ -639,8 +627,8 @@ public class OpensearchQueryBuilder {
         boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER);
         boolean filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL);
         boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
+                                                       (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                                                       (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
@@ -667,11 +655,6 @@ public class OpensearchQueryBuilder {
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
-    }
-
-    static void sorterArbeidslisteOverskrift(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        searchSourceBuilder.sort("arbeidsliste_tittel_sortering", order);
-        searchSourceBuilder.sort("arbeidsliste_tittel_lengde", order);
     }
 
     static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
@@ -822,10 +805,6 @@ public class OpensearchQueryBuilder {
                 }
                 else if (!doc['huskelapp.kommentar'].empty) {
                     return 0;
-                }
-                else if (doc['arbeidsliste_aktiv'].value == true) {
-                    // Hvis en arbeidsliste ikke har frist setter indekseringen den til FAR_IN_THE_FUTURE_DATE
-                    return doc['arbeidsliste_frist'].value.toInstant().toEpochMilli();
                 }
                 else {
                     // Returnerer 3017.10.07 + 1 i millis
