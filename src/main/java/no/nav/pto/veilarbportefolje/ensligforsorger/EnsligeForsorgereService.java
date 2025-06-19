@@ -53,7 +53,6 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
 
         if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
             EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak = ensligeForsorgerOvergangsstønadTiltakOptional.get();
-
             return Optional.of(getEnsligeForsorgereDto(ensligeForsorgerOvergangsstønadTiltak));
         }
         return Optional.empty();
@@ -119,16 +118,14 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
         Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
-
         if(fnr != null && overgangsstønadResponseDto.isPresent()) {
+            List<OvergangsstønadPeriode> ensligForsorgerPerioder = overgangsstønadResponseDto.get().getData().getPerioder();
 
-            OvergangsstønadResponseDto ensligForsorgerResponseDto = overgangsstønadResponseDto.get();
-            List<OvergangsstønadPeriode> ensligForsorgerPeriode = ensligForsorgerResponseDto.getData().getPerioder();
-            for(OvergangsstønadPeriode periode: ensligForsorgerPeriode) {
+            for(OvergangsstønadPeriode periode: ensligForsorgerPerioder) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
+                secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, periode);
             }
-            secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, ensligForsorgerResponseDto.getData().getPerioder());
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
         }

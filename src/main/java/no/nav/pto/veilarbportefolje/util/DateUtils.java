@@ -24,6 +24,7 @@ public class DateUtils {
 
     public static final String FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z";
     private static final String EPOCH_0 = "1970-01-01T00:00:00Z";
+    private static final String DATO_POSTFIX = "T00:00:00Z";
 
     public static Duration calculateTimeElapsed(Instant instant) {
         return Duration.between(instant, Instant.now());
@@ -244,5 +245,9 @@ public class DateUtils {
             return false;
         }
         return date1.equals(date2) || date1.isAfter(date2);
+    }
+
+    public static String lagFodselsdato(LocalDate foedselsDato) {
+        return foedselsDato.format(DateTimeFormatter.ofPattern("uuuu-MM-dd")) + DATO_POSTFIX;
     }
 }

@@ -232,11 +232,20 @@ public class AdminController {
 
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public String hentEnsligForsorgerData(@RequestBody EnsligForsorgerBrukerRequest request) {
+    public String hentEnsligForsorgerBrukereIBatch() {
         sjekkTilgangTilAdmin();
-        AktorId aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get()));
-        ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        return "Henting av ensligforsorgerdata har startet";
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+
+        log.info("Startet: Innlastning av Ensligforsørger brukerdata");
+        brukereUnderOppfolging.forEach(bruker -> {
+            try {
+                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(bruker);
+            } catch (Exception e) {
+                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
+            }
+        });
+        log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
+        return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
     private void validerIndexName(String indexName) {
