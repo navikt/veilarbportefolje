@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -847,7 +846,8 @@ public class OpensearchQueryBuilder {
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
                 break;
             case MIN_ARBEIDSLISTE:
-                queryBuilder = matchQuery("arbeidsliste_aktiv", true);
+                // Ikkje filtrer på arbeidslister fram til vi får fjerna MIN_ARBEIDSLISTE frå lagra filter i veilarbfilter
+                queryBuilder = matchAllQuery(); // Returnerer alle resultat, som om ein ikkje hadde filtrert på arbeidsliste
                 break;
             case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
