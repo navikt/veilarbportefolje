@@ -31,7 +31,6 @@ public class AuthUtils {
                 .setLandgruppe(null)
                 .setTolkebehov(Tolkebehov.of("", "", null))
                 .setHovedStatsborgerskap(null)
-                .setHarFlereStatsborgerskap(false)
                 .setBostedBydel(null)
                 .setBostedKommune(null)
                 .setHarUtelandsAddresse(false)
