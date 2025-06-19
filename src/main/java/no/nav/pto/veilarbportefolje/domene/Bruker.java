@@ -53,7 +53,6 @@ public class Bruker {
     String innsatsgruppe;
     boolean erDoed;
     int fodselsdagIMnd;
-    LocalDateTime fodselsdato;
     String foedeland;
     String kjonn;
     YtelseMapping ytelse;
@@ -144,7 +143,6 @@ public class Bruker {
                 .setSikkerhetstiltak_gyldig_til(bruker.getSikkerhetstiltak_gyldig_til())
                 .setSikkerhetstiltak_beskrivelse(bruker.getSikkerhetstiltak_beskrivelse())
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
-                .setFodselsdato(toLocalDateTimeOrNull(bruker.getFodselsdato()))
                 .setFoedeland(bruker.getFoedelandFulltNavn())
                 .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
