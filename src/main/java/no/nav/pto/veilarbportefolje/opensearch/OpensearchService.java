@@ -135,7 +135,7 @@ public class OpensearchService {
         BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
 
         if ((brukerInnsynTilganger.harAlle() && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) ||
-                (!FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash) && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType)) {
+            (!FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash) && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType)) {
             return new Statustall();
         }
 
@@ -215,9 +215,6 @@ public class OpensearchService {
             bruker.kalkulerNesteUtlopsdatoAvValgtTiltakstype();
         }
 
-        if (filtervalg.harAlleAktiviteterFilter()) {
-            bruker.leggTilUtlopsdatoForAktiviteter(filtervalg.alleAktiviteter);
-        }
         if (filtervalg.harAktivitetFilter()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
         }
