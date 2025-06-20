@@ -1191,7 +1191,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_returnere_brukere_basert_på_fødselsdag_i_måneden() {
-        var testBruker1 = new OppfolgingsBruker()
+        var testBrukerFodselsdagSyvende = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -1199,11 +1199,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        var testBruker2 = new OppfolgingsBruker()
+        var testBrukerFodselsdagNiende = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
-                .setFodselsdag_i_mnd(8)
+                .setFodselsdag_i_mnd(9)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
@@ -1212,7 +1212,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setFodselsdagIMnd(List.of("7"));
 
-        var liste = List.of(testBruker1, testBruker2);
+        var liste = List.of(testBrukerFodselsdagSyvende, testBrukerFodselsdagNiende);
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
@@ -1229,7 +1229,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().anyMatch(it -> it.getFodselsdagIMnd() == 7)).isTrue();
+        assertEquals(testBrukerFodselsdagSyvende.getFnr(), response.getBrukere().getFirst().getFnr());
     }
 
     @Test
