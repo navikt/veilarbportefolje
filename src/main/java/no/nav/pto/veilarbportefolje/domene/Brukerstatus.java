@@ -10,7 +10,7 @@ public enum Brukerstatus {
     IKKE_I_AVTALT_AKTIVITET,
     I_AVTALT_AKTIVITET,
     I_AKTIVITET,
-    MIN_ARBEIDSLISTE,
+    MIN_ARBEIDSLISTE, // OpenSearch lyttar ikkje på dette filteret (returnerer alle resultata), men vi må ha det i Brukerstatus så lenge det finst i lagra filter i veilarbfilter, elles krasjer kallet mot portefolje om nokon bruker eit filter som har MIN_ARBEIDSLISTE lagra.
     NYE_BRUKERE_FOR_VEILEDER,
     ER_SYKMELDT_MED_ARBEIDSGIVER,
     MOTER_IDAG,

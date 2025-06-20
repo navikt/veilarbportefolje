@@ -1,19 +1,20 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-/** "Sorteringsfelt" tilsvarer (med få unntak) kolonner ein kan sortere på i frontend (veilarbportefoljeflatefs).
- *
+/**
+ * "Sorteringsfelt" tilsvarer (med få unntak) kolonner ein kan sortere på i frontend (veilarbportefoljeflatefs).
+ * <p>
  * name – eksempel: IKKE_SATT, Sorteringsfelt.IKKE_SATT
  * - skildrar sorterinsgfeltet
  * - vert brukt i backendkoden
  * - tilsvarer stort sett namna på enumverdiane i frontend
  * - er notert med SCREAMING_SNAKE_CASE
  * - kan nåast i koden med .name() om ein treng hente den som tekst
- *
+ * <p>
  * sorteringsverdi - eksempel: "ikke_satt"
  * - verdien som blir sendt mellom backend og frontend, og brukt til å sortere resultata
  * - har ymse noteringsformat, oftast snake_case
  * - kan hentast ut ved .value
- * */
+ */
 public enum Sorteringsfelt {
     IKKE_SATT("ikke_satt"),
     VALGTE_AKTIVITETER("valgteaktiviteter"),
@@ -54,10 +55,6 @@ public enum Sorteringsfelt {
     UTKAST_14A_STATUS_ENDRET("utkast_14a_status_endret"),
     UTKAST_14A_ANSVARLIG_VEILEDER("utkast_14a_ansvarlig_veileder"),
 
-    ARBEIDSLISTE_FRIST("arbeidslistefrist"),
-    ARBEIDSLISTE_KATEGORI("arbeidslistekategori"),
-    ARBEIDSLISTE_OVERSKRIFT("arbeidsliste_overskrift"),
-
     SISTE_ENDRING_DATO("siste_endring_tidspunkt"),
 
     FODELAND("fodeland"),
@@ -94,7 +91,9 @@ public enum Sorteringsfelt {
 
     UTGATT_VARSEL_DATO("filterhendelse_dato_opprettet");
 
-    /** Filterverdien som vert sendt mellom frontend og backend */
+    /**
+     * Filterverdien som vert sendt mellom frontend og backend
+     */
     public final String sorteringsverdi;
 
     Sorteringsfelt(String sorteringsverdi) {

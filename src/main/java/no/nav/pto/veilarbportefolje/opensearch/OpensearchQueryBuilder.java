@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -188,7 +187,6 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker");
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak");
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode");
-        byggManuellFilter(filtervalg.arbeidslisteKategori, queryBuilder, "arbeidsliste_kategori");
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter");
         byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter");
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe");
@@ -415,11 +413,11 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQuery = boolQuery();
 
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
-                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                       && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             }
@@ -500,10 +498,6 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("nyesteutlopteaktivitet", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-            case ARBEIDSLISTE_FRIST -> {
-                searchSourceBuilder.sort("arbeidsliste_frist", sorteringsrekkefolgeOpenSearch);
-                yield searchSourceBuilder;
-            }
             case AAP_TYPE -> {
                 searchSourceBuilder.sort("ytelse", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
@@ -532,16 +526,8 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("utkast_14a_status", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-            case ARBEIDSLISTE_KATEGORI -> {
-                searchSourceBuilder.sort("arbeidsliste_kategori", sorteringsrekkefolgeOpenSearch);
-                yield searchSourceBuilder;
-            }
             case SISTE_ENDRING_DATO -> {
                 sorterSisteEndringTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch, filtervalg);
-                yield searchSourceBuilder;
-            }
-            case ARBEIDSLISTE_OVERSKRIFT -> {
-                sorterArbeidslisteOverskrift(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case FODELAND -> {
@@ -639,8 +625,8 @@ public class OpensearchQueryBuilder {
         boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER);
         boolean filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL);
         boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
+                                                       (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                                                       (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
@@ -667,11 +653,6 @@ public class OpensearchQueryBuilder {
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
-    }
-
-    static void sorterArbeidslisteOverskrift(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
-        searchSourceBuilder.sort("arbeidsliste_tittel_sortering", order);
-        searchSourceBuilder.sort("arbeidsliste_tittel_lengde", order);
     }
 
     static void sorterFodeland(SearchSourceBuilder searchSourceBuilder, SortOrder order) {
@@ -823,10 +804,6 @@ public class OpensearchQueryBuilder {
                 else if (!doc['huskelapp.kommentar'].empty) {
                     return 0;
                 }
-                else if (doc['arbeidsliste_aktiv'].value == true) {
-                    // Hvis en arbeidsliste ikke har frist setter indekseringen den til FAR_IN_THE_FUTURE_DATE
-                    return doc['arbeidsliste_frist'].value.toInstant().toEpochMilli();
-                }
                 else {
                     // Returnerer 3017.10.07 + 1 i millis
                     return 33064243200001.0;
@@ -869,7 +846,8 @@ public class OpensearchQueryBuilder {
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
                 break;
             case MIN_ARBEIDSLISTE:
-                queryBuilder = matchQuery("arbeidsliste_aktiv", true);
+                // Ikkje filtrer på arbeidslister fram til vi får fjerna MIN_ARBEIDSLISTE frå lagra filter i veilarbfilter
+                queryBuilder = matchAllQuery(); // Returnerer alle resultat, som om ein ikkje hadde filtrert på arbeidsliste
                 break;
             case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
@@ -1002,7 +980,6 @@ public class OpensearchQueryBuilder {
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, "aktiviteter"),
                 ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
                 inaktiveBrukere(filtrereVeilederOgEnhet),
-                mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE.key, "arbeidsliste_aktiv"),
                 mustBeTrueFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key, "ny_for_veileder"),
                 totalt(filtrereVeilederOgEnhet),
                 mustNotExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TRENGER_OPPFOLGINGSVEDTAK.key, "gjeldendeVedtak14a"),
@@ -1012,10 +989,6 @@ public class OpensearchQueryBuilder {
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTLOPTE_AKTIVITETER.key, "nyesteutlopteaktivitet"),
                 moterMedNavIdag(filtrereVeilederOgEnhet),
                 mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UNDER_VURDERING.key, "utkast_14a_status"),
-                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_BLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.BLA.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_LILLA.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.LILLA.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_GRONN.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.GRONN.name()),
-                mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.MIN_ARBEIDSLISTE_GUL.key, "arbeidsliste_kategori", Arbeidsliste.Kategori.GUL.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_A.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_A.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_B.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_B.name()),
                 mustMatchQuery(filtrereVeilederOgEnhet, StatustallAggregationKey.FARGEKATEGORI_C.key, "fargekategori", FargekategoriVerdi.FARGEKATEGORI_C.name()),

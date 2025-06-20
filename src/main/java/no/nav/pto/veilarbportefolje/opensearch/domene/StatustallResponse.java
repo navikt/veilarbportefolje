@@ -29,14 +29,9 @@ public class StatustallResponse {
                 Bucket iavtaltAktivitet;
                 Bucket ikkeIavtaltAktivitet;
                 Bucket utlopteAktiviteter;
-                Bucket minArbeidsliste;
                 Bucket erSykmeldtMedArbeidsgiver;
                 Bucket moterMedNAVIdag;
                 Bucket underVurdering;
-                Bucket minArbeidslisteBla;
-                Bucket minArbeidslisteLilla;
-                Bucket minArbeidslisteGronn;
-                Bucket minArbeidslisteGul;
                 Bucket mineHuskelapper;
                 Bucket fargekategoriA;
                 Bucket fargekategoriB;
@@ -76,14 +71,9 @@ public class StatustallResponse {
         I_AVTALT_AKTIVITET("iavtaltAktivitet"),
         IKKE_I_AVTALT_AKTIVITET("ikkeIavtaltAktivitet"),
         UTLOPTE_AKTIVITETER("utlopteAktiviteter"),
-        MIN_ARBEIDSLISTE("minArbeidsliste"),
         ER_SYKMELDT_MED_ARBEIDSGIVER("erSykmeldtMedArbeidsgiver"),
         MOTER_MED_NAV_I_DAG("moterMedNAVIdag"),
         UNDER_VURDERING("underVurdering"),
-        MIN_ARBEIDSLISTE_BLA("minArbeidslisteBla"),
-        MIN_ARBEIDSLISTE_LILLA("minArbeidslisteLilla"),
-        MIN_ARBEIDSLISTE_GRONN("minArbeidslisteGronn"),
-        MIN_ARBEIDSLISTE_GUL("minArbeidslisteGul"),
         MINE_HUSKELAPPER("mineHuskelapper"),
         FARGEKATEGORI_A("fargekategoriA"),
         FARGEKATEGORI_B("fargekategoriB"),
