@@ -1217,7 +1217,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        var response = opensearchService.hentBrukere(
+        var sokeresultat = opensearchService.hentSokeresultatFraOpenSearch(
                 TEST_ENHET,
                 Optional.of(TEST_VEILEDER_0),
                 Sorteringsrekkefolge.IKKE_SATT,
@@ -1227,9 +1227,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
 
         );
+        var brukere = opensearchService.hentOppfolgingsbrukere(sokeresultat);
 
-        assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().anyMatch(it -> it.getFodselsdagIMnd() == 7)).isTrue();
+
+        assertThat(brukere.getAntall()).isEqualTo(1);
+        assertThat(brukere.getBrukere().stream().anyMatch(it -> it.getFodselsdag_i_mnd() == 7)).isTrue();
     }
 
     @Test

@@ -48,7 +48,6 @@ public class Bruker {
     Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
-    int fodselsdagIMnd;
     String foedeland;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
@@ -133,7 +132,6 @@ public class Bruker {
                 .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
-                .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFoedeland(bruker.getFoedelandFulltNavn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
