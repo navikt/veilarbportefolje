@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -51,7 +50,6 @@ public class Bruker {
     boolean erDoed;
     int fodselsdagIMnd;
     String foedeland;
-    String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
     Integer dagputlopUke;
@@ -137,7 +135,6 @@ public class Bruker {
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
                 .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFoedeland(bruker.getFoedelandFulltNavn())
-                .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
                 .setDagputlopUke(bruker.getDagputlopuke())
