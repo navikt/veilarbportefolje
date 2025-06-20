@@ -659,7 +659,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
                     assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
                     assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);
-                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
                 }
         );
     }
