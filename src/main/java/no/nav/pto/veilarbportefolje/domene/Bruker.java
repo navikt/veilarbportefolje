@@ -81,7 +81,6 @@ public class Bruker {
     boolean harUtelandsAddresse;
     boolean harUkjentBosted;
 
-    String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
@@ -148,7 +147,6 @@ public class Bruker {
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
