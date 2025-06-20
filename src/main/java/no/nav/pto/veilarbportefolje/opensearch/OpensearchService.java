@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Avvik14aStatistikkResponse.Avvik14aStatistikkAggregation.Avvik14aStatistikkFilter.Avvik14aStatistikkBuckets;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -42,12 +41,11 @@ import static org.opensearch.search.aggregations.AggregationBuilders.filters;
 public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
-    private final VedtaksstotteClient vedtaksstotteClient;
     private final IndexName indexName;
     private final DefaultUnleash defaultUnleash;
     private final AuthService authService;
 
-    public BrukereMedAntall hentBrukere(
+    public OpensearchResponse hentSokeresultatFraOpenSearch(
             String enhetId,
             Optional<String> veilederIdent,
             Sorteringsrekkefolge sorteringsrekkefolge,
@@ -103,8 +101,22 @@ public class OpensearchService {
 
         sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
-        OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
+        return search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
+    }
+
+    public BrukereMedAntall hentBrukere(
+            String enhetId,
+            Optional<String> veilederIdent,
+            Sorteringsrekkefolge sorteringsrekkefolge,
+            Sorteringsfelt sorteringsfelt,
+            Filtervalg filtervalg,
+            Integer fra,
+            Integer antall
+    ) {
+        OpensearchResponse response = hentSokeresultatFraOpenSearch(enhetId, veilederIdent, sorteringsrekkefolge, sorteringsfelt, filtervalg, fra, antall);
         int totalHits = response.hits().getTotal().getValue();
+
+        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhet(EnhetId.of(enhetId));
 
         List<Bruker> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
