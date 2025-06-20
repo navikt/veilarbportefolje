@@ -126,6 +126,20 @@ public class OpensearchService {
         return new BrukereMedAntall(totalHits, brukere);
     }
 
+    /**
+     * Henter Oppfolgingsbrukere med antal treff frå eit Opensearch søkeresultat.
+     * Gjer at vi kan verifisere sortering på felt som ikkje vert sendt til frontend, og difor ikkje finst på Bruker (men framleis er til stades på Oppfolgingsbruker).
+     * */
+    public OppfolgingsbrukereMedAntall hentOppfolgingsbrukere(OpensearchResponse response) {
+        int totalHits = response.hits().getTotal().getValue();
+
+        List<OppfolgingsBruker> brukere = response.hits().getHits().stream()
+                .map(Hit::get_source)
+                .collect(toList());
+
+        return new OppfolgingsbrukereMedAntall(totalHits, brukere);
+    }
+
     public Statustall hentStatustallForVeilederPortefolje(String veilederId, String enhetId) {
         BoolQueryBuilder veilederOgEnhetQuery = boolQuery()
                 .must(termQuery("oppfolging", true))
