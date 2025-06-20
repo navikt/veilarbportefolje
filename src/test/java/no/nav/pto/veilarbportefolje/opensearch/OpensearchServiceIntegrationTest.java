@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.*;
 import java.util.*;
@@ -71,7 +70,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private final VeilarbVeilederClient veilarbVeilederClientMock;
     private final AuthContextHolder authContextHolder;
     private final PoaoTilgangWrapper poaoTilgangWrapper;
-    private final JdbcTemplate db;
 
     @Autowired
     public OpensearchServiceIntegrationTest(
@@ -79,15 +77,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
             OpensearchIndexer opensearchIndexer,
             VeilarbVeilederClient veilarbVeilederClientMock,
             AuthContextHolder authContextHolder,
-            PoaoTilgangWrapper poaoTilgangWrapper,
-            JdbcTemplate db
+            PoaoTilgangWrapper poaoTilgangWrapper
     ) {
         this.opensearchService = opensearchService;
         this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
         this.authContextHolder = authContextHolder;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
-        this.db = db;
     }
 
     @BeforeEach
@@ -3272,9 +3268,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Fnr bruker1Fnr = Fnr.of("01010111111");
         Fnr bruker2Fnr = Fnr.of("02020222222");
         Fnr bruker3Fnr = Fnr.of("03030333333");
-        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 06, 01, 0, 0);
-        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
-        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
+        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 6, 1, 0, 0);
+        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 6, 1, 0, 0);
+        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 6, 1, 0, 0);
         String bruker1tekst = "Dette er noko tekst som startar på D.";
         String bruker2Tekst = "Akkurat slik startar du ein setning med bokstaven A.";
         String bruker3Tekst = "Byrjinga av denne teksten er bokstaven B.";
@@ -4962,7 +4958,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     public void skal_kunne_sortere_pa_alle_gyldige_sorteringsverdier() {
         Sorteringsfelt[] alleSorteringsfelt = Sorteringsfelt.values();
-        ArrayList<Sorteringsfelt> sorteringsfeltSomFeilerISortering = new ArrayList<Sorteringsfelt>();
+        ArrayList<Sorteringsfelt> sorteringsfeltSomFeilerISortering = new ArrayList<>();
 
         for (Sorteringsfelt sorteringsfelt : alleSorteringsfelt) {
             try {
@@ -5217,14 +5213,4 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET);
     }
-
-    OppfolgingsBruker brukerMed2BarnKode6 = new OppfolgingsBruker()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "6"), new BarnUnder18AarData(11, "6")));
-
 }

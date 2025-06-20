@@ -185,7 +185,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         System.out.println(JsonUtils.toJson(new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
         assertEquals(aktorIdCvDeltMedNav.toString(), responseBrukere.getBrukere().getFirst().getAktoerid());
-        assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
+        assertThat(responseBrukere.getBrukere().getFirst().getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
     }
 
     @Test
