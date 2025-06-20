@@ -9,10 +9,10 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,10 +28,9 @@ import java.util.concurrent.TimeUnit;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
@@ -121,7 +120,6 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
-                    assertThat(responseBrukere.getBrukere().getFirst().getNesteCvKanDelesStatus()).isEqualTo("JA");
                     assertThat(responseBrukere.getBrukere().getFirst().getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
                 }
         );
@@ -130,14 +128,14 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     @Test
     public void filtrerBrukerePaStillingFraNAV() {
         NavKontor navKontor = randomNavKontor();
-        AktorId aktoer1 = randomAktorId();
-        AktorId aktoer2 = randomAktorId();
+        AktorId aktorIdCvDeltMedNav = randomAktorId();
+        AktorId aktorIdIkkeDeltCv = randomAktorId();
         VeilederId veileder = randomVeilederId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoer1, navKontor, veileder, ZonedDateTime.now(), null);
-        testDataClient.lagreBrukerUnderOppfolging(aktoer2, navKontor, veileder, ZonedDateTime.now(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorIdCvDeltMedNav, navKontor, veileder, ZonedDateTime.now(), null);
+        testDataClient.lagreBrukerUnderOppfolging(aktorIdIkkeDeltCv, navKontor, veileder, ZonedDateTime.now(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
-                .setAktorId(aktoer1.toString())
+                .setAktorId(aktorIdCvDeltMedNav.toString())
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.STILLING_FRA_NAV)
                 .setFraDato(ZonedDateTime.now())
                 .setTilDato(null)
@@ -152,7 +150,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         );
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("4")
-                .setAktorId(aktoer2.toString())
+                .setAktorId(aktorIdIkkeDeltCv.toString())
                 .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
                 .setFraDato(ZonedDateTime.now())
                 .setTilDato(null)
@@ -175,7 +173,6 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         });
 
 
-
         BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                 navKontor.getValue(),
                 empty(),
@@ -185,12 +182,10 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 null,
                 null);
 
-        System.out.println(JsonUtils.toJson( new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
+        System.out.println(JsonUtils.toJson(new Filtervalg().setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA)).setFerdigfilterListe(new ArrayList<>())));
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
-        assertThat(responseBrukere.getBrukere().get(0).getNesteCvKanDelesStatus()).isEqualTo("JA");
-        assertThat(responseBrukere.getBrukere().get(0).getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
-
-
+        assertEquals(aktorIdCvDeltMedNav.toString(), responseBrukere.getBrukere().getFirst().getAktoerid());
+        assertThat(responseBrukere.getBrukere().getFirst().getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));
     }
 
     @Test
@@ -309,7 +304,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
-                        navKontor.getValue(),  null, null,
+                        navKontor.getValue(), null, null,
                         null, ZonedDateTime.now()));
         skjermingRepository.settSkjerming(Fnr.of(fnr.get()), true);
     }

@@ -8,14 +8,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
@@ -38,9 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Stream;
@@ -48,15 +42,12 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertArbeidsliste;
-import static no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2Test.insertFargekategori;
 import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
 import static no.nav.pto.veilarbportefolje.hendelsesfilter.HendelsesfilterTestUtilKt.genererRandomHendelse;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.byggArbeidslisteQuery;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,7 +70,6 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     private final VeilarbVeilederClient veilarbVeilederClientMock;
     private final AuthContextHolder authContextHolder;
     private final PoaoTilgangWrapper poaoTilgangWrapper;
-    private final JdbcTemplate db;
 
     @Autowired
     public OpensearchServiceIntegrationTest(
@@ -87,15 +77,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
             OpensearchIndexer opensearchIndexer,
             VeilarbVeilederClient veilarbVeilederClientMock,
             AuthContextHolder authContextHolder,
-            PoaoTilgangWrapper poaoTilgangWrapper,
-            JdbcTemplate db
+            PoaoTilgangWrapper poaoTilgangWrapper
     ) {
         this.opensearchService = opensearchService;
         this.opensearchIndexer = opensearchIndexer;
         this.veilarbVeilederClientMock = veilarbVeilederClientMock;
         this.authContextHolder = authContextHolder;
         this.poaoTilgangWrapper = poaoTilgangWrapper;
-        this.db = db;
     }
 
     @BeforeEach
@@ -1199,7 +1187,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     void skal_returnere_brukere_basert_på_fødselsdag_i_måneden() {
-        var testBruker1 = new OppfolgingsBruker()
+        var testBrukerFodselsdagSyvende = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -1207,11 +1195,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
-        var testBruker2 = new OppfolgingsBruker()
+        var testBrukerFodselsdagNiende = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
-                .setFodselsdag_i_mnd(8)
+                .setFodselsdag_i_mnd(9)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0);
 
@@ -1220,7 +1208,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setFodselsdagIMnd(List.of("7"));
 
-        var liste = List.of(testBruker1, testBruker2);
+        var liste = List.of(testBrukerFodselsdagSyvende, testBrukerFodselsdagNiende);
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
@@ -1237,7 +1225,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().anyMatch(it -> it.getFodselsdagIMnd() == 7)).isTrue();
+        assertEquals(testBrukerFodselsdagSyvende.getFnr(), response.getBrukere().getFirst().getFnr());
     }
 
     @Test
@@ -1278,7 +1266,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(1);
-        assertThat(response.getBrukere().stream().anyMatch(bruker -> "K".equals(bruker.getKjonn()))).isTrue();
+        assertEquals(kvinne.getFnr(), response.getBrukere().getFirst().getFnr());
     }
 
     @Test
@@ -3280,9 +3268,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         Fnr bruker1Fnr = Fnr.of("01010111111");
         Fnr bruker2Fnr = Fnr.of("02020222222");
         Fnr bruker3Fnr = Fnr.of("03030333333");
-        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 06, 01, 0, 0);
-        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 06, 01, 0, 0);
-        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 06, 01, 0, 0);
+        LocalDateTime bruker1Opprettet = LocalDateTime.of(2024, 6, 1, 0, 0);
+        LocalDateTime bruker2Opprettet = LocalDateTime.of(2023, 6, 1, 0, 0);
+        LocalDateTime bruker3Opprettet = LocalDateTime.of(2022, 6, 1, 0, 0);
         String bruker1tekst = "Dette er noko tekst som startar på D.";
         String bruker2Tekst = "Akkurat slik startar du ein setning med bokstaven A.";
         String bruker3Tekst = "Byrjinga av denne teksten er bokstaven B.";
@@ -4970,7 +4958,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     @Test
     public void skal_kunne_sortere_pa_alle_gyldige_sorteringsverdier() {
         Sorteringsfelt[] alleSorteringsfelt = Sorteringsfelt.values();
-        ArrayList<Sorteringsfelt> sorteringsfeltSomFeilerISortering = new ArrayList<Sorteringsfelt>();
+        ArrayList<Sorteringsfelt> sorteringsfeltSomFeilerISortering = new ArrayList<>();
 
         for (Sorteringsfelt sorteringsfelt : alleSorteringsfelt) {
             try {
@@ -5225,14 +5213,4 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET);
     }
-
-    OppfolgingsBruker brukerMed2BarnKode6 = new OppfolgingsBruker()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setBarn_under_18_aar(List.of(new BarnUnder18AarData(5, "6"), new BarnUnder18AarData(11, "6")));
-
 }

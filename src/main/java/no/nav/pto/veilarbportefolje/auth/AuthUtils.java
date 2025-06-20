@@ -18,12 +18,11 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static no.nav.pto.veilarbportefolje.arbeidsliste.v1.ArbeidsListeController.emptyArbeidsliste;
 
 public class AuthUtils {
 
     static Bruker fjernKonfidensiellInfo(Bruker bruker) {
-        return bruker.setFnr("").setKjonn("")
+        return bruker.setFnr("")
                 .setEtternavn("").setFornavn("")
                 .setSkjermetTil(null)
                 .setFoedeland(null)

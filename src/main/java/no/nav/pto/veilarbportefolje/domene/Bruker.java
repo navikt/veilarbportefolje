@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -49,9 +48,7 @@ public class Bruker {
     Profileringsresultat profileringResultat;
     String innsatsgruppe;
     boolean erDoed;
-    int fodselsdagIMnd;
     String foedeland;
-    String kjonn;
     YtelseMapping ytelse;
     LocalDateTime utlopsdato;
     Integer dagputlopUke;
@@ -67,7 +64,6 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
     LocalDateTime nesteUtlopsdatoAktivitet;
-    List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime alleMoterStartTid;
@@ -85,7 +81,6 @@ public class Bruker {
     boolean harUtelandsAddresse;
     boolean harUkjentBosted;
 
-    String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
@@ -135,9 +130,7 @@ public class Bruker {
                 .setSkjermetTil(bruker.getSkjermet_til())
                 .setErDoed(bruker.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
-                .setFodselsdagIMnd(bruker.getFodselsdag_i_mnd())
                 .setFoedeland(bruker.getFoedelandFulltNavn())
-                .setKjonn(bruker.getKjonn())
                 .setYtelse(YtelseMapping.of(bruker.getYtelse()))
                 .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
                 .setDagputlopUke(bruker.getDagputlopuke())
@@ -151,11 +144,9 @@ public class Bruker {
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
