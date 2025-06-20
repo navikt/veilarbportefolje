@@ -64,7 +64,6 @@ public class Bruker {
     LocalDateTime forrigeAktivitetStart;
     LocalDateTime oppfolgingStartdato;
     LocalDateTime nesteUtlopsdatoAktivitet;
-    List<String> brukertiltak;
     Map<String, Timestamp> aktiviteter = new HashMap<>();
     LocalDateTime moteStartTid;
     LocalDateTime alleMoterStartTid;
@@ -146,7 +145,6 @@ public class Bruker {
                 .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
                 .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
                 .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setBrukertiltak(new ArrayList<>(bruker.getTiltak()))
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))

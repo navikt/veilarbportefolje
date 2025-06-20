@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsbrukereMedAntall;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -639,27 +640,31 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAvtalt(true));
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
-                            navKontor.getValue(),
-                            empty(),
-                            Sorteringsrekkefolge.STIGENDE,
-                            Sorteringsfelt.IKKE_SATT,
-                            new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
-                            null,
-                            null);
+                    OppfolgingsbrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentOppfolgingsbrukere(
+                            opensearchService.hentSokeresultatFraOpenSearch(
+                                    navKontor.getValue(),
+                                    empty(),
+                                    Sorteringsrekkefolge.STIGENDE,
+                                    Sorteringsfelt.IKKE_SATT,
+                                    new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("MIDLONTIL")),
+                                    null,
+                                    null)
+                    );
 
-                    BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
+                    OppfolgingsbrukereMedAntall responseBrukereLONNTILS =opensearchService.hentOppfolgingsbrukere(
+                            opensearchService.hentSokeresultatFraOpenSearch(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
                             new Filtervalg().setFerdigfilterListe(List.of()).setTiltakstyper(List.of("VARLONTIL")),
                             null,
-                            null);
+                            null)
+                    );
 
                     assertThat(responseBrukereMIDLONTIL.getAntall()).isEqualTo(1);
                     assertThat(responseBrukereLONNTILS.getAntall()).isEqualTo(0);
-                    assertThat(responseBrukereMIDLONTIL.getBrukere().get(0).getBrukertiltak().get(0)).isEqualTo("MIDLONTIL");
+                    assertThat(responseBrukereMIDLONTIL.getBrukere().getFirst().getTiltak().stream().toList().getFirst()).isEqualTo("MIDLONTIL");
                 }
         );
     }
