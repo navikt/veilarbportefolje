@@ -86,7 +86,7 @@ public class Bruker {
     Avvik14aVedtak avvik14aVedtak;
     List<BarnUnder18AarData> barnUnder18AarData;
 
-    EnsligeForsorgereOvergangsstonad ensligeForsorgereOvergangsstonad;
+    EnsligeForsorgereOvergangsstonadFrontend ensligeForsorgereOvergangsstonad;
 
     LocalDate utdanningOgSituasjonSistEndret;
 
@@ -171,7 +171,7 @@ public class Bruker {
                 .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
                 .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
                 .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
-                .setEnsligeForsorgereOvergangsstonad(bruker.getEnslige_forsorgere_overgangsstonad())
+                .setEnsligeForsorgereOvergangsstonad(EnsligeForsorgereOvergangsstonadFrontend.of(bruker.getEnslige_forsorgere_overgangsstonad()))
                 .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
                 .setHuskelapp(bruker.getHuskelapp())
                 .setFargekategori(bruker.getFargekategori())
