@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -83,7 +82,6 @@ public class Bruker {
     boolean harUtelandsAddresse;
     boolean harUkjentBosted;
 
-    String nesteCvKanDelesStatus;
     LocalDate nesteSvarfristCvStillingFraNav;
 
     Avvik14aVedtak avvik14aVedtak;
@@ -151,7 +149,6 @@ public class Bruker {
                 .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
                 .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
                 .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setNesteCvKanDelesStatus(bruker.getNeste_cv_kan_deles_status())
                 .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
                 .setUtkast14a(Utkast14a.of(
                         bruker.getUtkast_14a_status(),
