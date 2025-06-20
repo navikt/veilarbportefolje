@@ -23,7 +23,7 @@ import static no.nav.pto.veilarbportefolje.arbeidsliste.v1.ArbeidsListeControlle
 public class AuthUtils {
 
     static Bruker fjernKonfidensiellInfo(Bruker bruker) {
-        return bruker.setFnr("").setKjonn("")
+        return bruker.setFnr("")
                 .setEtternavn("").setFornavn("")
                 .setSkjermetTil(null)
                 .setFoedeland(null)
