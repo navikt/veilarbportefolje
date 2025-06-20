@@ -40,7 +40,6 @@ public class Filtervalg {
     public List<UtdanningSvar> utdanning = new ArrayList<>();
     public List<UtdanningBestattSvar> utdanningBestatt = new ArrayList<>();
     public List<UtdanningGodkjentSvar> utdanningGodkjent = new ArrayList<>();
-    public List<String> arbeidslisteKategori = new ArrayList<>();
     public List<String> sisteEndringKategori = new ArrayList<>();
     public List<String> aktiviteterForenklet = new ArrayList<>();
     public List<String> alleAktiviteter = new ArrayList<>(); // finst ikkje i veilarbportefoljeflatefs
@@ -80,7 +79,6 @@ public class Filtervalg {
                 !utdanningBestatt.isEmpty() ||
                 !utdanningGodkjent.isEmpty() ||
                 !sisteEndringKategori.isEmpty() ||
-                !arbeidslisteKategori.isEmpty() ||
                 harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
@@ -147,10 +145,6 @@ public class Filtervalg {
 
     public boolean harAktiviteterForenklet() {
         return !aktiviteterForenklet.isEmpty();
-    }
-
-    public boolean harAlleAktiviteterFilter() {
-        return !alleAktiviteter.isEmpty();
     }
 
     public boolean harNavnEllerFnrQuery() {
