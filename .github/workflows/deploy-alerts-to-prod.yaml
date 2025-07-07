@@ -3,7 +3,7 @@ name: Deploy alerts for veilarbportefolje to prod-gcp
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
       - '.github/workflows/deploy-alerts-to-prod.yaml'
       - '.nais/alerts/alerts-config-prod.yaml'
