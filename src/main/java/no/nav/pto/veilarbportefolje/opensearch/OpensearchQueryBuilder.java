@@ -785,7 +785,8 @@ public class OpensearchQueryBuilder {
                     return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
                 }
                 else {
-                    return -1;
+                    // Returnerer 3017.10.07 + 1 i millis for å få tomme huskelapper nederst
+                    return 33064243200001;
                 }
                 """;
         Script script = new Script(expresion);
