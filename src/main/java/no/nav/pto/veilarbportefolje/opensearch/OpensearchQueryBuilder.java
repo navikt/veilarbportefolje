@@ -780,16 +780,27 @@ public class OpensearchQueryBuilder {
     }
 
     private static void sorterHuskelappFrist(SearchSourceBuilder builder, SortOrder order) {
-        String expresion = """
-                if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                    return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
-                }
-                else {
-                    // Returnerer 3017.10.07 + 1 i millis for å få tomme huskelapper nederst
-                    return 33064243200001.0;
-                }
-                """;
-        Script script = new Script(expresion);
+        String expression;
+
+        if (order == SortOrder.ASC) {
+            expression = """
+            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+            } else {
+                return 33064243200001.0;
+            }
+            """;
+        } else {
+            expression = """
+            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+            } else {
+                return 0.0;
+            }
+            """;
+        }
+
+        Script script = new Script(expression);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
