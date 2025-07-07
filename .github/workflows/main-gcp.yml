@@ -11,7 +11,7 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/master'
+    if: github.ref != 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
   build-and-push:
     name: Build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
     steps:
@@ -58,9 +58,11 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
   deploy-dev:
-    name: Deploy application to dev gcp
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main'
+    name: Deploy application to dev-gcp
     needs: build-and-push
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -75,8 +77,10 @@ jobs:
 
   deploy-prod:
     name: Deploy application to prod gcp
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs: build-and-push
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -92,12 +96,15 @@ jobs:
   release-prod:
     name: Create prod release
     needs: deploy-prod
+    permissions:
+      id-token: write
+      contents: write # Create release
     runs-on: ubuntu-latest
     steps:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           name: Release to prod
-          target_commitish: master
+          target_commitish: main
           tag_name: release/prod@${{ env.IMAGE_TAG }}
           prerelease: false
