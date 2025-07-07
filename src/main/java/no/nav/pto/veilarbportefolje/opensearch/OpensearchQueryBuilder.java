@@ -786,7 +786,7 @@ public class OpensearchQueryBuilder {
                 }
                 else {
                     // Returnerer 3017.10.07 + 1 i millis for å få tomme huskelapper nederst
-                    return 33064243200001;
+                    return 33064243200001.0;
                 }
                 """;
         Script script = new Script(expresion);
