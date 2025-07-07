@@ -4223,6 +4223,22 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(response.getBrukere().get(2).getFnr(), bruker1.getFnr());
         assertEquals(response.getBrukere().get(3).getFnr(), bruker4.getFnr());
 
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.HUSKELAPP_FRIST,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
+
     }
 
     @Test
