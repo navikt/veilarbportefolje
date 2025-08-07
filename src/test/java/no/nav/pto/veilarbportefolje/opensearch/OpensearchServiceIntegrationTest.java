@@ -4128,10 +4128,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now().minusDays(10), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now().minusDays(12), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now().minusDays(8), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now().minusDays(14), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -4239,6 +4239,21 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
         assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
 
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.HUSKELAPP_SIST_ENDRET,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
     }
 
     @Test
