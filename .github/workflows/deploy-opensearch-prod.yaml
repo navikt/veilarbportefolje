@@ -1,17 +1,28 @@
-name: Deploy opensearch til Prod
+name: Deploy OpenSearch-instans til Dev/Prod
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Hvilket miljø skal det deployes til?"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+        default: "dev"
 
 jobs:
   deploy-opensearch:
     name: Deploy opensearch
-    runs-on: ubuntu-latest
     permissions:
-      contents: read
       id-token: write
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: nais/deploy/actions/deploy@v2
+      - name: Checkout 
+        uses: actions/checkout@v4
+
+      - name: Deploy OpenSearch to ${{ github.event.inputs.environment }}
+        uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: prod-gcp
-          RESOURCE: ".nais/application/opensearch-prod.yaml"
+          CLUSTER: ${{ github.event.inputs.environment }}-gcp
+          RESOURCE: ".nais/application/opensearch-${{ github.event.inputs.environment }}.yaml"
