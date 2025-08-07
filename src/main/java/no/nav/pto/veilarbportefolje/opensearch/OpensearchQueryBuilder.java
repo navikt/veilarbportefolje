@@ -590,6 +590,11 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("huskelapp.kommentar", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
+            case HUSKELAPP_SIST_ENDRET -> {
+                sorterHuskelappSistEndret(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+
             case FARGEKATEGORI -> {
                 searchSourceBuilder.sort("fargekategori", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
@@ -805,6 +810,24 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
     }
+
+    private static void sorterHuskelappSistEndret(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+            if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
+                return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
+            } else {
+                return 33064243200001.0;
+            }
+            """;
+
+        Script script = new Script(expression);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """

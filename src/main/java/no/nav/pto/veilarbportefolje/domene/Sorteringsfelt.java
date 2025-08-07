@@ -82,6 +82,7 @@ public enum Sorteringsfelt {
 
     HUSKELAPP_KOMMENTAR("huskelapp_kommentar"),
     HUSKELAPP_FRIST("huskelapp_frist"),
+    HUSKELAPP_SIST_ENDRET("huskelapp_sist_endret"),
     HUSKELAPP("huskelapp"),
 
     FARGEKATEGORI("fargekategori"),
