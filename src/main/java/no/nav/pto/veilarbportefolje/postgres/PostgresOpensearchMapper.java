@@ -260,7 +260,9 @@ public class PostgresOpensearchMapper {
             try {
                 Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), Kategori.UTGATT_VARSEL);
                 bruker.setUtgatt_varsel(eldsteHendelsePaPerson.getHendelse());
-            } catch (IngenHendelseForPersonException ex) {}
+            } catch (IngenHendelseForPersonException ex) {
+                // Ingen hendelse funnet for personen, men unødvendig med logging
+            }
         });
     }
 }
