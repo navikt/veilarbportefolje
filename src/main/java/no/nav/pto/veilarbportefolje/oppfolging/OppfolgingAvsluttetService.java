@@ -43,11 +43,13 @@ public class OppfolgingAvsluttetService {
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
     private final ArbeidssoekerService arbeidssoekerService;
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
+    private final OppfolgingRepositoryV3 oppfolgingRepositoryV3;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
 
         oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
+        oppfolgingRepositoryV3.slettOppfolgingData(aktoerId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerRegistrering(aktoerId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerProfilering(aktoerId);
         arbeidssokerRegistreringRepositoryV2.slettEndringIRegistrering(aktoerId);

@@ -21,6 +21,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class OppfolgingStartetService {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+    private final OppfolgingRepositoryV3 oppfolgingRepositoryV3;
     private final OpensearchIndexer opensearchIndexer;
     private final PdlService pdlService;
     private final Siste14aVedtakService siste14aVedtakService;
@@ -37,6 +38,7 @@ public class OppfolgingStartetService {
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate) {
         pdlService.hentOgLagrePdlData(aktorId);
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+        oppfolgingRepositoryV3.settUnderOppfolging(aktorId, oppfolgingStartetDate);
         siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);

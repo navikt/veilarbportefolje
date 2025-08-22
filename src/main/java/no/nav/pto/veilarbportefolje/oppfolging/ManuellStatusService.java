@@ -19,11 +19,13 @@ public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<Man
     private final OppfolgingService oppfolgingService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OppfolgingRepositoryV3 oppfolgingRepositoryV3;
 
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
 
         oppfolgingRepositoryV2.settManuellStatus(aktorId, dto.isErManuell());
+        oppfolgingRepositoryV3.settManuellStatus(aktorId, dto.isErManuell());
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, dto);
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;

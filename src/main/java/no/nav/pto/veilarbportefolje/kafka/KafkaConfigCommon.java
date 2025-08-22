@@ -87,6 +87,8 @@ public class KafkaConfigCommon {
 
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
 
+        VEILEDER_SIST_TILORDNET("pto.siste-tilordnet-veileder-v1"),
+
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
 
         ENDRING_PA_MAL("pto.endring-paa-maal-v1"),
@@ -157,7 +159,7 @@ public class KafkaConfigCommon {
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
                              ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService
+                             HendelseService hendelseService, VeilederSistTilordnetService veilederSistTilordnetService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -318,6 +320,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
                                         veilederTilordnetService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederSistTilordnetDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.VEILEDER_SIST_TILORDNET.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(VeilederSistTilordnetDTO.class),
+                                        veilederSistTilordnetService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ManuellStatusDTO>()
                                 .withLogging()
