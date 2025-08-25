@@ -18,14 +18,12 @@ public class NyForVeilederService extends KafkaCommonNonKeyedConsumerService<NyF
     private final OppfolgingService oppfolgingService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
-    private final OppfolgingRepositoryV3 oppfolgingRepositoryV3;
 
     @Override
     protected void behandleKafkaMeldingLogikk(NyForVeilederDTO dto) {
         AktorId aktorId = dto.getAktorId();
         final boolean brukerErNyForVeileder = dto.isNyForVeileder();
         oppfolgingRepositoryV2.settNyForVeileder(aktorId, brukerErNyForVeileder);
-        oppfolgingRepositoryV3.settNyForVeileder(aktorId, brukerErNyForVeileder);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, brukerErNyForVeileder);
 

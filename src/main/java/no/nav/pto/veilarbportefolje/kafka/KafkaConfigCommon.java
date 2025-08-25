@@ -159,7 +159,7 @@ public class KafkaConfigCommon {
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
                              ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService, VeilederSistTilordnetService veilederSistTilordnetService
+                             HendelseService hendelseService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -320,16 +320,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(VeilederTilordnetDTO.class),
                                         veilederTilordnetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, VeilederSistTilordnetDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.VEILEDER_SIST_TILORDNET.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(VeilederSistTilordnetDTO.class),
-                                        veilederSistTilordnetService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ManuellStatusDTO>()
                                 .withLogging()
