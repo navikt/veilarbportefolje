@@ -87,8 +87,6 @@ public class KafkaConfigCommon {
 
         VEILEDER_TILORDNET("pto.veileder-tilordnet-v1"),
 
-        VEILEDER_SIST_TILORDNET("pto.siste-tilordnet-veileder-v1"),
-
         ENDRING_PAA_NY_FOR_VEILEDER("pto.endring-paa-ny-for-veileder-v1"),
 
         ENDRING_PA_MAL("pto.endring-paa-maal-v1"),
