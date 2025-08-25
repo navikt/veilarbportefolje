@@ -15,12 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.MANUELL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.NY_FOR_VEILEDER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.VEILEDERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -38,8 +33,8 @@ public class OppfolgingRepositoryV2 {
         );
     }
 
-    public void settVeileder(AktorId aktorId, VeilederId veilederId) {
-        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
+    public void settVeileder(AktorId aktorId, VeilederId veilederId, ZonedDateTime tilordnetDato) {
+        db.update("UPDATE oppfolging_data SET veilederid = ?, tilordnet_dato = ? WHERE aktoerid = ?", veilederId.getValue(), toTimestamp(tilordnetDato), aktorId.get());
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {

@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -32,12 +33,13 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     public void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
+        final ZonedDateTime tilordnetDato = dto.getTilordnet();
 
-        tilordneVeileder(aktoerId, veilederId);
+        tilordneVeileder(aktoerId, veilederId, tilordnetDato);
     }
 
-    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId) {
-        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
+    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordnetDato) {
+        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId, tilordnetDato);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);

@@ -156,7 +156,8 @@ public class OppfolgingService {
         }
 
         secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-        oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
+        //TODO setter dato til null nå, men må vurdres å fikses ordentlig, eller avklares om denne koden ikke lengre er i bruk og kan slettes
+        oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder), null);
 
     }
 
