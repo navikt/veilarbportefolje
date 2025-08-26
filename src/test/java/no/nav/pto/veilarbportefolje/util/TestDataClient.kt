@@ -178,7 +178,7 @@ class TestDataClient(
             PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode)
         )
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato)
-        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId, null)
+        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
         upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
