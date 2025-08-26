@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -191,8 +192,10 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     @Test
     public void hentMoteplan() {
         NavKontor navKontor = randomNavKontor();
+        EnhetId enhetId = EnhetId.of(navKontor.getValue());
         VeilederId veileder = randomVeilederId();
         VeilederId annenVeileder = randomVeilederId();
+        BrukerinnsynTilganger brukerinnsynTilganger = new BrukerinnsynTilganger(false, false, false);
         testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("1")
@@ -225,17 +228,90 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(true));
-        List<Moteplan> moteplaner = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
-        List<Moteplan> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
+        List<MoteplanDTO> moteplaner = aktivitetService.hentMoteplan(veileder, enhetId, brukerinnsynTilganger);
+        List<MoteplanDTO> ingenMotePlaner = aktivitetService.hentMoteplan(annenVeileder, enhetId, brukerinnsynTilganger);
 
         assertThat(moteplaner.size()).isEqualTo(2);
         assertThat(ingenMotePlaner.size()).isEqualTo(0);
     }
 
     @Test
+    public void hentMoteplanMotevarighet() {
+        NavKontor navKontor = randomNavKontor();
+        EnhetId enhetId = EnhetId.of(navKontor.getValue());
+        VeilederId veileder = randomVeilederId();
+        BrukerinnsynTilganger brukerinnsynTilganger = new BrukerinnsynTilganger(false, false, false);
+
+        ZonedDateTime aktivitet1Start = ZonedDateTime.of(2125, 1, 1, 9, 0, 0, 0, ZoneId.of("Europe/Oslo"));
+        ZonedDateTime aktivitet1Slutt = aktivitet1Start.plusHours(2);
+
+        ZonedDateTime aktivitet2Start = ZonedDateTime.of(2125, 1, 1, 11, 0, 0, 0, ZoneId.of("Europe/Oslo"));
+        ZonedDateTime aktivitet2Slutt = aktivitet2Start.plusMinutes(15);
+
+        ZonedDateTime aktivitet3Start = ZonedDateTime.of(2125, 12, 31, 23, 59, 0, 0, ZoneId.of("Europe/Oslo"));
+        ZonedDateTime aktivitet3Slutt = ZonedDateTime.of(2126, 1, 2, 23, 59, 0, 0, ZoneId.of("Europe/Oslo"));
+
+        ZonedDateTime aktivitet4Start = ZonedDateTime.of(2126, 1, 2, 23, 59, 0, 0, ZoneId.of("Europe/Oslo"));
+        ZonedDateTime aktivitet4Slutt = aktivitet4Start.plusSeconds(59);
+
+        testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now(), null);
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("1")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(aktivitet1Start)
+                .setTilDato(aktivitet1Slutt)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(false));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("2")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(aktivitet2Start)
+                .setTilDato(aktivitet2Slutt)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true));
+        // Møte satt tilbake i tid
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("3")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(aktivitet3Start)
+                .setTilDato(aktivitet3Slutt)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true));
+        aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
+                .setAktivitetId("4")
+                .setAktorId(aktoer.get())
+                .setAktivitetType(KafkaAktivitetMelding.AktivitetTypeData.MOTE)
+                .setFraDato(aktivitet4Start)
+                .setTilDato(aktivitet4Slutt)
+                .setEndretDato(ZonedDateTime.parse("2017-02-03T10:10:10+02:00"))
+                .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
+                .setVersion(1L)
+                .setAvtalt(true));
+        List<MoteplanDTO> moteplaner = aktivitetService.hentMoteplan(veileder, enhetId, brukerinnsynTilganger);
+
+        assertThat(moteplaner.size()).isEqualTo(4);
+        assertEquals(120, moteplaner.get(0).varighetMinutter());
+        assertEquals(15, moteplaner.get(1).varighetMinutter());
+        assertEquals(2*24*60, moteplaner.get(2).varighetMinutter());
+        assertEquals(0, moteplaner.get(3).varighetMinutter());
+    }
+
+    @Test
     public void hentMoteplan_sperretAnsatt() {
         NavKontor navKontor = randomNavKontor();
+        EnhetId enhetId = EnhetId.of(navKontor.getValue());
         VeilederId veileder = randomVeilederId();
+        BrukerinnsynTilganger tilgangTilSkjerming = new BrukerinnsynTilganger(false, false, true);
+        BrukerinnsynTilganger ikkeTilgangTilSkjerming = new BrukerinnsynTilganger(false, false, false);
 
         testDataClient.lagreBrukerUnderOppfolging(aktoer, navKontor, veileder, ZonedDateTime.now(), null);
         settSperretAnsatt(aktoer, navKontor);
@@ -250,8 +326,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, true));
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
+        List<MoteplanDTO> medTilgang = aktivitetService.hentMoteplan(veileder, enhetId, tilgangTilSkjerming);
+        List<MoteplanDTO> utenTilgang = aktivitetService.hentMoteplan(veileder, enhetId, ikkeTilgangTilSkjerming);
 
         assertThat(medTilgang.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(utenTilgang.stream().allMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
@@ -289,10 +365,10 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                 .setAktivitetStatus(KafkaAktivitetMelding.AktivitetStatus.GJENNOMFORES)
                 .setVersion(1L)
                 .setAvtalt(false));
-        List<Moteplan> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, true, false));
-        List<Moteplan> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, false, false));
-        List<Moteplan> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, true, false));
-        List<Moteplan> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
+        List<MoteplanDTO> medTilgang_alt = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, true, false));
+        List<MoteplanDTO> medTilgang_6 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(true, false, false));
+        List<MoteplanDTO> medTilgang_7 = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, true, false));
+        List<MoteplanDTO> utenTilgang = aktivitetService.hentMoteplan(veileder, EnhetId.of(navKontor.getValue()), new BrukerinnsynTilganger(false, false, false));
 
         assertThat(medTilgang_alt.stream().noneMatch(moteplan -> moteplan.deltaker().equals(skjermetDeltaker))).isTrue();
         assertThat(medTilgang_6.stream().filter(moteplan -> moteplan.deltaker().equals(skjermetDeltaker)).toList().size()).isEqualTo(1);
