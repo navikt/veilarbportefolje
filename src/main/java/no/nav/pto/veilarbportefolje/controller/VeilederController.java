@@ -82,7 +82,7 @@ public class VeilederController {
 
     @GetMapping("{veilederident}/moteplan")
     @Operation(summary = "Hent møteplan for veileder", description = "Henter en liste av fremtidige møter for en gitt veileder på en gitt enhet.")
-    public List<Moteplan> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
+    public List<MoteplanDTO> hentMoteplanForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
         ValideringsRegler.sjekkEnhet(enhet.get());
         ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
 

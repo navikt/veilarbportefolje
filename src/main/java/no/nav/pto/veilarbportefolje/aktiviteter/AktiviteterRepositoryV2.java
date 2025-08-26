@@ -25,8 +25,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVITETER.*;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
 import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapAktivitetTilEntity;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -127,7 +126,7 @@ public class AktiviteterRepositoryV2 {
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
         return namedDb.query("""
-                        SELECT op.fodselsnr, a.fradato, a.avtalt, bd.fornavn, bd.etternavn
+                        SELECT op.fodselsnr, a.fradato, a.tildato, a.avtalt, bd.fornavn, bd.etternavn
                          from oppfolgingsbruker_arena_v2 op
                          left join bruker_data bd on bd.freg_ident = op.fodselsnr
                         inner join aktive_identer ai on op.fodselsnr = ai.fnr
@@ -151,9 +150,20 @@ public class AktiviteterRepositoryV2 {
     @SneakyThrows
     private Moteplan mapTilMoteplan(ResultSet rs) {
         return new Moteplan(
-                new Motedeltaker(rs.getString("fornavn"), rs.getString("etternavn"),
-                        rs.getString("fodselsnr")),
-                toIsoUTC(rs.getTimestamp("fradato")),
+                new Motedeltaker(
+                        rs.getString("fornavn"),
+                        rs.getString("etternavn"),
+                        rs.getString("fodselsnr")
+                ),
+                toIsoUTC(
+                        rs.getTimestamp("fradato")
+                ),
+                toZonedDateTime(
+                        rs.getTimestamp("fradato")
+                ),
+                toZonedDateTime(
+                        rs.getTimestamp("tildato")
+                ),
                 rs.getBoolean("avtalt")
         );
     }

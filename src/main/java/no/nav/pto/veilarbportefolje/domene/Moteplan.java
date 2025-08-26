@@ -1,4 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-public record Moteplan (Motedeltaker deltaker, String dato, boolean avtaltMedNav) {
+import java.time.ZonedDateTime;
+
+/** Møteplandata som hentes ut fra database. */
+public record Moteplan(Motedeltaker deltaker, String dato, ZonedDateTime starttidspunkt, ZonedDateTime sluttidspunkt, boolean avtaltMedNav) {
 }
