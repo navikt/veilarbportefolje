@@ -33,8 +33,8 @@ public class OppfolgingRepositoryV2 {
         );
     }
 
-    public void settVeileder(AktorId aktorId, VeilederId veilederId, ZonedDateTime tilordnetDato) {
-        db.update("UPDATE oppfolging_data SET veilederid = ?, tilordnet_dato = ? WHERE aktoerid = ?", veilederId.getValue(), toTimestamp(tilordnetDato), aktorId.get());
+    public void settVeileder(AktorId aktorId, VeilederId veilederId) {
+        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
@@ -47,6 +47,10 @@ public class OppfolgingRepositoryV2 {
 
     public void settStartdato(AktorId aktoerId, ZonedDateTime startDato) {
         db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
+    }
+
+    public void settTilordningsdato(AktorId aktoerId, ZonedDateTime tilordnetDato) {
+        db.update("UPDATE oppfolging_data SET tilordnet_dato = ? WHERE  aktoerid = ?", toTimestamp(tilordnetDato), aktoerId.get());
     }
 
     public void slettOppfolgingData(AktorId aktoerId) {
@@ -103,6 +107,15 @@ public class OppfolgingRepositoryV2 {
 
         return alleIder;
     }
+
+    public List<AktorId> hentAlleBrukereUnderOppfolgingMedVeileder() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging AND veilederid IS NOT NULL", AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
+
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         return Optional.ofNullable(

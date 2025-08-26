@@ -97,7 +97,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -175,7 +175,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -214,7 +214,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -252,7 +252,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -295,7 +295,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -604,7 +604,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity2 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR_2)
                 .nav_kontor(TEST_ENHETSID)
@@ -612,7 +612,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID_2), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",
@@ -645,7 +645,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity2 = OppfolgingsbrukerEntity.builder()
                 .fodselsnr(TEST_FNR_2)
                 .nav_kontor(TEST_ENHETSID)
@@ -653,7 +653,7 @@ class ArbeidslisteIntegrationTest {
                 .build();
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2);
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID_2), ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT), ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
                 Fnr.of(TEST_FNR),
                 "Overskriften",

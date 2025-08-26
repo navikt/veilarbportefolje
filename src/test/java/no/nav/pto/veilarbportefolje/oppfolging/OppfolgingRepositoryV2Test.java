@@ -38,7 +38,7 @@ public class OppfolgingRepositoryV2Test {
     public void skal_sette_ny_veileder() {
         VeilederId veilederId = VeilederId.of("Z12345");
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
-        oppfolgingRepository.settVeileder(aktoerId, veilederId, ZonedDateTime.now());
+        oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
         BrukerOppdatertInformasjon brukerOppdatertInformasjon = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();

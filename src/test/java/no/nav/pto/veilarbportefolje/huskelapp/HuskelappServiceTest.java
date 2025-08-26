@@ -114,6 +114,6 @@ public class HuskelappServiceTest {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        oppfolgingRepositoryV2.settVeileder(aktorId, veilederId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settVeileder(aktorId, veilederId);
     }
 }

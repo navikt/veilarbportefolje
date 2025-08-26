@@ -73,6 +73,53 @@ public class OppfolgingService {
         this.veilarboppfolgingUrl = url;
     }
 
+    public void lastInnTilordningsdato() {
+        JobRunner.runAsync("OppfolgingTilordningSync",
+            () -> {
+                List<AktorId> oppfolgingsBruker = oppfolgingRepositoryV2.hentAlleBrukereUnderOppfolgingMedVeileder();
+                oppfolgingsBruker.forEach(this::oppdaterTilordningsdato);
+                log.info("OppfolgingsJobb: oppdaterte tilordningsdato pa: {} brukere", oppfolgingsBruker.size());
+            });
+    }
+
+    public void oppdaterTilordningsdato(AktorId bruker) {
+        try {
+            Veilarbportefoljeinfo veilarbinfoOppfolging = hentVeilarbData(bruker);
+            Optional<BrukerOppdatertInformasjon> dbInfoPostgres = oppfolgingRepositoryV2.hentOppfolgingData(bruker);
+
+            String veilederDb = dbInfoPostgres.map(BrukerOppdatertInformasjon::getVeileder).orElse(null);
+            String korrektVeileder = Optional.ofNullable(veilarbinfoOppfolging.getVeilederId()).map(NavIdent::get).orElse(null);
+
+            if (veilarbinfoOppfolging.isErUnderOppfolging() && veilederDb != null && korrektVeileder != null) {
+                if (veilederDb.equals(korrektVeileder)) {
+                    Timestamp tilordningTimestampFraDb = dbInfoPostgres.map(BrukerOppdatertInformasjon::getTilordnetDato).orElse(null);
+                    ZonedDateTime tilordningZonedFraDb = Optional.ofNullable(tilordningTimestampFraDb).map(timestamp -> ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC"))).orElse(null);
+                    ZonedDateTime korrektTilordningDato = veilarbinfoOppfolging.getSistTilordnetDato();
+
+                    if (tilordningZonedFraDb != null && korrektTilordningDato.isEqual(tilordningZonedFraDb)) {
+                        return;
+                    }
+                    secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte tilordningsdato fra: {}, til:{} ", bruker, tilordningZonedFraDb, korrektTilordningDato);
+                    oppfolgingRepositoryV2.settTilordningsdato(bruker, veilarbinfoOppfolging.getSistTilordnetDato());
+                } else {
+                    secureLog.warn("Veiledere er ulike for bruker {} i portefolje {} og oppfolging db {};", bruker, veilederDb, korrektVeileder);
+                }
+
+            } else {
+                secureLog.info("OppfolgingsJobb: bruker er ikke under oppfolging eller har ikke tildelt veielder, aktoer: " + bruker);
+            }
+
+
+        } catch (RuntimeException e) {
+            secureLog.error("RuntimeException i OppfolgingTilordningSync for bruker {}", bruker);
+            secureLog.error("RuntimeException i OppfolgingTilordningSync", e);
+        } catch (Exception e) {
+            secureLog.error("Exception i OppfolgingTilordningSync for bruker {}", bruker);
+            secureLog.error("Exception i OppfolgingTilordningSync", e);
+        }
+
+    }
+
     public void lastInnDataPaNytt() {
         JobRunner.runAsync("OppfolgingSync",
                 () -> {
@@ -156,8 +203,7 @@ public class OppfolgingService {
         }
 
         secureLog.info("(Postgres) OppfolgingsJobb: aktoer: {} skal bytte veileder fra: {}, til:{} ", bruker, veilederDb, korrektVeileder);
-        //TODO setter dato til null nå, men må vurdres å fikses ordentlig, eller avklares om denne koden ikke lengre er i bruk og kan slettes
-        oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder), null);
+        oppfolgingRepositoryV2.settVeileder(bruker, VeilederId.of(korrektVeileder));
 
     }
 

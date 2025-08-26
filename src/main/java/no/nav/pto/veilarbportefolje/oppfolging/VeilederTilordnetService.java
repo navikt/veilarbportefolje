@@ -39,7 +39,8 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     }
 
     public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordnetDato) {
-        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId, tilordnetDato);
+        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
+        oppfolgingRepositoryV2.settTilordningsdato(aktoerId, tilordnetDato);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
