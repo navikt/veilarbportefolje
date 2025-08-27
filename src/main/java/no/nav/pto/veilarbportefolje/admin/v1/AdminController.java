@@ -67,14 +67,6 @@ public class AdminController {
         return "Innlastning av oppfolgingsdata har startet";
     }
 
-    @PostMapping("/lastInnTilordningsdato")
-    @Operation(summary = "Oppdater tilordningsdato for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer tilordningsdato for disse.")
-    public String lastInnTilordningsdato() {
-        sjekkTilgangTilAdmin();
-        oppfolgingService.lastInnTilordningsdato();
-        return "Innlastning av tilordningsdato har startet";
-    }
-
     @PostMapping("/lastInnOppfolgingForBruker")
     @Operation(summary = "Oppdater data for bruker", description = "Oppdaterer oppfølgingsdata for en gitt bruker. Dersom brukeren eventuelt ikke er under oppfølging slettes den.")
     public String lastInnOppfolgingsDataForBruker(@RequestBody LastInnOppfolgingForBrukerRequest request) {
