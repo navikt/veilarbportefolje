@@ -34,5 +34,7 @@ public class EnvironmentProperties {
     private String oppslagArbeidssoekerregisteretUrl;
     private String ensligForsorgerUrl;
     private String ensligForsorgerScope;
+    private String aapUrl;
+    private String aapScope;
 }
 

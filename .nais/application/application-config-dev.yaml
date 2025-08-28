@@ -100,6 +100,8 @@ spec:
           namespace: obo
         - application: familie-ef-sak
           namespace: teamfamilie
+        - application: aap-api-intern
+          namespace: aap
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
@@ -150,3 +152,7 @@ spec:
       value: "http://familie-ef-sak.teamfamilie"
     - name: ENSLIG_FORSORGER_SCOPE
       value: "api://dev-gcp.teamfamilie.familie-ef-sak/.default"
+    - name: AAP_URL
+      value: "http://aap-api-intern.aap"
+    - name: AAP_SCOPE
+      value: "api://dev-gcp.aap.aap-api-intern/.default"
