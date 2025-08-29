@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import client.AapClient;
+import no.nav.pto.veilarbportefolje.aap.controller.AapClient;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;

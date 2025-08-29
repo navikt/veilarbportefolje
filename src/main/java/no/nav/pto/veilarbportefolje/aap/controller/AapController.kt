@@ -1,7 +1,7 @@
-package controller
+package no.nav.pto.veilarbportefolje.aap.controller
 
-import client.AapResponseDto
 import io.swagger.v3.oas.annotations.tags.Tag
+import no.nav.pto.veilarbportefolje.aap.client.AapResponseDto
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
     description = "Aap"
 )
 class AapController(
-    val aapClient: client.AapClient
+    val aapClient: AapClient
 ) {
 
     @PostMapping("/hent-aap")

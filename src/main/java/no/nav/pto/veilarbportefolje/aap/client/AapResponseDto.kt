@@ -1,4 +1,4 @@
-package client
+package no.nav.pto.veilarbportefolje.aap.client
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
