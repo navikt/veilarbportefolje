@@ -15,8 +15,8 @@ class AapController(
 ) {
 
     @PostMapping("/hent-aap")
-    fun hentAap(): List<AapResponseDto> {
-        return aapClient.hentAapForPersonnr("15518316122")
+    fun hentAap(@RequestParam personnr: String): List<AapResponseDto> {
+        return aapClient.hentAapForPersonnr(personnr)
     }
 }
 
