@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aap.controller
 
 import no.nav.common.rest.client.RestClient.baseClient
 import no.nav.common.rest.client.RestUtils
+import no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.aap.client.AapRequest
 import no.nav.pto.veilarbportefolje.aap.client.AapResponseDto
@@ -19,7 +20,7 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
 
         val request = Request.Builder()
             .url(UrlUtils.joinPaths(baseUrl, "/kelvin/sakerByFnr"))
-            .header(HttpHeaders.AUTHORIZATION, machineToMachineTokenSupplier.get())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .post(RestUtils.toJsonRequestBody(requestBody))
             .build()
 
