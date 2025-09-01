@@ -35,7 +35,7 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
     }
 
 
-    fun hentAapMaximum(personnr: String, fom: String, tom: String): List<AapResponseMaksimumDto> {
+    fun hentAapMaximum(personnr: String, fom: String, tom: String): AapResponseMaksimumDto {
         val requestBody = AapIPeriodeRequest(personnr, fom, tom)
 
         val request = Request.Builder()

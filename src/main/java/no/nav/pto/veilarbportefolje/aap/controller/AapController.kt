@@ -22,7 +22,7 @@ class AapController(
     }
 
     @PostMapping("/hent-aap-maximum")
-    fun hentAapMaximum(@RequestBody request: AapIPeriodeRequest): List<AapResponseMaksimumDto> {
+    fun hentAapMaximum(@RequestBody request: AapIPeriodeRequest): AapResponseMaksimumDto {
         return aapClient.hentAapMaximum(
             personnr = request.personidentifikator,
             fom = request.fraOgMedDato,
