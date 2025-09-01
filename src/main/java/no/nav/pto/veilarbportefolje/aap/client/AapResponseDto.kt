@@ -23,23 +23,18 @@ data class AapResponseMaksimumDto(
     val vedtak: List<Vedtak>
 ) {
     data class Vedtak(
-        val barnMedStonad: Int,
-        val barnetillegg: Int,
-        val beregningsgrunnlag: Int,
-        val dagsats: Int,
-        val dagsatsEtterUføreReduksjon: Int,
-        val kildesystem: String,
-        val opphorsAarsak: String?,
+        val vedtakId: String,
+        val status: String,
+        val saksnummer: String,
+        val vedtaksdato: LocalDate,
         val periode: Periode,
         val rettighetsType: String,
-        val saksnummer: String,
-        val samordningsId: String,
-        val status: String,
-        val vedtakId: String,
-        val vedtaksTypeKode: String,
-        val vedtaksTypeNavn: String,
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        val vedtaksdato: LocalDate
+        val kildesystem: String,
+        val samordningsId: String? = null,
+        val opphorsAarsak: String? = null,
+        val vedtaksTypeKode: String?,
+        val vedtaksTypeNavn: String?,
+
     )
 
     data class Periode(
