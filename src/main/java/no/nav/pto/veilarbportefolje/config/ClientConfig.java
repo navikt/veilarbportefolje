@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
@@ -45,6 +46,17 @@ public class ClientConfig {
         return new VedtaksstotteClient(
                 environmentProperties.getVeilarbvedtaksstotteUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarbvedtaksstotteScope())
+        );
+    }
+
+    @Bean
+    public AapClient aapClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new AapClient(
+                environmentProperties.getAapUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getAapScope())
         );
     }
 

@@ -95,7 +95,7 @@ spec:
           namespace: obo
         - application: familie-ef-sak
           namespace: teamfamilie
-        - application: aap-api-intern
+        - application: api-intern
           namespace: aap
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
@@ -147,6 +147,6 @@ spec:
     - name: ENSLIG_FORSORGER_SCOPE
       value: "api://prod-gcp.teamfamilie.familie-ef-sak/.default"
     - name: AAP_URL
-      value: "http://aap-api-intern.aap"
+      value: "http://api-intern.aap"
     - name: AAP_SCOPE
-      value: "api://prod-gcp.aap.aap-api-intern/.default"
+      value: "api://prod-gcp.aap.api-intern/.default"
