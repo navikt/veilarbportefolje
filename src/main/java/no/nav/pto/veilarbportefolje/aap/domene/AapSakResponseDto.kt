@@ -1,9 +1,9 @@
-package no.nav.pto.veilarbportefolje.aap.client
+package no.nav.pto.veilarbportefolje.aap.domene
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
-data class AapResponseDto(
+data class AapSakResponseDto(
     val kilde: String,
     val periode: Periode,
     val sakId: String,
@@ -19,7 +19,7 @@ data class AapResponseDto(
 }
 
 
-data class AapResponseMaksimumDto(
+data class AapVedtakResponseDto(
     val vedtak: List<Vedtak>
 ) {
     data class Vedtak(
@@ -45,3 +45,4 @@ data class AapResponseMaksimumDto(
         val tilOgMedDato: LocalDate
     )
 }
+

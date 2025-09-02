@@ -1,10 +1,10 @@
-package no.nav.pto.veilarbportefolje.aap.client
+package no.nav.pto.veilarbportefolje.aap.domene
 
-data class AapRequest(
+data class AapSakRequest(
     val personidentifikatorer: List<String>
 )
 
-data class AapIPeriodeRequest(
+data class AapVedtakRequest(
     val personidentifikator: String,
     val fraOgMedDato: String,
     val tilOgMedDato: String
