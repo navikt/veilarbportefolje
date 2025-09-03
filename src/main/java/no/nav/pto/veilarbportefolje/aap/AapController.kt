@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*
     description = "Aap"
 )
 class AapController(
-    val aapClient: AapClient,
-    private val aapService: AapService
+    val aapClient: AapClient
 ) {
 
     @PostMapping("/hent-aap-sak")
@@ -23,21 +22,13 @@ class AapController(
     }
 
     @PostMapping("/hent-aap-vedtak")
-    fun hentAapVedtak(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto {
+    fun hentAapMaximum(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto {
         return aapClient.hentAapVedtak(
             personnr = request.personidentifikator,
             fom = request.fraOgMedDato,
             tom = request.tilOgMedDato
         )
     }
-
-    @PostMapping("/hent-aap-vedtak-for-oppfolging-periode")
-    fun hentAapVedtakForOppfolgingPeriode(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto {
-        return aapService.hentAapVedtakForOppfolgingPeriode(
-            personIdent = request.personidentifikator
-        )
-    }
-
 
 }
 
