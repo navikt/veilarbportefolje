@@ -10,6 +10,9 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
+import no.nav.pto.veilarbportefolje.aap.AapClient;
+import no.nav.pto.veilarbportefolje.aap.AapController;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
@@ -178,7 +181,10 @@ import static org.mockito.Mockito.when;
         TiltakshendelseService.class,
         HendelseRepository.class,
         HendelseService.class,
-        Gjeldende14aVedtakService.class
+        Gjeldende14aVedtakService.class,
+        AapService.class,
+        AapController.class,
+        AapClient.class
 })
 public class ApplicationConfigTest {
 
