@@ -74,14 +74,6 @@ public class OppfolgingRepositoryV2 {
         )).orElse(false);
     }
 
-    public Optional<OppfolgingMedStartdatoDTO> hentOppfolgingMedStartdato(AktorId aktoerId) {
-        return hentOppfolgingData(aktoerId)
-                .map(data -> new OppfolgingMedStartdatoDTO(
-                        data.getOppfolging(),
-                        data.getStartDato()
-                ));
-    }
-
     @SneakyThrows
     private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
         if (rs == null || rs.getString(AKTOERID) == null) {
