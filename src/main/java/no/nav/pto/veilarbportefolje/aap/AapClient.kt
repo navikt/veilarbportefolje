@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.rest.client.RestClient.baseClient
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
-import no.nav.pto.veilarbportefolje.aap.domene.AapSakRequest
-import no.nav.pto.veilarbportefolje.aap.domene.AapSakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakRequest
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
@@ -15,23 +13,6 @@ import java.util.function.Supplier
 
 class AapClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
     private val client: OkHttpClient = baseClient()
-
-    fun hentAapSak(personnr: String): List<AapSakResponseDto> {
-        val requestBody = AapSakRequest(listOf(personnr))
-
-        val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "/kelvin/sakerByFnr"))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
-            .post(RestUtils.toJsonRequestBody(requestBody))
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            RestUtils.throwIfNotSuccessful(response)
-
-            return response.deserializeJsonOrThrow()
-        }
-    }
-
 
     fun hentAapVedtak(personnr: String, fom: String, tom: String): AapVedtakResponseDto {
         val requestBody = AapVedtakRequest(personnr, fom, tom)

@@ -18,7 +18,6 @@ class AapService(
 ) {
 
     fun hentAapVedtakForOppfolgingPeriode(personIdent: String): AapVedtakResponseDto {
-        // funker dette også for d-nummer?
         val aktorId: AktorId = aktorClient.hentAktorId(Fnr.of(personIdent))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()

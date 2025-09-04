@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import io.swagger.v3.oas.annotations.tags.Tag
-import no.nav.pto.veilarbportefolje.aap.domene.AapSakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakRequest
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import org.springframework.web.bind.annotation.*
@@ -16,11 +15,6 @@ class AapController(
     val aapClient: AapClient,
     private val aapService: AapService
 ) {
-
-    @PostMapping("/hent-aap-sak")
-    fun hentAap(@RequestParam personnr: String): List<AapSakResponseDto> {
-        return aapClient.hentAapSak(personnr)
-    }
 
     @PostMapping("/hent-aap-vedtak")
     fun hentAapVedtak(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto {
