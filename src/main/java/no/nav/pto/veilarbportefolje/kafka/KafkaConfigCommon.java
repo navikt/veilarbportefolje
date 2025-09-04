@@ -17,6 +17,8 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
+import no.nav.pto.veilarbportefolje.aap.AapKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
@@ -129,7 +131,9 @@ public class KafkaConfigCommon {
 
         TILTAKSHENDELSE("obo.tiltakshendelse-v1"),
 
-        PORTEFOLJE_HENDELSESFILTER("obo.portefolje-hendelsesfilter-v1");
+        PORTEFOLJE_HENDELSESFILTER("obo.portefolje-hendelsesfilter-v1"),
+
+        YTELSER_TOPIC("obo.ytelser-v1");
 
 
         @Getter
@@ -157,7 +161,7 @@ public class KafkaConfigCommon {
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
                              ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService
+                             HendelseService hendelseService, AapKafkaMeldingService aapKafkaMeldingService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -428,6 +432,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(KafkaTiltakshendelse.class),
                                         tiltakshendelseService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, YtelserKafkaDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.YTELSER_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
+                                        aapKafkaMeldingService::behandleKafkaRecord
                                 )
                 );
 
