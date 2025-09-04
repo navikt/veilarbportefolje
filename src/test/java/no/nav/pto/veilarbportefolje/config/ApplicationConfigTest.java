@@ -183,8 +183,7 @@ import static org.mockito.Mockito.when;
         HendelseService.class,
         Gjeldende14aVedtakService.class,
         AapService.class,
-        AapController.class,
-        AapClient.class
+        AapController.class
 })
 public class ApplicationConfigTest {
 
@@ -367,4 +366,10 @@ public class ApplicationConfigTest {
     public EnsligForsorgerClient ensligForsorgerClient() {
         return mock(EnsligForsorgerClient.class);
     }
+
+    @Bean
+    public AapClient aapClient() {
+        return mock(AapClient.class);
+    }
+
 }
