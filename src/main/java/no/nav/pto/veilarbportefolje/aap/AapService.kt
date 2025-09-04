@@ -31,7 +31,8 @@ class AapService(
     val aapClient: AapClient,
     val aktorClient: AktorClient,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
-    val pdlIdentRepository: PdlIdentRepository
+    val pdlIdentRepository: PdlIdentRepository,
+    val aapRepository: AapRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
@@ -56,6 +57,15 @@ class AapService(
                 val filtrertPeriode = filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, vedtak.periode)
                 filtrertPeriode?.let { vedtak.copy(periode = it) }
             }
+
+        //midlertidlig mens vi tester endepunktene
+        if (aapIOppfolgingsPeriode.isEmpty()) {
+            return AapVedtakResponseDto(vedtak = emptyList())
+        }
+
+        val sistePeriode = aapIOppfolgingsPeriode.sortedByDescending { it.periode.fraOgMedDato }.first()
+
+        val lagreSistePeriode = aapRepository.upsertAap(personIdent, sistePeriode)
 
         return AapVedtakResponseDto(vedtak = aapIOppfolgingsPeriode)
     }

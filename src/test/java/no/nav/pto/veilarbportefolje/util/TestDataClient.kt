@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.util
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.AapRepository
 import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
@@ -43,7 +44,8 @@ class TestDataClient(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val pdlIdentRepository: PdlIdentRepository,
     private val pdlPersonRepository: PdlPersonRepository,
-    private val huskelappRepository: HuskelappRepository
+    private val huskelappRepository: HuskelappRepository,
+    private val aapRepositoryV2: AapRepository
 ) {
     fun upsertBrukerregistreringV1(aktorId: AktorId) {
         jdbcTemplatePostgres.update("""
