@@ -17,7 +17,7 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.aap.AapKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.aap.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;

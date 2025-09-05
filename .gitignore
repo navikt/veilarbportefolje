@@ -4,3 +4,4 @@
 *.log
 target
 .DS_Store
+DDL.sql
