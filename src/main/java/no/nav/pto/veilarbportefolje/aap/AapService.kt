@@ -30,7 +30,7 @@ class AapKafkaMeldingService(
 class AapService(
     val aapClient: AapClient,
     val aktorClient: AktorClient,
-    val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
+    val oppfolgingRepositoryV2: OppfolgingRepositoryV2
     val pdlIdentRepository: PdlIdentRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
