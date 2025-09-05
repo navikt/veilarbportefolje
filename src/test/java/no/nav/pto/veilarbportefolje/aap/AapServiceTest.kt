@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.domene.AktorClient
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingMedStartdatoDTO
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
@@ -41,7 +41,7 @@ class AapServiceTest {
 
         `when`(aktorClient.hentAktorId(Fnr.of(fnr))).thenReturn(aktorId)
         `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)).thenReturn(
-            Optional.of(OppfolgingMedStartdatoDTO(true, toTimestamp(oppfolgingStartdato) ))
+            Optional.of(OppfolgingMedStartdato(true, toTimestamp(oppfolgingStartdato) ))
         )
 
         val vedtakInnenfor = AapVedtakResponseDto.Vedtak(
@@ -79,26 +79,26 @@ class AapServiceTest {
     @Test
     fun `aap periode før oppfolgingStartdato skal filtreres bort`() {
         val oppfolgingsStartdato = LocalDate.of(2024, 1, 1)
-        val periode = AapVedtakResponseDto.Periode(
+        val aapVedtakPeriode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2023, 1, 1),
             tilOgMedDato = LocalDate.of(2023, 12, 31)
         )
 
-        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, periode)
+        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, aapVedtakPeriode)
         assertThat(resultat).isNull()
     }
 
     @Test
     fun `periode som overlapper oppfolgingStartdato skal beholdes`() {
         val oppfolgingsStartdato = LocalDate.of(2024, 1, 1)
-        val periode = AapVedtakResponseDto.Periode(
+        val aapVedtakPeriode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2023, 12, 1),
             tilOgMedDato = LocalDate.of(2024, 6, 30)
         )
 
-        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, periode)
+        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, aapVedtakPeriode)
 
-        assertThat(resultat).isEqualTo(periode)
+        assertThat(resultat).isEqualTo(aapVedtakPeriode)
     }
 
 }

@@ -36,19 +36,21 @@ class AapService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
 
         if (!erUnderOppfolging) {
             logger.info("Bruker er ikke under oppfølging, ignorerer aap-ytelse melding.")
             return
         }
 
-        hentAapVedtakForOppfolgingPeriode(kafkaMelding.personId)
+        hentAapVedtakForOppfolgingPeriode(kafkaMelding.personident)
     }
 
     fun hentAapVedtakForOppfolgingPeriode(personIdent: String): AapVedtakResponseDto {
         val aktorId: AktorId = aktorClient.hentAktorId(Fnr.of(personIdent))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
+        // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
@@ -75,8 +77,8 @@ class AapService(
         oppfolgingsStartdato: LocalDate,
         aapPeriode: AapVedtakResponseDto.Periode
     ): AapVedtakResponseDto.Periode? {
-        //perioder startet og avsluttet før oppfølgingstart utelates
-        if (aapPeriode.fraOgMedDato.isBefore(oppfolgingsStartdato) && aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
+        //perioder avsluttet før oppfølgingstart utelates
+        if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
         ) {
             return null
         }

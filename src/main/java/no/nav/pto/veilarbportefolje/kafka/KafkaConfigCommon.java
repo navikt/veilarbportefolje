@@ -161,7 +161,7 @@ public class KafkaConfigCommon {
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
                              ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService, AapKafkaMeldingService aapKafkaMeldingService
+                             HendelseService hendelseService, YtelserKafkaService ytelserKafkaService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -441,7 +441,7 @@ public class KafkaConfigCommon {
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
-                                        aapKafkaMeldingService::behandleKafkaRecord
+                                        ytelserKafkaService::behandleKafkaRecord
                                 )
                 );
 
