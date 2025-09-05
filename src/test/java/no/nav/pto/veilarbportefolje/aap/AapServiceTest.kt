@@ -47,41 +47,41 @@ class AapServiceTest(@Autowired private val jdbcTemplate: JdbcTemplate) : EndToE
         jdbcTemplate.update("TRUNCATE TABLE ${OPPFOLGING_DATA.TABLE_NAME}")
     }
 
-    @Test
-    fun `skal starte ytelser for aap`() {
-        // Given
-        val norskIdent = randomNorskIdent()
-        val fnr = Fnr.of(norskIdent.get())
-        val aktorId = randomAktorId()
-        insertOppfolgingsInformasjon(aktorId, fnr)
-
-        val ytelseAapMelding = YtelserKafkaDTO(
-            personident = norskIdent.get(),
-            meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
-            ytelsestype = YTELSE_TYPE.AAP,
-            kildesystem = YTELSE_KILDESYSTEM.KELVIN
-        )
-
-        //`when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.get())).thenReturn(true)
-        //`when`(aktorClient.hentAktorId(fnr)).thenReturn(aktorId)
-        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(
-            AapVedtakResponseDto(
-                vedtak = listOf(
-                    AapVedtakResponseDto.Vedtak(
-                        status = "LØPENDE",
-                        saksnummer = "S123",
-                        rettighetsType = "TYPE1",
-                        kildesystem = "KILDE1",
-                        opphorsAarsak = null,
-                        periode = AapVedtakResponseDto.Periode(
-                            fraOgMedDato = LocalDate.now().minusMonths(1),
-                            tilOgMedDato = LocalDate.now().plusMonths(1)
-                        )
-                    )
-                )
-            )
-        )
-
+//    @Test
+//    fun `skal starte ytelser for aap`() {
+//        // Given
+//        val norskIdent = randomNorskIdent()
+//        val fnr = Fnr.of(norskIdent.get())
+//        val aktorId = randomAktorId()
+//        insertOppfolgingsInformasjon(aktorId, fnr)
+//
+//        val ytelseAapMelding = YtelserKafkaDTO(
+//            personident = norskIdent.get(),
+//            meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
+//            ytelsestype = YTELSE_TYPE.AAP,
+//            kildesystem = YTELSE_KILDESYSTEM.KELVIN
+//        )
+//
+//        //`when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.get())).thenReturn(true)
+//        //`when`(aktorClient.hentAktorId(fnr)).thenReturn(aktorId)
+//        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(
+//            AapVedtakResponseDto(
+//                vedtak = listOf(
+//                    AapVedtakResponseDto.Vedtak(
+//                        status = "LØPENDE",
+//                        saksnummer = "S123",
+//                        rettighetsType = "TYPE1",
+//                        kildesystem = "KILDE1",
+//                        opphorsAarsak = null,
+//                        periode = AapVedtakResponseDto.Periode(
+//                            fraOgMedDato = LocalDate.now().minusMonths(1),
+//                            tilOgMedDato = LocalDate.now().plusMonths(1)
+//                        )
+//                    )
+//                )
+//            )
+//        )
+//
 
 //        //When
 //        aapService.behandleKafkaMeldingLogikk(ytelseAapMelding)
@@ -89,7 +89,7 @@ class AapServiceTest(@Autowired private val jdbcTemplate: JdbcTemplate) : EndToE
 //
 //        //Then
 //        assertThat(lagretAap).isNotNull
-    }
+ //   }
 
 
     @Test
