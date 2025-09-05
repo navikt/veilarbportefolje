@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -23,10 +24,11 @@ class AapServiceTest {
     private val aapClient: AapClient = mock()
     private val aktorClient: AktorClient = mock()
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2 = mock()
+    private val pdlIdentRepository = mock(PdlIdentRepository::class.java)
 
     @BeforeEach
     fun setUp() {
-        aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2)
+        aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2, pdlIdentRepository)
     }
 
 
