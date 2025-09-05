@@ -17,7 +17,7 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.aap.AapKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.aap.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
@@ -161,7 +161,7 @@ public class KafkaConfigCommon {
                              EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
                              ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
                              ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService, AapKafkaMeldingService aapKafkaMeldingService
+                             HendelseService hendelseService, YtelserKafkaService ytelserKafkaService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -441,7 +441,7 @@ public class KafkaConfigCommon {
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
-                                        aapKafkaMeldingService::behandleKafkaRecord
+                                        ytelserKafkaService::behandleKafkaRecord
                                 )
                 );
 
