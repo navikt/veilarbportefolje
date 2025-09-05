@@ -1,31 +1,20 @@
 package no.nav.pto.veilarbportefolje.aap
 
-import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.domene.AktorClient
-import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 
-@Service
-class AapKafkaMeldingService(
-    private val aapService: AapService
-) : KafkaCommonNonKeyedConsumerService<YtelserKafkaDTO>() {
-    override fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        aapService.behandleKafkaMeldingLogikk(kafkaMelding)
-    }
-}
-
-@Slf4j
 @Service
 class AapService(
     val aapClient: AapClient,
@@ -35,6 +24,8 @@ class AapService(
     val aapRepository: AapRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
+
+    @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
 
@@ -43,10 +34,18 @@ class AapService(
             return
         }
 
-        hentAapVedtakForOppfolgingPeriode(kafkaMelding.personident)
+        val sisteAapPeriode = hentSisteAapVedtakForOppfolgingPeriode(kafkaMelding.personident)
+
+        //todo håndtere tilfeller hvor denne er null, men vi har data i db fra før
+        if (sisteAapPeriode == null) {
+            logger.info("Ingen AAP-periode funnet i oppfølgingsperioden")
+            return
+        }
+
+        aapRepository.upsertAap(kafkaMelding.personident, sisteAapPeriode)
     }
 
-    fun hentAapVedtakForOppfolgingPeriode(personIdent: String): AapVedtakResponseDto {
+    fun hentSisteAapVedtakForOppfolgingPeriode(personIdent: String): AapVedtakResponseDto.Vedtak? {
         val aktorId: AktorId = aktorClient.hentAktorId(Fnr.of(personIdent))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
@@ -60,16 +59,8 @@ class AapService(
                 filtrertPeriode?.let { vedtak.copy(periode = it) }
             }
 
-        //midlertidlig mens vi tester endepunktene
-        if (aapIOppfolgingsPeriode.isEmpty()) {
-            return AapVedtakResponseDto(vedtak = emptyList())
-        }
-
-        val sistePeriode = aapIOppfolgingsPeriode.sortedByDescending { it.periode.fraOgMedDato }.first()
-
-        val lagreSistePeriode = aapRepository.upsertAap(personIdent, sistePeriode)
-
-        return AapVedtakResponseDto(vedtak = aapIOppfolgingsPeriode)
+        val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
+        return sistePeriode
     }
 
 
@@ -77,7 +68,6 @@ class AapService(
         oppfolgingsStartdato: LocalDate,
         aapPeriode: AapVedtakResponseDto.Periode
     ): AapVedtakResponseDto.Periode? {
-        //perioder avsluttet før oppfølgingstart utelates
         if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
         ) {
             return null

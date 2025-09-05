@@ -70,7 +70,7 @@ class AapServiceTest {
         val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
-        val resultat = aapService.hentAapVedtakForOppfolgingPeriode(fnr)
+        val resultat = aapService.hentSisteAapVedtakForOppfolgingPeriode(fnr)
 
         assertThat(resultat.vedtak).containsExactly(vedtakInnenfor)
     }
