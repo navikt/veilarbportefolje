@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aap.domene
 
 
 data class YtelserKafkaDTO(
-    val personId: String,
+    val personident: String,
     val meldingstype: YTELSE_MELDINGSTYPE,
     val ytelsestype: YTELSE_TYPE,
     val kildesystem: YTELSE_KILDESYSTEM
