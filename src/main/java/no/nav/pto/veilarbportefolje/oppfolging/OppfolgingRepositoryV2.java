@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -72,6 +73,14 @@ public class OppfolgingRepositoryV2 {
                         WHERE aktoerid = ?
                         """, (s, i) -> s.getBoolean(OPPFOLGING), aktoerId.get())
         )).orElse(false);
+    }
+
+    public Optional<OppfolgingMedStartdato> hentOppfolgingMedStartdato(AktorId aktoerId) {
+        return hentOppfolgingData(aktoerId)
+                .map(data -> new OppfolgingMedStartdato(
+                        data.getOppfolging(),
+                        data.getStartDato()
+                ));
     }
 
     @SneakyThrows
