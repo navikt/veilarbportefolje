@@ -33,7 +33,7 @@ class AapRepositoryTest(
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
         assertThat(resultatAvHenting!!.saksid).isEqualTo("SAK-1")
-        assertThat(resultatAvHenting.status).isEqualTo("INNVILGET")
+        assertThat(resultatAvHenting.status).isEqualTo("LØPENDE")
         assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2024, 1, 1))
         assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2024, 12, 31))
     }
@@ -57,7 +57,7 @@ class AapRepositoryTest(
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
         assertThat(resultatAvHenting!!.saksid).isEqualTo("SAK-2")
-        assertThat(resultatAvHenting.status).isEqualTo("INNVILGET")
+        assertThat(resultatAvHenting.status).isEqualTo("LØPENDE")
         assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2025, 1, 1))
         assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2025, 12, 31))
     }
