@@ -149,7 +149,7 @@ class AapServiceTest(
     }
 
     @Test
-    fun `aaå periode som overlapper oppfolgingStartdato skal beholdes`() {
+    fun `aap periode som overlapper oppfolgingStartdato skal beholdes`() {
         val oppfolgingsStartdato = LocalDate.of(2024, 1, 1)
         val aapVedtakPeriode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2023, 12, 1),
