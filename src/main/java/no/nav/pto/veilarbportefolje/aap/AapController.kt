@@ -27,7 +27,7 @@ class AapController(
 
     @PostMapping("/hent-aap-vedtak-for-oppfolging-periode")
     fun hentAapVedtakForOppfolgingPeriode(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto.Vedtak? {
-        return aapService.hentSisteAapVedtakForOppfolgingPeriode(
+        return aapService.hentSisteAapPeriodeFraApi(
             personIdent = request.personidentifikator
         )
     }

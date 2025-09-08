@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
+import no.nav.pto.veilarbportefolje.aap.repository.AapVedtakPeriode
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -35,7 +36,7 @@ class AapService(
             return
         }
 
-        val sisteAapPeriode = hentSisteAapVedtakForOppfolgingPeriode(kafkaMelding.personident)
+        val sisteAapPeriode = hentSisteAapPeriodeFraApi(kafkaMelding.personident)
 
         //todo håndtere tilfeller hvor denne er null, men vi har data i db fra før
         if (sisteAapPeriode == null) {
@@ -46,7 +47,7 @@ class AapService(
         aapRepository.upsertAap(kafkaMelding.personident, sisteAapPeriode)
     }
 
-    fun hentSisteAapVedtakForOppfolgingPeriode(personIdent: String): AapVedtakResponseDto.Vedtak? {
+    fun hentSisteAapPeriodeFraApi(personIdent: String): AapVedtakResponseDto.Vedtak? {
         val aktorId: AktorId = aktorClient.hentAktorId(Fnr.of(personIdent))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
@@ -64,6 +65,10 @@ class AapService(
         return sistePeriode
     }
 
+
+    fun hentAapYtelseFraDb(personIdent: String): AapVedtakPeriode? {
+        return aapRepository.hentAap(personIdent)
+    }
 
     fun filtrerAapKunIOppfolgingPeriode(
         oppfolgingsStartdato: LocalDate,

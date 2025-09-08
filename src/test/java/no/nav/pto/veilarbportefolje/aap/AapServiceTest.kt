@@ -6,19 +6,14 @@ import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA
 import no.nav.pto.veilarbportefolje.domene.AktorClient
-import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
-import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
-import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -42,13 +37,14 @@ class AapServiceTest(@Autowired private val jdbcTemplate: JdbcTemplate) : EndToE
         aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2, pdlIdentRepository, aapRepository)
     }
 
+    @BeforeEach
     fun `reset data`() {
         jdbcTemplate.update("TRUNCATE TABLE YTELSER_AAP")
         jdbcTemplate.update("TRUNCATE TABLE ${OPPFOLGING_DATA.TABLE_NAME}")
     }
 
 //    @Test
-//    fun `skal starte ytelser for aap`() {
+//    fun `skal starte henting og lagring av aap ved mottatt kafkamelding`() {
 //        // Given
 //        val norskIdent = randomNorskIdent()
 //        val fnr = Fnr.of(norskIdent.get())
@@ -82,14 +78,14 @@ class AapServiceTest(@Autowired private val jdbcTemplate: JdbcTemplate) : EndToE
 //            )
 //        )
 //
-
+//
 //        //When
 //        aapService.behandleKafkaMeldingLogikk(ytelseAapMelding)
 //        val lagretAap = aapRepository.hentAap(norskIdent.get())
 //
 //        //Then
 //        assertThat(lagretAap).isNotNull
- //   }
+//    }
 
 
     @Test
@@ -129,7 +125,7 @@ class AapServiceTest(@Autowired private val jdbcTemplate: JdbcTemplate) : EndToE
         val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
-        val resultat = aapService.hentSisteAapVedtakForOppfolgingPeriode(fnr)
+        val resultat = aapService.hentSisteAapPeriodeFraApi(fnr)
 
         assertThat(resultat).isEqualTo(vedtakInnenfor)
     }

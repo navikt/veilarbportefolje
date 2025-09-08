@@ -1,4 +1,3 @@
-DROP  TABLE  YTELSER_AAP;
 CREATE TABLE YTELSER_AAP
 (
     norsk_ident     varchar(11)  not null,
