@@ -14,38 +14,87 @@ import java.time.LocalDate
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class AapRepositoryTest(
+    @Autowired val aapRepository: AapRepository,
+    @Autowired val jdbcTemplate: JdbcTemplate
 ) {
-
-    @Autowired
-    private val jdbcTemplate: JdbcTemplate? = null
 
     @BeforeEach
     fun reset() {
-        jdbcTemplate!!.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
     }
 
     @Test
-    fun `upsert should insert new row`() {
-        val ident = "12345678910"
-        val vedtak = AapVedtakResponseDto.Vedtak(
-            status = "INNVILGET",
-            saksnummer = "SAK-1",
-            periode = AapVedtakResponseDto.Periode(
-                fraOgMedDato = LocalDate.of(2024, 1, 1),
-                tilOgMedDato = LocalDate.of(2024, 12, 31)
-            ),
-            kildesystem = "KELVIN",
-            rettighetsType = "AAP",
-            opphorsAarsak = null
-        )
+    fun `upsert med ny bruker skal inserte ny rad`() {
+        val ident = "123456789"
+        val vedtak = aapVedtakDto
 
-//        aapRepository.upsertAap(ident, vedtak)
-//
-//        val found = aapRepository.hentAap(ident)
-//        assertThat(found).isNotNull
-//        assertThat(found!!.saksid).isEqualTo("SAK-1")
-//        assertThat(found.status).isEqualTo("INNVILGET")
+        aapRepository.upsertAap(ident, vedtak)
+
+        val resultatAvHenting = aapRepository.hentAap(ident)
+        assertThat(resultatAvHenting).isNotNull
+        assertThat(resultatAvHenting!!.saksid).isEqualTo("SAK-1")
+        assertThat(resultatAvHenting.status).isEqualTo("INNVILGET")
+        assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2024, 1, 1))
+        assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2024, 12, 31))
     }
 
+    @Test
+    fun `upsert med eksisterende bruker skal oppdatere ny rad`() {
+        val ident = "123456789"
+        val vedtak_nr1 = aapVedtakDto
+
+        val vedtak_nr2 = vedtak_nr1.copy(
+            saksnummer = "SAK-2",
+            periode = AapVedtakResponseDto.Periode(
+                fraOgMedDato = LocalDate.of(2025, 1, 1),
+                tilOgMedDato = LocalDate.of(2025, 12, 31)
+            )
+        )
+
+        aapRepository.upsertAap(ident, vedtak_nr1)
+        aapRepository.upsertAap(ident, vedtak_nr2)
+
+        val resultatAvHenting = aapRepository.hentAap(ident)
+        assertThat(resultatAvHenting).isNotNull
+        assertThat(resultatAvHenting!!.saksid).isEqualTo("SAK-2")
+        assertThat(resultatAvHenting.status).isEqualTo("INNVILGET")
+        assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2025, 1, 1))
+        assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2025, 12, 31))
+    }
+
+
+    @Test
+    fun `hentAap med ikke-eksisterende bruker skal returnere null`() {
+        val ident = "123456789"
+        val resultatAvHenting = aapRepository.hentAap(ident)
+        assertThat(resultatAvHenting).isNull()
+    }
+
+    @Test
+    fun `slettAapForBruker skal slette rad`() {
+        val ident = "123456789"
+        val vedtak = aapVedtakDto
+
+        aapRepository.upsertAap(ident, vedtak)
+        val resultatAvHenting = aapRepository.hentAap(ident)
+        assertThat(resultatAvHenting).isNotNull
+
+        aapRepository.slettAapForBruker(ident)
+        val resultatEtterSletting = aapRepository.hentAap(ident)
+        assertThat(resultatEtterSletting).isNull()
+    }
+
+
+    val aapVedtakDto = AapVedtakResponseDto.Vedtak(
+        status = "INNVILGET",
+        saksnummer = "SAK-1",
+        periode = AapVedtakResponseDto.Periode(
+            fraOgMedDato = LocalDate.of(2024, 1, 1),
+            tilOgMedDato = LocalDate.of(2024, 12, 31)
+        ),
+        kildesystem = "KELVIN",
+        rettighetsType = "AAP",
+        opphorsAarsak = null
+    )
 
 }

@@ -3,12 +3,13 @@ package no.nav.pto.veilarbportefolje.aap.repository
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class AapRepository(private val db: JdbcTemplate) {
+class AapRepository(@Autowired private val db: JdbcTemplate) {
 
     fun upsertAap(norskIdent: NorskIdent, aap: AapVedtakResponseDto.Vedtak) {
         db.update(
@@ -65,7 +66,10 @@ class AapRepository(private val db: JdbcTemplate) {
         } catch (ex: EmptyResultDataAccessException) {
            null
         }
+    }
 
+    fun slettAapForBruker(norskIdent: NorskIdent) {
+        db.update("DELETE FROM ${YTELSER_AAP.TABLE_NAME} WHERE ${YTELSER_AAP.NORSK_IDENT} = ?", norskIdent)
     }
 }
 
