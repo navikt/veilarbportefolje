@@ -86,7 +86,7 @@ class AapRepositoryTest(
 
 
     val aapVedtakDto = AapVedtakResponseDto.Vedtak(
-        status = "INNVILGET",
+        status = "LØPENDE",
         saksnummer = "SAK-1",
         periode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2024, 1, 1),
