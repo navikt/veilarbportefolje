@@ -57,8 +57,7 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
         return try {
             db.queryForObject(sql, { rs, _ ->
                 AapVedtakPeriode(
-                    status = enumValueOf<AapStatus>(rs.getString("STATUS")),
-                    saksid = rs.getString("SAKSID"),
+                    status = AapStatus.fromDb(rs.getString("STATUS")),
                     periodeFom = rs.getDate("NYESTE_PERIODE_FOM").toLocalDate(),
                     periodeTom = rs.getDate("NYESTE_PERIODE_TOM").toLocalDate()
                 )
