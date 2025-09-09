@@ -12,6 +12,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.AapController;
+import no.nav.pto.veilarbportefolje.aap.repository.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
@@ -36,7 +37,6 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
@@ -51,6 +51,10 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
@@ -66,9 +70,6 @@ import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
@@ -183,7 +184,8 @@ import static org.mockito.Mockito.when;
         HendelseService.class,
         Gjeldende14aVedtakService.class,
         AapService.class,
-        AapController.class
+        AapController.class,
+        AapRepository.class,
 })
 public class ApplicationConfigTest {
 
@@ -202,8 +204,8 @@ public class ApplicationConfigTest {
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        OpensearchTestClient opensearchTestClient,
-                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
-        return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository);
+                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository, AapRepository aapRepository) {
+        return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository, aapRepository);
     }
 
     @Bean

@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import io.swagger.v3.oas.annotations.tags.Tag
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakRequest
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.*
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -26,10 +25,21 @@ class AapController(
     }
 
     @PostMapping("/hent-aap-vedtak-for-oppfolging-periode")
-    fun hentAapVedtakForOppfolgingPeriode(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto {
-        return aapService.hentAapVedtakForOppfolgingPeriode(
+    fun hentAapVedtakForOppfolgingPeriode(@RequestBody request: AapVedtakRequest): AapVedtakResponseDto.Vedtak? {
+        return aapService.hentSisteAapPeriodeFraApi(
             personIdent = request.personidentifikator
         )
+    }
+
+    @PostMapping("/hent-aap-for-kafkamelding")
+    fun hentAapForKafkamelding(@RequestBody request: AapVedtakRequest) {
+        val kafkaMelding = YtelserKafkaDTO(
+            personident = request.personidentifikator,
+            ytelsestype = YTELSE_TYPE.AAP,
+            meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
+            kildesystem = YTELSE_KILDESYSTEM.KELVIN
+        )
+        aapService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
 
 
