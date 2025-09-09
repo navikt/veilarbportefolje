@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 /**
  * Håndterer behandling av Kafka-meldinger fra [Topic.YTELSER_TOPIC].
  *
- * Denne klassen håndterer funksjonalitet knyttet til å route ytelses-kaffameldinger til riktig service basert på [YTELSE_TYPE]
+ * Denne klassen håndterer funksjonalitet knyttet til å route ytelses-kafkameldinger til riktig service basert på [YTELSE_TYPE]
  */
 @Service
 class YtelserKafkaService(
