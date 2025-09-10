@@ -131,7 +131,7 @@ class AapServiceTest(
         val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
-        val resultat = aapService.hentSisteAapPeriodeFraApi(fnr)
+        val resultat = aapService.hentSisteAapPeriodeFraApi(fnr, aktorId)
         assertThat(resultat).isEqualTo(vedtakInnenfor)
     }
 

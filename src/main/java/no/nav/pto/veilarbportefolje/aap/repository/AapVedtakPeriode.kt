@@ -16,7 +16,6 @@ enum class AapStatus {
     companion object {
         private val mapping = mapOf(
             "LØPENDE" to LOPENDE,
-            "LOPENDE" to LOPENDE,
             "UTREDES" to UTREDES,
             "AVSLUTTET" to AVSLUTTET
         )

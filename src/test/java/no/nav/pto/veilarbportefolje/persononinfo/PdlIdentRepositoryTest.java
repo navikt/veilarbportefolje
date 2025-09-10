@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
@@ -39,6 +40,9 @@ public class PdlIdentRepositoryTest {
 
     @MockBean
     private ArbeidssoekerService arbeidssoekerService;
+
+    @MockBean
+    private AapService aapService;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
