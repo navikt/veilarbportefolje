@@ -49,18 +49,22 @@ class AapService(
         }
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
-        hentOgLagreAapForBruker(kafkaMelding.personident, aktorId)
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        hentOgLagreAapForBruker(kafkaMelding.personident, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
+    fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        hentOgLagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
+    }
 
-    fun hentOgLagreAapForBruker(_personIdent: String?, aktorId: AktorId) {
-        val personIdent = _personIdent ?: aktorClient.hentFnr(aktorId).get()
-        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, aktorId)
+    fun hentOgLagreAapForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
+        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, aktorId, oppfolgingsStartdato )
 
         if (sisteAapPeriode == null)
-            if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
+            if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
-                aapRepository.slettAapForBruker(kafkaMelding.personident)
+                aapRepository.slettAapForBruker(personIdent)
                 return
             } else {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")
@@ -70,8 +74,7 @@ class AapService(
         aapRepository.upsertAap(personIdent, sisteAapPeriode)
     }
 
-    fun hentSisteAapPeriodeFraApi(personIdent: String, aktorId: AktorId): AapVedtakResponseDto.Vedtak? {
-        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+    fun hentSisteAapPeriodeFraApi(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
         // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
