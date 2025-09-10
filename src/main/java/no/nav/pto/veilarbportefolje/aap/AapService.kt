@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
@@ -47,10 +48,14 @@ class AapService(
 
         val sisteAapPeriode = hentSisteAapPeriodeFraApi(kafkaMelding.personident)
 
-        //todo håndtere tilfeller hvor denne er null, men vi har data i db fra før
-        if (sisteAapPeriode == null) {
-            logger.info("Ingen AAP-periode funnet i oppfølgingsperioden")
-            return
+        if (sisteAapPeriode == null)
+            if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
+                logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
+                aapRepository.slettAapForBruker(kafkaMelding.personident)
+                return
+            } else {
+                logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")
+                return
         }
 
         aapRepository.upsertAap(kafkaMelding.personident, sisteAapPeriode)

@@ -68,7 +68,7 @@ class AapServiceTest(
     }
 
     @Test
-    fun `skal ikke behandle kafkamelding når person ikke har aap`() {
+    fun `skal ikke behandle kafkamelding når person ikke har aap og er av meldingstype opprett`() {
         // Given
         val norskIdent = mockedYtelseAapMelding.personident
         val aktorId = randomAktorId()
@@ -86,6 +86,31 @@ class AapServiceTest(
 
         // Then
         assertThat(lagretAap).isNull()
+    }
+
+    @Test
+    fun `skal behandle kafkamelding og slette data når person ikke har aap men meldingstype er oppdater`() {
+        // Given
+        val norskIdent = mockedYtelseAapMelding.personident
+        val aktorId = randomAktorId()
+
+        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
+            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
+        )
+
+        // Opprett rad i db for å verifisere at den blir slettet i neste steg
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
+        val lagretAapOpprett = aapRepository.hentAap(norskIdent)
+        assertThat(lagretAapOpprett).isNotNull
+
+        // Oppdatermelding på samme person uten aap skal slette rad i db
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(AapVedtakResponseDto(emptyList()))
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
+        val lagretAapOppdater = aapRepository.hentAap(norskIdent)
+        assertThat(lagretAapOppdater).isNull()
     }
 
     @Test
