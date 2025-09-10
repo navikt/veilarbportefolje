@@ -13,11 +13,13 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.util.*
 
 
 /**
@@ -46,7 +48,14 @@ class AapService(
             return
         }
 
-        val sisteAapPeriode = hentSisteAapPeriodeFraApi(kafkaMelding.personident)
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
+        hentOgLagreAapForBruker(kafkaMelding.personident, aktorId)
+    }
+
+
+    fun hentOgLagreAapForBruker(_personIdent: String?, aktorId: AktorId) {
+        val personIdent = _personIdent ?: aktorClient.hentFnr(aktorId).get()
+        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, aktorId)
 
         if (sisteAapPeriode == null)
             if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
@@ -58,11 +67,10 @@ class AapService(
                 return
         }
 
-        aapRepository.upsertAap(kafkaMelding.personident, sisteAapPeriode)
+        aapRepository.upsertAap(personIdent, sisteAapPeriode)
     }
 
-    fun hentSisteAapPeriodeFraApi(personIdent: String): AapVedtakResponseDto.Vedtak? {
-        val aktorId: AktorId = aktorClient.hentAktorId(Fnr.of(personIdent))
+    fun hentSisteAapPeriodeFraApi(personIdent: String, aktorId: AktorId): AapVedtakResponseDto.Vedtak? {
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
         // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
@@ -77,6 +85,23 @@ class AapService(
 
         val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
         return sistePeriode
+    }
+
+    fun slettAapData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        if (maybeFnr.isEmpty) {
+            secureLog.warn(
+                "Kunne ikke slette AAP bruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
+                aktorId.get()
+            )
+            return
+        }
+
+        try {
+            aapRepository.slettAapForBruker(maybeFnr.get().toString())
+        } catch (e: Exception) {
+            secureLog.error("Feil ved sletting av AAP data for bruker med fnr: ${maybeFnr.get()}", e)
+            return
+        }
     }
 
     fun filtrerAapKunIOppfolgingPeriode(
