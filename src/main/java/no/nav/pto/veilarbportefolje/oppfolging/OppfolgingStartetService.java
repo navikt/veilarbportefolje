@@ -43,7 +43,7 @@ public class OppfolgingStartetService {
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        aapService.hentOgLagreAapForBruker(null, aktorId);
+        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
 
         opensearchIndexer.indekser(aktorId);
 
