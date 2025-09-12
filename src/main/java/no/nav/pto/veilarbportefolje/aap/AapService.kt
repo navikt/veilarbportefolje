@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
@@ -34,7 +35,8 @@ class AapService(
     val aktorClient: AktorClient,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
-    val aapRepository: AapRepository
+    val aapRepository: AapRepository,
+    val opensearchIndexerV2: OpensearchIndexerV2
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
@@ -53,28 +55,32 @@ class AapService(
     fun hentOgLagreAapForBrukerVedAapMelding(personident: String, meldingstype: YTELSE_MELDINGSTYPE) {
         val aktorId = aktorClient.hentAktorId(Fnr.of(personident))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(personident,oppfolgingsStartdato, meldingstype)
+        lagreAapForBruker(personident,oppfolgingsStartdato, meldingstype, aktorId)
     }
 
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        lagreAapForBruker(personIdent, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
+        lagreAapForBruker(personIdent, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT, aktorId)
     }
 
-    fun lagreAapForBruker(personIdent: String, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
+    fun lagreAapForBruker(personIdent: String, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE, aktorId: AktorId) {
         val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato )
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
                 aapRepository.slettAapForBruker(personIdent)
+                opensearchIndexerV2.slettAapKelvin(aktorId)
                 return
             } else {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")
                 return
         }
 
+        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(LocalDate.now())
+
         aapRepository.upsertAap(personIdent, sisteAapPeriode)
+        opensearchIndexerV2.oppdaterAapKelvin(aktorId, harAktivAap)
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {

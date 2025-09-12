@@ -292,6 +292,9 @@
             "type": "date"
           }
         }
+      },
+      "aap_kelvin": {
+        "type": "boolean"
       }
     }
   }

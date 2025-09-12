@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -35,10 +36,11 @@ class AapServiceTest(
     private val aktorClient: AktorClient = mock()
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2 = mock()
     private val pdlIdentRepository: PdlIdentRepository = mock()
+    private val opensearchIndexerV2: OpensearchIndexerV2 = mock()
 
     @BeforeEach
     fun setUp() {
-        aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2, pdlIdentRepository, aapRepository)
+        aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2, pdlIdentRepository, aapRepository, opensearchIndexerV2)
     }
 
     @BeforeEach
