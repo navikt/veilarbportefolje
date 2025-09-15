@@ -47,13 +47,15 @@ class AapService(
             return
         }
 
-        hentOgLagreAapForBruker(kafkaMelding.personident, kafkaMelding.meldingstype)
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        lagreAapForBruker(kafkaMelding.personident, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
-    fun hentOgLagreAapForBruker(personident: String, meldingstype: YTELSE_MELDINGSTYPE) {
-        val aktorId = aktorClient.hentAktorId(Fnr.of(personident))
+    fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(personident,oppfolgingsStartdato, meldingstype)
+        lagreAapForBruker(personIdent, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
