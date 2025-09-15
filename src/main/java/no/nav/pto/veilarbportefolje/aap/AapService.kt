@@ -55,15 +55,21 @@ class AapService(
     fun hentOgLagreAapForBrukerVedAapMelding(personident: String, meldingstype: YTELSE_MELDINGSTYPE) {
         val aktorId = aktorClient.hentAktorId(Fnr.of(personident))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(personident,oppfolgingsStartdato, meldingstype, aktorId)
+        lagreAapForBruker(kafkaMelding.personident, oppfolgingsStartdato, kafkaMelding.meldingstype)
+    }
+
+    fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        lagreAapForBruker(personIdent, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        lagreAapForBruker(personIdent, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT, aktorId)
+        lagreAapForBruker(personIdent, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
-    fun lagreAapForBruker(personIdent: String, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE, aktorId: AktorId) {
+    fun lagreAapForBruker(personIdent: String, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
         val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato )
 
         if (sisteAapPeriode == null)
