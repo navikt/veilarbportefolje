@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
-import no.nav.pto.veilarbportefolje.aap.repository.AapVedtakPeriode
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -50,16 +49,22 @@ class AapService(
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        hentOgLagreAapForBruker(kafkaMelding.personident, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
+        lagreAapForBruker(kafkaMelding.personident, oppfolgingsStartdato, kafkaMelding.meldingstype)
+    }
+
+    fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        lagreAapForBruker(personIdent, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        hentOgLagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
+        lagreAapForBruker(personIdent, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
-    fun hentOgLagreAapForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
-        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, aktorId, oppfolgingsStartdato )
+    fun lagreAapForBruker(personIdent: String, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
+        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato )
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
@@ -74,7 +79,7 @@ class AapService(
         aapRepository.upsertAap(personIdent, sisteAapPeriode)
     }
 
-    fun hentSisteAapPeriodeFraApi(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
+    fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
         // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
