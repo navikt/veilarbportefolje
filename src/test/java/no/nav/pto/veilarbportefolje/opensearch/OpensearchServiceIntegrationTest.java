@@ -1360,7 +1360,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setYtelse(YtelseFilter.DAGPENGER);
+                .setYtelse(YtelseFilterArena.DAGPENGER);
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4089,7 +4089,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_MAXTID);
+                .setYtelse(YtelseFilterArena.AAP_MAXTID);
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4108,7 +4108,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_UNNTAK);
+                .setYtelse(YtelseFilterArena.AAP_UNNTAK);
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
