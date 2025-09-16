@@ -79,7 +79,7 @@ class AapService(
                 return
         }
 
-        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(LocalDate.now())
+        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
 
         aapRepository.upsertAap(personIdent, sisteAapPeriode)
         opensearchIndexerV2.oppdaterAapKelvin(aktorId, harAktivAap)

@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
-import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -283,8 +281,9 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
-        boolean tomDatoErEtterDagensDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null && rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate().isAfter(LocalDate.now());
-        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErEtterDagensDato);
+        boolean tomDatoErIkkeUtgått = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null &&
+                rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate().isAfter(LocalDate.now().minusDays(1));
+        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
     }
 
     @SneakyThrows
