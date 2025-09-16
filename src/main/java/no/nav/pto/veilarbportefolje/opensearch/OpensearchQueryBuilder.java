@@ -191,7 +191,6 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter");
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe");
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal");
-        byggManuellFilter(filtervalg.nyeYtelser, queryBuilder, "nyeYtelser");
 
         if (filtervalg.harYtelsefilterArena()) {
             BoolQueryBuilder subQuery = boolQuery();
@@ -202,9 +201,13 @@ public class OpensearchQueryBuilder {
 
         if (filtervalg.harNyeYtelserFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.nyeYtelser.forEach(
-                    ytelse -> queryBuilder.must(subQuery.should(matchQuery("aap_kelvin", true)))
-            );
+            filtervalg.nyeYtelser.forEach(ytelse -> {
+                switch (ytelse) {
+                    case APP_KELVIN -> subQuery.should(termQuery("aap_kelvin", true));
+                }
+            });
+
+            queryBuilder.must(subQuery);
         }
 
         if (filtervalg.harKjonnfilter()) {
