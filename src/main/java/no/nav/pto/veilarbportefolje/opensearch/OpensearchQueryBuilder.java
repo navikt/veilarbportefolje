@@ -284,24 +284,30 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        /**
+         * Tolkebehov-filteret fungerer slik:
+         * - Filtrert på talespråktolk -> får ut dei som berre har talespråktolk
+         * - Filtrert på tegnspråktolk -> får ut dei som berre har tegnspråktolk
+         * - Filtrert på begge -> får ut alle som har behov for minst ein av tolketypane
+         * */
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = boolQuery();
-            BoolQueryBuilder tolkBehovTaleSubQuery = boolQuery();
+            BoolQueryBuilder tolkebehovSubQuery = boolQuery();
+            BoolQueryBuilder taletolkbehovSubQuery = boolQuery();
             BoolQueryBuilder tolkBehovTegnSubQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                tolkBehovTaleSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
-                tolkBehovSubquery.should(tolkBehovTaleSubQuery);
+                taletolkbehovSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
+                tolkebehovSubQuery.should(taletolkbehovSubQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
                 tolkBehovTegnSubQuery.must(existsQuery("tegnspraaktolk")).mustNot(matchQuery("tegnspraaktolk", ""));
-                tolkBehovSubquery.should(tolkBehovTegnSubQuery);
+                tolkebehovSubQuery.should(tolkBehovTegnSubQuery);
             }
 
-            // Eit "gyldig treff" må matche minst eit av should-kriteria, altså ha minst ein av Tegnspråktolk og Talespråktolk. Relevant når ein filtrerer på begge to samstundes.
-            tolkBehovSubquery.minimumShouldMatch(1);
+            // Eit "gyldig treff" må matche minst eit av "should-kriteria", altså ha minst ein av Tegnspråktolk og Talespråktolk.
+            tolkebehovSubQuery.minimumShouldMatch(1);
 
-            queryBuilder.must(tolkBehovSubquery);
+            queryBuilder.must(tolkebehovSubQuery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
             boolean tolkbehovSelected = false;
