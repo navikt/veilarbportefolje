@@ -72,7 +72,7 @@ class AapService(
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
                 aapRepository.slettAapForBruker(personIdent)
-                opensearchIndexerV2.slettAapKelvin(aktorId)
+                opensearchIndexerV2.oppdaterAapKelvin(aktorId, false)
                 return
             } else {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")

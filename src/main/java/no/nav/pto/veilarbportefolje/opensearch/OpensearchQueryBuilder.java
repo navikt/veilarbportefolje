@@ -199,11 +199,11 @@ public class OpensearchQueryBuilder {
             );
         }
 
-        if (filtervalg.harNyeYtelserFilter()) {
+        if (filtervalg.harYtelseAapKelvinFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.nyeYtelser.forEach(ytelse -> {
+            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
                 switch (ytelse) {
-                    case APP_KELVIN -> subQuery.should(termQuery("aap_kelvin", true));
+                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
                 }
             });
 

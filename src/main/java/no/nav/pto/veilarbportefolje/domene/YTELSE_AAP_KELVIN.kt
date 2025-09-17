@@ -1,5 +1,5 @@
 package no.nav.pto.veilarbportefolje.domene
 
-enum class NyeYtelserFilter {
-    APP_KELVIN
+enum class YTELSE_AAP_KELVIN {
+    HAR_AAP
 }
