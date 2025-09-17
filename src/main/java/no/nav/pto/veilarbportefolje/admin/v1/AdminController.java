@@ -259,7 +259,7 @@ public class AdminController {
         log.info("Startet: Innlastning av Aap brukerdata");
         brukereUnderOppfolging.forEach(bruker -> {
             try {
-                aapService.hentOgLagreAapForBrukerVedOppfolgingStart(bruker);
+                aapService.hentOgLagreAapForBrukerVedBatchjobb(bruker);
             } catch (Exception e) {
                 secureLog.info("Aap brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
             }
