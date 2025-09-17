@@ -1664,7 +1664,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void skal_hente_alle_brukere_som_har_tolkbehov() {
-        var brukerMedTalkBehov1 = new OppfolgingsBruker()
+        var brukerBehovForTalespraktolkSistOppdatert = "2022-02-22";
+        var brukerBehovForTalespraktolk = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -1672,9 +1673,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setNy_for_veileder(false)
                 .setEnhet_id(TEST_ENHET)
                 .setTalespraaktolk("JPN")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2022-02-22"));
+                .setTolkBehovSistOppdatert(LocalDate.parse(brukerBehovForTalespraktolkSistOppdatert));
 
-        var brukerMedTalkBehov2 = new OppfolgingsBruker()
+        var brukerBehovForTaleOgTegnspraktolkSistOppdatert = "2021-03-23";
+        var brukerBehovForTaleOgTegnspraktolk = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -1683,9 +1685,20 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setEnhet_id(TEST_ENHET)
                 .setTalespraaktolk("SWE")
                 .setTegnspraaktolk("SWE")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"));
+                .setTolkBehovSistOppdatert(LocalDate.parse(brukerBehovForTaleOgTegnspraktolkSistOppdatert));
 
-        var brukerUttenTalkBehov = new OppfolgingsBruker()
+        var brukerBehovForTegnspraktolkSistOppdatert = "2023-03-24";
+        var brukerBehovForTegnspraktolk = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setNy_for_veileder(false)
+                .setEnhet_id(TEST_ENHET)
+                .setTegnspraaktolk("NB")
+                .setTolkBehovSistOppdatert(LocalDate.parse(brukerBehovForTegnspraktolkSistOppdatert));
+
+        var brukerUtenTolkebehov1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -1695,7 +1708,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTalespraaktolk(null)
                 .setTegnspraaktolk(null);
 
-        var brukerUttenTalkBehov1 = new OppfolgingsBruker()
+        var brukerUtenTolkebehov2 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -1705,7 +1718,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setTalespraaktolk("")
                 .setTegnspraaktolk("");
 
-        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov, brukerUttenTalkBehov1);
+        var liste = List.of(brukerBehovForTalespraktolk, brukerBehovForTaleOgTegnspraktolk, brukerBehovForTegnspraktolk, brukerUtenTolkebehov1, brukerUtenTolkebehov2);
 
         skrivBrukereTilTestindeks(liste);
 
@@ -1726,8 +1739,8 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTaleOgTegnspraktolkSistOppdatert)));
 
 
         filterValg = new Filtervalg()
@@ -1743,8 +1756,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null,
                 null
         );
-        assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTaleOgTegnspraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals("NB")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTegnspraktolkSistOppdatert)));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1760,10 +1774,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
-
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTaleOgTegnspraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals("NB")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTegnspraktolkSistOppdatert)));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1780,7 +1794,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -1797,7 +1811,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
     }
 
     @Test
