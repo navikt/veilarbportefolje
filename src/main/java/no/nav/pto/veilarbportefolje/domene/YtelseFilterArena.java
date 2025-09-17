@@ -5,7 +5,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-public enum YtelseFilter {
+public enum YtelseFilterArena {
     DAGPENGER(asList(YtelseMapping.ORDINARE_DAGPENGER,
             YtelseMapping.DAGPENGER_MED_PERMITTERING,
             YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
@@ -23,7 +23,7 @@ public enum YtelseFilter {
 
     public final List<YtelseMapping> underytelser;
 
-    YtelseFilter(List<YtelseMapping> underytelser) {
+    YtelseFilterArena(List<YtelseMapping> underytelser) {
         this.underytelser = underytelser;
     }
 

@@ -192,11 +192,22 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe");
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal");
 
-        if (filtervalg.harYtelsefilter()) {
+        if (filtervalg.harYtelsefilterArena()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
                     ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
             );
+        }
+
+        if (filtervalg.harYtelseAapKelvinFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
+                switch (ytelse) {
+                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
+                }
+            });
+
+            queryBuilder.must(subQuery);
         }
 
         if (filtervalg.harKjonnfilter()) {
@@ -413,11 +424,11 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQuery = boolQuery();
 
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
-                && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
-                       && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             }
@@ -617,7 +628,7 @@ public class OpensearchQueryBuilder {
                  VENTER_PA_SVAR_FRA_BRUKER, STARTDATO_FOR_AVTALT_AKTIVITET, NESTE_STARTDATO_FOR_AVTALT_AKTIVITET,
                  FORRIGE_DATO_FOR_AVTALT_AKTIVITET, UTKAST_14A_STATUS_ENDRET, UTKAST_14A_ANSVARLIG_VEILEDER,
                  BOSTED_KOMMUNE, BOSTED_BYDEL, BOSTED_SIST_OPPDATERT, OPPFOLGING_STARTET, UTLOPSDATO, VEILEDER_IDENT,
-                 DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE -> {
+                 DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE, HAR_AAP_KELVIN -> {
                 searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
@@ -630,8 +641,8 @@ public class OpensearchQueryBuilder {
         boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER);
         boolean filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL);
         boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                                                       (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
-                                                       (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
+                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
@@ -710,7 +721,7 @@ public class OpensearchQueryBuilder {
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
+        if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP)) {
             expression = """
                     if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -726,7 +737,7 @@ public class OpensearchQueryBuilder {
                        return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
+        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_MAXTID)) {
             expression = """
                     if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
@@ -739,7 +750,7 @@ public class OpensearchQueryBuilder {
                         return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
+        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_UNNTAK)) {
             expression = """
                     if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -789,20 +800,20 @@ public class OpensearchQueryBuilder {
 
         if (order == SortOrder.ASC) {
             expression = """
-            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
-            } else {
-                return 33064243200001.0;
-            }
-            """;
+                    if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                        return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    """;
         } else {
             expression = """
-            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
-            } else {
-                return 0.0;
-            }
-            """;
+                    if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                        return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 0.0;
+                    }
+                    """;
         }
 
         Script script = new Script(expression);
@@ -815,12 +826,12 @@ public class OpensearchQueryBuilder {
         String expression;
 
         expression = """
-            if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
-                return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
-            } else {
-                return 33064243200001.0;
-            }
-            """;
+                if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
+                    return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
 
         Script script = new Script(expression);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);

@@ -4,8 +4,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor
+import no.nav.pto.veilarbportefolje.domene.value.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -24,19 +27,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class AapServiceTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
-    @Autowired private val aapRepository: AapRepository
-    ) : EndToEndTest() {
+    @Autowired private val aapRepository: AapRepository,
+    @Autowired private val opensearchService: OpensearchService,
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
+) : EndToEndTest() {
 
     private lateinit var aapService: AapService
     private val aapClient: AapClient = mock()
     private val aktorClient: AktorClient = mock()
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2 = mock()
     private val pdlIdentRepository: PdlIdentRepository = mock()
-    private val opensearchIndexerV2: OpensearchIndexerV2 = mock()
 
     @BeforeEach
     fun setUp() {
@@ -46,7 +51,12 @@ class AapServiceTest(
     @BeforeEach
     fun `reset data`() {
         jdbcTemplate.update("TRUNCATE TABLE YTELSER_AAP")
+        jdbcTemplate.execute("truncate table oppfolging_data")
     }
+
+    val norskIdent = Fnr.ofValidFnr("10108000000")
+    val navKontor = NavKontor.of("1123")
+    val veilederId = VeilederId.of("Z12345")
 
     @Test
     fun `skal starte henting og lagring av aap ved mottatt kafkamelding`() {
@@ -187,6 +197,93 @@ class AapServiceTest(
         assertThat(resultat).isEqualTo(aapVedtakPeriode)
     }
 
+    @Test
+    fun `AAP skal populere og filtrere riktig i opensearch `() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
+
+        assertThat(aapKelvinRespons).isNotNull
+        assertThat(aapKelvinRespons).isEqualTo(true)
+
+       val filtervalg = Filtervalg()
+        filtervalg.setYtelseAapKelvin(listOf(YTELSE_AAP_KELVIN.HAR_AAP))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().isHarAapKelvin).isEqualTo(true)
+        }
+    }
+
+    @Test
+    fun `skal populere og filtrere riktig i opensearch ved sletting av AAP `() {
+        val aktorId = randomAktorId()
+        // Legg til bruker med aap og oppdater opensearch
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
+        assertThat(aapKelvinRespons).isEqualTo(true)
+
+        //Fjern aap og oppdater opensearch
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(uttdatertMockeAapClientRespons)
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString(), meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
+        val getResponse2 = opensearchTestClient.fetchDocument(aktorId)
+        val aapKelvinRespons2 = getResponse2.sourceAsMap["aap_kelvin"];
+        assertThat(aapKelvinRespons2).isEqualTo(false)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseAapKelvin(listOf(YTELSE_AAP_KELVIN.HAR_AAP))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                navKontor.toString(),
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(0)
+        }
+    }
+
+
+    private fun setInitialState(aktorId: AktorId) {
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        populateOpensearch(navKontor, veilederId, aktorId.get(),)
+
+        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.toString())).thenReturn(true)
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
+            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
+        )
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
+
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString()))
+
+    }
+
 }
 
 val mockedYtelseAapMelding = YtelserKafkaDTO(
@@ -211,5 +308,13 @@ val mockedVedtak = AapVedtakResponseDto.Vedtak(
 val mockedAapClientRespons = AapVedtakResponseDto(
     vedtak = listOf(
         mockedVedtak
+    )
+)
+
+val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
+    vedtak = listOf(
+        mockedVedtak.copy(periode = AapVedtakResponseDto.Periode(
+            fraOgMedDato = LocalDate.now().minusYears(3),
+            tilOgMedDato = LocalDate.now().minusYears(2))),
     )
 )

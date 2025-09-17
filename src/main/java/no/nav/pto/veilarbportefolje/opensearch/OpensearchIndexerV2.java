@@ -401,17 +401,7 @@ public class OpensearchIndexerV2 {
 
         update(aktorId, content, format("Oppdatert aap kelvin for aktorId: %s", aktorId.get()));
 
-    }
-
-    @SneakyThrows
-    public void slettAapKelvin(AktorId aktorId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .nullField("aap_kelvin")
-                .endObject();
-
-        update(aktorId, content, format("Slettet aap kelvin for aktorId: %s", aktorId.get()));
-    }
+   }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
