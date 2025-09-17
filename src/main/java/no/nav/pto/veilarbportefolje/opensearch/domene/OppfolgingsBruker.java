@@ -60,6 +60,7 @@ public class OppfolgingsBruker {
     Integer aapunntakukerigjen;
 
     LocalDate aapordinerutlopsdato;
+    boolean aap_kelvin;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean trenger_vurdering;
