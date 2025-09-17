@@ -1775,9 +1775,9 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(3);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTaleOgTegnspraktolkSistOppdatert)));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals("NB")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTegnspraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTalespraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTaleOgTegnspraktolkSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(brukerBehovForTegnspraktolkSistOppdatert)));
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())

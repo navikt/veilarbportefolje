@@ -286,19 +286,21 @@ public class OpensearchQueryBuilder {
         }
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
             BoolQueryBuilder tolkBehovSubquery = boolQuery();
-            BoolQueryBuilder tolkBehovTale = boolQuery();
-            BoolQueryBuilder tolkBehovTegn = boolQuery();
+            BoolQueryBuilder tolkBehovTaleSubQuery = boolQuery();
+            BoolQueryBuilder tolkBehovTegnSubQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTale.must(existsQuery("talespraaktolk")))
-                        .must(tolkBehovTale.mustNot(matchQuery("talespraaktolk", "")));
+                tolkBehovTaleSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
+                tolkBehovSubquery.should(tolkBehovTaleSubQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTegn.must(existsQuery("tegnspraaktolk")))
-                        .should(tolkBehovTegn.mustNot(matchQuery("tegnspraaktolk", "")));
+                tolkBehovTegnSubQuery.must(existsQuery("tegnspraaktolk")).mustNot(matchQuery("tegnspraaktolk", ""));
+                tolkBehovSubquery.should(tolkBehovTegnSubQuery);
             }
+
+            // Eit "gyldig treff" må matche minst eit av should-kriteria, altså ha minst ein av Tegnspråktolk og Talespråktolk. Relevant når ein filtrerer på begge to samstundes.
+            tolkBehovSubquery.minimumShouldMatch(1);
+
             queryBuilder.must(tolkBehovSubquery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
