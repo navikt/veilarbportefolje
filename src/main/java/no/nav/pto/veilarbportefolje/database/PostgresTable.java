@@ -108,6 +108,11 @@ public class PostgresTable {
         public static final String HUSKELAPP_ENDRET_AV_VEILEDER = "HUSKELAPP_ENDRET_AV_VEILEDER";
         public static final String HUSKELAPP_HUSKELAPP_ID = "HUSKELAPP_HUSKELAPP_ID";
         public static final String HUSKELAPP_ENHET_ID = "HUSKELAPP_ENHET_ID";
+
+        // YTELSER AAP KELVIN
+        public static final String YTELSER_AAP_STATUS = "YTELSER_AAP_STATUS";
+        public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
+
     }
 
     public static final class OPPFOLGING_DATA {
