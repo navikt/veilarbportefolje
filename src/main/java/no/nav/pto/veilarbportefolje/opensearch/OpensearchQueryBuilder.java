@@ -304,7 +304,6 @@ public class OpensearchQueryBuilder {
                 tolkebehovSubQuery.should(tolkBehovTegnSubQuery);
             }
 
-            // Eit "gyldig treff" må matche minst eit av "should-kriteria", altså ha minst ein av Tegnspråktolk og Talespråktolk.
             tolkebehovSubQuery.minimumShouldMatch(1);
 
             queryBuilder.must(tolkebehovSubQuery);
