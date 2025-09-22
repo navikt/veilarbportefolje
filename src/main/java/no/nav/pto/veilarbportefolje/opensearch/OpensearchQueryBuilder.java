@@ -295,22 +295,29 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        /**
+         * Tolkebehov-filteret fungerer slik:
+         * - Filtrert på talespråktolk -> får ut dei som berre har talespråktolk
+         * - Filtrert på tegnspråktolk -> får ut dei som berre har tegnspråktolk
+         * - Filtrert på begge -> får ut alle som har behov for minst ein av tolketypane
+         * */
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = boolQuery();
-            BoolQueryBuilder tolkBehovTale = boolQuery();
-            BoolQueryBuilder tolkBehovTegn = boolQuery();
+            BoolQueryBuilder tolkebehovSubQuery = boolQuery();
+            BoolQueryBuilder taletolkbehovSubQuery = boolQuery();
+            BoolQueryBuilder tolkBehovTegnSubQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTale.must(existsQuery("talespraaktolk")))
-                        .must(tolkBehovTale.mustNot(matchQuery("talespraaktolk", "")));
+                taletolkbehovSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
+                tolkebehovSubQuery.should(taletolkbehovSubQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTegn.must(existsQuery("tegnspraaktolk")))
-                        .should(tolkBehovTegn.mustNot(matchQuery("tegnspraaktolk", "")));
+                tolkBehovTegnSubQuery.must(existsQuery("tegnspraaktolk")).mustNot(matchQuery("tegnspraaktolk", ""));
+                tolkebehovSubQuery.should(tolkBehovTegnSubQuery);
             }
-            queryBuilder.must(tolkBehovSubquery);
+
+            tolkebehovSubQuery.minimumShouldMatch(1);
+
+            queryBuilder.must(tolkebehovSubQuery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
             boolean tolkbehovSelected = false;
