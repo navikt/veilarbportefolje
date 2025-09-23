@@ -1664,53 +1664,42 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void skal_hente_alle_brukere_som_har_tolkbehov() {
-        var brukerMedTalkBehov1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
-                .setTalespraaktolk("JPN")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2022-02-22"));
+        var tolkesprakJapansk = "JPN";
+        var tolkesprakSvensk = "SWE";
+        var tolkesprakNorsk = "NB";
 
-        var brukerMedTalkBehov2 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
-                .setTalespraaktolk("SWE")
-                .setTegnspraaktolk("SWE")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"));
+        var trengerTalespraktolkBehovSistOppdatert = "2022-02-22";
+        var trengerTalespraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTalespraaktolk(tolkesprakJapansk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert));
 
-        var brukerUttenTalkBehov = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
+        var trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23";
+        var trengerTaleOgTegnspraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTalespraaktolk(tolkesprakSvensk)
+                .setTegnspraaktolk(tolkesprakSvensk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert));
+
+        var trengerTegnspraktolkBehovSistOppdatert = "2023-03-24";
+        var trengerTegnspraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTegnspraaktolk(tolkesprakNorsk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert));
+
+        var brukerUtenTolkebehov1 = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
                 .setTalespraaktolk(null)
                 .setTegnspraaktolk(null);
 
-        var brukerUttenTalkBehov1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
+        var brukerUtenTolkebehov2 = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
                 .setTalespraaktolk("")
                 .setTegnspraaktolk("");
 
-        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov, brukerUttenTalkBehov1);
+        var liste = List.of(trengerTalespraktolk, trengerTaleOgTegnspraktolk, trengerTegnspraktolk, brukerUtenTolkebehov1, brukerUtenTolkebehov2);
 
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
+
+        /* Skal hente alle med talespråktolk */
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TALESPRAAKTOLK"));
@@ -1726,10 +1715,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakSvensk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
 
 
+        /* Skal hente alle med tegnspråktolk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK"));
@@ -1743,9 +1733,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null,
                 null
         );
-        assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals(tolkesprakSvensk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals(tolkesprakNorsk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTegnspraktolkBehovSistOppdatert)));
 
+
+        /* Skal hente alle med tegn- eller talespråktolk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"));
@@ -1760,15 +1753,17 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTegnspraktolkBehovSistOppdatert)));
 
 
+        /* Skal hente alle med japansk som tegn- eller talespråk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
-                .setTolkBehovSpraak(List.of("JPN"));
+                .setTolkBehovSpraak(List.of(tolkesprakJapansk));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1780,12 +1775,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
 
+
+        /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of())
-                .setTolkBehovSpraak(List.of("JPN"));
+                .setTolkBehovSpraak(List.of(tolkesprakJapansk));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1797,7 +1794,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
     }
 
     @Test
@@ -4128,10 +4125,10 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void test_sortering_huskelapp() {
-        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
-        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now(), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp1 = new HuskelappForBruker(LocalDate.now().plusDays(20), "dddd Ringe fastlege", LocalDate.now().minusDays(10), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp2 = new HuskelappForBruker(LocalDate.now().plusDays(30), "bbbb Ha et møte", LocalDate.now().minusDays(12), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp3 = new HuskelappForBruker(LocalDate.now().plusMonths(2), "aaaa Snakke om idrett", LocalDate.now().minusDays(8), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
+        var huskelapp4 = new HuskelappForBruker(LocalDate.now().plusDays(3), "cccc Huddle med Julie", LocalDate.now().minusDays(14), TEST_VEILEDER_0, UUID.randomUUID().toString(), TEST_ENHET);
 
         var bruker1 = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -4239,6 +4236,21 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertEquals(response.getBrukere().get(2).getFnr(), bruker2.getFnr());
         assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
 
+        response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.HUSKELAPP_SIST_ENDRET,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(6);
+        assertEquals(response.getBrukere().get(0).getFnr(), bruker4.getFnr());
+        assertEquals(response.getBrukere().get(1).getFnr(), bruker2.getFnr());
+        assertEquals(response.getBrukere().get(2).getFnr(), bruker1.getFnr());
+        assertEquals(response.getBrukere().get(3).getFnr(), bruker3.getFnr());
     }
 
     @Test
@@ -5092,6 +5104,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         null
                 )
         );
+    }
+
+    private static OppfolgingsBruker genererRandomBruker(
+            String enhet,
+            String veilederId
+    ) {
+        return genererRandomBruker(enhet, veilederId, null, false);
     }
 
     private static OppfolgingsBruker genererRandomBruker(

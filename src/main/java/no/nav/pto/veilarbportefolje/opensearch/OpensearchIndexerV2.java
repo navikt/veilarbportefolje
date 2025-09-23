@@ -391,6 +391,28 @@ public class OpensearchIndexerV2 {
         update(aktorId, content, format("Slettet utgått varsel for aktorId: %s", aktorId.get()));
     }
 
+
+    @SneakyThrows
+    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("aap_kelvin", harAapKelvin)
+                .endObject();
+
+        update(aktorId, content, format("Oppdatert aap kelvin for aktorId: %s", aktorId.get()));
+
+    }
+
+    @SneakyThrows
+    public void slettAapKelvin(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .nullField("aap_kelvin")
+                .endObject();
+
+        update(aktorId, content, format("Slettet aap kelvin for aktorId: %s", aktorId.get()));
+    }
+
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
             secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);

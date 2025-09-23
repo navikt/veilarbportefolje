@@ -48,6 +48,9 @@ Når det gjøres endringer i `src/main/resources/opensearch_settings.json`, så 
 indeks. Dvs. man oppdaterer ikke den eksisterende indeksen. Den nye indeksen må populeres med data før den kan erstatte
 den gamle.
 
+Det er spesielt viktig å oppdatere OpenSearch settings dersom det skal sorteres på nye felt (stigende eller synkende).
+Å legge til i settings vil sørge for at sortering går mye raskere så vi unngår ytelsesproblemer ved søk.
+
 #### Fremgangsmåte
 
 1. Gjør endringer i `src/main/resources/opensearch_settings.json`, commit, push og deploy

@@ -1,4 +1,4 @@
-name: Deploy til Dev
+name: Bygg og deploy til dev-gcp
 on:
   workflow_dispatch:
 env:
@@ -11,18 +11,18 @@ permissions:
   id-token: write
 jobs:
   build-and-push:
-    name: Build and push
-    runs-on: ubuntu-latest
+    name: Build and push image
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
     permissions:
       id-token: write
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
         with:
           java-version: 21
           distribution: 'temurin'
@@ -40,12 +40,12 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
   deploy-dev:
-    name: Deploy application to dev
+    name: Deploy application to dev-gcp
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2

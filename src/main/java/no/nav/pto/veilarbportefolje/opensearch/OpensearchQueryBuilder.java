@@ -284,22 +284,29 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        /**
+         * Tolkebehov-filteret fungerer slik:
+         * - Filtrert på talespråktolk -> får ut dei som berre har talespråktolk
+         * - Filtrert på tegnspråktolk -> får ut dei som berre har tegnspråktolk
+         * - Filtrert på begge -> får ut alle som har behov for minst ein av tolketypane
+         * */
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = boolQuery();
-            BoolQueryBuilder tolkBehovTale = boolQuery();
-            BoolQueryBuilder tolkBehovTegn = boolQuery();
+            BoolQueryBuilder tolkebehovSubQuery = boolQuery();
+            BoolQueryBuilder taletolkbehovSubQuery = boolQuery();
+            BoolQueryBuilder tolkBehovTegnSubQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTale.must(existsQuery("talespraaktolk")))
-                        .must(tolkBehovTale.mustNot(matchQuery("talespraaktolk", "")));
+                taletolkbehovSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
+                tolkebehovSubQuery.should(taletolkbehovSubQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTegn.must(existsQuery("tegnspraaktolk")))
-                        .should(tolkBehovTegn.mustNot(matchQuery("tegnspraaktolk", "")));
+                tolkBehovTegnSubQuery.must(existsQuery("tegnspraaktolk")).mustNot(matchQuery("tegnspraaktolk", ""));
+                tolkebehovSubQuery.should(tolkBehovTegnSubQuery);
             }
-            queryBuilder.must(tolkBehovSubquery);
+
+            tolkebehovSubQuery.minimumShouldMatch(1);
+
+            queryBuilder.must(tolkebehovSubQuery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
             boolean tolkbehovSelected = false;
@@ -590,6 +597,11 @@ public class OpensearchQueryBuilder {
                 searchSourceBuilder.sort("huskelapp.kommentar", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
+            case HUSKELAPP_SIST_ENDRET -> {
+                sorterHuskelappSistEndret(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+
             case FARGEKATEGORI -> {
                 searchSourceBuilder.sort("fargekategori", sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
@@ -805,6 +817,24 @@ public class OpensearchQueryBuilder {
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
     }
+
+    private static void sorterHuskelappSistEndret(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+            if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
+                return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
+            } else {
+                return 33064243200001.0;
+            }
+            """;
+
+        Script script = new Script(expression);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
 
     private static void sorterHuskelappEksistere(SearchSourceBuilder builder, SortOrder order) {
         String expresion = """

@@ -7,6 +7,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
+import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
@@ -96,16 +97,17 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
         );
     }
 
-    public List<Moteplan> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, BrukerinnsynTilganger brukerInnsynTilganger) {
+    public List<MoteplanDTO> hentMoteplan(VeilederId veilederIdent, EnhetId enhet, BrukerinnsynTilganger brukerInnsynTilganger) {
         List<Moteplan> moteplans = aktiviteterRepositoryV2.hentFremtidigeMoter(veilederIdent, enhet);
+        List<MoteplanDTO> moteplanerMedVarighet = moteplans.stream().map(MoteplanDTO::of).toList();
 
-        return sensurerMoteplaner(moteplans, brukerInnsynTilganger);
+        return sensurerMoteplaner(moteplanerMedVarighet, brukerInnsynTilganger);
     }
 
-    private List<Moteplan> sensurerMoteplaner(List<Moteplan> moteplans, BrukerinnsynTilganger brukerInnsynTilganger) {
-        List<Moteplan> sensurertListe = new ArrayList<>();
+    private List<MoteplanDTO> sensurerMoteplaner(List<MoteplanDTO> moteplans, BrukerinnsynTilganger brukerInnsynTilganger) {
+        List<MoteplanDTO> sensurertListe = new ArrayList<>();
 
-        List<String> fnrs = moteplans.stream().map(Moteplan::deltaker).map(Motedeltaker::fnr).toList();
+        List<String> fnrs = moteplans.stream().map(MoteplanDTO::deltaker).map(Motedeltaker::fnr).toList();
         List<String> skjermedeFnrs = oppfolgingsbrukerRepository.finnSkjulteBrukere(fnrs, brukerInnsynTilganger);
 
         moteplans.forEach(plan -> {
@@ -119,7 +121,7 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
         return sensurertListe;
     }
 
-    private static Moteplan skjermMoteplan(Moteplan moteplan) {
-        return new Moteplan(skjermetDeltaker, moteplan.dato(), moteplan.avtaltMedNav());
+    private static MoteplanDTO skjermMoteplan(MoteplanDTO moteplan) {
+        return new MoteplanDTO(skjermetDeltaker, moteplan.dato(), moteplan.varighetMinutter(), moteplan.avtaltMedNav());
     }
 }

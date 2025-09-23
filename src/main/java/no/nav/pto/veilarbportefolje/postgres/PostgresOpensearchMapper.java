@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
@@ -261,7 +262,7 @@ public class PostgresOpensearchMapper {
                 Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), Kategori.UTGATT_VARSEL);
                 bruker.setUtgatt_varsel(eldsteHendelsePaPerson.getHendelse());
             } catch (IngenHendelseForPersonException ex) {
-                log.info("Fant ingen hendelse/utgått varsel for person, så ingen data å flette inn.");
+                // Ingen hendelse funnet for personen, men unødvendig med logging
             }
         });
     }

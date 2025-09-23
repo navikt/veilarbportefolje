@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -27,6 +28,7 @@ public class OppfolgingStartetService {
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
     private final ArbeidssoekerService arbeidssoekerService;
     private final EnsligeForsorgereService ensligeForsorgereService;
+    private final AapService aapService;
 
     // TODO: Dersom en eller flere av disse operasjonene feiler og kaster exception vil
     //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
@@ -41,6 +43,7 @@ public class OppfolgingStartetService {
         oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId);
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
 
         opensearchIndexer.indekser(aktorId);
 

@@ -90,7 +90,7 @@ spec:
           cluster: dev-fss
         - application: poao-tilgang
           namespace: poao
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
           namespace: paw
         - application: veilarbvedtaksstotte
           namespace: obo
@@ -100,6 +100,8 @@ spec:
           namespace: obo
         - application: familie-ef-sak
           namespace: teamfamilie
+        - application: api-intern
+          namespace: aap
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
@@ -143,10 +145,14 @@ spec:
     - name: KODEVERK_SCOPE
       value: "api://dev-gcp.team-rocket.kodeverk-api/.default"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_URL
-      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
+      value: "http://paw-arbeidssoekerregisteret-api-oppslag-v2.paw"
     - name: OPPSLAG_ARBEIDSSOEKERREGISTERET_SCOPE
-      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default"
     - name: ENSLIG_FORSORGER_URL
       value: "http://familie-ef-sak.teamfamilie"
     - name: ENSLIG_FORSORGER_SCOPE
       value: "api://dev-gcp.teamfamilie.familie-ef-sak/.default"
+    - name: AAP_URL
+      value: "http://api-intern.aap"
+    - name: AAP_SCOPE
+      value: "api://dev-gcp.aap.api-intern/.default"
