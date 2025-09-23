@@ -255,9 +255,12 @@ public class AdminController {
     public String lastInnAapBrukerData() {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-
+        AtomicInteger antall = new AtomicInteger(0);
         log.info("Startet: Innlastning av Aap brukerdata");
         brukereUnderOppfolging.forEach(bruker -> {
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info("Aap brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+            }
             try {
                 aapService.hentOgLagreAapForBrukerVedBatchjobb(bruker);
             } catch (Exception e) {
