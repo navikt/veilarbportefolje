@@ -204,6 +204,7 @@ public class OpensearchQueryBuilder {
             filtervalg.ytelseAapKelvin.forEach(ytelse -> {
                 switch (ytelse) {
                     case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
+                    case HAR_IKKE_AAP -> subQuery.should(termQuery("aap_kelvin", false));
                 }
             });
 
