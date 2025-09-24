@@ -1314,6 +1314,51 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_behandlet_i_kelvin() {
+        var brukerMedAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setAap_kelvin(true);
+
+        var brukerUtenAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(brukerMedAAP, brukerUtenAAP);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YTELSE_AAP_KELVIN.HAR_AAP));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(userExistsInResponse(brukerMedAAP, response)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenAAP, response)).isFalse();
+
+    }
+
+
+    @Test
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {
 
         var brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
@@ -1360,7 +1405,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setYtelse(YtelseFilter.DAGPENGER);
+                .setYtelse(YtelseFilterArena.DAGPENGER);
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4086,7 +4131,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_MAXTID);
+                .setYtelse(YtelseFilterArena.AAP_MAXTID);
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4105,7 +4150,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_UNNTAK);
+                .setYtelse(YtelseFilterArena.AAP_UNNTAK);
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
