@@ -59,7 +59,7 @@ public class Filtervalg {
     public List<String> gjeldendeVedtak14a = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppeGjeldendeVedtak14a = new ArrayList<>();
     public List<Hovedmal> hovedmalGjeldendeVedtak14a = new ArrayList<>();
-    public List<YTELSE_AAP_KELVIN> ytelseAapKelvin = new ArrayList<>();
+    public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||

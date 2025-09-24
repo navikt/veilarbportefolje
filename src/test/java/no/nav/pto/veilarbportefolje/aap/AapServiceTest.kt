@@ -210,7 +210,7 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isEqualTo(true)
 
        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YTELSE_AAP_KELVIN.HAR_AAP))
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
         filtervalg.setFerdigfilterListe(listOf())
 
         verifiserAsynkront(
@@ -248,7 +248,7 @@ class AapServiceTest(
         assertThat(aapKelvinRespons2).isEqualTo(false)
 
         val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YTELSE_AAP_KELVIN.HAR_AAP))
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
         filtervalg.setFerdigfilterListe(listOf())
 
         verifiserAsynkront(
