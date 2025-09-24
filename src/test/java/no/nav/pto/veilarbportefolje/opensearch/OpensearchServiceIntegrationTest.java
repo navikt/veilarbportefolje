@@ -1339,7 +1339,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setYtelseAapKelvin(List.of(YTELSE_AAP_KELVIN.HAR_AAP));
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP));
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
