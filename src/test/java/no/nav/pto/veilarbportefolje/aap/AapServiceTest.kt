@@ -45,7 +45,14 @@ class AapServiceTest(
 
     @BeforeEach
     fun setUp() {
-        aapService = AapService(aapClient, aktorClient, oppfolgingRepositoryV2, pdlIdentRepository, aapRepository, opensearchIndexerV2)
+        aapService = AapService(
+            aapClient,
+            aktorClient,
+            oppfolgingRepositoryV2,
+            pdlIdentRepository,
+            aapRepository,
+            opensearchIndexerV2
+        )
     }
 
     @BeforeEach
@@ -198,9 +205,9 @@ class AapServiceTest(
     }
 
     @Test
-    fun `AAP skal populere og filtrere riktig i opensearch `() {
+    fun `AAP skal populere og filtrere riktig i opensearch når man har aap i kelvin `() {
         val aktorId = randomAktorId()
-        setInitialState(aktorId)
+        setInitialState(aktorId, harAap = true)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
@@ -209,7 +216,7 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isNotNull
         assertThat(aapKelvinRespons).isEqualTo(true)
 
-       val filtervalg = Filtervalg()
+        val filtervalg = Filtervalg()
         filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
         filtervalg.setFerdigfilterListe(listOf())
 
@@ -232,10 +239,72 @@ class AapServiceTest(
     }
 
     @Test
+    fun `AAP skal populere og filtrere riktig i opensearch når man ikke har aap i kelvin `() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId, harAap = false)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
+        assertThat(aapKelvinRespons).isEqualTo(false)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().isHarAapKelvin).isEqualTo(false)
+        }
+    }
+
+    @Test
+    fun `AAP returnere alle brukere med og uten aap når begge filtrene er valgt `() {
+        val aktorId1 = randomAktorId()
+        val aktorId2 = randomAktorId()
+        setInitialState(aktorId1, harAap = false)
+        setInitialState(aktorId2, harAap = true)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP, YtelseAapKelvin.HAR_AAP))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(2)
+            assertThat(responseBrukere.brukere.filter { it.isHarAapKelvin }.size).isEqualTo(1)
+            assertThat(responseBrukere.brukere.filter { !it.isHarAapKelvin }.size).isEqualTo(1)
+        }
+    }
+
+    @Test
     fun `skal populere og filtrere riktig i opensearch ved sletting av AAP `() {
         val aktorId = randomAktorId()
         // Legg til bruker med aap og oppdater opensearch
-        setInitialState(aktorId)
+        setInitialState(aktorId, harAap = true)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons).isEqualTo(true)
@@ -269,16 +338,17 @@ class AapServiceTest(
     }
 
 
-    private fun setInitialState(aktorId: AktorId) {
+    private fun setInitialState(aktorId: AktorId, harAap: Boolean) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        populateOpensearch(navKontor, veilederId, aktorId.get(),)
+        populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.toString())).thenReturn(true)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
             Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
         )
-        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
+        val mockedRespons = if (harAap) mockedAapClientRespons else AapVedtakResponseDto(emptyList())
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedRespons)
 
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString()))
 
@@ -313,8 +383,11 @@ val mockedAapClientRespons = AapVedtakResponseDto(
 
 val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
     vedtak = listOf(
-        mockedVedtak.copy(periode = AapVedtakResponseDto.Periode(
-            fraOgMedDato = LocalDate.now().minusYears(3),
-            tilOgMedDato = LocalDate.now().minusYears(2))),
+        mockedVedtak.copy(
+            periode = AapVedtakResponseDto.Periode(
+                fraOgMedDato = LocalDate.now().minusYears(3),
+                tilOgMedDato = LocalDate.now().minusYears(2)
+            )
+        ),
     )
 )
