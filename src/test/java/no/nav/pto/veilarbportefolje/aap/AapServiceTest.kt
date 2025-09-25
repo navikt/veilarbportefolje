@@ -207,7 +207,7 @@ class AapServiceTest(
     @Test
     fun `AAP skal populere og filtrere riktig i opensearch når man har aap i kelvin `() {
         val aktorId = randomAktorId()
-        setInitialState(aktorId, true)
+        setInitialState(aktorId, harAap = true)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
@@ -241,7 +241,7 @@ class AapServiceTest(
     @Test
     fun `AAP skal populere og filtrere riktig i opensearch når man ikke har aap i kelvin `() {
         val aktorId = randomAktorId()
-        setInitialState(aktorId, false)
+        setInitialState(aktorId, harAap = false)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
@@ -274,8 +274,8 @@ class AapServiceTest(
     fun `AAP returnere alle brukere med og uten aap når begge filtrene er valgt `() {
         val aktorId1 = randomAktorId()
         val aktorId2 = randomAktorId()
-        setInitialState(aktorId1, false)
-        setInitialState(aktorId2, true)
+        setInitialState(aktorId1, harAap = false)
+        setInitialState(aktorId2, harAap = true)
 
         val filtervalg = Filtervalg()
         filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP, YtelseAapKelvin.HAR_AAP))
@@ -304,7 +304,7 @@ class AapServiceTest(
     fun `skal populere og filtrere riktig i opensearch ved sletting av AAP `() {
         val aktorId = randomAktorId()
         // Legg til bruker med aap og oppdater opensearch
-        setInitialState(aktorId, true)
+        setInitialState(aktorId, harAap = true)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons).isEqualTo(true)
