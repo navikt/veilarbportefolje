@@ -45,7 +45,7 @@ class AapService(
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
 
         if (!erUnderOppfolging) {
-            logger.info("Bruker er ikke under oppfølging, ignorerer aap-ytelse melding.")
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personident)
             return
         }
 
@@ -75,12 +75,13 @@ class AapService(
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
-                logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
+                secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
+                        "sletter eventuell eksisterende AAP-periode i databasen", personIdent)
                 aapRepository.slettAapForBruker(personIdent)
                 opensearchIndexerV2.slettAapKelvin(aktorId)
                 return
             } else {
-                logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")
+                secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, ignorerer aap-ytelse melding.", personIdent)
                 return
             }
 
@@ -143,12 +144,13 @@ class AapService(
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
         val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
-            .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet for $aktorId") }
+            .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
 
         if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
             return toLocalDate(oppfolgingsdata.startDato)
         }
 
-        throw IllegalStateException("Bruker er ikke under oppfølging")
+        secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
+        throw IllegalStateException("Bruker er ike under oppfølging")
     }
 }
