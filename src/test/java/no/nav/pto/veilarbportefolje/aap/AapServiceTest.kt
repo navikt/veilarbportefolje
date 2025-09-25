@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -72,6 +73,7 @@ class AapServiceTest(
         val aktorId = randomAktorId()
 
         `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
+        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent)).thenReturn(IdenterForBruker(listOf(norskIdent)))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
             Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
@@ -114,6 +116,7 @@ class AapServiceTest(
         val aktorId = randomAktorId()
 
         `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
+        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent)).thenReturn(IdenterForBruker(listOf(norskIdent)))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
             Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
@@ -343,6 +346,7 @@ class AapServiceTest(
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.toString())).thenReturn(true)
+        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent.toString())).thenReturn(IdenterForBruker(listOf(norskIdent.toString())))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
             Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))

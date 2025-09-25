@@ -65,19 +65,14 @@ class AapService(
         lagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
-    fun lagreAapForBruker(
-        personIdent: String,
-        aktorId: AktorId,
-        oppfolgingsStartdato: LocalDate,
-        meldingstype: YTELSE_MELDINGSTYPE
-    ) {
+    fun lagreAapForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
         val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato)
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
                         "sletter eventuell eksisterende AAP-periode i databasen", personIdent)
-                aapRepository.slettAapForBruker(personIdent)
+                slettAapForAlleIdenterForBruker(personIdent)
                 opensearchIndexerV2.slettAapKelvin(aktorId)
                 return
             } else {
@@ -89,13 +84,24 @@ class AapService(
             LocalDate.now().minusDays(1)
         )
 
-        aapRepository.upsertAap(personIdent, sisteAapPeriode)
+        upsertAapForAktivIdentForBruker(personIdent, aktorId, sisteAapPeriode)
         opensearchIndexerV2.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
             sisteAapPeriode.periode.tilOgMedDato,
             sisteAapPeriode.rettighetsType
         )
+    }
+
+    fun upsertAapForAktivIdentForBruker(personIdent: String, aktorId: AktorId, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+        val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
+        if (alleFnrIdenterForBruker.size > 1) {
+            alleFnrIdenterForBruker.forEach { ident ->
+                aapRepository.slettAapForBruker(ident)
+            }
+        }
+
+        aapRepository.upsertAap(personIdent, sisteAapPeriode)
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
@@ -124,10 +130,17 @@ class AapService(
         }
 
         try {
-            aapRepository.slettAapForBruker(maybeFnr.get().toString())
+            slettAapForAlleIdenterForBruker(maybeFnr.get().toString())
         } catch (e: Exception) {
             secureLog.error("Feil ved sletting av AAP data for bruker med fnr: ${maybeFnr.get()}", e)
             return
+        }
+    }
+
+    fun slettAapForAlleIdenterForBruker(personIdent: String) {
+        val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
+        alleFnrIdenterForBruker.forEach { ident ->
+            aapRepository.slettAapForBruker(ident)
         }
     }
 
