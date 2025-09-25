@@ -33,6 +33,9 @@ public enum Sorteringsfelt {
     AAP_MAXTID_UKE("aapmaxtiduke"),
     AAP_UNNTAK_UKER_IGJEN("aapunntakukerigjen"),
 
+    AAP_KELVIN_TOM_VEDTAKSDATO("aap_kelvin_tom_vedtaksdato"),
+    AAP_KELVIN_RETTIGHETSTYPE("aap_kelvin_rettighetstype"),
+
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 

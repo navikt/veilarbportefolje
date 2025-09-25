@@ -630,13 +630,18 @@ public class OpensearchQueryBuilder {
                 sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
+            case AAP_KELVIN_TOM_VEDTAKSDATO -> {
+                sorterAapKevlinTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+
             // Vi har eksplisitt latt være å definere en "default" case i switch-en for å tvinge oss selv til å håndtere
             // alle sorteringsfeltene (exhaustivness check som gjøres av kompilatoren). Så i praksis er dette default-tilfellet.
             case ETTERNAVN, CV_SVARFRIST, AAP_MAXTID_UKE, AAP_UNNTAK_UKER_IGJEN, VENTER_PA_SVAR_FRA_NAV,
                  VENTER_PA_SVAR_FRA_BRUKER, STARTDATO_FOR_AVTALT_AKTIVITET, NESTE_STARTDATO_FOR_AVTALT_AKTIVITET,
                  FORRIGE_DATO_FOR_AVTALT_AKTIVITET, UTKAST_14A_STATUS_ENDRET, UTKAST_14A_ANSVARLIG_VEILEDER,
                  BOSTED_KOMMUNE, BOSTED_BYDEL, BOSTED_SIST_OPPDATERT, OPPFOLGING_STARTET, UTLOPSDATO, VEILEDER_IDENT,
-                 DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE -> {
+                 DAGPENGER_UTLOP_UKE, DAGPENGER_PERM_UTLOP_UKE, AAP_KELVIN_RETTIGHETSTYPE -> {
                 searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
@@ -864,6 +869,23 @@ public class OpensearchQueryBuilder {
                 }
                 """;
         Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterAapKevlinTomVedtaksdato(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+                if (doc.containsKey('aap_kelvin_tom_vedtaksdato') && !doc['aap_kelvin_tom_vedtaksdato'].empty) {
+                    return doc['aap_kelvin_tom_vedtaksdato'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
+
+        Script script = new Script(expression);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);
