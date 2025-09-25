@@ -65,24 +65,36 @@ class AapService(
         lagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
-    fun lagreAapForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
-        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato )
+    fun lagreAapForBruker(
+        personIdent: String,
+        aktorId: AktorId,
+        oppfolgingsStartdato: LocalDate,
+        meldingstype: YTELSE_MELDINGSTYPE
+    ) {
+        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato)
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, sletter eventuell eksisterende AAP-periode i databasen")
                 aapRepository.slettAapForBruker(personIdent)
-                opensearchIndexerV2.oppdaterAapKelvin(aktorId, false)
+                opensearchIndexerV2.slettAapKelvin(aktorId)
                 return
             } else {
                 logger.info("Ingen AAP-periode funnet i oppfølgingsperioden, ignorerer aap-ytelse melding.")
                 return
-        }
+            }
 
-        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
+        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(
+            LocalDate.now().minusDays(1)
+        )
 
         aapRepository.upsertAap(personIdent, sisteAapPeriode)
-        opensearchIndexerV2.oppdaterAapKelvin(aktorId, harAktivAap)
+        opensearchIndexerV2.oppdaterAapKelvin(
+            aktorId,
+            harAktivAap,
+            sisteAapPeriode.periode.tilOgMedDato,
+            sisteAapPeriode.rettighetsType
+        )
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
