@@ -282,7 +282,7 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
-        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate();
+        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
         boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
         String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
 
