@@ -5054,6 +5054,161 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    void skal_sortere_brukere_pa_aap_tom_vedtaksdato() {
+        LocalDate tidspunkt1 = LocalDate.now();
+        LocalDate tidspunkt2 = LocalDate.now().plusDays(2);
+        LocalDate tidspunkt3 = LocalDate.now().plusDays(3);
+
+        var tidligstTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt1);
+
+        var midtImellomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt2);
+
+        var senestTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt3);
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.AAP_KELVIN_TOM_VEDTAKSDATO,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.AAP_KELVIN_TOM_VEDTAKSDATO,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(nullBruker.getFnr());
+        assertThat(brukereSynkende.get(1).getFnr()).isEqualTo(senestTomBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+    }
+
+    @Test
+    void skal_sortere_brukere_pa_aap_rettighetstype() {
+        var bistandsbehovBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("BISTANDSBEHOV");
+
+        var studentBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("STUDENT");
+
+        var sykepengeerstatningBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("SYKEPENGEERSTATNING");
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(sykepengeerstatningBruker, bistandsbehovBruker, studentBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(bistandsbehovBruker.getFnr());
+        assertThat(brukereStigende.get(1).getFnr()).isEqualTo(studentBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(sykepengeerstatningBruker.getFnr());
+        assertThat(brukereSynkende.get(2).getFnr()).isEqualTo(bistandsbehovBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+    }
+
+
+    @Test
     @SneakyThrows
     void skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
         Hendelse hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL);
