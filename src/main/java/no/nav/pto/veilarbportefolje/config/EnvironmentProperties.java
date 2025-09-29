@@ -36,5 +36,7 @@ public class EnvironmentProperties {
     private String ensligForsorgerScope;
     private String aapUrl;
     private String aapScope;
+    private String tiltakspengerUrl;
+    private String tiltakspengerScope;
 }
 
