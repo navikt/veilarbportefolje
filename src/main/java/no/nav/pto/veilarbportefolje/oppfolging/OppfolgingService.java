@@ -15,7 +15,6 @@ import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Siste14aVedtakRequest;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -62,7 +61,6 @@ public class OppfolgingService {
         this.client = RestClient.baseClient();
         this.veilarboppfolgingUrl = environmentProperties.getVeilarboppfolgingUrl();
         systemUserTokenProvider = () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope());
-
     }
 
     public OppfolgingService(OppfolgingAvsluttetService oppfolgingAvsluttetService, String url, OppfolgingRepositoryV2 oppfolgingRepositoryV2, AktorClient aktorClient, Supplier<String> systemUserTokenProvider) {

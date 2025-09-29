@@ -73,6 +73,16 @@ public class PdlIdentRepository {
         return new IdenterForBruker(identer);
     }
 
+    public IdenterForBruker hentFnrIdenterForBruker(String brukerId) {
+        List<String> identer = db.queryForList("""
+                select bi2.ident
+                from bruker_identer bi1
+                inner join bruker_identer bi2 on bi2.person = bi1.person
+                where bi2.gruppe = 'FOLKEREGISTERIDENT' and bi1.ident = ?
+                """, String.class, brukerId);
+        return new IdenterForBruker(identer);
+    }
+
     @SneakyThrows
     public static PDLIdent mapTilident(Map<String, Object> rs) {
         return new PDLIdent()

@@ -16,12 +16,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.AKTOERID;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.MANUELL;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.NY_FOR_VEILEDER;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.OPPFOLGING;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.STARTDATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.VEILEDERID;
+import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGING_DATA.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -53,6 +48,10 @@ public class OppfolgingRepositoryV2 {
 
     public void settStartdato(AktorId aktoerId, ZonedDateTime startDato) {
         db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
+    }
+
+    public void settTilordningsdato(AktorId aktoerId, ZonedDateTime tilordnetDato) {
+        db.update("UPDATE oppfolging_data SET tilordnet_dato = ? WHERE  aktoerid = ?", toTimestamp(tilordnetDato), aktoerId.get());
     }
 
     public void slettOppfolgingData(AktorId aktoerId) {
