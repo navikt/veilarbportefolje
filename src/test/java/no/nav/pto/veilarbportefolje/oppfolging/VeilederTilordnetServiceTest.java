@@ -30,11 +30,12 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     public void skal_oppdatere_tilordnet_veileder() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
+        final ZonedDateTime tilordnet = ZonedDateTime.now();
         when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
 
-        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
+        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder, tilordnet));
 
         final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
@@ -52,7 +53,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
 
-        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder));
+        veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder, null));
 
         final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
