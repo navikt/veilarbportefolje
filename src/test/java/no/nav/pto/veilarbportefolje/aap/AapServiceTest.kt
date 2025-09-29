@@ -237,7 +237,7 @@ class AapServiceTest(
             )
 
             assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().isHarAapKelvin).isEqualTo(true)
+            assertThat(responseBrukere.brukere.first().aapKelvin).isNotNull()
         }
     }
 
@@ -269,7 +269,7 @@ class AapServiceTest(
             )
 
             assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().isHarAapKelvin).isEqualTo(false)
+            assertThat(responseBrukere.brukere.first().aapKelvin).isNull()
         }
     }
 
@@ -298,8 +298,8 @@ class AapServiceTest(
             )
 
             assertThat(responseBrukere.antall).isEqualTo(2)
-            assertThat(responseBrukere.brukere.filter { it.isHarAapKelvin }.size).isEqualTo(1)
-            assertThat(responseBrukere.brukere.filter { !it.isHarAapKelvin }.size).isEqualTo(1)
+            assertThat(responseBrukere.brukere.filter { it.aapKelvin != null }.size).isEqualTo(1)
+            assertThat(responseBrukere.brukere.filter { it.aapKelvin == null }.size).isEqualTo(1)
         }
     }
 
