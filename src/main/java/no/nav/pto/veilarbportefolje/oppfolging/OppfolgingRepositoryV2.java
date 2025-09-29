@@ -50,7 +50,7 @@ public class OppfolgingRepositoryV2 {
         db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
     }
 
-    public void settTilordningsdato(AktorId aktoerId, ZonedDateTime tilordnetDato) {
+    public void settTilordningstidspunkt(AktorId aktoerId, ZonedDateTime tilordnetDato) {
         db.update("UPDATE oppfolging_data SET tilordnet_dato = ? WHERE  aktoerid = ?", toTimestamp(tilordnetDato), aktoerId.get());
     }
 
