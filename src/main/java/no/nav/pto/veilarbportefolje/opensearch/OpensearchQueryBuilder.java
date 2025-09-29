@@ -192,11 +192,23 @@ public class OpensearchQueryBuilder {
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe");
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal");
 
-        if (filtervalg.harYtelsefilter()) {
+        if (filtervalg.harYtelsefilterArena()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelse.underytelser.forEach(
                     ytelse -> queryBuilder.must(subQuery.should(matchQuery("ytelse", ytelse.name())))
             );
+        }
+
+        if (filtervalg.harYtelseAapKelvinFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
+                switch (ytelse) {
+                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
+                    case HAR_IKKE_AAP -> subQuery.should(termQuery("aap_kelvin", false));
+                }
+            });
+
+            queryBuilder.must(subQuery);
         }
 
         if (filtervalg.harKjonnfilter()) {
@@ -284,22 +296,29 @@ public class OpensearchQueryBuilder {
             );
             queryBuilder.must(subQuery);
         }
+        /**
+         * Tolkebehov-filteret fungerer slik:
+         * - Filtrert på talespråktolk -> får ut dei som berre har talespråktolk
+         * - Filtrert på tegnspråktolk -> får ut dei som berre har tegnspråktolk
+         * - Filtrert på begge -> får ut alle som har behov for minst ein av tolketypane
+         * */
         if (filtervalg.harTalespraaktolkFilter() || filtervalg.harTegnspraakFilter()) {
-            BoolQueryBuilder tolkBehovSubquery = boolQuery();
-            BoolQueryBuilder tolkBehovTale = boolQuery();
-            BoolQueryBuilder tolkBehovTegn = boolQuery();
+            BoolQueryBuilder tolkebehovSubQuery = boolQuery();
+            BoolQueryBuilder taletolkbehovSubQuery = boolQuery();
+            BoolQueryBuilder tolkBehovTegnSubQuery = boolQuery();
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTale.must(existsQuery("talespraaktolk")))
-                        .must(tolkBehovTale.mustNot(matchQuery("talespraaktolk", "")));
+                taletolkbehovSubQuery.must(existsQuery("talespraaktolk")).mustNot(matchQuery("talespraaktolk", ""));
+                tolkebehovSubQuery.should(taletolkbehovSubQuery);
             }
             if (filtervalg.harTegnspraakFilter()) {
-                tolkBehovSubquery
-                        .should(tolkBehovTegn.must(existsQuery("tegnspraaktolk")))
-                        .should(tolkBehovTegn.mustNot(matchQuery("tegnspraaktolk", "")));
+                tolkBehovTegnSubQuery.must(existsQuery("tegnspraaktolk")).mustNot(matchQuery("tegnspraaktolk", ""));
+                tolkebehovSubQuery.should(tolkBehovTegnSubQuery);
             }
-            queryBuilder.must(tolkBehovSubquery);
+
+            tolkebehovSubQuery.minimumShouldMatch(1);
+
+            queryBuilder.must(tolkebehovSubQuery);
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
             boolean tolkbehovSelected = false;
@@ -413,11 +432,11 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQuery = boolQuery();
 
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
-                && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)) {
                 subQuery.must(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
-                       && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
+                    && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)) {
                 subQuery.mustNot(existsQuery("gjeldendeVedtak14a"));
                 queryBuilder.must(subQuery);
             }
@@ -611,6 +630,15 @@ public class OpensearchQueryBuilder {
                 sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
+            case AAP_KELVIN_TOM_VEDTAKSDATO -> {
+                sorterAapKevlinTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+            case AAP_KELVIN_RETTIGHETSTYPE -> {
+                searchSourceBuilder.sort("aap_kelvin_rettighetstype", sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+
             // Vi har eksplisitt latt være å definere en "default" case i switch-en for å tvinge oss selv til å håndtere
             // alle sorteringsfeltene (exhaustivness check som gjøres av kompilatoren). Så i praksis er dette default-tilfellet.
             case ETTERNAVN, CV_SVARFRIST, AAP_MAXTID_UKE, AAP_UNNTAK_UKER_IGJEN, VENTER_PA_SVAR_FRA_NAV,
@@ -630,8 +658,8 @@ public class OpensearchQueryBuilder {
         boolean filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER);
         boolean filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL);
         boolean filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                                                       (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
-                                                       (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
+                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && !filtervalg.innsatsgruppeGjeldendeVedtak14a.isEmpty()) ||
+                (filtervalg.hovedmalGjeldendeVedtak14a != null && !filtervalg.hovedmalGjeldendeVedtak14a.isEmpty());
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC);
@@ -710,7 +738,7 @@ public class OpensearchQueryBuilder {
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP)) {
+        if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP)) {
             expression = """
                     if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -726,7 +754,7 @@ public class OpensearchQueryBuilder {
                        return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_MAXTID)) {
+        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_MAXTID)) {
             expression = """
                     if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
@@ -739,7 +767,7 @@ public class OpensearchQueryBuilder {
                         return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilter() && filtervalg.ytelse.equals(YtelseFilter.AAP_UNNTAK)) {
+        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_UNNTAK)) {
             expression = """
                     if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -789,20 +817,20 @@ public class OpensearchQueryBuilder {
 
         if (order == SortOrder.ASC) {
             expression = """
-            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
-            } else {
-                return 33064243200001.0;
-            }
-            """;
+                    if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                        return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    """;
         } else {
             expression = """
-            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
-            } else {
-                return 0.0;
-            }
-            """;
+                    if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
+                        return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 0.0;
+                    }
+                    """;
         }
 
         Script script = new Script(expression);
@@ -815,12 +843,12 @@ public class OpensearchQueryBuilder {
         String expression;
 
         expression = """
-            if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
-                return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
-            } else {
-                return 33064243200001.0;
-            }
-            """;
+                if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
+                    return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
 
         Script script = new Script(expression);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
@@ -845,6 +873,23 @@ public class OpensearchQueryBuilder {
                 }
                 """;
         Script script = new Script(expresion);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterAapKevlinTomVedtaksdato(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+                if (doc.containsKey('aap_kelvin_tom_vedtaksdato') && !doc['aap_kelvin_tom_vedtaksdato'].empty) {
+                    return doc['aap_kelvin_tom_vedtaksdato'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
+
+        Script script = new Script(expression);
         ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
         scriptBuilder.order(order);
         builder.sort(scriptBuilder);

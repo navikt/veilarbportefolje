@@ -108,6 +108,12 @@ public class PostgresTable {
         public static final String HUSKELAPP_ENDRET_AV_VEILEDER = "HUSKELAPP_ENDRET_AV_VEILEDER";
         public static final String HUSKELAPP_HUSKELAPP_ID = "HUSKELAPP_HUSKELAPP_ID";
         public static final String HUSKELAPP_ENHET_ID = "HUSKELAPP_ENHET_ID";
+
+        // YTELSER AAP KELVIN
+        public static final String YTELSER_AAP_STATUS = "YTELSER_AAP_STATUS";
+        public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
+        public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
+
     }
 
     public static final class OPPFOLGING_DATA {
@@ -455,4 +461,19 @@ public class PostgresTable {
         public static final String OPPRETTET = "OPPRETTET";
         public static final String SIST_ENDRET = "SIST_ENDRET";
     }
+
+    public static final class YTELSER_AAP {
+        private YTELSER_AAP() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_AAP";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String STATUS = "STATUS";
+        public static final String SAKSID = "SAKSID";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
+        public static final String OPPHORSAARSAK = "OPPHORSAARSAK";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }

@@ -1314,6 +1314,51 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_behandlet_i_kelvin() {
+        var brukerMedAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setAap_kelvin(true);
+
+        var brukerUtenAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(brukerMedAAP, brukerUtenAAP);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(userExistsInResponse(brukerMedAAP, response)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenAAP, response)).isFalse();
+
+    }
+
+
+    @Test
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {
 
         var brukerMedDagpengerMedPermittering = new OppfolgingsBruker()
@@ -1360,7 +1405,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
-                .setYtelse(YtelseFilter.DAGPENGER);
+                .setYtelse(YtelseFilterArena.DAGPENGER);
 
         var response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1664,53 +1709,42 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     @Test
     public void skal_hente_alle_brukere_som_har_tolkbehov() {
-        var brukerMedTalkBehov1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
-                .setTalespraaktolk("JPN")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2022-02-22"));
+        var tolkesprakJapansk = "JPN";
+        var tolkesprakSvensk = "SWE";
+        var tolkesprakNorsk = "NB";
 
-        var brukerMedTalkBehov2 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
-                .setTalespraaktolk("SWE")
-                .setTegnspraaktolk("SWE")
-                .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"));
+        var trengerTalespraktolkBehovSistOppdatert = "2022-02-22";
+        var trengerTalespraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTalespraaktolk(tolkesprakJapansk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert));
 
-        var brukerUttenTalkBehov = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
+        var trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23";
+        var trengerTaleOgTegnspraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTalespraaktolk(tolkesprakSvensk)
+                .setTegnspraaktolk(tolkesprakSvensk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert));
+
+        var trengerTegnspraktolkBehovSistOppdatert = "2023-03-24";
+        var trengerTegnspraktolk = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
+                .setTegnspraaktolk(tolkesprakNorsk)
+                .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert));
+
+        var brukerUtenTolkebehov1 = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
                 .setTalespraaktolk(null)
                 .setTegnspraaktolk(null);
 
-        var brukerUttenTalkBehov1 = new OppfolgingsBruker()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setNy_for_veileder(false)
-                .setEnhet_id(TEST_ENHET)
+        var brukerUtenTolkebehov2 = genererRandomBruker(TEST_ENHET, TEST_VEILEDER_0)
                 .setTalespraaktolk("")
                 .setTegnspraaktolk("");
 
-        var liste = List.of(brukerMedTalkBehov1, brukerMedTalkBehov2, brukerUttenTalkBehov, brukerUttenTalkBehov1);
+        var liste = List.of(trengerTalespraktolk, trengerTaleOgTegnspraktolk, trengerTegnspraktolk, brukerUtenTolkebehov1, brukerUtenTolkebehov2);
 
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
+
+        /* Skal hente alle med talespråktolk */
         var filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TALESPRAAKTOLK"));
@@ -1726,10 +1760,11 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         );
 
         assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakSvensk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
 
 
+        /* Skal hente alle med tegnspråktolk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK"));
@@ -1743,9 +1778,12 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null,
                 null
         );
-        assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals(tolkesprakSvensk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().tegnspraaktolk().equals(tolkesprakNorsk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTegnspraktolkBehovSistOppdatert)));
 
+
+        /* Skal hente alle med tegn- eller talespråktolk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"));
@@ -1760,15 +1798,17 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
 
-        assertThat(response.getAntall()).isEqualTo(2);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("SWE")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2021-03-23")));
+        assertThat(response.getAntall()).isEqualTo(3);
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTaleOgTegnspraktolkBehovSistOppdatert)));
+        assertTrue(response.getBrukere().stream().anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTegnspraktolkBehovSistOppdatert)));
 
 
+        /* Skal hente alle med japansk som tegn- eller talespråk */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
-                .setTolkBehovSpraak(List.of("JPN"));
+                .setTolkBehovSpraak(List.of(tolkesprakJapansk));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1780,12 +1820,14 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
 
+
+        /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
                 .setTolkebehov(List.of())
-                .setTolkBehovSpraak(List.of("JPN"));
+                .setTolkBehovSpraak(List.of(tolkesprakJapansk));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -1797,7 +1839,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 null
         );
         assertThat(response.getAntall()).isEqualTo(1);
-        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals("JPN")).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals("2022-02-22")));
+        assertTrue(response.getBrukere().stream().filter(x -> x.getTolkebehov().talespraaktolk().equals(tolkesprakJapansk)).anyMatch(x -> x.getTolkebehov().sistOppdatert().toString().equals(trengerTalespraktolkBehovSistOppdatert)));
     }
 
     @Test
@@ -4089,7 +4131,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_MAXTID);
+                .setYtelse(YtelseFilterArena.AAP_MAXTID);
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4108,7 +4150,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilter.AAP_UNNTAK);
+                .setYtelse(YtelseFilterArena.AAP_UNNTAK);
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -5012,6 +5054,161 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
+    void skal_sortere_brukere_pa_aap_tom_vedtaksdato() {
+        LocalDate tidspunkt1 = LocalDate.now();
+        LocalDate tidspunkt2 = LocalDate.now().plusDays(2);
+        LocalDate tidspunkt3 = LocalDate.now().plusDays(3);
+
+        var tidligstTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt1);
+
+        var midtImellomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt2);
+
+        var senestTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_tom_vedtaksdato(tidspunkt3);
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.AAP_KELVIN_TOM_VEDTAKSDATO,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.AAP_KELVIN_TOM_VEDTAKSDATO,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(nullBruker.getFnr());
+        assertThat(brukereSynkende.get(1).getFnr()).isEqualTo(senestTomBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+    }
+
+    @Test
+    void skal_sortere_brukere_pa_aap_rettighetstype() {
+        var bistandsbehovBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("BISTANDSBEHOV");
+
+        var studentBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("STUDENT");
+
+        var sykepengeerstatningBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(true)
+                .setAap_kelvin_rettighetstype("SYKEPENGEERSTATNING");
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setAap_kelvin(false);
+
+
+        var liste = List.of(sykepengeerstatningBruker, bistandsbehovBruker, studentBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapKelvin(List.of(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(bistandsbehovBruker.getFnr());
+        assertThat(brukereStigende.get(1).getFnr()).isEqualTo(studentBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(sykepengeerstatningBruker.getFnr());
+        assertThat(brukereSynkende.get(2).getFnr()).isEqualTo(bistandsbehovBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+    }
+
+
+    @Test
     @SneakyThrows
     void skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
         Hendelse hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL);
@@ -5107,6 +5304,13 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                         null
                 )
         );
+    }
+
+    private static OppfolgingsBruker genererRandomBruker(
+            String enhet,
+            String veilederId
+    ) {
+        return genererRandomBruker(enhet, veilederId, null, false);
     }
 
     private static OppfolgingsBruker genererRandomBruker(

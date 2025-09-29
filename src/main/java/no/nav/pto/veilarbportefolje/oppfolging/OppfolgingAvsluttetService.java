@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
@@ -43,6 +44,7 @@ public class OppfolgingAvsluttetService {
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
     private final ArbeidssoekerService arbeidssoekerService;
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
+    private final AapService aapService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -61,6 +63,7 @@ public class OppfolgingAvsluttetService {
         fargekategoriService.slettFargekategoriPaaBruker(aktoerId, maybeFnr);
         oppfolgingsbrukerServiceV2.slettOppfolgingsbruker(aktoerId, maybeFnr);
         arbeidssoekerService.slettArbeidssoekerData(aktoerId, maybeFnr);
+        aapService.slettAapData(aktoerId, maybeFnr);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);

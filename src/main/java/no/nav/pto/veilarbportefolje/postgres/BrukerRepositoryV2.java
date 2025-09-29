@@ -122,7 +122,10 @@ public class BrukerRepositoryV2 {
                                HUSKELAPP.ENDRET_DATO                                    as HUSKELAPP_ENDRET_DATO,
                                HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
                                HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
-                               HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID
+                               HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
+                               YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
+                               YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
+                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE
                         from OPPFOLGING_DATA
                                  inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -138,6 +141,7 @@ public class BrukerRepositoryV2 {
                                  left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
+                                 left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -229,6 +233,7 @@ public class BrukerRepositoryV2 {
 
         setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
+        setAapKelvin(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
@@ -272,6 +277,18 @@ public class BrukerRepositoryV2 {
         bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return bruker;
+    }
+
+    @SneakyThrows
+    private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+        boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
+        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
+        String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
+
+        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
+        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(tomVedtaksDato);
+        oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstype);
     }
 
     @SneakyThrows

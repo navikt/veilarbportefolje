@@ -27,6 +27,7 @@ import org.opensearch.core.xcontent.XContentBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -389,6 +390,32 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktorId, content, format("Slettet utgått varsel for aktorId: %s", aktorId.get()));
+    }
+
+
+    @SneakyThrows
+    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, String rettighetstype) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("aap_kelvin", harAapKelvin)
+                .field("aap_kelvin_tom_vedtaksdato", tomVedtaksdato)
+                .field("aap_kelvin_rettighetstype", rettighetstype)
+                .endObject();
+
+        update(aktorId, content, format("Oppdatert aap kelvin for aktorId: %s", aktorId.get()));
+
+    }
+
+    @SneakyThrows
+    public void slettAapKelvin(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("aap_kelvin", false)
+                .nullField("aap_kelvin_tom_vedtaksdato")
+                .nullField("aap_kelvin_rettighetstype")
+                .endObject();
+
+        update(aktorId, content, format("Slettet aap kelvin for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

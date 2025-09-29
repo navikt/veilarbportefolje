@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.aap.AapClient;
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -38,10 +40,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -89,6 +88,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private ArbeidssoekerService arbeidssoekerService;
 
+    @Autowired
+    private AapClient aapClient;
+
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
@@ -119,6 +121,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -133,6 +136,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -154,6 +158,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
@@ -189,6 +194,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockSiste14aVedtakResponse(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -206,6 +212,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockSiste14aVedtakResponse(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -223,6 +230,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockSiste14aVedtakResponse(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -242,6 +250,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentArbeidssoekerPerioderResponse(fnr);
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId);
         mockHentProfileringResponse(fnr, periodeId);
+        mockHentAapResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -366,6 +375,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
@@ -391,6 +401,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
 
         SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
@@ -475,6 +486,12 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         List<ProfileringResponse> profileringResponse = getObjectMapper().readValue(file, new TypeReference<>() {
         });
         when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
+    }
+
+    private void mockHentAapResponse(Fnr fnr) {
+        AapVedtakResponseDto aapResponse = new AapVedtakResponseDto(Collections.emptyList());
+        when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(aapClient.hentAapVedtak(any(), any(), any())).thenReturn(aapResponse);
     }
 
     private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {
