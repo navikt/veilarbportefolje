@@ -22,7 +22,7 @@ import static java.lang.Integer.parseInt;
 public class Filtervalg {
     public Brukerstatus brukerstatus; // finst ikkje i veilarbportefoljeflatefs
     public List<Brukerstatus> ferdigfilterListe;
-    public YtelseFilter ytelse;
+    public YtelseFilterArena ytelse;
     public List<String> alder = new ArrayList<>();
     public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
@@ -59,10 +59,11 @@ public class Filtervalg {
     public List<String> gjeldendeVedtak14a = new ArrayList<>();
     public List<Innsatsgruppe> innsatsgruppeGjeldendeVedtak14a = new ArrayList<>();
     public List<Hovedmal> hovedmalGjeldendeVedtak14a = new ArrayList<>();
+    public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
-                harYtelsefilter() ||
+                harYtelsefilterArena() ||
                 !alder.isEmpty() ||
                 harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
@@ -96,7 +97,8 @@ public class Filtervalg {
                 harFargeKategoriFilter() ||
                 harGjeldendeVedtak14aFilter() ||
                 harInnsatsgruppeGjeldendeVedtak14a() ||
-                harHovedmalGjeldendeVedtak14a();
+                harHovedmalGjeldendeVedtak14a() ||
+                harYtelseAapKelvinFilter();
     }
 
     public boolean harGjeldendeVedtak14aFilter() {
@@ -123,8 +125,12 @@ public class Filtervalg {
         return brukerstatus != null || (ferdigfilterListe != null && !ferdigfilterListe.isEmpty());
     }
 
-    public boolean harYtelsefilter() {
+    public boolean harYtelsefilterArena() {
         return ytelse != null;
+    }
+
+    public boolean harYtelseAapKelvinFilter() {
+        return ytelseAapKelvin != null && !ytelseAapKelvin.isEmpty();
     }
 
     public boolean harKjonnfilter() {
