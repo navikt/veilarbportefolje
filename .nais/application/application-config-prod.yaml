@@ -97,6 +97,8 @@ spec:
           namespace: teamfamilie
         - application: api-intern
           namespace: aap
+        - application: tiltakspenger-datadeling
+          namespace: tpts
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
@@ -150,3 +152,7 @@ spec:
       value: "http://api-intern.aap"
     - name: AAP_SCOPE
       value: "api://prod-gcp.aap.api-intern/.default"
+    - name: TILTAKSPENGER_URL
+      value: "http://tiltakspenger-datadeling.tpts"
+    - name: TILTAKSPENGER_SCOPE
+      value: "api://prod-gcp.tpts.tiltakspenger-datadeling/.default"
