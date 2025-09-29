@@ -1,2 +1,2 @@
 ALTER TABLE oppfolging_data
-    ADD TILORDNET_DATO TIMESTAMP;
+    DROP COLUMN tilordnet_dato;
