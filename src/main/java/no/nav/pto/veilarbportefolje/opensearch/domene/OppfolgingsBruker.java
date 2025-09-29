@@ -65,6 +65,7 @@ public class OppfolgingsBruker {
     String aap_kelvin_rettighetstype;
     boolean oppfolging;
     boolean ny_for_veileder;
+    LocalDateTime tilordningsdato;
     boolean trenger_vurdering;
     String venterpasvarfrabruker;
     String venterpasvarfranav;

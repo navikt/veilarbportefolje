@@ -44,6 +44,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
+        opensearchIndexerV2.oppdaterTilordningsdato(aktoerId, tilordnetDato.toLocalDateTime());
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));

@@ -206,6 +206,16 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
+    public void oppdaterTilordningsdato(AktorId aktoerId, LocalDateTime tilordningsdato) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("tilordningsdato", tilordningsdato)
+                .endObject();
+
+        update(aktoerId, content, "Oppdatert tilordningsdato");
+    }
+
+    @SneakyThrows
     public void updateDialog(Dialogdata melding) {
         final String venterPaaSvarFraBruker = toIsoUTC(melding.getTidspunktEldsteVentende());
         final String venterPaaSvarFraNav = toIsoUTC(melding.getTidspunktEldsteUbehandlede());

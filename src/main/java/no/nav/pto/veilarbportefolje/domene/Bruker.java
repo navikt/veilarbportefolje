@@ -42,6 +42,7 @@ public class Bruker {
     boolean egenAnsatt;
     LocalDateTime skjermetTil;
     boolean nyForVeileder;
+    LocalDateTime tilordningsdato;
     boolean nyForEnhet;
     VurderingsBehov vurderingsBehov;
     boolean trengerOppfolgingsvedtak;
@@ -120,6 +121,7 @@ public class Bruker {
                 .setFnr(bruker.getFnr())
                 .setAktoerid(bruker.getAktoer_id())
                 .setNyForVeileder(bruker.isNy_for_veileder())
+                .setTilordningsdato(bruker.getTilordningsdato())
                 .setVurderingsBehov(vurderingsBehov)
                 .setTrengerOppfolgingsvedtak(trengerOppfolgingsvedtak)
                 .setProfileringResultat(profileringResultat)
