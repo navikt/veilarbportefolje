@@ -211,7 +211,7 @@ public class BrukerRepositoryV2 {
                 .setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING))
                 .setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER))
-                .setTildelingstidspunkt(toZonedDateTime(rs.getTimestamp(OPPFOLGING_DATA_TILORDNET_TIDSPUNKT)).toLocalDateTime())
+                .setTildelingstidspunkt(toLocalDateTimeOrNull(rs.getTimestamp(OPPFOLGING_DATA_TILORDNET_TIDSPUNKT)))
                 .setVeileder_id(rs.getString(OPPFOLGING_DATA_VEILEDERID))
                 .setManuell_bruker(rs.getBoolean(OPPFOLGING_DATA_MANUELL) ? "MANUELL" : null)
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(OPPFOLGING_DATA_STARTDATO)))
