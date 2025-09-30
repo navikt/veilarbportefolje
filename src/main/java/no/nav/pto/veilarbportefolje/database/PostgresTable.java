@@ -12,6 +12,7 @@ public class PostgresTable {
         public static final String OPPFOLGING_DATA_VEILEDERID = "OPPFOLGING_DATA_VEILEDERID";
         public static final String OPPFOLGING_DATA_MANUELL = "OPPFOLGING_DATA_MANUELL";
         public static final String OPPFOLGING_DATA_OPPFOLGING = "OPPFOLGING_DATA_OPPFOLGING";
+        public static final String OPPFOLGING_DATA_TILORDNET_TIDSPUNKT = "OPPFOLGING_DATA_TILORDNET_DATO";
 
         // AKTIVE_IDENTER
         public static final String AKTIVE_IDENTER_FNR = "AKTIVE_IDENTER_FNR";

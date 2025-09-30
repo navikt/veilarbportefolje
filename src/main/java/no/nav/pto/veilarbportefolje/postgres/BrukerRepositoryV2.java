@@ -55,6 +55,7 @@ public class BrukerRepositoryV2 {
                                OPPFOLGING_DATA.VEILEDERID                               as OPPFOLGING_DATA_VEILEDERID,
                                OPPFOLGING_DATA.MANUELL                                  as OPPFOLGING_DATA_MANUELL,
                                OPPFOLGING_DATA.OPPFOLGING                               as OPPFOLGING_DATA_OPPFOLGING,
+                               OPPFOLGING_DATA.TILORDNET_DATO                           as OPPFOLGING_DATA_TILORDNET_TIDSPUNKT,
                                AKTIVE_IDENTER.FNR                                       as AKTIVE_IDENTER_FNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
@@ -210,6 +211,7 @@ public class BrukerRepositoryV2 {
                 .setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING))
                 .setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER))
+                .setTildelingstidspunkt(toLocalDateTimeOrNull(rs.getTimestamp(OPPFOLGING_DATA_TILORDNET_TIDSPUNKT)))
                 .setVeileder_id(rs.getString(OPPFOLGING_DATA_VEILEDERID))
                 .setManuell_bruker(rs.getBoolean(OPPFOLGING_DATA_MANUELL) ? "MANUELL" : null)
                 .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(OPPFOLGING_DATA_STARTDATO)))

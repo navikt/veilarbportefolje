@@ -195,24 +195,15 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId) {
+    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId, LocalDateTime tilordningstidspunkt) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
                 .field("ny_for_veileder", true)
+                .field("tilordningstidspunkt", tilordningstidspunkt)
                 .endObject();
 
         update(aktoerId, content, "Oppdatert veileder");
-    }
-
-    @SneakyThrows
-    public void oppdaterTilordningsdato(AktorId aktoerId, LocalDateTime tilordningsdato) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("tilordningsdato", tilordningsdato)
-                .endObject();
-
-        update(aktoerId, content, "Oppdatert tilordningsdato");
     }
 
     @SneakyThrows
