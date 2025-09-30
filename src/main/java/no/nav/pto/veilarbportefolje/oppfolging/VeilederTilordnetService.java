@@ -33,14 +33,14 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     public void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
-        final ZonedDateTime tilordnetDato = dto.getTilordnet();
+        final ZonedDateTime tilordnetTidspunkt = dto.getTilordnetTidspunkt();
 
-        tilordneVeileder(aktoerId, veilederId, tilordnetDato);
+        tilordneVeileder(aktoerId, veilederId, tilordnetTidspunkt);
     }
 
-    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordnetDato) {
+    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordnetTidspunkt) {
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
-        oppfolgingRepositoryV2.settTilordningsdato(aktoerId, tilordnetDato);
+        oppfolgingRepositoryV2.settTilordningstidspunkt(aktoerId, tilordnetTidspunkt);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
         opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
