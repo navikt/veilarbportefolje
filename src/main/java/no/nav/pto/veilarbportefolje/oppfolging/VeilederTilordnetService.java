@@ -12,10 +12,12 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+import static org.apache.commons.lang3.time.CalendarUtils.toLocalDateTime;
 
 
 @Slf4j
@@ -43,7 +45,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
         oppfolgingRepositoryV2.settTilordningstidspunkt(aktoerId, tilordnetTidspunkt);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
-        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId, tilordnetTidspunkt.toLocalDateTime());
+        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId, tilordnetTidspunkt);
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
