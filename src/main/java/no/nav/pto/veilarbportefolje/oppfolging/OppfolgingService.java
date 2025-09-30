@@ -76,7 +76,7 @@ public class OppfolgingService {
         log.info("Startet: Innlastning av tildelingstidspunkt for veileder");
         JobRunner.runAsync("OppfolgingSyncTildelingstidspunkt",
                 () -> {
-                    List<AktorId> oppfolgingsBruker = List.of(AktorId.of("2596043099670")); //oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder();
+                    List<AktorId> oppfolgingsBruker = oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder();
                     oppfolgingsBruker.forEach(this::oppdaterTildelingstidspunkt);
 
                     log.info("OppfolgingsJobb: oppdaterte tildelingstidspunkt pa: {} brukere ", oppfolgingsBruker.size());
@@ -87,8 +87,8 @@ public class OppfolgingService {
     public void oppdaterTildelingstidspunkt(AktorId aktorId) {
         try {
             Veilarbportefoljeinfo veialrbinfo = hentVeilarbData(aktorId);
-            if (veialrbinfo.isErUnderOppfolging() && veialrbinfo.getSistTilordnetDato() != null) {
-                oppfolgingRepositoryV2.settTilordningstidspunkt(aktorId, veialrbinfo.getSistTilordnetDato());
+            if (veialrbinfo.isErUnderOppfolging() && veialrbinfo.getTilordnetTidspunkt() != null) {
+                oppfolgingRepositoryV2.settTilordningstidspunkt(aktorId, veialrbinfo.getTilordnetTidspunkt());
             }
 
         }  catch (RuntimeException e) {
