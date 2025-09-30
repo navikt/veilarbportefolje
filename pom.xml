@@ -275,7 +275,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2024.02.20_07.34-4dbbf67d478e</version>
+            <version>2025.09.15_11.12-54be8ac278c0</version>
         </dependency>
         <!--Logging-->
         <dependency>
