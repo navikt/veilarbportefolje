@@ -9,6 +9,7 @@ import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
@@ -50,6 +51,7 @@ public class AdminController {
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
     private final EnsligeForsorgereService ensligForsorgerService;
+    private final AapService aapService;
 
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
@@ -246,6 +248,28 @@ public class AdminController {
         });
         log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
         return "Innlastning av Ensligforsørger brukerdata er ferdig";
+    }
+
+    @PostMapping("/hentAapBrukerData")
+    @Operation(summary = "Henter data om aap bruker", description = "Sjekker om bruker har aap ytelse og henter data om det")
+    public String lastInnAapBrukerData() {
+        sjekkTilgangTilAdmin();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+        AtomicInteger antall = new AtomicInteger(0);
+        log.info("Startet: Innlastning av Aap brukerdata");
+        brukereUnderOppfolging.forEach(bruker -> {
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info("Aap brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+            }
+            try {
+                aapService.hentOgLagreAapForBrukerVedBatchjobb(bruker);
+            } catch (Exception e) {
+                secureLog.info("Aap brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
+            }
+        });
+        log.info("Ferdig: Innlastning av aap brukerdata");
+
+        return "Innlastning av aap brukerdata er ferdig";
     }
 
     private void validerIndexName(String indexName) {

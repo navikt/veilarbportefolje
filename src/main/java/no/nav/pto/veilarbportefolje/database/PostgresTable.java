@@ -112,6 +112,7 @@ public class PostgresTable {
         // YTELSER AAP KELVIN
         public static final String YTELSER_AAP_STATUS = "YTELSER_AAP_STATUS";
         public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
+        public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
 
     }
 

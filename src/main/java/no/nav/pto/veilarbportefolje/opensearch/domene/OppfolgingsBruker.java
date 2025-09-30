@@ -61,6 +61,8 @@ public class OppfolgingsBruker {
 
     LocalDate aapordinerutlopsdato;
     boolean aap_kelvin;
+    LocalDate aap_kelvin_tom_vedtaksdato;
+    String aap_kelvin_rettighetstype;
     boolean oppfolging;
     boolean ny_for_veileder;
     boolean trenger_vurdering;
