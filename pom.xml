@@ -31,7 +31,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.12</version>
+                    <version>0.8.13</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -215,12 +215,12 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.36</version>
+            <version>1.18.42</version>
         </dependency>
         <dependency>
             <groupId>io.vavr</groupId>
             <artifactId>vavr</artifactId>
-            <version>0.10.5</version>
+            <version>0.10.7</version>
         </dependency>
 
 
@@ -317,13 +317,13 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>11.13.1</version>
+            <version>11.13.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-            <version>11.8.2</version>
+            <version>11.13.2</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
