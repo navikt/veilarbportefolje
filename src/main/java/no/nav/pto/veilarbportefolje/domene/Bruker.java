@@ -57,9 +57,7 @@ public class Bruker {
     Integer aapmaxtidUke;
     Integer aapUnntakUkerIgjen;
     LocalDate aapordinerutlopsdato;
-    boolean harAapKelvin;
-    LocalDate aapKelvinTomVedtaksdato;
-    String aapKelvinRettighetstype;
+    AapKelvinForBruker aapKelvin;
     LocalDateTime venterPaSvarFraNAV;
     LocalDateTime venterPaSvarFraBruker;
     LocalDateTime nyesteUtlopteAktivitet;
@@ -143,9 +141,9 @@ public class Bruker {
                 .setAapmaxtidUke(bruker.getAapmaxtiduke())
                 .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
                 .setAapordinerutlopsdato(bruker.getAapordinerutlopsdato())
-                .setHarAapKelvin(bruker.isAap_kelvin())
-                .setAapKelvinTomVedtaksdato(bruker.getAap_kelvin_tom_vedtaksdato())
-                .setAapKelvinRettighetstype(bruker.getAap_kelvin_rettighetstype())
+                .setAapKelvin(AapKelvinForBruker.of(
+                        bruker.getAap_kelvin_tom_vedtaksdato(),
+                        bruker.getAap_kelvin_rettighetstype()))
                 .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
                 .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))
                 .setNyesteUtlopteAktivitet(toLocalDateTimeOrNull(bruker.getNyesteutlopteaktivitet()))

@@ -12,22 +12,22 @@ import java.time.ZonedDateTime;
 public class VeilederTilordnetDTO {
     AktorId aktorId;
     VeilederId veilederId;
-    ZonedDateTime tilordnet;
+    ZonedDateTime tilordnetTidspunkt;
 
     @JsonCreator
     public VeilederTilordnetDTO(
             @JsonProperty("aktorId") final String aktorId,
             @JsonProperty("veilederId") final String veilederId,
-            @JsonProperty("tilordnet") final ZonedDateTime tilordnet
+            @JsonProperty("tilordnet") final ZonedDateTime tilordnetTidspunkt
     ) {
         this.aktorId = new AktorId(aktorId);
         this.veilederId = new VeilederId(veilederId);
-        this.tilordnet = tilordnet;
+        this.tilordnetTidspunkt = tilordnetTidspunkt;
     }
 
-    public VeilederTilordnetDTO(AktorId aktorId, VeilederId veilederId, ZonedDateTime tilordnet) {
+    public VeilederTilordnetDTO(AktorId aktorId, VeilederId veilederId, ZonedDateTime tilordnetTidspunkt) {
         this.aktorId = aktorId;
         this.veilederId = veilederId;
-        this.tilordnet = tilordnet;
+        this.tilordnetTidspunkt = tilordnetTidspunkt;
     }
 }
