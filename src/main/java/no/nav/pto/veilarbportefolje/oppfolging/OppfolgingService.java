@@ -72,6 +72,34 @@ public class OppfolgingService {
         this.veilarboppfolgingUrl = url;
     }
 
+    public void lastInnTildelingstidspunktForVeileder() {
+        log.info("Startet: Innlastning av tildelingstidspunkt for veileder");
+        JobRunner.runAsync("OppfolgingSyncTildelingstidspunkt",
+                () -> {
+                    List<AktorId> oppfolgingsBruker = List.of(AktorId.of("2596043099670")); //oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder();
+                    oppfolgingsBruker.forEach(this::oppdaterTildelingstidspunkt);
+
+                    log.info("OppfolgingsJobb: oppdaterte tildelingstidspunkt pa: {} brukere ", oppfolgingsBruker.size());
+                });
+        log.info("Ferdig: Innlastning av tildelingstidspunkt for veileder");
+    }
+
+    public void oppdaterTildelingstidspunkt(AktorId aktorId) {
+        try {
+            Veilarbportefoljeinfo veialrbinfo = hentVeilarbData(aktorId);
+            if (veialrbinfo.isErUnderOppfolging() && veialrbinfo.getSistTilordnetDato() != null) {
+                oppfolgingRepositoryV2.settTilordningstidspunkt(aktorId, veialrbinfo.getSistTilordnetDato());
+            }
+
+        }  catch (RuntimeException e) {
+        secureLog.error("RuntimeException i OppfolgingsJobb tildelingstidspunkt for bruker {}", aktorId);
+        secureLog.error("RuntimeException i OppfolgingsJobb tildelingstidspunkt", e);
+    } catch (Exception e) {
+        secureLog.error("Exception i OppfolgingsJobb tildelingstidspunkt for bruker {}", aktorId);
+        secureLog.error("Exception i OppfolgingsJobb tildelingstidspunkt", e);
+    }
+    }
+
     public void lastInnDataPaNytt() {
         JobRunner.runAsync("OppfolgingSync",
                 () -> {
