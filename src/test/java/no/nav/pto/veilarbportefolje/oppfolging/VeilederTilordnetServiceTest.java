@@ -32,8 +32,8 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
     public void skal_oppdatere_tilordnet_veileder() {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
-        final ZonedDateTime tilordnet = ZonedDateTime.now(ZoneId.of("Europe/Oslo"));
-        final LocalDateTime tilordnetTidspunkt = tilordnet.toLocalDateTime();
+        final ZonedDateTime tilordnet = ZonedDateTime.now();
+        final LocalDateTime forventetTilordnetTidspunkt = tilordnet.toLocalDateTime();
         when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
@@ -42,11 +42,10 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
-        final LocalDateTime tildelingstidspunkt = bruker.getTildelingstidspunkt();
 
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
         assertThat(bruker.isNy_for_veileder()).isTrue();
-        assertThat(bruker.getTildelingstidspunkt()).isEqualTo(tilordnetTidspunkt);
+        assertThat(bruker.getTildelingstidspunkt()).isEqualTo(forventetTilordnetTidspunkt);
     }
 
     @Test
