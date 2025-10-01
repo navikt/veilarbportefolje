@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -62,7 +63,7 @@ public class OppfolgingsBruker {
     LocalDate aapordinerutlopsdato;
     boolean aap_kelvin;
     LocalDate aap_kelvin_tom_vedtaksdato;
-    String aap_kelvin_rettighetstype;
+    Rettighetstype aap_kelvin_rettighetstype;
     boolean oppfolging;
     boolean ny_for_veileder;
     LocalDateTime tildelt_tidspunkt;

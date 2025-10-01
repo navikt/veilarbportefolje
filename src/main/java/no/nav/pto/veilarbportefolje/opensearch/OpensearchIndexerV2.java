@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
@@ -396,7 +397,7 @@ public class OpensearchIndexerV2 {
 
 
     @SneakyThrows
-    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, String rettighetstype) {
+    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, Rettighetstype rettighetstype) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("aap_kelvin", harAapKelvin)

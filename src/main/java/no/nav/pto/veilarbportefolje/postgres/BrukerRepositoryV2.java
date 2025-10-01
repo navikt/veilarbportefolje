@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -287,10 +288,11 @@ public class BrukerRepositoryV2 {
         LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
         boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
         String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
+        Rettighetstype rettighetstypeOrNull = rettighetstype == null ? null : Rettighetstype.valueOf(rettighetstype);
 
         oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
         oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(tomVedtaksDato);
-        oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstype);
+        oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
     }
 
     @SneakyThrows
