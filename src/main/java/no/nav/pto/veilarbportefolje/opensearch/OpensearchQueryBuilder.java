@@ -631,11 +631,15 @@ public class OpensearchQueryBuilder {
                 yield searchSourceBuilder;
             }
             case AAP_KELVIN_TOM_VEDTAKSDATO -> {
-                sorterAapKevlinTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                sorterAapKelvinTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case AAP_KELVIN_RETTIGHETSTYPE -> {
                 searchSourceBuilder.sort("aap_kelvin_rettighetstype", sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+            case TILDELT_TIDSPUNKT -> {
+                sorterTildeltTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
 
@@ -878,12 +882,29 @@ public class OpensearchQueryBuilder {
         builder.sort(scriptBuilder);
     }
 
-    private static void sorterAapKevlinTomVedtaksdato(SearchSourceBuilder builder, SortOrder order) {
+    private static void sorterAapKelvinTomVedtaksdato(SearchSourceBuilder builder, SortOrder order) {
         String expression;
 
         expression = """
                 if (doc.containsKey('aap_kelvin_tom_vedtaksdato') && !doc['aap_kelvin_tom_vedtaksdato'].empty) {
                     return doc['aap_kelvin_tom_vedtaksdato'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
+
+        Script script = new Script(expression);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
+    private static void sorterTildeltTidspunkt(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+                if (doc.containsKey('tildelt_tidspunkt') && !doc['tildelt_tidspunkt'].empty) {
+                    return doc['tildelt_tidspunkt'].value.toInstant().toEpochMilli();
                 } else {
                     return 33064243200001.0;
                 }
