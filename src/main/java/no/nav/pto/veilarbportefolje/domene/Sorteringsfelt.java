@@ -21,6 +21,7 @@ public enum Sorteringsfelt {
     ETTERNAVN("etternavn"),
     FODSELSNUMMER("fodselsnummer"),
     OPPFOLGING_STARTET("oppfolging_startdato"),
+    TILDELT_TIDSPUNKT("tildelt_tidspunkt"),
     UTLOPSDATO("utlopsdato"),
 
     VEILEDER_IDENT("veileder_id"),  // "NAVIDENT" i frontend

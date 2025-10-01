@@ -5207,8 +5207,81 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
     }
 
-
     @Test
+    void skal_sortere_brukere_pa_tildelt_tidspunkt() {
+        LocalDateTime tidspunkt1 = LocalDateTime.now();
+        LocalDateTime tidspunkt2 = LocalDateTime.now().plusDays(2);
+        LocalDateTime tidspunkt3 = LocalDateTime.now().plusDays(3);
+
+        var tidligstTildeltBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTildelt_tidspunkt(tidspunkt1);
+
+        var midtImellomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTildelt_tidspunkt(tidspunkt2);
+
+        var senestTildeltBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTildelt_tidspunkt(tidspunkt3);
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTildelt_tidspunkt(null);
+
+
+        var liste = List.of(midtImellomBruker, senestTildeltBruker, tidligstTildeltBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList());
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.TILDELT_TIDSPUNKT,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.TILDELT_TIDSPUNKT,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(tidligstTildeltBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(nullBruker.getFnr());
+        assertThat(brukereSynkende.get(1).getFnr()).isEqualTo(senestTildeltBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(tidligstTildeltBruker.getFnr());
+    }
+
+        @Test
     @SneakyThrows
     void skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
         Hendelse hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL);
