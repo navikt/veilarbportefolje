@@ -17,7 +17,7 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private Timestamp startDato;
     private Boolean manuell;
     private BigDecimal feedId;
-    private Timestamp tilordnetDato;
+    private Timestamp tildeltTidspunkt;
 
     @Override
     public int compareTo(BrukerOppdatertInformasjon o) {
