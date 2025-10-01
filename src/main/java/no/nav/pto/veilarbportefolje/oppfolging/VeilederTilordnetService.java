@@ -33,17 +33,17 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     public void behandleKafkaMeldingLogikk(VeilederTilordnetDTO dto) {
         final AktorId aktoerId = dto.getAktorId();
         final VeilederId veilederId = dto.getVeilederId();
-        final ZonedDateTime tilordnetTidspunkt = dto.getTilordnetTidspunkt();
+        final ZonedDateTime tildeltTidspunkt = dto.getTilordnetTidspunkt();
 
-        tilordneVeileder(aktoerId, veilederId, tilordnetTidspunkt);
+        tilordneVeileder(aktoerId, veilederId, tildeltTidspunkt);
     }
 
-    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordnetTidspunkt) {
+    public void tilordneVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tildeltTidspunkt) {
         oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId);
-        oppfolgingRepositoryV2.settTilordningstidspunkt(aktoerId, tilordnetTidspunkt);
+        oppfolgingRepositoryV2.settTildeltTidspunkt(aktoerId, tildeltTidspunkt);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
-        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId);
+        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt);
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));

@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -31,6 +32,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         final VeilederId nyVeileder = randomVeilederId();
         final ZonedDateTime tilordnet = ZonedDateTime.now();
+        final LocalDateTime forventetTildeltTidspunkt = tilordnet.toLocalDateTime();
         when(aktorClient.hentFnr(aktoerId)).thenReturn(randomFnr());
 
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, randomNavKontor(), randomVeilederId(), ZonedDateTime.now(), null);
@@ -40,9 +42,9 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
         final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
-
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
         assertThat(bruker.isNy_for_veileder()).isTrue();
+        assertThat(bruker.getTildelt_tidspunkt()).isEqualTo(forventetTildeltTidspunkt);
     }
 
     @Test
@@ -61,5 +63,6 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         assertThat(tilordnetVeileder.getValue()).isNull();
         assertThat(bruker.isNy_for_veileder()).isTrue();
+        assertThat(bruker.getTildelt_tidspunkt()).isNull();
     }
 }
