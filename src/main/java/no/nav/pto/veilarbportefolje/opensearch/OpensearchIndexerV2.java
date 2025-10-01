@@ -196,12 +196,12 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tilordningstidspunkt) {
+    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tildeltTidspunkt) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
                 .field("ny_for_veileder", true)
-                .field("tildelingstidspunkt", toIsoUTC(tilordningstidspunkt))
+                .field("tildelt_tidspunkt", toIsoUTC(tildeltTidspunkt))
                 .endObject();
 
         update(aktoerId, content, "Oppdatert veileder");
