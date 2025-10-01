@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
@@ -5139,7 +5140,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setAap_kelvin(true)
-                .setAap_kelvin_rettighetstype("BISTANDSBEHOV");
+                .setAap_kelvin_rettighetstype(Rettighetstype.BISTANDSBEHOV);
 
         var studentBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5147,7 +5148,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setAap_kelvin(true)
-                .setAap_kelvin_rettighetstype("STUDENT");
+                .setAap_kelvin_rettighetstype(Rettighetstype.STUDENT);
 
         var sykepengeerstatningBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5155,7 +5156,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setAap_kelvin(true)
-                .setAap_kelvin_rettighetstype("SYKEPENGEERSTATNING");
+                .setAap_kelvin_rettighetstype(Rettighetstype.SYKEPENGEERSTATNING);
 
         var nullBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
