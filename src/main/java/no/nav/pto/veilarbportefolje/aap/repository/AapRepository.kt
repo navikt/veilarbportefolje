@@ -47,7 +47,7 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
             aap.saksnummer,
             aap.periode.fraOgMedDato,
             aap.periode.tilOgMedDato,
-            aap.rettighetsType,
+            aap.rettighetsType.toString(),
             aap.opphorsAarsak
         )
     }

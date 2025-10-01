@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
@@ -60,7 +61,7 @@ class AapClientTest {
                         fraOgMedDato = LocalDate.parse("2025-04-22"),
                         tilOgMedDato = LocalDate.parse("2026-04-21")
                     ),
-                    rettighetsType = "BISTANDSBEHOV",
+                    rettighetsType = Rettighetstype.BISTANDSBEHOV,
                     kildesystem = "KELVIN",
                     opphorsAarsak = null
                 )

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
@@ -370,7 +371,7 @@ val mockedYtelseAapMelding = YtelserKafkaDTO(
 val mockedVedtak = AapVedtakResponseDto.Vedtak(
     status = "LØPENDE",
     saksnummer = "S123",
-    rettighetsType = "TYPE1",
+    rettighetsType = Rettighetstype.ARBEIDSSØKER,
     kildesystem = "KILDE1",
     opphorsAarsak = null,
     periode = AapVedtakResponseDto.Periode(
