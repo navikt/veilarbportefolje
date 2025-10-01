@@ -118,6 +118,14 @@ public class OppfolgingRepositoryV2 {
         return alleIder;
     }
 
+    public List<AktorId> hentAlleBrukerUnderOppfolgingMedTildeltVeileder() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging AND veilederid IS NOT NULL AND tildelt_tidspunkt is NULL", AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
+
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         return Optional.ofNullable(
                 queryForObjectOrNull(

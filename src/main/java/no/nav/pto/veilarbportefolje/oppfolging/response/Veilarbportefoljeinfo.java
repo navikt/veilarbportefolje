@@ -17,6 +17,6 @@ public class Veilarbportefoljeinfo {
     private boolean nyForVeileder;
     private boolean erManuell;
     private ZonedDateTime startDato;
-    private ZonedDateTime sistTilordnetDato;
+    private ZonedDateTime tilordnetTidspunkt;
 
 }
