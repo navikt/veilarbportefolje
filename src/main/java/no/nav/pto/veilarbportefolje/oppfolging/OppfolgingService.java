@@ -88,7 +88,7 @@ public class OppfolgingService {
         try {
             Veilarbportefoljeinfo veialrbinfo = hentVeilarbData(aktorId);
             if (veialrbinfo.isErUnderOppfolging() && veialrbinfo.getTilordnetTidspunkt() != null) {
-                oppfolgingRepositoryV2.settTilordningstidspunkt(aktorId, veialrbinfo.getTilordnetTidspunkt());
+                oppfolgingRepositoryV2.settTildeltTidspunkt(aktorId, veialrbinfo.getTilordnetTidspunkt());
             }
 
         }  catch (RuntimeException e) {
