@@ -50,8 +50,8 @@ public class OppfolgingRepositoryV2 {
         db.update("UPDATE oppfolging_data SET startdato = ? WHERE  aktoerid = ?", toTimestamp(startDato), aktoerId.get());
     }
 
-    public void settTilordningstidspunkt(AktorId aktoerId, ZonedDateTime tilordnetDato) {
-        db.update("UPDATE oppfolging_data SET tilordnet_dato = ? WHERE  aktoerid = ?", toTimestamp(tilordnetDato), aktoerId.get());
+    public void settTildeltTidspunkt(AktorId aktoerId, ZonedDateTime tildeltTidstpunkt) {
+        db.update("UPDATE oppfolging_data SET tildelt_tidspunkt = ? WHERE  aktoerid = ?", toTimestamp(tildeltTidstpunkt), aktoerId.get());
     }
 
     public void slettOppfolgingData(AktorId aktoerId) {
@@ -93,7 +93,8 @@ public class OppfolgingRepositoryV2 {
                 .setOppfolging(rs.getBoolean(OPPFOLGING))
                 .setVeileder(rs.getString(VEILEDERID))
                 .setManuell(rs.getBoolean(MANUELL))
-                .setStartDato(rs.getTimestamp(STARTDATO));
+                .setStartDato(rs.getTimestamp(STARTDATO))
+                .setTildeltTidspunkt(rs.getTimestamp(TILDELT_TIDSPUNKT));
     }
 
     public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {

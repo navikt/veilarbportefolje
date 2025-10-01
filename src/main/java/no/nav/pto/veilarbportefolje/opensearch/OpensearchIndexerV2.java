@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -195,11 +196,12 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId) {
+    public void oppdaterVeileder(AktorId aktoerId, VeilederId veilederId, ZonedDateTime tildeltTidspunkt) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("veileder_id", veilederId.toString())
                 .field("ny_for_veileder", true)
+                .field("tildelt_tidspunkt", toIsoUTC(tildeltTidspunkt))
                 .endObject();
 
         update(aktoerId, content, "Oppdatert veileder");

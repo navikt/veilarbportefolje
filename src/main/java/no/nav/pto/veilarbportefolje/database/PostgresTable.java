@@ -12,6 +12,7 @@ public class PostgresTable {
         public static final String OPPFOLGING_DATA_VEILEDERID = "OPPFOLGING_DATA_VEILEDERID";
         public static final String OPPFOLGING_DATA_MANUELL = "OPPFOLGING_DATA_MANUELL";
         public static final String OPPFOLGING_DATA_OPPFOLGING = "OPPFOLGING_DATA_OPPFOLGING";
+        public static final String OPPFOLGING_DATA_TILDELT_TIDSPUNKT = "OPPFOLGING_DATA_TILDELT_TIDSPUNKT";
 
         // AKTIVE_IDENTER
         public static final String AKTIVE_IDENTER_FNR = "AKTIVE_IDENTER_FNR";
@@ -128,6 +129,7 @@ public class PostgresTable {
         public static final String NY_FOR_VEILEDER = "NY_FOR_VEILEDER";
         public static final String MANUELL = "MANUELL";
         public static final String STARTDATO = "STARTDATO";
+        public static final String TILDELT_TIDSPUNKT = "TILDELT_TIDSPUNKT";
     }
 
     public static final class OPPFOLGINGSBRUKER_ARENA_V2 {
