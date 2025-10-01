@@ -10,8 +10,8 @@ public record AapKelvinForBruker(
         String rettighetstype
 ) {
     public static AapKelvinForBruker of(LocalDate vedtaksdatoTilOgMed, Rettighetstype rettighetstype) {
-        if(vedtaksdatoTilOgMed != null || rettighetstype != null){
-            return new AapKelvinForBruker(vedtaksdatoTilOgMed, String.valueOf(rettighetstype));
+        if (vedtaksdatoTilOgMed != null || rettighetstype != null) {
+            return new AapKelvinForBruker(vedtaksdatoTilOgMed, Rettighetstype.Companion.tilFrontendtekst(rettighetstype));
         } else {
             return null;
         }
