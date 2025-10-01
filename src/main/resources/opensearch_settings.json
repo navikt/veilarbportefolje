@@ -301,6 +301,9 @@
       },
       "aap_kelvin_rettighetstype": {
         "type": "keyword"
+      },
+      "tildelt_tidspunkt": {
+        "type": "date"
       }
     }
   }
