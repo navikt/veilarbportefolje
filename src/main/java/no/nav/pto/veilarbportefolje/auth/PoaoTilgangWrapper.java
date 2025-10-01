@@ -9,6 +9,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.*;
 import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
+import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse;
 
 import java.time.Duration;
 import java.util.List;
@@ -28,6 +29,10 @@ public class PoaoTilgangWrapper {
     private final Cache<String, Boolean> norskIdentToErSkjermetCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(30))
             .build();
+    private final Cache<String, TilgangsattributterResponse> tilgangsAttributterCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .build();
+
 
     public PoaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
         String url = environmentProperties.getPoaoTilgangUrl();
@@ -42,7 +47,8 @@ public class PoaoTilgangWrapper {
                         RestClient.baseClientBuilder().readTimeout(1, TimeUnit.SECONDS).writeTimeout(1, TimeUnit.SECONDS).callTimeout(1, TimeUnit.SECONDS).build()),
                 policyInputToDecisionCache,
                 navAnsattIdToAzureAdGrupperCache,
-                norskIdentToErSkjermetCache
+                norskIdentToErSkjermetCache,
+                tilgangsAttributterCache
         );
     }
 

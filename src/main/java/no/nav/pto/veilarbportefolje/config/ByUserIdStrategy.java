@@ -1,11 +1,12 @@
 package no.nav.pto.veilarbportefolje.config;
 
+import io.getunleash.UnleashContext;
 import lombok.RequiredArgsConstructor;
 import io.getunleash.strategy.Strategy;
 import no.nav.common.auth.context.AuthContextHolder;
 
-import java.util.Arrays;
 import java.util.Map;
+
 @RequiredArgsConstructor
 public class ByUserIdStrategy implements Strategy {
 
@@ -16,17 +17,14 @@ public class ByUserIdStrategy implements Strategy {
 		return "byUserId";
 	}
 
+	/**
+	 * @param map
+	 * @param unleashContext
+	 * @return
+	 */
 	@Override
-	public boolean isEnabled(Map<String, String> toggleUsers) {
-		if (toggleUsers.get("user").isEmpty()) {
-			return false;
-		}
-
-		if (authContextHolder.getNavIdent().isPresent()) {
-			String navIdentIKontekst = authContextHolder.getNavIdent().get().get();
-			return Arrays.asList(toggleUsers.get("user").split(",")).contains(navIdentIKontekst);
-		}
-
+	public boolean isEnabled(Map<String, String> map, UnleashContext unleashContext) {
 		return false;
 	}
+
 }
