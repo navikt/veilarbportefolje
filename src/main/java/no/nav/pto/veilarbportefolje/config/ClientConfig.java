@@ -67,7 +67,7 @@ public class ClientConfig {
             EnvironmentProperties environmentProperties
     ) {
         return new TiltakspengerClient(
-                environmentProperties.getAapUrl(),
+                environmentProperties.getTiltakspengerUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getTiltakspengerScope())
         );
     }
