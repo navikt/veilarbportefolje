@@ -369,7 +369,7 @@ val mockedYtelseAapMelding = YtelserKafkaDTO(
 )
 
 val mockedVedtak = AapVedtakResponseDto.Vedtak(
-    status = "LØPENDE",
+    status = VedtakStatus.LØPENDE,
     saksnummer = "S123",
     rettighetsType = Rettighetstype.ARBEIDSSØKER,
     kildesystem = "KILDE1",

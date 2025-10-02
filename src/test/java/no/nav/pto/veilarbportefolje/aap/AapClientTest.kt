@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aap
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
 import org.assertj.core.api.Assertions
@@ -55,7 +56,7 @@ class AapClientTest {
         val forventet = AapVedtakResponseDto(
             vedtak = listOf(
                 AapVedtakResponseDto.Vedtak(
-                    status = "LØPENDE",
+                    status = VedtakStatus.LØPENDE,
                     saksnummer = "4N7Y3Uo",
                     periode = AapVedtakResponseDto.Periode(
                         fraOgMedDato = LocalDate.parse("2025-04-22"),

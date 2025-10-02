@@ -43,7 +43,7 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
                 excluded.${YTELSER_AAP.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            aap.status,
+            aap.status.toString(),
             aap.saksnummer,
             aap.periode.fraOgMedDato,
             aap.periode.tilOgMedDato,
