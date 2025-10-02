@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.RestController
     name = "Hent tiltakspenger for personidentifikasjon",
     description = "Tiltakspenger"
 )
-class TiltakspengerController() {
+class TiltakspengerController(val tiltakspengerClient: TiltakspengerClient) {
+
     @PostMapping("/hent-tiltakspenger")
-    fun hentTiltakspenger(@RequestBody request: TiltakspengerRequest): AapVedtakResponseDto {
-        return aapClient.hentAapVedtak(
-            personnr = request.personidentifikator,
-            fom = request.fraOgMedDato,
-            tom = request.tilOgMedDato
+    fun hentTiltakspenger(@RequestBody request: TiltakspengerRequest): List<TiltakspengerResponseDto> {
+        return tiltakspengerClient.hentTiltakspenger(
+            personnr = request.ident,
+            fom = request.fom,
+            tom = request.tom
         )
     }
 }

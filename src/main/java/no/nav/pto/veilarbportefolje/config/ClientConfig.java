@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,6 +60,18 @@ public class ClientConfig {
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getAapScope())
         );
     }
+
+    @Bean
+    public TiltakspengerClient tiltakspengerClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new TiltakspengerClient(
+                environmentProperties.getAapUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getTiltakspengerScope())
+        );
+    }
+
 
     @Bean
     public HttpClient httpClient() {
