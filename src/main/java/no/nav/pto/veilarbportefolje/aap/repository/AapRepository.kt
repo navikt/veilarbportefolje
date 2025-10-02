@@ -43,7 +43,7 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
                 excluded.${YTELSER_AAP.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            aap.status,
+            aap.status.toString(),
             aap.saksnummer,
             aap.periode.fraOgMedDato,
             aap.periode.tilOgMedDato,
@@ -57,9 +57,9 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
         return try {
             db.queryForObject(sql, { rs, _ ->
                 AapVedtakPeriode(
-                    status = AapStatus.fromDb(rs.getString("STATUS")),
-                    periodeFom = rs.getDate("NYESTE_PERIODE_FOM").toLocalDate(),
-                    periodeTom = rs.getDate("NYESTE_PERIODE_TOM").toLocalDate()
+                    status = AapStatus.fromDb(rs.getString(YTELSER_AAP.STATUS)),
+                    periodeFom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_FOM).toLocalDate(),
+                    periodeTom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_TOM).toLocalDate()
                 )
             }, norskIdent)
         } catch (ex: EmptyResultDataAccessException) {

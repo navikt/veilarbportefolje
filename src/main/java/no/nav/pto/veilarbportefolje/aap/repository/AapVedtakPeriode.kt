@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aap.repository
 
+import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
 import java.time.LocalDate
 
 data class AapVedtakPeriode(
@@ -15,9 +16,9 @@ enum class AapStatus {
 
     companion object {
         private val mapping = mapOf(
-            "LØPENDE" to LOPENDE,
-            "UTREDES" to UTREDES,
-            "AVSLUTTET" to AVSLUTTET
+            VedtakStatus.LØPENDE.toString() to LOPENDE,
+            VedtakStatus.UTREDES.toString() to UTREDES,
+            VedtakStatus.AVSLUTTET.toString() to AVSLUTTET
         )
 
         fun fromDb(value: String): AapStatus =

@@ -8,7 +8,7 @@ data class AapVedtakResponseDto(
     val vedtak: List<Vedtak>
 ) {
     data class Vedtak(
-        val status: String,
+        val status: VedtakStatus,
         val saksnummer: String,
         val periode: Periode,
         val rettighetsType: Rettighetstype,
