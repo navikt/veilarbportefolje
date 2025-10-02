@@ -29,13 +29,13 @@ class AapClientTest {
         val responseBody = """
                     {"vedtak": [
                         {
-                          "status": "LØPENDE",
+                          "status": "${VedtakStatus.LØPENDE}",
                           "saksnummer": "4N7Y3Uo",
                           "periode": {
                             "fraOgMedDato": "2025-04-22",
                             "tilOgMedDato": "2026-04-21"
                           },
-                          "rettighetsType": "BISTANDSBEHOV",
+                          "rettighetsType": "${Rettighetstype.BISTANDSBEHOV}",
                           "kildesystem": "KELVIN",
                           "opphorsAarsak": null
                         }
