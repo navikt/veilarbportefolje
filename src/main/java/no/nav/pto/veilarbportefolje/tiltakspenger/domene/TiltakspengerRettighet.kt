@@ -1,9 +1,9 @@
-package no.nav.pto.veilarbportefolje.tiltakspenger
+package no.nav.pto.veilarbportefolje.tiltakspenger.domene
 
 enum class TiltakspengerRettighet {
     TILTAKSPENGER,
     TILTAKSPENGER_OG_BARNETILLEGG,
-    INGENTING;  //betyr ingen ytelse akkurat nå, må filtreres bort før vi håndterer den separat
+    INGENTING;
 
     companion object {
         fun tilFrontendtekst(rettighet: TiltakspengerRettighet?): String? {

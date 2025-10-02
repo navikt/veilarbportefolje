@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.tiltakspenger
+package no.nav.pto.veilarbportefolje.tiltakspenger.domene
 
 data class TiltakspengerRequest(
     val ident: String,
