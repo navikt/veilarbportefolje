@@ -93,6 +93,10 @@ public abstract class EndToEndTest {
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
     }
 
+    public void slettOppfolgingsInformasjon(AktorId aktorId) {
+        oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
+    }
+
     @SneakyThrows
     public static void verifiserAsynkront(long timeout, TimeUnit unit, Runnable verifiser) {
         long timeoutMillis = unit.toMillis(timeout);

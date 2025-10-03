@@ -141,6 +141,9 @@ class HendelseServiceTest(
         val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
         val hendelseRecord = genererRandomHendelseConsumerRecord(key = key, recordValue = hendelseRecordValue)
         hendelseService.behandleKafkaRecord(hendelseRecord)
+        val lagretStartHendelse = hendelseService.hentHendelse(UUID.fromString(key))
+        //Verify om hendlsen eksisterer med hendelse-ID
+        assertThat(lagretStartHendelse).isNotNull()
 
         // When
         val hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp = hendelseRecordValue.copy(
@@ -152,7 +155,6 @@ class HendelseServiceTest(
         )
         hendelseService.behandleKafkaRecord(nyHendelseRecord)
         val lagretHendelse = hendelseService.hentHendelse(UUID.fromString(key))
-
         // Then
         assertThat(lagretHendelse).isNull()
     }
@@ -160,19 +162,44 @@ class HendelseServiceTest(
     fun `skal slette hendelse selv om person ikke er under oppfølging når operasjon=STOPP og hendelse-ID eksisterer fra før`() {
         // Given
         val norskIdent = randomNorskIdent()
+        val fnr = Fnr.of(norskIdent.get())
+        val aktorId = randomAktorId()
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
         val hendelseRecord = genererRandomHendelseConsumerRecord(key = key, recordValue = hendelseRecordValue)
-        hendelseService.behandleKafkaRecord(hendelseRecord)
-        // Verify person is not under oppfolging
-        val count = jdbcTemplate.queryForObject(
+
+        // Verifiserer person er under oppfolging
+        //When
+        insertOppfolgingsInformasjon(aktorId, fnr)
+        val countNorBrukerErUnderOppfolging = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM oppfolging_data",
             Int::class.java
         )
-        if (count != null) {
-            assertThat(count).isEqualTo(0)
+        //Then
+        if (countNorBrukerErUnderOppfolging != null) {
+            assertThat(countNorBrukerErUnderOppfolging).isEqualTo(1)
         }
-        // When
+
+        //Verifiserer START hendelsen ble lagret i db
+        //When
+        hendelseService.behandleKafkaRecord(hendelseRecord)
+        val lagretStartHendelse = hendelseService.hentHendelse(UUID.fromString(key))
+        //Then
+        assertThat(lagretStartHendelse).isNotNull()
+
+        // Verify person er ikke under oppfolging
+        //When
+        slettOppfolgingsInformasjon(aktorId);
+        val countNorBrukerErIkkeUnderOppfolging = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM oppfolging_data",
+            Int::class.java
+        )
+        //Then
+        if (countNorBrukerErIkkeUnderOppfolging != null) {
+            assertThat(countNorBrukerErIkkeUnderOppfolging).isEqualTo(0)
+        }
+
+        // Lager STOPP hendelsen for den startet hendelsen over
         val hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp = hendelseRecordValue.copy(
             operasjon = Operasjon.STOPP
         )
@@ -180,10 +207,12 @@ class HendelseServiceTest(
             key = key,
             recordValue = hendelseRecordValueMedSammeIdOgDataMenOperasjonStopp
         )
-        hendelseService.behandleKafkaRecord(nyHendelseRecord)
-        val lagretHendelse = hendelseService.hentHendelse(UUID.fromString(key))
 
-        // Then
-        assertThat(lagretHendelse).isNull()
+        // Behandle STOPP hendelsen og verifisere om hendelsen ble slettet fra dben når bruker er ikke under oppfølging
+        //When
+        hendelseService.behandleKafkaRecord(nyHendelseRecord)
+        val lagretHendelsemedstopp = hendelseService.hentHendelse(UUID.fromString(key))
+        //Then
+        assertThat(lagretHendelsemedstopp).isNull()
     }
 }

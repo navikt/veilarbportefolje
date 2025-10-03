@@ -86,7 +86,6 @@ class HendelseService(
 
                 if (eldsteUtgattVarselHendelse.id == hendelse.id) {
                     oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
-
                     logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
                 } else {
                     logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB")
@@ -94,6 +93,9 @@ class HendelseService(
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB")
             }
         }
@@ -129,6 +131,9 @@ class HendelseService(
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
             }
         }
@@ -170,12 +175,14 @@ class HendelseService(
 
                 if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
                     oppdaterUtgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
-
                     logger.info("Hendelse med id ${hendelse.id}  og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
                 }
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB.")
             }
         }
