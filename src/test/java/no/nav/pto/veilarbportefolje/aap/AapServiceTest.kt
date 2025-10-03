@@ -385,7 +385,7 @@ class AapServiceTest(
     }
 
     @Test
-    fun `opensearch skal fortsatt indekstere på aktørid ved endring i personident`() {
+    fun `opensearch skal fortsatt indeksere på aktørid ved endring i personident`() {
         // Given
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
