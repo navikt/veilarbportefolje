@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
@@ -80,7 +81,7 @@ class AapService(
                 return
             }
 
-        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(
+        val harAktivAap = sisteAapPeriode.status == VedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
             LocalDate.now().minusDays(1)
         )
 

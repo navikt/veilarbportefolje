@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
+import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.aap.repository.AapStatus
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
@@ -86,7 +87,7 @@ class AapRepositoryTest(
 
 
     val aapVedtakDto = AapVedtakResponseDto.Vedtak(
-        status = "LØPENDE",
+        status = VedtakStatus.LØPENDE,
         saksnummer = "SAK-1",
         periode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2024, 1, 1),
