@@ -325,7 +325,7 @@ class AapServiceTest(
         ).thenReturn(uttdatertMockeAapClientRespons)
         aapService.behandleKafkaMeldingLogikk(
             mockedYtelseAapMelding.copy(
-                personident = norskIdent.toString(),
+                personId = norskIdent.toString(),
                 meldingstype = YTELSE_MELDINGSTYPE.OPPDATER
             )
         )
@@ -371,7 +371,7 @@ class AapServiceTest(
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
 
         // Lagre en rad på historisk ident, før kafkamelding med ny ident kommer
-        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdentHistorisk.get()))
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdentHistorisk.get()))
         val lagretAapGammelIdent = aapRepository.hentAap(norskIdentHistorisk.get())
         assertThat(lagretAapGammelIdent).isNotNull()
 
@@ -441,14 +441,14 @@ class AapServiceTest(
         val mockedRespons = if (harAap) mockedAapClientRespons else AapVedtakResponseDto(emptyList())
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedRespons)
 
-        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString()))
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
     }
 
 }
 
 val mockedYtelseAapMelding = YtelserKafkaDTO(
-    personident = "10108000000",
+    personId = "10108000000",
     meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
     ytelsestype = YTELSE_TYPE.AAP,
     kildesystem = YTELSE_KILDESYSTEM.KELVIN
