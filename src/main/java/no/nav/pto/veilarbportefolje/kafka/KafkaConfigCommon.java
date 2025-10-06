@@ -42,16 +42,17 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsst√
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.KotlinJsonDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
@@ -440,7 +441,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
+                                        new KotlinJsonDeserializer<>(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 )
                 );

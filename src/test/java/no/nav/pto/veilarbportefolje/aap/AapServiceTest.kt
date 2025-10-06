@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
@@ -11,10 +10,9 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
-import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker
-import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
@@ -28,7 +26,10 @@ import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
+import java.util.List
 import java.util.concurrent.TimeUnit
 
 
@@ -36,14 +37,14 @@ class AapServiceTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
     @Autowired private val aapRepository: AapRepository,
     @Autowired private val opensearchService: OpensearchService,
-    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2,
+    @Autowired private val pdlIdentRepository: PdlIdentRepository,
+    @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
 ) : EndToEndTest() {
 
     private lateinit var aapService: AapService
     private val aapClient: AapClient = mock()
     private val aktorClient: AktorClient = mock()
-    private val oppfolgingRepositoryV2: OppfolgingRepositoryV2 = mock()
-    private val pdlIdentRepository: PdlIdentRepository = mock()
 
     @BeforeEach
     fun setUp() {
@@ -61,29 +62,31 @@ class AapServiceTest(
     fun `reset data`() {
         jdbcTemplate.update("TRUNCATE TABLE YTELSER_AAP")
         jdbcTemplate.execute("truncate table oppfolging_data")
+        jdbcTemplate.update("TRUNCATE table bruker_identer")
     }
 
     val norskIdent = Fnr.ofValidFnr("10108000000")
+    val aktorId = AktorId.of("12345")
+    val identerBruker = List.of<PDLIdent>(
+        PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
+        PDLIdent(norskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
+    )
     val navKontor = NavKontor.of("1123")
     val veilederId = VeilederId.of("Z12345")
+
 
     @Test
     fun `skal starte henting og lagring av aap ved mottatt kafkamelding`() {
         // Given
-        val norskIdent = mockedYtelseAapMelding.personident
-        val aktorId = randomAktorId()
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
 
-        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
-        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent)).thenReturn(IdenterForBruker(listOf(norskIdent)))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
-            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
-        )
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
 
         //When
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
-        val lagretAap = aapRepository.hentAap(norskIdent)
+        val lagretAap = aapRepository.hentAap(norskIdent.get())
 
         //Then
         assertThat(lagretAap).isNotNull
@@ -92,19 +95,21 @@ class AapServiceTest(
     @Test
     fun `skal ikke behandle kafkamelding når person ikke har aap og er av meldingstype opprett`() {
         // Given
-        val norskIdent = mockedYtelseAapMelding.personident
-        val aktorId = randomAktorId()
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
 
-        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
-            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
-        )
-        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(AapVedtakResponseDto(emptyList()))
+        `when`(
+            aapClient.hentAapVedtak(
+                anyString(),
+                anyString(),
+                anyString()
+            )
+        ).thenReturn(AapVedtakResponseDto(emptyList()))
 
         // When
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
-        val lagretAap = aapRepository.hentAap(norskIdent)
+        val lagretAap = aapRepository.hentAap(norskIdent.get())
 
         // Then
         assertThat(lagretAap).isNull()
@@ -113,38 +118,38 @@ class AapServiceTest(
     @Test
     fun `skal behandle kafkamelding og slette data når person ikke har aap men meldingstype er oppdater`() {
         // Given
-        val norskIdent = mockedYtelseAapMelding.personident
-        val aktorId = randomAktorId()
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
 
-        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(true)
-        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent)).thenReturn(IdenterForBruker(listOf(norskIdent)))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
-            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
-        )
 
         // Opprett rad i db for å verifisere at den blir slettet i neste steg
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
-        val lagretAapOpprett = aapRepository.hentAap(norskIdent)
+        val lagretAapOpprett = aapRepository.hentAap(norskIdent.get())
         assertThat(lagretAapOpprett).isNotNull
 
         // Oppdatermelding på samme person uten aap skal slette rad i db
-        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(AapVedtakResponseDto(emptyList()))
+        `when`(
+            aapClient.hentAapVedtak(
+                anyString(),
+                anyString(),
+                anyString()
+            )
+        ).thenReturn(AapVedtakResponseDto(emptyList()))
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
-        val lagretAapOppdater = aapRepository.hentAap(norskIdent)
+        val lagretAapOppdater = aapRepository.hentAap(norskIdent.get())
         assertThat(lagretAapOppdater).isNull()
     }
 
     @Test
     fun `skal ikke behandle kafkamelding når person ikke er under oppfølging`() {
         // Given
-        val norskIdent = mockedYtelseAapMelding.personident
-        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent)).thenReturn(false)
+        pdlIdentRepository.upsertIdenter(identerBruker)
 
         // When
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
-        val lagretAap = aapRepository.hentAap(norskIdent)
+        val lagretAap = aapRepository.hentAap(norskIdent.get())
 
         // Then
         assertThat(lagretAap).isNull()
@@ -153,14 +158,11 @@ class AapServiceTest(
 
     @Test
     fun `hentAapVedtakForOppfolgingPeriode filtrerer vedtak utenfor oppfolging`() {
-        val fnr = "12345678910"
-        val aktorId = AktorId("1234")
-        val oppfolgingStartdato = LocalDate.of(2023, 1, 1)
+        val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
+        pdlIdentRepository.upsertIdenter(identerBruker)
 
-        `when`(aktorClient.hentAktorId(Fnr.of(fnr))).thenReturn(aktorId)
-        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)).thenReturn(
-            Optional.of(OppfolgingMedStartdato(true, toTimestamp(oppfolgingStartdato)))
-        )
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
         val vedtakInnenfor = mockedVedtak.copy(
             periode = AapVedtakResponseDto.Periode(
@@ -179,7 +181,7 @@ class AapServiceTest(
         val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
-        val resultat = aapService.hentSisteAapPeriodeFraApi(fnr, oppfolgingStartdato)
+        val resultat = aapService.hentSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
         assertThat(resultat).isEqualTo(vedtakInnenfor)
     }
 
@@ -314,8 +316,19 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isEqualTo(true)
 
         //Fjern aap og oppdater opensearch
-        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(uttdatertMockeAapClientRespons)
-        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString(), meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
+        `when`(
+            aapClient.hentAapVedtak(
+                anyString(),
+                anyString(),
+                anyString()
+            )
+        ).thenReturn(uttdatertMockeAapClientRespons)
+        aapService.behandleKafkaMeldingLogikk(
+            mockedYtelseAapMelding.copy(
+                personId = norskIdent.toString(),
+                meldingstype = YTELSE_MELDINGSTYPE.OPPDATER
+            )
+        )
         val getResponse2 = opensearchTestClient.fetchDocument(aktorId)
         val aapKelvinRespons2 = getResponse2.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons2).isEqualTo(false)
@@ -341,28 +354,101 @@ class AapServiceTest(
         }
     }
 
+    @Test
+    fun `skal oppdatere til ny ident og slette gammel rad når kafkamedling med ny ident kommer`() {
+        // Given
+        val norskIdentHistorisk = randomNorskIdent()
+        val identerBruker = List.of<PDLIdent>(
+            PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
+            PDLIdent(norskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT),
+            PDLIdent(norskIdentHistorisk.get(), true, Gruppe.FOLKEREGISTERIDENT)
+        )
+
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
+
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
+
+        // Lagre en rad på historisk ident, før kafkamelding med ny ident kommer
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdentHistorisk.get()))
+        val lagretAapGammelIdent = aapRepository.hentAap(norskIdentHistorisk.get())
+        assertThat(lagretAapGammelIdent).isNotNull()
+
+        // Behandle kafkamelding med ny ident
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
+        val lagretAapGammelIdentEtterOppdatering = aapRepository.hentAap(norskIdentHistorisk.get())
+        val lagretAapNyIdent = aapRepository.hentAap(norskIdent.get())
+        assertThat(lagretAapGammelIdentEtterOppdatering).isNull()
+        assertThat(lagretAapNyIdent).isNotNull()
+
+    }
+
+    @Test
+    fun `opensearch skal fortsatt indeksere på aktørid ved endring i personident`() {
+        // Given
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedAapClientRespons)
+
+        val identerBruker = List.of<PDLIdent>(
+            PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
+            PDLIdent(norskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT),
+        )
+
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        val nyNorskIdent = randomNorskIdent()
+        val identerBrukerMedNyIdent =  List.of<PDLIdent>(
+            PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
+            PDLIdent(norskIdent.get(), true, Gruppe.FOLKEREGISTERIDENT),
+            PDLIdent(nyNorskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
+        )
+
+        pdlIdentRepository.upsertIdenter(identerBrukerMedNyIdent)
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        //indeksering skal fortsatt være på aktørid
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP, YtelseAapKelvin.HAR_AAP))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+            assertThat(responseBrukere.antall).isEqualTo(1)
+        }
+
+    }
+
 
     private fun setInitialState(aktorId: AktorId, harAap: Boolean) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
-        `when`(pdlIdentRepository.erBrukerUnderOppfolging(norskIdent.toString())).thenReturn(true)
-        `when`(pdlIdentRepository.hentFnrIdenterForBruker(norskIdent.toString())).thenReturn(IdenterForBruker(listOf(norskIdent.toString())))
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        `when`(oppfolgingRepositoryV2.hentOppfolgingMedStartdato(any())).thenReturn(
-            Optional.of(OppfolgingMedStartdato(true, toTimestamp(LocalDate.now().minusMonths(2))))
-        )
         val mockedRespons = if (harAap) mockedAapClientRespons else AapVedtakResponseDto(emptyList())
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedRespons)
 
-        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personident = norskIdent.toString()))
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
     }
 
 }
 
 val mockedYtelseAapMelding = YtelserKafkaDTO(
-    personident = randomNorskIdent().get(),
+    personId = "10108000000",
     meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
     ytelsestype = YTELSE_TYPE.AAP,
     kildesystem = YTELSE_KILDESYSTEM.KELVIN

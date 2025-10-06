@@ -43,16 +43,16 @@ class AapService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
-            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personident)
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personId)
             return
         }
 
-        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(kafkaMelding.personident, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
+        lagreAapForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
     fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
