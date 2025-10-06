@@ -440,7 +440,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
+                                        Deserializers.jsonDeserializer(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 )
                 );
