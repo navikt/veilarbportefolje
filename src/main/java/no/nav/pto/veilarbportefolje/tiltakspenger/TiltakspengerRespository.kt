@@ -20,7 +20,7 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
                 ${YTELSER_TILTAKSPENGER.SAKSID}, 
                 ${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM}, 
-                ${YTELSER_TILTAKSPENGER.RETTIGHETSTYPE}, 
+                ${YTELSER_TILTAKSPENGER.RETTIGHET}, 
                 ${YTELSER_TILTAKSPENGER.RAD_SIST_ENDRET}
             ) VALUES (?,?,?,?,?,current_timestamp) 
             ON CONFLICT (${YTELSER_TILTAKSPENGER.NORSK_IDENT}) 
@@ -28,13 +28,13 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
                 ${YTELSER_TILTAKSPENGER.SAKSID}, 
                 ${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM}, 
-                ${YTELSER_TILTAKSPENGER.RETTIGHETSTYPE}, 
+                ${YTELSER_TILTAKSPENGER.RETTIGHET}, 
                 ${YTELSER_TILTAKSPENGER.RAD_SIST_ENDRET}
             ) = (
                 excluded.${YTELSER_TILTAKSPENGER.SAKSID}, 
                 excluded.${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_FOM}, 
                 excluded.${YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM}, 
-                excluded.${YTELSER_TILTAKSPENGER.RETTIGHETSTYPE}, 
+                excluded.${YTELSER_TILTAKSPENGER.RETTIGHET}, 
                 excluded.${YTELSER_TILTAKSPENGER.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
@@ -53,7 +53,7 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
                     sakId = rs.getString(YTELSER_TILTAKSPENGER.SAKSID),
                     fom = rs.getDate(YTELSER_TILTAKSPENGER.NYESTE_PERIODE_FOM).toLocalDate(),
                     tom = rs.getDate(YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM).toLocalDate(),
-                    rettighet = TiltakspengerRettighet.fraDb(rs.getString(YTELSER_TILTAKSPENGER.RETTIGHETSTYPE)),
+                    rettighet = TiltakspengerRettighet.fraDb(rs.getString(YTELSER_TILTAKSPENGER.RETTIGHET)),
                 )
             }, norskIdent)
         } catch (ex: EmptyResultDataAccessException) {

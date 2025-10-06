@@ -4,7 +4,7 @@ CREATE TABLE YTELSER_TILTAKSPENGER
     saksid          varchar(100) not null,
     nyeste_periode_fom     date,
     nyeste_periode_tom     date,
-    rettighetstype  varchar(100),
+    rettighet  varchar(100),
     rad_sist_endret timestamp    not null,
 
     PRIMARY KEY (norsk_ident)
