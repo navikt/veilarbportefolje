@@ -39,7 +39,6 @@ class AapService(
     val aapRepository: AapRepository,
     val opensearchIndexerV2: OpensearchIndexerV2
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {

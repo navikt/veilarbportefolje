@@ -478,4 +478,16 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class YTELSER_TILTAKSPENGER {
+        private YTELSER_TILTAKSPENGER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_TILTAKSPENGER";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String SAKSID = "SAKSID";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String RETTIGHET = "RETTIGHET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }
