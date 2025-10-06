@@ -15,7 +15,7 @@ import java.util.function.Supplier
 class TiltakspengerClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
     private val client: OkHttpClient = baseClient()
 
-    fun hentTiltakspenger(personnr: String, fom: String, tom: String): List<TiltakspengerResponseDto> {
+    fun hentTiltakspenger(personnr: String, fom: String, tom: String? = null): List<TiltakspengerResponseDto> {
         val requestBody = TiltakspengerRequest(personnr, fom, tom)
 
         val request = Request.Builder()

@@ -9,7 +9,9 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtak
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Repository
 
+@Repository
 class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
 
     fun upsertAap(norskIdent: NorskIdent, tiltakspenger: TiltakspengerResponseDto) {

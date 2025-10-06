@@ -105,8 +105,7 @@ class AapService(
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
-        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
-        // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
+        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid.
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
