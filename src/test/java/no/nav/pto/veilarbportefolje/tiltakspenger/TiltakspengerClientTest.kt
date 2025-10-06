@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import org.assertj.core.api.Assertions
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
 
 class TiltakspengerClientTest {
 
@@ -52,8 +53,8 @@ class TiltakspengerClientTest {
 
         val forventet = listOf(
             TiltakspengerResponseDto(
-                fom = "2024-10-02",
-                tom = "2025-10-02",
+                fom = LocalDate.of(2024, 10, 2),
+                tom = LocalDate.of(2025, 10, 2),
                 rettighet = TiltakspengerRettighet.TILTAKSPENGER,
                 sakId = "123",
                 kilde = "tiltakspengerkilde"
