@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class PdlIdentRepositoryTest {
 
     @MockBean
     private AapService aapService;
+
+    @MockBean
+    private TiltakspengerService tiltakspengerService;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {

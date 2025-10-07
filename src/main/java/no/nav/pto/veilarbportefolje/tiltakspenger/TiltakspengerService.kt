@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
@@ -29,7 +28,6 @@ import java.util.*
 class TiltakspengerService(
     val tiltakspengerClient: TiltakspengerClient,
     val tiltakspengerRespository: TiltakspengerRespository,
-    //val oppfolgingService: OppfolgingService,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient
