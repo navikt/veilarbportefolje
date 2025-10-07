@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aap.domene
 
 
 data class YtelserKafkaDTO(
-    val personident: String,
+    val personId: String,
     val meldingstype: YTELSE_MELDINGSTYPE,
     val ytelsestype: YTELSE_TYPE,
     val kildesystem: YTELSE_KILDESYSTEM
@@ -19,5 +19,6 @@ enum class YTELSE_KILDESYSTEM {
 }
 
 enum class YTELSE_TYPE {
-    AAP
+    AAP,
+    TILTAKSPENGER
 }

@@ -15,5 +15,14 @@ enum class TiltakspengerRettighet {
                 INGENTING -> "Ingenting"
             }
         }
+
+        fun fraDb(dbString: String?): TiltakspengerRettighet {
+            return when (dbString) {
+                "TILTAKSPENGER" -> TILTAKSPENGER
+                "TILTAKSPENGER_OG_BARNETILLEGG" -> TILTAKSPENGER_OG_BARNETILLEGG
+                "INGENTING" -> INGENTING
+                else -> throw IllegalArgumentException("Ukjent rettighetstype: $dbString")
+            }
+        }
     }
 }

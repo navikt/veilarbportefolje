@@ -12,8 +12,8 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.AapController;
-import no.nav.pto.veilarbportefolje.aap.repository.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
+import no.nav.pto.veilarbportefolje.aap.repository.AapRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
@@ -75,6 +75,9 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerController;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -186,6 +189,8 @@ import static org.mockito.Mockito.when;
         AapService.class,
         AapController.class,
         AapRepository.class,
+        TiltakspengerRespository.class,
+        TiltakspengerController.class,
 })
 public class ApplicationConfigTest {
 
@@ -202,10 +207,16 @@ public class ApplicationConfigTest {
 
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
-                                       OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
+                                       OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,
+                                       ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        OpensearchTestClient opensearchTestClient,
-                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository, PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository, AapRepository aapRepository) {
-        return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository, arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2, pdlIdentRepository, pdlPersonRepository, huskelappRepository, aapRepository);
+                                       OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository,
+                                       PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository,
+                                       AapRepository aapRepository) {
+        return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository,
+                arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2,
+                pdlIdentRepository, pdlPersonRepository, huskelappRepository,
+                aapRepository);
     }
 
     @Bean
@@ -374,4 +385,8 @@ public class ApplicationConfigTest {
         return mock(AapClient.class);
     }
 
+    @Bean
+    public TiltakspengerClient tiltakspengerClient() {
+        return mock(TiltakspengerClient.class);
+    }
 }

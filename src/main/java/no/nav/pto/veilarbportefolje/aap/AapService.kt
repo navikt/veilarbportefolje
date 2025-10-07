@@ -39,20 +39,19 @@ class AapService(
     val aapRepository: AapRepository,
     val opensearchIndexerV2: OpensearchIndexerV2
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
-            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personident)
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personId)
             return
         }
 
-        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(kafkaMelding.personident, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
+        lagreAapForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
     fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
@@ -106,15 +105,13 @@ class AapService(
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
-        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
-        // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
+        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid.
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
         val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .mapNotNull { vedtak ->
-                val filtrertPeriode = filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, vedtak.periode)
-                filtrertPeriode?.let { vedtak.copy(periode = it) }
+            .filter { vedtak ->
+                vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
         val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
@@ -143,17 +140,6 @@ class AapService(
         alleFnrIdenterForBruker.forEach { ident ->
             aapRepository.slettAapForBruker(ident)
         }
-    }
-
-    fun filtrerAapKunIOppfolgingPeriode(
-        oppfolgingsStartdato: LocalDate,
-        aapPeriode: AapVedtakResponseDto.Periode
-    ): AapVedtakResponseDto.Periode? {
-        if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
-        ) {
-            return null
-        }
-        return aapPeriode
     }
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {

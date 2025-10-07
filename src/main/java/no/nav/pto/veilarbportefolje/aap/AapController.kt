@@ -28,7 +28,7 @@ class AapController(
     @PostMapping("/hent-aap-for-kafkamelding")
     fun hentAapForKafkamelding(@RequestBody request: AapVedtakRequest) {
         val kafkaMelding = YtelserKafkaDTO(
-            personident = request.personidentifikator,
+            personId = request.personidentifikator,
             ytelsestype = YTELSE_TYPE.AAP,
             meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
             kildesystem = YTELSE_KILDESYSTEM.KELVIN
