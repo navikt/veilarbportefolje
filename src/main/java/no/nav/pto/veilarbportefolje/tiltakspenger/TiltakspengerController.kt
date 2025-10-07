@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import io.swagger.v3.oas.annotations.tags.Tag
+import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRequest
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
 import org.springframework.web.bind.annotation.PostMapping
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RestController
     name = "Hent tiltakspenger for personident",
     description = "Tiltakspenger"
 )
-class TiltakspengerController(val tiltakspengerClient: TiltakspengerClient) {
+class TiltakspengerController(
+    val tiltakspengerClient: TiltakspengerClient,
+    private val tiltakspengerService: TiltakspengerService
+) {
 
     @PostMapping("/hent-tiltakspenger")
     fun hentTiltakspenger(@RequestBody request: TiltakspengerRequest): List<TiltakspengerResponseDto> {
@@ -24,5 +28,16 @@ class TiltakspengerController(val tiltakspengerClient: TiltakspengerClient) {
             fom = request.fom,
             tom = request.tom
         )
+    }
+
+    @PostMapping("/hent-tiltakspenger-for-kafkamelding")
+    fun hentAapForKafkamelding(@RequestBody request: TiltakspengerRequest) {
+        val kafkaMelding = YtelserKafkaDTO(
+            personId = request.ident,
+            ytelsestype = YTELSE_TYPE.TILTAKSPENGER,
+            meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
+            kildesystem = YTELSE_KILDESYSTEM.TP
+        )
+        tiltakspengerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
 }
