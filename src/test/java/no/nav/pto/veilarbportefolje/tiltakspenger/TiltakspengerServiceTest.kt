@@ -77,7 +77,7 @@ class TiltakspengerServiceTest(
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
         val vedtakInnenfor = mockedVedtak.copy(
-            fom = LocalDate.of(2023, 2, 1),
+            fom = LocalDate.of(2022, 2, 1),
             tom = LocalDate.of(2023, 1, 1)
         )
 

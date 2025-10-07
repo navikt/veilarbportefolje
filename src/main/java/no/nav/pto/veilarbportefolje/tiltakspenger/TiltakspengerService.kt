@@ -32,7 +32,7 @@ class TiltakspengerService(
     fun hentOgLagreTiltakspengerForBrukerVedBatchjobb(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
         val oppfolgingsStartdato = oppfolgingService.hentOppfolgingStartdato(aktorId)
-        lagreTiltakspengerForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
+        lagreTiltakspengerForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPDATER)
     }
 
     fun lagreTiltakspengerForBruker(
