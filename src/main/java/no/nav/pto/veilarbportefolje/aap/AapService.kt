@@ -142,17 +142,6 @@ class AapService(
         }
     }
 
-    fun filtrerAapKunIOppfolgingPeriode(
-        oppfolgingsStartdato: LocalDate,
-        aapPeriode: AapVedtakResponseDto.Periode
-    ): AapVedtakResponseDto.Periode? {
-        if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
-        ) {
-            return null
-        }
-        return aapPeriode
-    }
-
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
         val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
             .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
