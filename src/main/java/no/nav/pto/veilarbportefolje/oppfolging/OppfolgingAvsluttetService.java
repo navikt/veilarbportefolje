@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class OppfolgingAvsluttetService {
     private final ArbeidssoekerService arbeidssoekerService;
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final AapService aapService;
+    private final TiltakspengerService tiltakspengerService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -64,6 +66,7 @@ public class OppfolgingAvsluttetService {
         oppfolgingsbrukerServiceV2.slettOppfolgingsbruker(aktoerId, maybeFnr);
         arbeidssoekerService.slettArbeidssoekerData(aktoerId, maybeFnr);
         aapService.slettAapData(aktoerId, maybeFnr);
+        tiltakspengerService.slettTiltakspengerData(aktoerId, maybeFnr);
 
         opensearchIndexerV2.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);

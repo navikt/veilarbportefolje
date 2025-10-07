@@ -2,11 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
-import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
-import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
-import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
+import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
@@ -39,9 +35,14 @@ class AapService(
     val aapRepository: AapRepository,
     val opensearchIndexerV2: OpensearchIndexerV2
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.KELVIN) {
+            logger.warn("Mottok ytelse-melding med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
+            return
+        }
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
