@@ -105,15 +105,13 @@ class AapService(
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
-        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
-        // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
+        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid.
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
         val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .mapNotNull { vedtak ->
-                val filtrertPeriode = filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, vedtak.periode)
-                filtrertPeriode?.let { vedtak.copy(periode = it) }
+            .filter { vedtak ->
+                vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
         val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
@@ -142,17 +140,6 @@ class AapService(
         alleFnrIdenterForBruker.forEach { ident ->
             aapRepository.slettAapForBruker(ident)
         }
-    }
-
-    fun filtrerAapKunIOppfolgingPeriode(
-        oppfolgingsStartdato: LocalDate,
-        aapPeriode: AapVedtakResponseDto.Periode
-    ): AapVedtakResponseDto.Periode? {
-        if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
-        ) {
-            return null
-        }
-        return aapPeriode
     }
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {

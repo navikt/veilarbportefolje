@@ -19,5 +19,6 @@ enum class YTELSE_KILDESYSTEM {
 }
 
 enum class YTELSE_TYPE {
-    AAP
+    AAP,
+    TILTAKSPENGER
 }

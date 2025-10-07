@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
  */
 @Service
 class YtelserKafkaService(
-    private val aapService: AapService
+    private val aapService: AapService,
 ) : KafkaCommonNonKeyedConsumerService<YtelserKafkaDTO>() {
     private val logger: Logger = LoggerFactory.getLogger(YtelserKafkaService::class.java)
 
@@ -33,4 +33,5 @@ class YtelserKafkaService(
         }
         aapService.behandleKafkaMeldingLogikk(kafkaMelding)
     }
+
 }
