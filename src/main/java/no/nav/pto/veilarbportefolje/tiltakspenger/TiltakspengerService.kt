@@ -1,12 +1,11 @@
 package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.common.types.identer.AktorId
-import no.nav.pto.veilarbportefolje.aap.YtelserKafkaService
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -25,15 +24,14 @@ import java.time.LocalDate
 class TiltakspengerService(
     val tiltakspengerClient: TiltakspengerClient,
     val tiltakspengerRespository: TiltakspengerRespository,
-    val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
+    val oppfolgingService: OppfolgingService,
     val pdlIdentRepository: PdlIdentRepository,
-    val aktorClient: AktorClient,
-    val ytelserKafkaService: YtelserKafkaService
+    val aktorClient: AktorClient
 ) {
 
     fun hentOgLagreTiltakspengerForBrukerVedBatchjobb(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        val oppfolgingsStartdato = ytelserKafkaService.hentOppfolgingStartdato(aktorId)
+        val oppfolgingsStartdato = oppfolgingService.hentOppfolgingStartdato(aktorId)
         lagreTiltakspengerForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
@@ -67,7 +65,7 @@ class TiltakspengerService(
     fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): TiltakspengerResponseDto? {
         val respons = tiltakspengerClient.hentTiltakspenger(personIdent, oppfolgingsStartdato.toString())
         val vedtakIOppfolgingsPeriode = respons
-            .filter { vedtak -> !vedtak.tom.isAfter(oppfolgingsStartdato) }
+            .filter { vedtak -> vedtak.tom.isAfter(oppfolgingsStartdato.minusDays(1)) }
 
         return vedtakIOppfolgingsPeriode.maxByOrNull { it.fom }
     }

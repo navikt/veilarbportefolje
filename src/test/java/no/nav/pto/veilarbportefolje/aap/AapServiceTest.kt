@@ -41,13 +41,22 @@ class AapServiceTest(
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
     @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
 ) : EndToEndTest() {
-
     private lateinit var aapService: AapService
     private val aapClient: AapClient = mock()
     private val aktorClient: AktorClient = mock()
 
     @BeforeEach
     fun setUp() {
+        resetDatabase()
+        initializeService()
+    }
+
+    private fun resetDatabase() {
+        listOf("YTELSER_AAP", "oppfolging_data", "bruker_identer")
+            .forEach { jdbcTemplate.execute("TRUNCATE TABLE $it") }
+    }
+
+    private fun initializeService() {
         aapService = AapService(
             aapClient,
             aktorClient,
@@ -56,13 +65,6 @@ class AapServiceTest(
             aapRepository,
             opensearchIndexerV2
         )
-    }
-
-    @BeforeEach
-    fun `reset data`() {
-        jdbcTemplate.update("TRUNCATE TABLE YTELSER_AAP")
-        jdbcTemplate.execute("truncate table oppfolging_data")
-        jdbcTemplate.update("TRUNCATE table bruker_identer")
     }
 
     val norskIdent = Fnr.ofValidFnr("10108000000")
@@ -161,13 +163,12 @@ class AapServiceTest(
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
         pdlIdentRepository.upsertIdenter(identerBruker)
-
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
         val vedtakInnenfor = mockedVedtak.copy(
             periode = AapVedtakResponseDto.Periode(
-                fraOgMedDato = LocalDate.of(2023, 2, 1),
-                tilOgMedDato = LocalDate.of(2023, 12, 31)
+                fraOgMedDato = LocalDate.of(2022, 2, 1),
+                tilOgMedDato = LocalDate.of(2023, 1, 1)
             )
         )
 
@@ -183,31 +184,6 @@ class AapServiceTest(
 
         val resultat = aapService.hentSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
         assertThat(resultat).isEqualTo(vedtakInnenfor)
-    }
-
-
-    @Test
-    fun `aap periode før oppfolgingStartdato skal filtreres bort`() {
-        val oppfolgingsStartdato = LocalDate.of(2024, 1, 1)
-        val aapVedtakPeriode = AapVedtakResponseDto.Periode(
-            fraOgMedDato = LocalDate.of(2023, 1, 1),
-            tilOgMedDato = LocalDate.of(2023, 12, 31)
-        )
-
-        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, aapVedtakPeriode)
-        assertThat(resultat).isNull()
-    }
-
-    @Test
-    fun `aap periode som overlapper oppfolgingStartdato skal beholdes`() {
-        val oppfolgingsStartdato = LocalDate.of(2024, 1, 1)
-        val aapVedtakPeriode = AapVedtakResponseDto.Periode(
-            fraOgMedDato = LocalDate.of(2023, 12, 1),
-            tilOgMedDato = LocalDate.of(2024, 6, 30)
-        )
-
-        val resultat = aapService.filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, aapVedtakPeriode)
-        assertThat(resultat).isEqualTo(aapVedtakPeriode)
     }
 
     @Test

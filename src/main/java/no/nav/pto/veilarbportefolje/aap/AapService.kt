@@ -110,9 +110,8 @@ class AapService(
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
         val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .mapNotNull { vedtak ->
-                val filtrertPeriode = filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, vedtak.periode)
-                filtrertPeriode?.let { vedtak.copy(periode = it) }
+            .filter { vedtak ->
+                vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
         val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
