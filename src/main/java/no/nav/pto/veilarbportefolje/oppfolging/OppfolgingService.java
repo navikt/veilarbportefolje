@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.config.EnvironmentProperties;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.oppfolging.response.Veilarbportefoljeinfo;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -35,7 +33,6 @@ import java.util.function.Supplier;
 
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -192,19 +189,6 @@ public class OppfolgingService {
                     .map(r -> r.erUnderOppfolging)
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
-    }
-
-    public LocalDate hentOppfolgingStartdato(AktorId aktorId) {
-        OppfolgingMedStartdato oppfolgingsdata = oppfolgingRepositoryV2
-                .hentOppfolgingMedStartdato(aktorId)
-                .orElseThrow(() -> new IllegalStateException("Ingen oppfølgingsdata funnet"));
-
-        if (oppfolgingsdata.getOppfolging() && oppfolgingsdata.getStartDato() != null) {
-            return toLocalDate(oppfolgingsdata.getStartDato());
-        }
-
-        secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId);
-        throw new IllegalStateException("Bruker er ikke under oppfølging");
     }
 
 }

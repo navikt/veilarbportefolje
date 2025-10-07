@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
@@ -32,8 +33,13 @@ class TiltakspengerService(
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient
 ) {
+    private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.TP) {
+            logger.warn("Mottok ytelse-melding med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
+            return
+        }
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
