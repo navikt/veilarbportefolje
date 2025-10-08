@@ -15,7 +15,8 @@ enum class YTELSE_MELDINGSTYPE {
 }
 
 enum class YTELSE_KILDESYSTEM {
-    KELVIN
+    KELVIN,
+    TP
 }
 
 enum class YTELSE_TYPE {

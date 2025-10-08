@@ -1,16 +1,21 @@
 package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
+import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.util.*
 
 
 /**
@@ -24,15 +29,37 @@ import java.time.LocalDate
 class TiltakspengerService(
     val tiltakspengerClient: TiltakspengerClient,
     val tiltakspengerRespository: TiltakspengerRespository,
-    val oppfolgingService: OppfolgingService,
+    val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient
 ) {
+    private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
+
+    fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.TP) {
+            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet TP. Ignorerer melding.")
+            return
+        }
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
+
+        if (!erUnderOppfolging) {
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer tiltakspenger-ytelse melding.", kafkaMelding.personId)
+            return
+        }
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        lagreTiltakspengerForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
+    }
 
     fun hentOgLagreTiltakspengerForBrukerVedBatchjobb(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        val oppfolgingsStartdato = oppfolgingService.hentOppfolgingStartdato(aktorId)
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
         lagreTiltakspengerForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPDATER)
+    }
+
+    fun hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        lagreTiltakspengerForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
     fun lagreTiltakspengerForBruker(
@@ -81,11 +108,40 @@ class TiltakspengerService(
         tiltakspengerRespository.upsertAap(personIdent, sisteTiltakspengerVedtak )
     }
 
+    fun slettTiltakspengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        if (maybeFnr.isEmpty) {
+            secureLog.warn(
+                "Kunne ikke slette Tiltakspenger bruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
+                aktorId.get()
+            )
+            return
+        }
+
+        try {
+            slettTiltakspengerForAlleIdenterForBruker(maybeFnr.get().toString())
+        } catch (e: Exception) {
+            secureLog.error("Feil ved sletting av Tiltakspenger data for bruker med fnr: ${maybeFnr.get()}", e)
+            return
+        }
+    }
+
     fun slettTiltakspengerForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->
             tiltakspengerRespository.slettTiltakspengerForBruker(ident)
         }
+    }
+
+    fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
+        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
+            .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
+
+        if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
+            return toLocalDate(oppfolgingsdata.startDato)
+        }
+
+        secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
+        throw IllegalStateException("Bruker er ike under oppfølging")
     }
 
 }

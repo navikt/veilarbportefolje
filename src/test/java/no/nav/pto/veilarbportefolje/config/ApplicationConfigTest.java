@@ -78,6 +78,7 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerController;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -191,6 +192,7 @@ import static org.mockito.Mockito.when;
         AapRepository.class,
         TiltakspengerRespository.class,
         TiltakspengerController.class,
+        TiltakspengerService.class,
 })
 public class ApplicationConfigTest {
 

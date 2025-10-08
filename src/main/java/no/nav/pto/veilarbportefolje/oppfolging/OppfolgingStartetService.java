@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -29,6 +30,7 @@ public class OppfolgingStartetService {
     private final ArbeidssoekerService arbeidssoekerService;
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final AapService aapService;
+    private final TiltakspengerService tiltakspengerService;
 
     // TODO: Dersom en eller flere av disse operasjonene feiler og kaster exception vil
     //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
@@ -44,6 +46,7 @@ public class OppfolgingStartetService {
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
         aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
+        tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
 
         opensearchIndexer.indekser(aktorId);
 
