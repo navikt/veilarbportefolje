@@ -6,10 +6,11 @@ import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -17,6 +18,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
+import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -30,15 +32,18 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.*
 import java.util.List
+import java.util.concurrent.TimeUnit
 
 class TiltakspengerServiceTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
     @Autowired private val tiltakspengerRespository: TiltakspengerRespository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
     @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
-    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
-) : EndToEndTest() {
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2,
+    @Autowired private val opensearchService: OpensearchService,
+    ) : EndToEndTest() {
 
     private lateinit var tiltakspengerService: TiltakspengerService
     private val tiltakspengerClient: TiltakspengerClient = mock()
@@ -198,6 +203,115 @@ class TiltakspengerServiceTest(
         assertThat(lagretNyIdent).isNotNull()
     }
 
+    @Test
+    fun `Tiltakspenger skal populere og filtrere riktig i opensearch når man har ytelsen`() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId, harTiltakspenger = true)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val tiltakspengerRespons = getResponse.sourceAsMap["tiltakspenger"];
+
+        assertThat(tiltakspengerRespons).isNotNull
+        assertThat(tiltakspengerRespons).isEqualTo(true)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().tiltakspenger).isNotNull()
+        }
+    }
+
+    @Test
+    fun `Tiltakspenger skal populere og filtrere riktig i opensearch når man ikke har ytelsen`() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId, harTiltakspenger = false)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val tiltakspengerRespons = getResponse.sourceAsMap["tiltakspenger"];
+        assertThat(tiltakspengerRespons).isEqualTo(false)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().tiltakspenger).isNull()
+        }
+    }
+
+    @Test
+    fun `Tiltakspenger returnere alle brukere med og uten ytelsen når begge filtrene er valgt `() {
+        val aktorId1 = randomAktorId()
+        val aktorId2 = randomAktorId()
+        setInitialState(aktorId1, harTiltakspenger = false)
+        setInitialState(aktorId2, harTiltakspenger = true)
+
+        val filtervalg = Filtervalg()
+        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER, YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER))
+        filtervalg.setFerdigfilterListe(listOf())
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(2)
+            assertThat(responseBrukere.brukere.filter { it.tiltakspenger != null }.size).isEqualTo(1)
+            assertThat(responseBrukere.brukere.filter { it.tiltakspenger == null }.size).isEqualTo(1)
+        }
+    }
+
+    private fun setInitialState(aktorId: AktorId, harTiltakspenger: Boolean) {
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        val mockedRespons = if (harTiltakspenger) listOf(mockedVedtak) else emptyList()
+        `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(mockedRespons)
+
+        tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(personId = norskIdent.toString()))
+
+    }
+
 }
 
 val mockedYtelseKafkaMelding = YtelserKafkaDTO(
@@ -210,7 +324,7 @@ val mockedYtelseKafkaMelding = YtelserKafkaDTO(
 val mockedVedtak = TiltakspengerResponseDto(
     sakId = "S123",
     rettighet = TiltakspengerRettighet.TILTAKSPENGER,
-    kilde = "tp",
+    kilde = "TP",
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().plusMonths(1)
 )

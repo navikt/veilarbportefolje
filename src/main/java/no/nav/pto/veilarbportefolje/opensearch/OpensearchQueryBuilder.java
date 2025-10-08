@@ -211,6 +211,18 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(subQuery);
         }
 
+        if (filtervalg.harYtelseTiltakspengerFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.ytelseTiltakspenger.forEach(ytelse -> {
+                switch (ytelse) {
+                    case HAR_TILTAKSPENGER -> subQuery.should(termQuery("tiltakspenger", true));
+                    case HAR_IKKE_TILTAKSPENGER -> subQuery.should(termQuery("tiltakspenger", false));
+                }
+            });
+
+            queryBuilder.must(subQuery);
+        }
+
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(matchQuery("kjonn", filtervalg.kjonn.name()));
         }

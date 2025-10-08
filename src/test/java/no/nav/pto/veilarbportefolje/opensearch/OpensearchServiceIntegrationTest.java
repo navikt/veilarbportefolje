@@ -1358,6 +1358,49 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
     }
 
+    @Test
+    void skal_hente_ut_brukere_som_går_på_tiltakspenger_behandlet_i_tp() {
+        var brukerMedTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setTiltakspenger(true);
+
+        var brukerUtenTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setTiltakspenger(false);
+
+
+        var liste = List.of(brukerMedTiltakspenger, brukerUtenTiltakspenger);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseTiltakspenger(List.of(YtelseTiltakspenger.HAR_TILTAKSPENGER));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(userExistsInResponse(brukerMedTiltakspenger, response)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenTiltakspenger, response)).isFalse();
+
+    }
 
     @Test
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {
