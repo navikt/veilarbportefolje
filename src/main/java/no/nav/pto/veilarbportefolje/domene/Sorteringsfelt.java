@@ -37,6 +37,9 @@ public enum Sorteringsfelt {
     AAP_KELVIN_TOM_VEDTAKSDATO("aap_kelvin_vedtak_tom_dato"),
     AAP_KELVIN_RETTIGHETSTYPE("aap_kelvin_rettighetstype"),
 
+    TILTAKSPENGER_TOM_VEDTAKSDATO("tiltakspenger_vedtak_tom_dato"),
+    TILTAKSPENGER_RETTIGHET("tiltakspenger_rettighet"),
+
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 
