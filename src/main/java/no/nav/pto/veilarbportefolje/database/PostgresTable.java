@@ -115,6 +115,10 @@ public class PostgresTable {
         public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
         public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
 
+        // YTELSER TILTAKSPENGER
+        public static final String YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM = "YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM";
+        public static final String YTELSER_TILTAKSPENGER_RETTIGHET = "YTELSER_TILTAKSPENGER_RETTIGHET";
+
     }
 
     public static final class OPPFOLGING_DATA {

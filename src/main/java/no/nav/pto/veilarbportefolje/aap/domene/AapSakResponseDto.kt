@@ -11,7 +11,7 @@ data class AapVedtakResponseDto(
         val status: VedtakStatus,
         val saksnummer: String,
         val periode: Periode,
-        val rettighetsType: Rettighetstype,
+        val rettighetsType: AapRettighetstype,
         val kildesystem: String,
         val opphorsAarsak: String? = null,
     )

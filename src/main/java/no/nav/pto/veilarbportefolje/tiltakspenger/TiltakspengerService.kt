@@ -8,9 +8,11 @@ import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
 import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
@@ -31,7 +33,8 @@ class TiltakspengerService(
     val tiltakspengerRespository: TiltakspengerRespository,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
-    val aktorClient: AktorClient
+    val aktorClient: AktorClient,
+    val opensearchIndexerV2: OpensearchIndexerV2
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
 
@@ -43,7 +46,10 @@ class TiltakspengerService(
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
-            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer tiltakspenger-ytelse melding.", kafkaMelding.personId)
+            secureLog.info(
+                "Bruker {} er ikke under oppfølging, ignorerer tiltakspenger-ytelse melding.",
+                kafkaMelding.personId
+            )
             return
         }
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
@@ -77,6 +83,7 @@ class TiltakspengerService(
                             "sletter eventuell eksisterende perioder i databasen", personIdent
                 )
                 slettTiltakspengerForAlleIdenterForBruker(personIdent)
+                opensearchIndexerV2.slettTiltakspenger(aktorId)
                 return
             } else {
                 secureLog.info(
@@ -86,7 +93,16 @@ class TiltakspengerService(
                 return
             }
 
+        val harAktivYtelse = sisteTiltakspengerVedtak.rettighet != TiltakspengerRettighet.INGENTING
+                && sisteTiltakspengerVedtak.tom.isAfter(LocalDate.now().minusDays(1))
+
         upsertTiltakspengerForAktivIdentForBruker(personIdent, aktorId, sisteTiltakspengerVedtak)
+        opensearchIndexerV2.oppdaterTiltakspenger(
+            aktorId,
+            harAktivYtelse,
+            sisteTiltakspengerVedtak.tom,
+            sisteTiltakspengerVedtak.rettighet
+        )
     }
 
     fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): TiltakspengerResponseDto? {
@@ -97,7 +113,11 @@ class TiltakspengerService(
         return vedtakIOppfolgingsPeriode.maxByOrNull { it.fom }
     }
 
-    fun upsertTiltakspengerForAktivIdentForBruker(personIdent: String, aktorId: AktorId, sisteTiltakspengerVedtak: TiltakspengerResponseDto) {
+    fun upsertTiltakspengerForAktivIdentForBruker(
+        personIdent: String,
+        aktorId: AktorId,
+        sisteTiltakspengerVedtak: TiltakspengerResponseDto
+    ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->
@@ -105,7 +125,7 @@ class TiltakspengerService(
             }
         }
 
-        tiltakspengerRespository.upsertAap(personIdent, sisteTiltakspengerVedtak )
+        tiltakspengerRespository.upsertAap(personIdent, sisteTiltakspengerVedtak)
     }
 
     fun slettTiltakspengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {

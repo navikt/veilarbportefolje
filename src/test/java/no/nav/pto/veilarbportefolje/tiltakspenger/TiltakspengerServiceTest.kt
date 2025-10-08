@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -35,7 +36,8 @@ class TiltakspengerServiceTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
     @Autowired private val tiltakspengerRespository: TiltakspengerRespository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
+    @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
+    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
 ) : EndToEndTest() {
 
     private lateinit var tiltakspengerService: TiltakspengerService
@@ -60,7 +62,8 @@ class TiltakspengerServiceTest(
             tiltakspengerRespository,
             oppfolgingRepositoryV2,
             pdlIdentRepository,
-            aktorClient
+            aktorClient,
+            opensearchIndexerV2
         )
     }
 
