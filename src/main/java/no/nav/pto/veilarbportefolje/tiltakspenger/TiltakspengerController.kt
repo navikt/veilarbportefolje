@@ -30,8 +30,8 @@ class TiltakspengerController(
         )
     }
 
-    @PostMapping("/hent-tiltakspenger-for-kafkamelding")
-    fun hentAapForKafkamelding(@RequestBody request: TiltakspengerRequest) {
+    @PostMapping("/simuler-kafkamelding-for-tiltakspenger")
+    fun simulerKafkameldingForTiltakspenger(@RequestBody request: TiltakspengerRequest) {
         val kafkaMelding = YtelserKafkaDTO(
             personId = request.ident,
             ytelsestype = YTELSE_TYPE.TILTAKSPENGER,

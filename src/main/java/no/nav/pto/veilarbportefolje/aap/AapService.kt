@@ -40,7 +40,7 @@ class AapService(
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.KELVIN) {
-            logger.warn("Mottok ytelse-melding med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
+            logger.warn("Mottok ytelse-melding  for AAP med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
             return
         }
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)

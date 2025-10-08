@@ -37,7 +37,7 @@ class TiltakspengerService(
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.TP) {
-            logger.warn("Mottok ytelse-melding med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
+            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet TP. Ignorerer melding.")
             return
         }
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)

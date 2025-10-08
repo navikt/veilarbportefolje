@@ -121,6 +121,8 @@ class TiltakspengerServiceTest(
         `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(emptyList())
         tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
         val lagretMelding = tiltakspengerRespository.hentTiltakspenger(norskIdent.get())
+
+        // Then
         assertThat(lagretMelding).isNull()
     }
 
@@ -135,6 +137,7 @@ class TiltakspengerServiceTest(
 
     @Test
     fun `hentTiltakspengerForOppfolgingPeriode filtrerer vedtak utenfor oppfolging`() {
+        // Given
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
         pdlIdentRepository.upsertIdenter(identerBruker)
@@ -154,7 +157,10 @@ class TiltakspengerServiceTest(
         val apiResponse = listOf(vedtakInnenfor, vedtakForTidlig)
         `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(apiResponse)
 
+        // When
         val resultat = tiltakspengerService.hentSistePeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
+
+        // Then
         assertThat(resultat).isEqualTo(vedtakInnenfor)
     }
 
@@ -183,6 +189,8 @@ class TiltakspengerServiceTest(
         tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding)
         val lagretGammelIdentEtterOppdatering = tiltakspengerRespository.hentTiltakspenger(norskIdentHistorisk.get())
         val lagretNyIdent = tiltakspengerRespository.hentTiltakspenger(norskIdent.get())
+
+        // Then
         assertThat(lagretGammelIdentEtterOppdatering).isNull()
         assertThat(lagretNyIdent).isNotNull()
     }
