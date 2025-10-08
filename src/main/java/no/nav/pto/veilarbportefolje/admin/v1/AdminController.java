@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,6 +53,7 @@ public class AdminController {
     private final PdlService pdlService;
     private final EnsligeForsorgereService ensligForsorgerService;
     private final AapService aapService;
+    private final TiltakspengerService tiltakspengerService;
 
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
@@ -270,6 +272,27 @@ public class AdminController {
         log.info("Ferdig: Innlastning av aap brukerdata");
 
         return "Innlastning av aap brukerdata er ferdig";
+    }
+
+    @PostMapping("/hentTiltakspengerBrukerData")
+    @Operation(summary = "Henter data om tiltakspenger for bruker", description = "Sjekker om bruker har tiltakspenger ytelse og henter data om det")
+    public String lastInnTiltakspengerBrukerData() {
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+        AtomicInteger antall = new AtomicInteger(0);
+        log.info("Startet: Innlastning av Tiltakspenger brukerdata");
+        brukereUnderOppfolging.forEach(bruker -> {
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info("Tiltakspenger brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+            }
+            try {
+                tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedBatchjobb(bruker);
+            } catch (Exception e) {
+                secureLog.info("Tiltakspenger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
+            }
+        });
+        log.info("Ferdig: Innlastning av tiltakspenger brukerdata");
+
+        return "Innlastning av tiltakspenger brukerdata er ferdig";
     }
 
     private void validerIndexName(String indexName) {
