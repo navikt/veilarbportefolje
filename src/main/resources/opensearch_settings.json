@@ -308,7 +308,7 @@
       "tiltakspenger": {
         "type": "boolean"
       },
-      "tiltakspenger_tom_vedtaksdato": {
+      "tiltakspenger_vedtaksdato_tom": {
         "type": "date"
       },
       "tiltakspenger_rettighet": {

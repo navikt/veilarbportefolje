@@ -146,7 +146,7 @@ public class Bruker {
                         bruker.getAap_kelvin_tom_vedtaksdato(),
                         bruker.getAap_kelvin_rettighetstype()))
                 .setTiltakspenger(TiltakspengerForBruker.of(
-                        bruker.getTiltakspenger_tom_vedtaksdato(),
+                        bruker.getTiltakspenger_vedtaksdato_tom(),
                         bruker.getTiltakspenger_rettighet()))
                 .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
                 .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))

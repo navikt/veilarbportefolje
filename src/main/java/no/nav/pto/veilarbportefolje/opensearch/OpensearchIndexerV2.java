@@ -423,11 +423,11 @@ public class OpensearchIndexerV2 {
     }
 
     @SneakyThrows
-    public void oppdaterTiltakspenger(AktorId aktorId, boolean harTiltakspenger, LocalDate tomVedtaksdato, TiltakspengerRettighet rettighet) {
+    public void oppdaterTiltakspenger(AktorId aktorId, boolean harTiltakspenger, LocalDate vedtaksdatoTom, TiltakspengerRettighet rettighet) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("tiltakspenger", harTiltakspenger)
-                .field("tiltakspenger_tom_vedtaksdato", tomVedtaksdato)
+                .field("tiltakspenger_vedtaksdato_tom", vedtaksdatoTom)
                 .field("tiltakspenger_rettighet", rettighet)
                 .endObject();
 
@@ -440,7 +440,7 @@ public class OpensearchIndexerV2 {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("tiltakspenger", false)
-                .nullField("tiltakspenger_tom_vedtaksdato")
+                .nullField("tiltakspenger_vedtaksdato_tom")
                 .nullField("tiltakspenger_rettighet")
                 .endObject();
 

@@ -65,7 +65,7 @@ public class OppfolgingsBruker {
     LocalDate aap_kelvin_tom_vedtaksdato;
     AapRettighetstype aap_kelvin_rettighetstype;
     boolean tiltakspenger;
-    LocalDate tiltakspenger_tom_vedtaksdato;
+    LocalDate tiltakspenger_vedtaksdato_tom;
     TiltakspengerRettighet tiltakspenger_rettighet;
     boolean oppfolging;
     boolean ny_for_veileder;
