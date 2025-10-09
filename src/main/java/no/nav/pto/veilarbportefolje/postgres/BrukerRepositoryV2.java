@@ -289,14 +289,14 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
-        boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
-        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
+        boolean harAktivYtelseStatus = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
         String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
         AapRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : AapRettighetstype.valueOf(rettighetstype);
 
-        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
-        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(tomVedtaksDato);
+        oppfolgingsBruker.setAap_kelvin(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(vedtaksDatoTom);
         oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
     }
 
@@ -304,12 +304,12 @@ public class BrukerRepositoryV2 {
     private void setTiltakspenger(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
         String rettighet = rs.getString(YTELSER_TILTAKSPENGER_RETTIGHET);
         TiltakspengerRettighet rettighetstypeOrNull = rettighet == null ? null : TiltakspengerRettighet.valueOf(rettighet);
-        boolean harTiltakspenger = rettighetstypeOrNull != null && rettighetstypeOrNull != TiltakspengerRettighet.INGENTING;
-        LocalDate tomVedtaksDato = rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
+        boolean harAktivYtelseStatus = rettighetstypeOrNull != null && rettighetstypeOrNull != TiltakspengerRettighet.INGENTING;
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
 
-        oppfolgingsBruker.setTiltakspenger(harTiltakspenger && tomDatoErIkkeUtgått);
-        oppfolgingsBruker.setTiltakspenger_tom_vedtaksdato(tomVedtaksDato);
+        oppfolgingsBruker.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        oppfolgingsBruker.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
         oppfolgingsBruker.setTiltakspenger_rettighet(rettighetstypeOrNull);
     }
 
