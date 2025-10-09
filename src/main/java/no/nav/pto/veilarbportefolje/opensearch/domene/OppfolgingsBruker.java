@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14a
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,11 +60,13 @@ public class OppfolgingsBruker {
     Integer permutlopuke;
     Integer aapmaxtiduke;
     Integer aapunntakukerigjen;
-
     LocalDate aapordinerutlopsdato;
     boolean aap_kelvin;
     LocalDate aap_kelvin_tom_vedtaksdato;
-    Rettighetstype aap_kelvin_rettighetstype;
+    AapRettighetstype aap_kelvin_rettighetstype;
+    boolean tiltakspenger;
+    LocalDate tiltakspenger_vedtaksdato_tom;
+    TiltakspengerRettighet tiltakspenger_rettighet;
     boolean oppfolging;
     boolean ny_for_veileder;
     LocalDateTime tildelt_tidspunkt;

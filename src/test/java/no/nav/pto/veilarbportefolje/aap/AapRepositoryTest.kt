@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.VedtakStatus
 import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.aap.repository.AapStatus
@@ -94,7 +94,7 @@ class AapRepositoryTest(
             tilOgMedDato = LocalDate.of(2024, 12, 31)
         ),
         kildesystem = "KELVIN",
-        rettighetsType = Rettighetstype.ARBEIDSSØKER,
+        rettighetsType = AapRettighetstype.ARBEIDSSØKER,
         opphorsAarsak = null
     )
 

@@ -25,6 +25,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId
@@ -44,8 +45,7 @@ class TestDataClient(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val pdlIdentRepository: PdlIdentRepository,
     private val pdlPersonRepository: PdlPersonRepository,
-    private val huskelappRepository: HuskelappRepository,
-    private val aapRepositoryV2: AapRepository
+    private val huskelappRepository: HuskelappRepository
 ) {
     fun upsertBrukerregistreringV1(aktorId: AktorId) {
         jdbcTemplatePostgres.update("""

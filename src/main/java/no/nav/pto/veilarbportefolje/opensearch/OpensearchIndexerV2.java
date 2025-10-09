@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjel
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
@@ -397,7 +398,7 @@ public class OpensearchIndexerV2 {
 
 
     @SneakyThrows
-    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, Rettighetstype rettighetstype) {
+    public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, AapRettighetstype rettighetstype) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
                 .field("aap_kelvin", harAapKelvin)
@@ -419,6 +420,31 @@ public class OpensearchIndexerV2 {
                 .endObject();
 
         update(aktorId, content, format("Slettet aap kelvin for aktorId: %s", aktorId.get()));
+    }
+
+    @SneakyThrows
+    public void oppdaterTiltakspenger(AktorId aktorId, boolean harTiltakspenger, LocalDate vedtaksdatoTom, TiltakspengerRettighet rettighet) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("tiltakspenger", harTiltakspenger)
+                .field("tiltakspenger_vedtaksdato_tom", vedtaksdatoTom)
+                .field("tiltakspenger_rettighet", rettighet)
+                .endObject();
+
+        update(aktorId, content, format("Oppdatert tiltakspenger for aktorId: %s", aktorId.get()));
+
+    }
+
+    @SneakyThrows
+    public void slettTiltakspenger(AktorId aktorId) {
+        final XContentBuilder content = jsonBuilder()
+                .startObject()
+                .field("tiltakspenger", false)
+                .nullField("tiltakspenger_vedtaksdato_tom")
+                .nullField("tiltakspenger_rettighet")
+                .endObject();
+
+        update(aktorId, content, format("Slettet tiltakspenger for aktorId: %s", aktorId.get()));
     }
 
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {

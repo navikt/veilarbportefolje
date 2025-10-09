@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.aap.domene
 
-enum class Rettighetstype {
+enum class AapRettighetstype {
     BISTANDSBEHOV,
     SYKEPENGEERSTATNING,
     STUDENT,
@@ -8,7 +8,7 @@ enum class Rettighetstype {
     VURDERES_FOR_UFØRETRYGD;
 
     companion object {
-        fun tilFrontendtekst(rettighetstype: Rettighetstype?): String? {
+        fun tilFrontendtekst(rettighetstype: AapRettighetstype?): String? {
             if (rettighetstype == null) return null
 
             return when (rettighetstype) {

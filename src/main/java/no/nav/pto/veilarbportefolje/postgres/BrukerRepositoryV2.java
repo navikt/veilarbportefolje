@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -127,7 +128,9 @@ public class BrukerRepositoryV2 {
                                HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
                                YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
                                YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
-                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE
+                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
+                               YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
+                               YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET
                         from OPPFOLGING_DATA
                                  inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -144,6 +147,7 @@ public class BrukerRepositoryV2 {
                                  left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
                 (ResultSet rs) -> {
@@ -237,6 +241,7 @@ public class BrukerRepositoryV2 {
         setHuskelapp(bruker, rs);
         setBrukersSituasjon(bruker, rs);
         setAapKelvin(bruker, rs);
+        setTiltakspenger(bruker, rs);
 
         String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_ENDRINGSTIDSPUNKT));
         if (arbeidslisteTidspunkt != null) {
@@ -284,15 +289,28 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
-        boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
-        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
+        boolean harAktivYtelseStatus = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
         String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
-        Rettighetstype rettighetstypeOrNull = rettighetstype == null ? null : Rettighetstype.valueOf(rettighetstype);
+        AapRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : AapRettighetstype.valueOf(rettighetstype);
 
-        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
-        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(tomVedtaksDato);
+        oppfolgingsBruker.setAap_kelvin(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(vedtaksDatoTom);
         oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
+    }
+
+    @SneakyThrows
+    private void setTiltakspenger(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+        String rettighet = rs.getString(YTELSER_TILTAKSPENGER_RETTIGHET);
+        TiltakspengerRettighet rettighetstypeOrNull = rettighet == null ? null : TiltakspengerRettighet.valueOf(rettighet);
+        boolean harAktivYtelseStatus = rettighetstypeOrNull != null && rettighetstypeOrNull != TiltakspengerRettighet.INGENTING;
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
+
+        oppfolgingsBruker.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        oppfolgingsBruker.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
+        oppfolgingsBruker.setTiltakspenger_rettighet(rettighetstypeOrNull);
     }
 
     @SneakyThrows

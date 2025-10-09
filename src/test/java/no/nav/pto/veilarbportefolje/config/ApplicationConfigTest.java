@@ -213,12 +213,10 @@ public class ApplicationConfigTest {
                                        ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        OpensearchTestClient opensearchTestClient,
                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository,
-                                       PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository,
-                                       AapRepository aapRepository) {
+                                       PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
         return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository,
                 arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2,
-                pdlIdentRepository, pdlPersonRepository, huskelappRepository,
-                aapRepository);
+                pdlIdentRepository, pdlPersonRepository, huskelappRepository);
     }
 
     @Bean
