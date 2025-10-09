@@ -26,6 +26,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarDa
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import no.nav.pto.veilarbportefolje.util.BrukerComparator;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
@@ -5175,6 +5176,85 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
     }
 
+
+    @Test
+    void skal_sortere_brukere_pa_tiltakspenger_tom_vedtaksdato() {
+        LocalDate tidspunkt1 = LocalDate.now();
+        LocalDate tidspunkt2 = LocalDate.now().plusDays(2);
+        LocalDate tidspunkt3 = LocalDate.now().plusDays(3);
+
+        var tidligstTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(true)
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt1);
+
+        var midtImellomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(true)
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt2);
+
+        var senestTomBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(true)
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt3);
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(false);
+
+
+        var liste = List.of(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseTiltakspenger(List.of(YtelseTiltakspenger.HAR_TILTAKSPENGER, YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.TILTAKSPENGER_VEDTAKSDATO_TOM,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.TILTAKSPENGER_VEDTAKSDATO_TOM,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(4);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+        assertThat(brukereStigende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(nullBruker.getFnr());
+        assertThat(brukereSynkende.get(1).getFnr()).isEqualTo(senestTomBruker.getFnr());
+        assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(tidligstTomBruker.getFnr());
+    }
+
     @Test
     void skal_sortere_brukere_pa_aap_rettighetstype() {
         var bistandsbehovBruker = new OppfolgingsBruker()
@@ -5250,6 +5330,73 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(brukereSynkende.get(2).getFnr()).isEqualTo(bistandsbehovBruker.getFnr());
         assertThat(brukereSynkende.get(3).getFnr()).isEqualTo(nullBruker.getFnr());
     }
+
+    @Test
+    void skal_sortere_brukere_pa_tiltakspenger_rettighet() {
+        var bruker1 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(true)
+                .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER);
+
+        var bruker2 = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(true)
+                .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG);
+
+        var nullBruker = new OppfolgingsBruker()
+                .setFnr(randomFnr().toString())
+                .setAktoer_id(randomAktorId().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setTiltakspenger(false);
+
+
+        var liste = List.of(bruker1, bruker2, nullBruker);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        Filtervalg filtervalg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseTiltakspenger(List.of(YtelseTiltakspenger.HAR_TILTAKSPENGER, YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER));
+
+        BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.TILTAKSPENGER_RETTIGHET,
+                filtervalg,
+                null,
+                null
+        );
+        BrukereMedAntall brukereMedAntall2 = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.empty(),
+                Sorteringsrekkefolge.SYNKENDE,
+                Sorteringsfelt.TILTAKSPENGER_RETTIGHET,
+                filtervalg,
+                null,
+                null
+        );
+
+        List<Bruker> brukereStigende = brukereMedAntall.getBrukere();
+        List<Bruker> brukereSynkende = brukereMedAntall2.getBrukere();
+
+        assertThat(brukereStigende.size()).isEqualTo(3);
+        assertThat(brukereStigende.get(0).getFnr()).isEqualTo(bruker1.getFnr());
+        assertThat(brukereStigende.get(1).getFnr()).isEqualTo(bruker2.getFnr());
+        assertThat(brukereStigende.get(2).getFnr()).isEqualTo(nullBruker.getFnr());
+
+        assertThat(brukereSynkende.get(0).getFnr()).isEqualTo(bruker2.getFnr());
+        assertThat(brukereSynkende.get(2).getFnr()).isEqualTo(nullBruker.getFnr());
+    }
+
 
     @Test
     void skal_sortere_brukere_pa_tildelt_tidspunkt() {
