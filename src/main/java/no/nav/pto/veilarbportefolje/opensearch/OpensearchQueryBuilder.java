@@ -654,8 +654,8 @@ public class OpensearchQueryBuilder {
                 sorterTildeltTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-            case TILTAKSPENGER_TOM_VEDTAKSDATO -> {
-                sorterTiltakspengerTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+            case TILTAKSPENGER_VEDTAKSDATO_TOM -> {
+                sorterTiltakspengerVedtaksdatoTom(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
             case TILTAKSPENGER_RETTIGHET -> {
@@ -918,12 +918,12 @@ public class OpensearchQueryBuilder {
         builder.sort(scriptBuilder);
     }
 
-    private static void sorterTiltakspengerTomVedtaksdato(SearchSourceBuilder builder, SortOrder order) {
+    private static void sorterTiltakspengerVedtaksdatoTom(SearchSourceBuilder builder, SortOrder order) {
         String expression;
 
         expression = """
-                if (doc.containsKey('tiltakspenger_tom_vedtaksdato') && !doc['tiltakspenger_tom_vedtaksdato'].empty) {
-                    return doc['tiltakspenger_tom_vedtaksdato'].value.toInstant().toEpochMilli();
+                if (doc.containsKey('tiltakspenger_vedtaksdato_tom') && !doc['tiltakspenger_vedtaksdato_tom'].empty) {
+                    return doc['tiltakspenger_vedtaksdato_tom'].value.toInstant().toEpochMilli();
                 } else {
                     return 33064243200001.0;
                 }

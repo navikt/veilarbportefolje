@@ -5189,7 +5189,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakspenger(true)
-                .setTiltakspenger_tom_vedtaksdato(tidspunkt1);
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt1);
 
         var midtImellomBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5197,7 +5197,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakspenger(true)
-                .setTiltakspenger_tom_vedtaksdato(tidspunkt2);
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt2);
 
         var senestTomBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5205,7 +5205,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setTiltakspenger(true)
-                .setTiltakspenger_tom_vedtaksdato(tidspunkt3);
+                .setTiltakspenger_vedtaksdato_tom(tidspunkt3);
 
         var nullBruker = new OppfolgingsBruker()
                 .setFnr(randomFnr().toString())
@@ -5228,7 +5228,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.TILTAKSPENGER_TOM_VEDTAKSDATO,
+                Sorteringsfelt.TILTAKSPENGER_VEDTAKSDATO_TOM,
                 filtervalg,
                 null,
                 null
@@ -5237,7 +5237,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 TEST_ENHET,
                 Optional.empty(),
                 Sorteringsrekkefolge.SYNKENDE,
-                Sorteringsfelt.TILTAKSPENGER_TOM_VEDTAKSDATO,
+                Sorteringsfelt.TILTAKSPENGER_VEDTAKSDATO_TOM,
                 filtervalg,
                 null,
                 null
