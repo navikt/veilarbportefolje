@@ -88,7 +88,7 @@ class AapService(
             LocalDate.now().minusDays(1)
         )
 
-        upsertAapForAktivIdentForBruker(personIdent, aktorId, sisteAapPeriode)
+        upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
         opensearchIndexerV2.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
@@ -97,7 +97,7 @@ class AapService(
         )
     }
 
-    fun upsertAapForAktivIdentForBruker(personIdent: String, aktorId: AktorId, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+    fun upsertAapForAktivIdentForBruker(personIdent: String, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->

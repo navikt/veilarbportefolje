@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
-import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -53,19 +52,18 @@ class TiltakspengerService(
         }
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreTiltakspengerForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
+        lagreTiltakspengerForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato)
     }
 
     fun hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        lagreTiltakspengerForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
+        lagreTiltakspengerForBruker(personIdent, aktorId, LocalDate.now())
     }
 
     fun lagreTiltakspengerForBruker(
         personIdent: String,
         aktorId: AktorId,
         oppfolgingsStartdato: LocalDate,
-        meldingstype: YTELSE_MELDINGSTYPE
     ) {
         val sisteTiltakspengerVedtak = hentSistePeriodeFraApi(personIdent, oppfolgingsStartdato)
 
@@ -80,7 +78,7 @@ class TiltakspengerService(
         val harAktivYtelse = sisteTiltakspengerVedtak.rettighet != TiltakspengerRettighet.INGENTING
                 && sisteTiltakspengerVedtak.tom.isAfter(LocalDate.now().minusDays(1))
 
-        upsertTiltakspengerForAktivIdentForBruker(personIdent, aktorId, sisteTiltakspengerVedtak)
+        upsertTiltakspengerForAktivIdentForBruker(personIdent, sisteTiltakspengerVedtak)
         opensearchIndexerV2.oppdaterTiltakspenger(
             aktorId,
             harAktivYtelse,
@@ -99,7 +97,6 @@ class TiltakspengerService(
 
     fun upsertTiltakspengerForAktivIdentForBruker(
         personIdent: String,
-        aktorId: AktorId,
         sisteTiltakspengerVedtak: TiltakspengerResponseDto
     ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
