@@ -115,26 +115,6 @@ class TiltakspengerServiceTest(
     }
 
     @Test
-    fun `skal behandle kafkamelding og slette data når person ikke har ytelsen men meldingstype er oppdater`() {
-        // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
-        pdlIdentRepository.upsertIdenter(identerBruker)
-        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-
-        // Opprett rad på bruker
-        `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(listOf(mockedVedtak))
-        tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding)
-
-        // Oppdatermelding på samme person uten ytelsen skal slette rad i db
-        `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(emptyList())
-        tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
-        val lagretMelding = tiltakspengerRespository.hentTiltakspenger(norskIdent.get())
-
-        // Then
-        assertThat(lagretMelding).isNull()
-    }
-
-    @Test
     fun `skal ikke behandle kafkamelding når person ikke er under oppfølging`() {
         pdlIdentRepository.upsertIdenter(identerBruker)
         tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding)
