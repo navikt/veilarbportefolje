@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.aap.domene
+package no.nav.pto.veilarbportefolje.ytelserkafka
 
 
 data class YtelserKafkaDTO(
