@@ -1,9 +1,12 @@
 package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import io.swagger.v3.oas.annotations.tags.Tag
-import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRequest
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_TYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

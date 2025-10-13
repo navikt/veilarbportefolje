@@ -2,6 +2,10 @@ package no.nav.pto.veilarbportefolje.aap
 
 import io.swagger.v3.oas.annotations.tags.Tag
 import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_TYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.springframework.web.bind.annotation.*
 
 @RestController

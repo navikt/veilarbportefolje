@@ -11,6 +11,9 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -85,7 +88,7 @@ class AapService(
             LocalDate.now().minusDays(1)
         )
 
-        upsertAapForAktivIdentForBruker(personIdent, aktorId, sisteAapPeriode)
+        upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
         opensearchIndexerV2.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
@@ -94,7 +97,7 @@ class AapService(
         )
     }
 
-    fun upsertAapForAktivIdentForBruker(personIdent: String, aktorId: AktorId, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+    fun upsertAapForAktivIdentForBruker(personIdent: String, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->
