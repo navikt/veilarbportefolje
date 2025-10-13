@@ -318,7 +318,7 @@ val mockedYtelseKafkaMelding = YtelserKafkaDTO(
     personId = "10108000000",
     meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
     ytelsestype = YTELSE_TYPE.TILTAKSPENGER,
-    kildesystem = YTELSE_KILDESYSTEM.TP
+    kildesystem = YTELSE_KILDESYSTEM.TPSAK
 )
 
 val mockedVedtak = TiltakspengerResponseDto(
