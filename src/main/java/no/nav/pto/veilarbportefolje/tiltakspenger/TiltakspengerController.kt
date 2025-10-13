@@ -36,7 +36,7 @@ class TiltakspengerController(
             personId = request.ident,
             ytelsestype = YTELSE_TYPE.TILTAKSPENGER,
             meldingstype = YTELSE_MELDINGSTYPE.OPPRETT,
-            kildesystem = YTELSE_KILDESYSTEM.TP
+            kildesystem = YTELSE_KILDESYSTEM.TPSAK
         )
         tiltakspengerService.behandleKafkaMeldingLogikk(kafkaMelding)
     }

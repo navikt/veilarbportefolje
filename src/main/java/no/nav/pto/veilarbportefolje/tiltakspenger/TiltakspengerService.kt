@@ -39,8 +39,8 @@ class TiltakspengerService(
     private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.TP) {
-            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet TP. Ignorerer melding.")
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.TPSAK) {
+            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet TPSAK. Ignorerer melding.")
             return
         }
         val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
