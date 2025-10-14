@@ -204,15 +204,15 @@ public class OpensearchQueryBuilder {
             BoolQueryBuilder subQueryArena = boolQuery();
             BoolQueryBuilder combinedSubQuery = boolQuery();
 
-            filtervalg.ytelseAapArena.forEach(ytelse -> {
-                switch (ytelse) {
+            filtervalg.ytelseAapArena.forEach(ytelseArena -> {
+                switch (ytelseArena) {
                     case HAR_AAP_ORDINAR -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
                     case HAR_AAP_UNNTAK -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
                 }
             });
 
-            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
-                switch (ytelse) {
+            filtervalg.ytelseAapKelvin.forEach(ytelseKelvin -> {
+                switch (ytelseKelvin) {
                     case HAR_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", true));
                     case HAR_IKKE_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", false));
                 }
