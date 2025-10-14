@@ -61,6 +61,7 @@ public class Filtervalg {
     public List<Hovedmal> hovedmalGjeldendeVedtak14a = new ArrayList<>();
     public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
     public List<YtelseTiltakspenger> ytelseTiltakspenger = new ArrayList<>();
+    public List<YtelseAapArena> ytelseAapArena = new ArrayList<>();
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
@@ -100,6 +101,7 @@ public class Filtervalg {
                 harInnsatsgruppeGjeldendeVedtak14a() ||
                 harHovedmalGjeldendeVedtak14a() ||
                 harYtelseAapKelvinFilter() ||
+                harYtelseAapArenaFilter() ||
                 harYtelseTiltakspengerFilter();
     }
 
@@ -133,6 +135,10 @@ public class Filtervalg {
 
     public boolean harYtelseAapKelvinFilter() {
         return ytelseAapKelvin != null && !ytelseAapKelvin.isEmpty();
+    }
+
+    public boolean harYtelseAapArenaFilter() {
+        return ytelseAapArena != null && !ytelseAapArena.isEmpty();
     }
 
     public boolean harYtelseTiltakspengerFilter() {

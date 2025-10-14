@@ -142,7 +142,7 @@ class TiltakspengerService(
         }
 
         secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
-        throw IllegalStateException("Bruker er ike under oppfølging")
+        throw IllegalStateException("Bruker er ikke under oppfølging")
     }
 
 }
