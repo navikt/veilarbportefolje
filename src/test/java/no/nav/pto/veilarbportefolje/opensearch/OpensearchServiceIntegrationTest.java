@@ -1272,7 +1272,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger() {
+    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_som_rettighetsgruppekode() {
         var brukerMedAAP = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
@@ -1313,6 +1313,135 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(userExistsInResponse(brukerMedAAP, response)).isTrue();
         assertThat(userExistsInResponse(brukerUtenAAP, response)).isFalse();
 
+    }
+
+    @Test
+    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_behandlet_i_arena() {
+        var brukerMedAAPUnntak = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("AAP_UNNTAK");
+
+        var brukerMedAAPOrdinær = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("AAP_MAXTID");
+
+        var brukerUtenAAP = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("ORDINARE_DAGPENGER");
+
+
+        var liste = List.of(brukerMedAAPOrdinær, brukerUtenAAP, brukerMedAAPUnntak);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapArena(List.of(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(2);
+        assertThat(userExistsInResponse(brukerMedAAPUnntak, response)).isTrue();
+        assertThat(userExistsInResponse(brukerMedAAPOrdinær, response)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenAAP, response)).isFalse();
+
+    }
+
+    @Test
+    void antall_brukere_med_arbeidsavklaringspenger_skal_være_like_for_ytelsesfilter_og_aapArenafilter() {
+        var brukerMedAAPUnntak = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("AAP_UNNTAK");
+
+        var brukerMedAAPOrdinær = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("AAP_MAXTID");
+
+        var brukerMedAAPUnntak2 = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("AAP_UNNTAK");
+
+        var brukerUtenAap = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("TILTAKSPENGER");
+
+
+        var liste = List.of(brukerMedAAPOrdinær, brukerMedAAPUnntak, brukerMedAAPUnntak2, brukerUtenAap);
+        skrivBrukereTilTestindeks(liste);
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValgAapArenaFilter = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseAapArena(List.of(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK));
+
+        var filterValgYtelsesFilter = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelse(YtelseFilterArena.AAP);
+
+        var responseAapArenaFilter = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValgAapArenaFilter,
+                null,
+                null
+        );
+
+        var responseYtelseFilter = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValgYtelsesFilter,
+                null,
+                null
+        );
+        assertThat(responseAapArenaFilter.getAntall()).isEqualTo(3);
+        assertThat(responseYtelseFilter.getAntall()).isEqualTo(3);
+        assertThat(userExistsInResponse(brukerMedAAPUnntak, responseAapArenaFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerMedAAPUnntak, responseYtelseFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerMedAAPOrdinær, responseAapArenaFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerMedAAPOrdinær, responseYtelseFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenAap, responseAapArenaFilter)).isFalse();
+        assertThat(userExistsInResponse(brukerUtenAap, responseYtelseFilter)).isFalse();
     }
 
     @Test
