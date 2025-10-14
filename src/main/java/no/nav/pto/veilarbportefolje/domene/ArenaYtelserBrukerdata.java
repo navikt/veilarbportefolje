@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-public class Brukerdata {
+public class ArenaYtelserBrukerdata {
     private String aktoerid;
     private String personid;
     private YtelseMapping ytelse;

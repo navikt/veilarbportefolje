@@ -211,6 +211,18 @@ public class OpensearchQueryBuilder {
             queryBuilder.must(subQuery);
         }
 
+        if (filtervalg.harYtelseAapArenaFilter()) {
+            BoolQueryBuilder subQuery = boolQuery();
+            filtervalg.ytelseAapArena.forEach(ytelse -> {
+                switch (ytelse) {
+                    case HAR_AAP_ORDINAR -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
+                    case HAR_AAP_UNNTAK -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
+                }
+            });
+
+            queryBuilder.must(subQuery);
+        }
+
         if (filtervalg.harYtelseTiltakspengerFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
             filtervalg.ytelseTiltakspenger.forEach(ytelse -> {
