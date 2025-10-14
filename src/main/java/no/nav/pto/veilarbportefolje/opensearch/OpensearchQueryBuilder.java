@@ -199,43 +199,33 @@ public class OpensearchQueryBuilder {
             );
         }
 
-        if (filtervalg.harYtelseAapKelvinFilter() && !filtervalg.harYtelseAapArenaFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
+        if (filtervalg.harYtelseAapArenaFilter() || filtervalg.harYtelseAapKelvinFilter()) {
+            BoolQueryBuilder subQueryKelvin = boolQuery();
+            BoolQueryBuilder subQueryArena = boolQuery();
+            BoolQueryBuilder combinedSubQuery = boolQuery();
+
+            filtervalg.ytelseAapArena.forEach(ytelse -> {
+                switch (ytelse) {
+                    case HAR_AAP_ORDINAR -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
+                    case HAR_AAP_UNNTAK -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
+                }
+            });
+
             filtervalg.ytelseAapKelvin.forEach(ytelse -> {
                 switch (ytelse) {
-                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
-                    case HAR_IKKE_AAP -> subQuery.should(termQuery("aap_kelvin", false));
+                    case HAR_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", true));
+                    case HAR_IKKE_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", false));
                 }
             });
 
-            queryBuilder.must(subQuery);
-        }
-
-        if (filtervalg.harYtelseAapArenaFilter() && !filtervalg.harYtelseAapKelvinFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseAapArena.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_AAP_ORDINAR -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
-                    case HAR_AAP_UNNTAK -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
-                }
-            });
-
-            queryBuilder.must(subQuery);
-        }
-
-        if (filtervalg.harYtelseAapArenaFilter() && filtervalg.harYtelseAapKelvinFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseAapArena.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_AAP_ORDINAR -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
-                    case HAR_AAP_UNNTAK -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
-                }
-            });
-            if (filtervalg.ytelseAapKelvin.contains(YtelseAapKelvin.HAR_AAP)) {
-                subQuery.should(termQuery("aap_kelvin", true));
+            if (filtervalg.harYtelseAapArenaFilter()) {
+                combinedSubQuery.should(subQueryArena);
+            }
+            if (filtervalg.harYtelseAapKelvinFilter()) {
+                combinedSubQuery.should(subQueryKelvin);
             }
 
-            queryBuilder.must(subQuery);
+            queryBuilder.must(combinedSubQuery);
         }
 
 
