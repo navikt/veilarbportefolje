@@ -1272,7 +1272,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_som_rettighetsgruppekode() {
+    void skal_hente_ut_brukere_som_går_på_arbeidsavklaringspenger_som_rettighetsgruppefilter() {
         var brukerMedAAP = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
@@ -1411,7 +1411,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 .setFerdigfilterListe(emptyList())
                 .setYtelseAapArena(List.of(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK));
 
-        var filterValgYtelsesFilter = new Filtervalg()
+        var filterValgYtelseFilter = new Filtervalg()
                 .setFerdigfilterListe(emptyList())
                 .setYtelse(YtelseFilterArena.AAP);
 
@@ -1430,7 +1430,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
                 Optional.of(TEST_VEILEDER_0),
                 Sorteringsrekkefolge.IKKE_SATT,
                 Sorteringsfelt.IKKE_SATT,
-                filterValgYtelsesFilter,
+                filterValgYtelseFilter,
                 null,
                 null
         );
