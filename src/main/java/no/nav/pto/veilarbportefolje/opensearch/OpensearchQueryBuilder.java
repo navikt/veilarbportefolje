@@ -199,29 +199,35 @@ public class OpensearchQueryBuilder {
             );
         }
 
-        if (filtervalg.harYtelseAapKelvinFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
-                    case HAR_IKKE_AAP -> subQuery.should(termQuery("aap_kelvin", false));
+        if (filtervalg.harYtelseAapArenaFilter() || filtervalg.harYtelseAapKelvinFilter()) {
+            BoolQueryBuilder subQueryKelvin = boolQuery();
+            BoolQueryBuilder subQueryArena = boolQuery();
+            BoolQueryBuilder combinedSubQuery = boolQuery();
+
+            filtervalg.ytelseAapArena.forEach(ytelseArena -> {
+                switch (ytelseArena) {
+                    case HAR_AAP_ORDINAR -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
+                    case HAR_AAP_UNNTAK -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
                 }
             });
 
-            queryBuilder.must(subQuery);
-        }
-
-        if (filtervalg.harYtelseAapArenaFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseAapArena.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_AAP_ORDINAR -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
-                    case HAR_AAP_UNNTAK -> subQuery.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
+            filtervalg.ytelseAapKelvin.forEach(ytelseKelvin -> {
+                switch (ytelseKelvin) {
+                    case HAR_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", true));
+                    case HAR_IKKE_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", false));
                 }
             });
 
-            queryBuilder.must(subQuery);
+            if (filtervalg.harYtelseAapArenaFilter()) {
+                combinedSubQuery.should(subQueryArena);
+            }
+            if (filtervalg.harYtelseAapKelvinFilter()) {
+                combinedSubQuery.should(subQueryKelvin);
+            }
+
+            queryBuilder.must(combinedSubQuery);
         }
+
 
         if (filtervalg.harYtelseTiltakspengerFilter()) {
             BoolQueryBuilder subQuery = boolQuery();
