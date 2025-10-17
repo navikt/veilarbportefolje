@@ -112,17 +112,17 @@ public class KafkaConfigCommon {
 
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
-        TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        TILTAK_ARENA_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        UTDANNINGS_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        GRUPPE_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        AAP_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
+        AAP_ARENA_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
 
-        DAGPENGE_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+        DAGPENGER_ARENA_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
 
-        TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+        TILTAKSPENGER_ARENA_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
 
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
 
@@ -183,7 +183,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.UTDANNINGS_AKTIVITET_TOPIC.topicName,
+                                        Topic.UTDANNINGS_AKTIVITET_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
                                         utdanningsAktivitetService::behandleKafkaRecord
@@ -193,7 +193,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.GRUPPE_AKTIVITET_TOPIC.topicName,
+                                        Topic.GRUPPE_AKTIVITET_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
                                         gruppeAktivitetService::behandleKafkaRecord
@@ -203,7 +203,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.TILTAK_TOPIC.topicName,
+                                        Topic.TILTAK_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakService::behandleKafkaRecord
@@ -243,7 +243,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.AAP_TOPIC.topicName,
+                                        Topic.AAP_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
@@ -255,7 +255,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.DAGPENGE_TOPIC.topicName,
+                                        Topic.DAGPENGER_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
@@ -267,7 +267,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.TILTAKSPENGER_TOPIC.topicName,
+                                        Topic.TILTAKSPENGER_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
