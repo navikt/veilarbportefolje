@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_TOPIC;
+import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_ARENA_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -232,7 +232,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-123456789");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 0, "melding1", new TiltakDTO().setBefore(null).setAfter(i1a)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 0, "melding1", new TiltakDTO().setBefore(null).setAfter(i1a)));
 
         TiltakInnhold i1b = new TiltakInnhold()
                 .setFnr(fnr1.get())
@@ -241,7 +241,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-567891011");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 0, "melding2", new TiltakDTO().setBefore(null).setAfter(i1b)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 0, "melding2", new TiltakDTO().setBefore(null).setAfter(i1b)));
 
 
         KafkaAktivitetMelding k1 = new KafkaAktivitetMelding()
@@ -381,7 +381,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-123456789");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 0, "melding1", new TiltakDTO().setBefore(null).setAfter(i1a)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 0, "melding1", new TiltakDTO().setBefore(null).setAfter(i1a)));
 
         TiltakInnhold i1b = new TiltakInnhold()
                 .setFnr(fnr1.get())
@@ -390,7 +390,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2018-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2024-11-01"))
                 .setAktivitetid("TA-456789101");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 1, "melding2", new TiltakDTO().setBefore(null).setAfter(i1b)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 1, "melding2", new TiltakDTO().setBefore(null).setAfter(i1b)));
 
         TiltakInnhold i2 = new TiltakInnhold()
                 .setFnr(fnr2.get())
@@ -399,7 +399,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2017-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2023-11-01"))
                 .setAktivitetid("TA-223456789");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 2, "melding3", new TiltakDTO().setBefore(null).setAfter(i2)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 2, "melding3", new TiltakDTO().setBefore(null).setAfter(i2)));
 
         TiltakInnhold i3 = new TiltakInnhold()
                 .setFnr(fnr3.get())
@@ -408,7 +408,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAktivitetperiodeFra(new ArenaDato("2016-10-03"))
                 .setAktivitetperiodeTil(new ArenaDato("2022-11-01"))
                 .setAktivitetid("TA-323456789");
-        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_TOPIC.getTopicName(), 1, 3, "melding4", new TiltakDTO().setBefore(null).setAfter(i3)));
+        tiltakService.behandleKafkaRecord(new ConsumerRecord<>(TILTAK_ARENA_TOPIC.getTopicName(), 1, 3, "melding4", new TiltakDTO().setBefore(null).setAfter(i3)));
 
         tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
 
