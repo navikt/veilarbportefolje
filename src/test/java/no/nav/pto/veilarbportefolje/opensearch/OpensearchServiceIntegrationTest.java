@@ -1489,7 +1489,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
     }
 
     @Test
-    void skal_hente_ut_brukere_som_går_på_tiltakspenger_behandlet_i_tp() {
+    void skal_hente_ut_brukere_som_går_på_tiltakspenger_behandlet_i_tpsak() {
         var brukerMedTiltakspenger = new OppfolgingsBruker()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
@@ -1531,6 +1531,110 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
         assertThat(userExistsInResponse(brukerUtenTiltakspenger, response)).isFalse();
 
     }
+
+    @Test
+    void skal_hente_ut_brukere_som_går_på_tiltakspenger_behandlet_i_arena() {
+        var brukerMedTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("TILTAKSPENGER");
+
+        var brukerUtenTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("ORDINARE_DAGPENGER");
+
+
+        var liste = List.of(brukerMedTiltakspenger, brukerUtenTiltakspenger);
+        skrivBrukereTilTestindeks(liste);
+
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValg = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseTiltakspengerArena(List.of(YtelseTiltakspengerArena.HAR_TILTAKSPENGER));
+
+        var response = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValg,
+                null,
+                null
+        );
+
+        assertThat(response.getAntall()).isEqualTo(1);
+        assertThat(userExistsInResponse(brukerMedTiltakspenger, response)).isTrue();
+        assertThat(userExistsInResponse(brukerMedTiltakspenger, response)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenTiltakspenger, response)).isFalse();
+
+    }
+
+    @Test
+    void antall_brukere_med_tiltakspenger_skal_være_like_for_ytelsesfilter_og_tiltakspengerArenafilter() {
+        var brukerMedTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("TILTAKSPENGER");
+
+        var brukerUtenTiltakspenger = new OppfolgingsBruker()
+                .setAktoer_id(randomAktorId().get())
+                .setFnr(randomFnr().toString())
+                .setOppfolging(true)
+                .setEnhet_id(TEST_ENHET)
+                .setVeileder_id(TEST_VEILEDER_0)
+                .setYtelse("DAGPENGER");
+
+
+        var liste = List.of(brukerMedTiltakspenger, brukerUtenTiltakspenger);
+        skrivBrukereTilTestindeks(liste);
+        pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
+
+        var filterValgTpArenaFilter = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelseTiltakspengerArena(List.of(YtelseTiltakspengerArena.HAR_TILTAKSPENGER));
+
+        var filterValgYtelseFilter = new Filtervalg()
+                .setFerdigfilterListe(emptyList())
+                .setYtelse(YtelseFilterArena.TILTAKSPENGER);
+
+        var responseTpArenaFilter = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValgTpArenaFilter,
+                null,
+                null
+        );
+
+        var responseYtelseFilter = opensearchService.hentBrukere(
+                TEST_ENHET,
+                Optional.of(TEST_VEILEDER_0),
+                Sorteringsrekkefolge.IKKE_SATT,
+                Sorteringsfelt.IKKE_SATT,
+                filterValgYtelseFilter,
+                null,
+                null
+        );
+        assertThat(responseTpArenaFilter.getAntall()).isEqualTo(1);
+        assertThat(responseYtelseFilter.getAntall()).isEqualTo(1);
+        assertThat(userExistsInResponse(brukerMedTiltakspenger, responseTpArenaFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerMedTiltakspenger, responseYtelseFilter)).isTrue();
+        assertThat(userExistsInResponse(brukerUtenTiltakspenger, responseTpArenaFilter)).isFalse();
+        assertThat(userExistsInResponse(brukerUtenTiltakspenger, responseYtelseFilter)).isFalse();
+    }
+
 
     @Test
     void skal_hente_ut_brukere_filtrert_på_dagpenger_som_ytelse() {

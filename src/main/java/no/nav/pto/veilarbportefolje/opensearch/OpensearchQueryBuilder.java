@@ -229,17 +229,34 @@ public class OpensearchQueryBuilder {
         }
 
 
-        if (filtervalg.harYtelseTiltakspengerFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseTiltakspenger.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_TILTAKSPENGER -> subQuery.should(termQuery("tiltakspenger", true));
-                    case HAR_IKKE_TILTAKSPENGER -> subQuery.should(termQuery("tiltakspenger", false));
+        if (filtervalg.harYtelseTiltakspengerFilter() || filtervalg.harYtelseTiltakspengerArenaFilter()) {
+            BoolQueryBuilder subQueryTiltakspenger = boolQuery();
+            BoolQueryBuilder subQueryTiltakspengerArena = boolQuery();
+            BoolQueryBuilder combinedSubQuery = boolQuery();
+
+            filtervalg.ytelseTiltakspenger.forEach(ytelseTiltakspenger -> {
+                switch (ytelseTiltakspenger) {
+                    case HAR_TILTAKSPENGER -> subQueryTiltakspenger.should(termQuery("tiltakspenger", true));
+                    case HAR_IKKE_TILTAKSPENGER -> subQueryTiltakspenger.should(termQuery("tiltakspenger", false));
                 }
             });
 
-            queryBuilder.must(subQuery);
+            filtervalg.ytelseTiltakspengerArena.forEach(ytelseTiltakspenger -> {
+                switch (ytelseTiltakspenger) {
+                    case HAR_TILTAKSPENGER -> subQueryTiltakspengerArena.should(matchQuery("ytelse", YtelseMapping.TILTAKSPENGER));
+                }
+            });
+
+            if (filtervalg.harYtelseTiltakspengerFilter()) {
+                combinedSubQuery.should(subQueryTiltakspenger);
+            }
+            if (filtervalg.harYtelseTiltakspengerArenaFilter()) {
+                combinedSubQuery.should(subQueryTiltakspengerArena);
+            }
+
+            queryBuilder.must(combinedSubQuery);
         }
+
 
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(matchQuery("kjonn", filtervalg.kjonn.name()));
