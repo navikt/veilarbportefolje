@@ -11,9 +11,8 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
-import no.nav.pto.veilarbportefolje.aap.AapController;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.aap.repository.AapRepository;
+import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
@@ -76,7 +75,6 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerController;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
@@ -188,10 +186,8 @@ import static org.mockito.Mockito.when;
         HendelseService.class,
         Gjeldende14aVedtakService.class,
         AapService.class,
-        AapController.class,
         AapRepository.class,
         TiltakspengerRespository.class,
-        TiltakspengerController.class,
         TiltakspengerService.class,
 })
 public class ApplicationConfigTest {
