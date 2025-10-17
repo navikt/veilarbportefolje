@@ -75,7 +75,6 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerController;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
@@ -189,7 +188,6 @@ import static org.mockito.Mockito.when;
         AapService.class,
         AapRepository.class,
         TiltakspengerRespository.class,
-        TiltakspengerController.class,
         TiltakspengerService.class,
 })
 public class ApplicationConfigTest {
