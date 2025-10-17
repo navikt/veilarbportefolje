@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
-import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
 import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
@@ -58,12 +57,6 @@ class AapService(
         lagreAapForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
-    fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
-        val personIdent = aktorClient.hentFnr(aktorId).get()
-        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
-    }
-
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
         lagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
@@ -84,7 +77,7 @@ class AapService(
                 return
             }
 
-        val harAktivAap = sisteAapPeriode.status == VedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
+        val harAktivAap = sisteAapPeriode.status == AapVedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
             LocalDate.now().minusDays(1)
         )
 
