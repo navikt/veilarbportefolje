@@ -46,6 +46,7 @@ import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
@@ -145,7 +146,6 @@ import static org.mockito.Mockito.when;
         SisteEndringRepositoryV2.class,
         SistLestService.class,
         MalService.class,
-        OppfolgingService.class,
         ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
@@ -386,5 +386,10 @@ public class ApplicationConfigTest {
     @Bean
     public TiltakspengerClient tiltakspengerClient() {
         return mock(TiltakspengerClient.class);
+    }
+
+    @Bean
+    public OppfolgingClient oppfolgingClient() {
+        return mock(OppfolgingClient.class);
     }
 }
