@@ -4409,7 +4409,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilterArena.AAP_MAXTID);
+                .setYtelseAapArena(List.of(YtelseAapArena.HAR_AAP_ORDINAR));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 TEST_ENHET,
@@ -4428,7 +4428,7 @@ public class OpensearchServiceIntegrationTest extends EndToEndTest {
 
         filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
-                .setYtelse(YtelseFilterArena.AAP_UNNTAK);
+                .setYtelseAapArena(List.of(YtelseAapArena.HAR_AAP_UNNTAK));
 
         response = opensearchService.hentBrukere(
                 TEST_ENHET,
