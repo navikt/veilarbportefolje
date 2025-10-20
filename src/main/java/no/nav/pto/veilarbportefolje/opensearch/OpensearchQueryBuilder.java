@@ -796,7 +796,7 @@ public class OpensearchQueryBuilder {
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP)) {
+        if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.size() == 2 ) {
             expression = """
                     if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -812,7 +812,7 @@ public class OpensearchQueryBuilder {
                        return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_MAXTID)) {
+        } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_ORDINAR)) {
             expression = """
                     if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
@@ -825,7 +825,7 @@ public class OpensearchQueryBuilder {
                         return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_UNNTAK)) {
+        } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_UNNTAK)) {
             expression = """
                     if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
