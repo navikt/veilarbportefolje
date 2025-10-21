@@ -97,24 +97,6 @@ public class AdminController {
         );
     }
 
-    // slett ytelser
-    @PutMapping("/ytelser/allUsers")
-    @Operation(summary = "Oppdater ytelser for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse.")
-    public String syncYtelserForAlle() {
-        sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        brukereUnderOppfolging.forEach(ytelsesService::oppdaterYtelsesInformasjon);
-        return "Ytelser er nå i sync";
-    }
-
-    @PutMapping("/ytelser/idag")
-    @Operation(summary = "Oppdater ytelser for alle brukere som har ytelser som starter i dag", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse som starter i dag.")
-    public String syncYtelserForIDag() {
-        sjekkTilgangTilAdmin();
-        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
-        return "Aktiviteter er nå i sync";
-    }
-
     @PostMapping("/opensearch/createIndex")
     @Operation(summary = "Opprett ny indeks", description = "Oppretter en ny indeks i søkemotoren (OpenSearch).")
     public String createIndex() {
