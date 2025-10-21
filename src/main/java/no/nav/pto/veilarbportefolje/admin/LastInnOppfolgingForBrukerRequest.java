@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.admin.v1;
+package no.nav.pto.veilarbportefolje.admin;
 
 import no.nav.common.types.identer.Fnr;
 
