@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.admin.v1;
+package no.nav.pto.veilarbportefolje.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -58,21 +58,20 @@ public class AdminController {
         return "Oppfølgingsbruker ble slettet";
     }
 
-    //fjern deprecata
+    @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker/fnr")
-    @Deprecated(forRemoval = true)
-    public String indeks(@RequestParam String fnr) {
+    public String indeks(@RequestBody AdminFnrRequest adminFnrRequest) {
         sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(adminFnrRequest.fnr().get())).get();
         opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Indeksering fullfort";
     }
 
+    @Operation(summary = "Indekser bruker med Aktør-ID", description = "Hent og skriv oppdatert data for bruker, gitt ved Aktør-ID, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker")
-    @Deprecated(forRemoval = true)
-    public String indeksAktoerId(@RequestParam String aktorId) {
+    public String indeksAktoerId(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
         sjekkTilgangTilAdmin();
-        opensearchIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(adminAktorIdRequest.aktorId());
         return "Indeksering fullfort";
     }
 
