@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -178,19 +177,14 @@ public class AdminController {
     // slettes
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public String hentEnsligForsorgerBrukereIBatch() {
+    public String hentEnsligForsorgerBruker(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
         sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-
-        log.info("Startet: Innlastning av Ensligforsørger brukerdata");
-        brukereUnderOppfolging.forEach(bruker -> {
             try {
-                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(bruker);
+                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(adminAktorIdRequest.aktorId());
             } catch (Exception e) {
-                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
+                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", adminAktorIdRequest.aktorId(), e);
             }
-        });
-        log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
+
         return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
