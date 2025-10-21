@@ -159,17 +159,6 @@ public class OpensearchAdminService {
     }
 
     @SneakyThrows
-    public String getSettingsOnIndex(String indexName) {
-        String url = createAbsoluteUrl(openSearchClientConfig, indexName) + "_settings?include_defaults=true";
-        Request request = new Request.Builder()
-                .url(url).get()
-                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
-                .build();
-
-        return callAndGetBody(request);
-    }
-
-    @SneakyThrows
     public String opprettSkjultSkriveIndeksPaAlias() {
         String nyIndex = opprettNyIndeks();
 
@@ -190,39 +179,6 @@ public class OpensearchAdminService {
         }
 
         return nyIndex;
-    }
-
-    @SneakyThrows
-    public String updateFromReadOnlyMode() {
-        String url = createAbsoluteUrl(openSearchClientConfig);
-        Request request = new Request.Builder()
-                .url(url)
-                .put(RequestBody.create("""
-                        {
-                          "index": {
-                            "blocks": {
-                              "read_only_allow_delete": "false"
-                            }
-                          }
-                        }
-                        """, MEDIA_TYPE_JSON))
-                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
-                .build();
-
-        return callAndGetBody(request);
-    }
-
-    @SneakyThrows
-    public String forceShardAssignment() {
-        String url = createAbsoluteUrl(openSearchClientConfig) + "_cluster/reroute?retry_failed=true";
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Authorization", getAuthHeaderValue(openSearchClientConfig))
-                .post(RequestBody.create("{}", MEDIA_TYPE_JSON))
-                .header("Content-Length", "0")
-                .build();
-
-        return callAndGetBody(request);
     }
 
     public GetResponse fetchDocument(AktorId aktoerId, IndexName indexName) throws IOException {

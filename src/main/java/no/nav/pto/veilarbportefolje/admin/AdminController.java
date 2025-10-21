@@ -52,7 +52,7 @@ public class AdminController {
     // denne brukes heller ikke fra pto-admin
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
-    public String slettOppfolgingsbruker(@RequestBody SlettOppfolgingsbrukerRequest request) {
+    public String slettOppfolgingsbruker(@RequestBody AdminAktorIdRequest request) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
         return "Oppfølgingsbruker ble slettet";
@@ -97,24 +97,6 @@ public class AdminController {
         );
     }
 
-    // slett ytelser
-    @PutMapping("/ytelser/allUsers")
-    @Operation(summary = "Oppdater ytelser for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse.")
-    public String syncYtelserForAlle() {
-        sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        brukereUnderOppfolging.forEach(ytelsesService::oppdaterYtelsesInformasjon);
-        return "Ytelser er nå i sync";
-    }
-
-    @PutMapping("/ytelser/idag")
-    @Operation(summary = "Oppdater ytelser for alle brukere som har ytelser som starter i dag", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse som starter i dag.")
-    public String syncYtelserForIDag() {
-        sjekkTilgangTilAdmin();
-        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
-        return "Aktiviteter er nå i sync";
-    }
-
     @PostMapping("/opensearch/createIndex")
     @Operation(summary = "Opprett ny indeks", description = "Oppretter en ny indeks i søkemotoren (OpenSearch).")
     public String createIndex() {
@@ -145,29 +127,6 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         opensearchAdminService.opprettAliasForIndeks(indexName);
         return "Ok";
-    }
-
-    // slett de neste tre om de ikke brukes
-    @PostMapping("/opensearch/getSettings")
-    @Operation(summary = "Hent innstillinger for indeks", description = "Henter innstillinger for en indeks i søkemotoren (OpenSearch).")
-    public String getSettings(@RequestParam String indexName) {
-        sjekkTilgangTilAdmin();
-        validerIndexName(indexName);
-        return opensearchAdminService.getSettingsOnIndex(indexName);
-    }
-
-    @PostMapping("/opensearch/fixReadOnlyMode")
-    @Operation(summary = "Fjern read only mode", description = "Fjerner read only mode på en indeks i søkemotoren (OpenSearch).")
-    public String fixReadOnlyMode() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.updateFromReadOnlyMode();
-    }
-
-    @PostMapping("/opensearch/forceShardAssignment")
-    @Operation(summary = "Tving shard assignment", description = "Tvinger shard assignment på en indeks i søkemotoren (OpenSearch).")
-    public String forceShardAssignment() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.forceShardAssignment();
     }
 
 
@@ -235,9 +194,4 @@ public class AdminController {
         return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
-    private void validerIndexName(String indexName) {
-        if (!BRUKERINDEKS_ALIAS.equals(indexName)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
 }
