@@ -18,7 +18,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +42,6 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
     private final OpensearchIndexer opensearchIndexer;
-    private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
@@ -51,29 +49,13 @@ public class AdminController {
     private final PdlService pdlService;
     private final EnsligeForsorgereService ensligForsorgerService;
 
+    // denne brukes heller ikke fra pto-admin
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
     public String slettOppfolgingsbruker(@RequestBody SlettOppfolgingsbrukerRequest request) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
         return "Oppfølgingsbruker ble slettet";
-    }
-
-    @PostMapping("/lastInnOppfolging")
-    @Operation(summary = "Oppdater data for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer oppfølgingsdata om brukere under oppfølging. Brukere som eventuelt ikke er under oppfølging slettes.")
-    public String lastInnOppfolgingsData() {
-        sjekkTilgangTilAdmin();
-        oppfolgingService.lastInnDataPaNytt();
-        return "Innlastning av oppfolgingsdata har startet";
-    }
-
-    @PostMapping("/lastInnOppfolgingForBruker")
-    @Operation(summary = "Oppdater data for bruker", description = "Oppdaterer oppfølgingsdata for en gitt bruker. Dersom brukeren eventuelt ikke er under oppfølging slettes den.")
-    public String lastInnOppfolgingsDataForBruker(@RequestBody LastInnOppfolgingForBrukerRequest request) {
-        sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get())).get();
-        oppfolgingService.oppdaterBruker(AktorId.of(aktorId));
-        return "Innlastning av oppfolgingsdata har startet";
     }
 
     @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
@@ -115,6 +97,7 @@ public class AdminController {
         );
     }
 
+    // slett ytelser
     @PutMapping("/ytelser/allUsers")
     @Operation(summary = "Oppdater ytelser for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse.")
     public String syncYtelserForAlle() {
@@ -164,6 +147,7 @@ public class AdminController {
         return "Ok";
     }
 
+    // slett de neste tre om de ikke brukes
     @PostMapping("/opensearch/getSettings")
     @Operation(summary = "Hent innstillinger for indeks", description = "Henter innstillinger for en indeks i søkemotoren (OpenSearch).")
     public String getSettings(@RequestParam String indexName) {
@@ -186,6 +170,8 @@ public class AdminController {
         return opensearchAdminService.forceShardAssignment();
     }
 
+
+    // er også en type batch jobb, kan vurderes å generalisere med resten.
     @PostMapping("/pdl/lastInnDataFraPdl")
     @Operation(summary = "Last inn PDL-data", description = "Henter og lagrer data fra PDL (identer, personalia og foreldreansvar) for alle brukere i løsningen.")
     public String lastInnPDLBrukerData() {
@@ -230,6 +216,7 @@ public class AdminController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
+    // slettes
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
     public String hentEnsligForsorgerBrukereIBatch() {

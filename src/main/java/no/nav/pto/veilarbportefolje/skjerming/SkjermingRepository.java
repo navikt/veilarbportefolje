@@ -1,9 +1,8 @@
-package no.nav.pto.veilarbportefolje.oppfolging;
+package no.nav.pto.veilarbportefolje.skjerming;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.oppfolging.response.SkjermingData;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.oppfolging;
+package no.nav.pto.veilarbportefolje.oppfolging.dto;
 
 import lombok.Value;
 import no.nav.common.types.identer.AktorId;

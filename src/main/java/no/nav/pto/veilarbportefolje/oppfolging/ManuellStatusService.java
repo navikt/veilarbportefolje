@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import org.springframework.stereotype.Service;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -16,7 +18,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<ManuellStatusDTO> {
-    private final OppfolgingService oppfolgingService;
+    private final OppfolgingClient oppfolgingClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
@@ -35,7 +37,7 @@ public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<Man
         if (hentManuellStatus(aktorId) == dto.isErManuell()) {
             return;
         }
-        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingClient.hentUnderOppfolging(aktorId);
         if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'manuell status melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }

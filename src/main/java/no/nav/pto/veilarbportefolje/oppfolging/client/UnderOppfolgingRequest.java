@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.oppfolging;
+package no.nav.pto.veilarbportefolje.oppfolging.client;
 
 import no.nav.common.types.identer.Fnr;
 

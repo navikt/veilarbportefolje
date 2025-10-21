@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -72,6 +73,17 @@ public class ClientConfig {
         );
     }
 
+    @Bean
+    public OppfolgingClient oppfolgingClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties,
+            AktorClient aktorClient) {
+        return new OppfolgingClient(
+                aktorClient,
+                environmentProperties.getVeilarboppfolgingUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope())
+        );
+    }
 
     @Bean
     public HttpClient httpClient() {
