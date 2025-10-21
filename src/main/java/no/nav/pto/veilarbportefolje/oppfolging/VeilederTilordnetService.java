@@ -62,9 +62,9 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     }
 
     private void kastErrorHvisBrukerSkalVaereUnderOppfolging(AktorId aktorId, VeilederId veilederId) {
-        if (hentVeileder(aktorId).equals(veilederId)) {
-            return;
-        }
+//        if (hentVeileder(aktorId).equals(veilederId)) {
+//            return;
+//        }
         boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingClient.hentUnderOppfolging(aktorId);
         if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
