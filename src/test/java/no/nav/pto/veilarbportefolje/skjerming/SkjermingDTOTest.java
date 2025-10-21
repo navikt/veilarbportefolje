@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.oppfolging;
+package no.nav.pto.veilarbportefolje.skjerming;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;

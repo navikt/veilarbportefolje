@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.admin.v1;
+package no.nav.pto.veilarbportefolje.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +18,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -43,7 +41,6 @@ public class AdminController {
     private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
     private final OpensearchIndexer opensearchIndexer;
-    private final OppfolgingService oppfolgingService;
     private final AuthContextHolder authContextHolder;
     private final YtelsesService ytelsesService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
@@ -51,45 +48,29 @@ public class AdminController {
     private final PdlService pdlService;
     private final EnsligeForsorgereService ensligForsorgerService;
 
+    // denne brukes heller ikke fra pto-admin
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
-    public String slettOppfolgingsbruker(@RequestBody SlettOppfolgingsbrukerRequest request) {
+    public String slettOppfolgingsbruker(@RequestBody AdminAktorIdRequest request) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
         return "Oppfølgingsbruker ble slettet";
     }
 
-    @PostMapping("/lastInnOppfolging")
-    @Operation(summary = "Oppdater data for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer oppfølgingsdata om brukere under oppfølging. Brukere som eventuelt ikke er under oppfølging slettes.")
-    public String lastInnOppfolgingsData() {
-        sjekkTilgangTilAdmin();
-        oppfolgingService.lastInnDataPaNytt();
-        return "Innlastning av oppfolgingsdata har startet";
-    }
-
-    @PostMapping("/lastInnOppfolgingForBruker")
-    @Operation(summary = "Oppdater data for bruker", description = "Oppdaterer oppfølgingsdata for en gitt bruker. Dersom brukeren eventuelt ikke er under oppfølging slettes den.")
-    public String lastInnOppfolgingsDataForBruker(@RequestBody LastInnOppfolgingForBrukerRequest request) {
-        sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(request.fnr().get())).get();
-        oppfolgingService.oppdaterBruker(AktorId.of(aktorId));
-        return "Innlastning av oppfolgingsdata har startet";
-    }
-
+    @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker/fnr")
-    @Deprecated(forRemoval = true)
-    public String indeks(@RequestParam String fnr) {
+    public String indeks(@RequestBody AdminFnrRequest adminFnrRequest) {
         sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
+        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(adminFnrRequest.fnr().get())).get();
         opensearchIndexer.indekser(AktorId.of(aktorId));
         return "Indeksering fullfort";
     }
 
+    @Operation(summary = "Indekser bruker med Aktør-ID", description = "Hent og skriv oppdatert data for bruker, gitt ved Aktør-ID, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker")
-    @Deprecated(forRemoval = true)
-    public String indeksAktoerId(@RequestParam String aktorId) {
+    public String indeksAktoerId(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
         sjekkTilgangTilAdmin();
-        opensearchIndexer.indekser(AktorId.of(aktorId));
+        opensearchIndexer.indekser(adminAktorIdRequest.aktorId());
         return "Indeksering fullfort";
     }
 
@@ -113,23 +94,6 @@ public class AdminController {
                     hovedIndekserer.aliasBasertHovedIndeksering(brukereUnderOppfolging);
                 }
         );
-    }
-
-    @PutMapping("/ytelser/allUsers")
-    @Operation(summary = "Oppdater ytelser for alle brukere", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse.")
-    public String syncYtelserForAlle() {
-        sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-        brukereUnderOppfolging.forEach(ytelsesService::oppdaterYtelsesInformasjon);
-        return "Ytelser er nå i sync";
-    }
-
-    @PutMapping("/ytelser/idag")
-    @Operation(summary = "Oppdater ytelser for alle brukere som har ytelser som starter i dag", description = "Går gjennom alle brukere i løsningen og oppdaterer data om ytelser for disse som starter i dag.")
-    public String syncYtelserForIDag() {
-        sjekkTilgangTilAdmin();
-        ytelsesService.oppdaterBrukereMedYtelserSomStarterIDag();
-        return "Aktiviteter er nå i sync";
     }
 
     @PostMapping("/opensearch/createIndex")
@@ -164,28 +128,8 @@ public class AdminController {
         return "Ok";
     }
 
-    @PostMapping("/opensearch/getSettings")
-    @Operation(summary = "Hent innstillinger for indeks", description = "Henter innstillinger for en indeks i søkemotoren (OpenSearch).")
-    public String getSettings(@RequestParam String indexName) {
-        sjekkTilgangTilAdmin();
-        validerIndexName(indexName);
-        return opensearchAdminService.getSettingsOnIndex(indexName);
-    }
 
-    @PostMapping("/opensearch/fixReadOnlyMode")
-    @Operation(summary = "Fjern read only mode", description = "Fjerner read only mode på en indeks i søkemotoren (OpenSearch).")
-    public String fixReadOnlyMode() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.updateFromReadOnlyMode();
-    }
-
-    @PostMapping("/opensearch/forceShardAssignment")
-    @Operation(summary = "Tving shard assignment", description = "Tvinger shard assignment på en indeks i søkemotoren (OpenSearch).")
-    public String forceShardAssignment() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.forceShardAssignment();
-    }
-
+    // er også en type batch jobb, kan vurderes å generalisere med resten.
     @PostMapping("/pdl/lastInnDataFraPdl")
     @Operation(summary = "Last inn PDL-data", description = "Henter og lagrer data fra PDL (identer, personalia og foreldreansvar) for alle brukere i løsningen.")
     public String lastInnPDLBrukerData() {
@@ -230,27 +174,18 @@ public class AdminController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
+    // slettes
     @PostMapping("/hentEnsligForsorgerData")
     @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public String hentEnsligForsorgerBrukereIBatch() {
+    public String hentEnsligForsorgerBruker(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
         sjekkTilgangTilAdmin();
-        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
-
-        log.info("Startet: Innlastning av Ensligforsørger brukerdata");
-        brukereUnderOppfolging.forEach(bruker -> {
             try {
-                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(bruker);
+                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(adminAktorIdRequest.aktorId());
             } catch (Exception e) {
-                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", bruker, e);
+                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", adminAktorIdRequest.aktorId(), e);
             }
-        });
-        log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
+
         return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
-    private void validerIndexName(String indexName) {
-        if (!BRUKERINDEKS_ALIAS.equals(indexName)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
 }

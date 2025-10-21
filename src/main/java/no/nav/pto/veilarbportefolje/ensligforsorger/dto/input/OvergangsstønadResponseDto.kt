@@ -8,7 +8,7 @@ data class OvergangsstønadBarn @JsonCreator constructor(
         @JsonProperty("personIdent")
         val personIdent: String,
         @JsonProperty("fødselTermindato")
-        val fødselTermindato: LocalDate
+        val fødselTermindato: LocalDate?
 )
 
 data class OvergangsstønadPeriode @JsonCreator constructor(

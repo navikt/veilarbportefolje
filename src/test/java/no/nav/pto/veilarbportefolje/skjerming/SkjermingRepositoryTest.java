@@ -1,8 +1,7 @@
-package no.nav.pto.veilarbportefolje.oppfolging;
+package no.nav.pto.veilarbportefolje.skjerming;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
-import no.nav.pto.veilarbportefolje.oppfolging.response.SkjermingData;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

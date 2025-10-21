@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.oppfolging.SkjermingRepository;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

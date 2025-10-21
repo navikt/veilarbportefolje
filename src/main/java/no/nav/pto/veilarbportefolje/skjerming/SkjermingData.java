@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.oppfolging.response;
+package no.nav.pto.veilarbportefolje.skjerming;
 
 import lombok.Data;
 import no.nav.common.types.identer.Fnr;
