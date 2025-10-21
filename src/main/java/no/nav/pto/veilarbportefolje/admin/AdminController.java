@@ -52,7 +52,7 @@ public class AdminController {
     // denne brukes heller ikke fra pto-admin
     @DeleteMapping("/oppfolgingsbruker")
     @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
-    public String slettOppfolgingsbruker(@RequestBody SlettOppfolgingsbrukerRequest request) {
+    public String slettOppfolgingsbruker(@RequestBody AdminAktorIdRequest request) {
         sjekkTilgangTilAdmin();
         oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
         return "Oppfølgingsbruker ble slettet";
