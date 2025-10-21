@@ -129,29 +129,6 @@ public class AdminController {
         return "Ok";
     }
 
-    // slett de neste tre om de ikke brukes
-    @PostMapping("/opensearch/getSettings")
-    @Operation(summary = "Hent innstillinger for indeks", description = "Henter innstillinger for en indeks i søkemotoren (OpenSearch).")
-    public String getSettings(@RequestParam String indexName) {
-        sjekkTilgangTilAdmin();
-        validerIndexName(indexName);
-        return opensearchAdminService.getSettingsOnIndex(indexName);
-    }
-
-    @PostMapping("/opensearch/fixReadOnlyMode")
-    @Operation(summary = "Fjern read only mode", description = "Fjerner read only mode på en indeks i søkemotoren (OpenSearch).")
-    public String fixReadOnlyMode() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.updateFromReadOnlyMode();
-    }
-
-    @PostMapping("/opensearch/forceShardAssignment")
-    @Operation(summary = "Tving shard assignment", description = "Tvinger shard assignment på en indeks i søkemotoren (OpenSearch).")
-    public String forceShardAssignment() {
-        sjekkTilgangTilAdmin();
-        return opensearchAdminService.forceShardAssignment();
-    }
-
 
     // er også en type batch jobb, kan vurderes å generalisere med resten.
     @PostMapping("/pdl/lastInnDataFraPdl")
@@ -217,9 +194,4 @@ public class AdminController {
         return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
-    private void validerIndexName(String indexName) {
-        if (!BRUKERINDEKS_ALIAS.equals(indexName)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
 }
