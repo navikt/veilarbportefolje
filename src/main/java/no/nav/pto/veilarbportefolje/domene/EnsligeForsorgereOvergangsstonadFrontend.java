@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.time.LocalDate;
 import java.util.Objects;
 
+
+// Denne er like som EnsligeForsorgereOvergangsstonad men uten ø i Fødselsdato
 public record EnsligeForsorgereOvergangsstonadFrontend(
         String vedtaksPeriodetype,
         Boolean harAktivitetsplikt,

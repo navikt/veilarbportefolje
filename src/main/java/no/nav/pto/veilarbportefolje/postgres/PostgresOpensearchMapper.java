@@ -180,7 +180,8 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnEnsligeForsorgereData(List<OppfolgingsBruker> brukere) {
-        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap =
+                ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
         brukere.forEach(bruker -> {
             if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
                 bruker.setEnslige_forsorgere_overgangsstonad(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(Fnr.of(bruker.getFnr())).toEnsligeForsorgereOpensearchDto());

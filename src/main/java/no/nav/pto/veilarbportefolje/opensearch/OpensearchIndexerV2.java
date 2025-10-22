@@ -435,18 +435,6 @@ public class OpensearchIndexerV2 {
 
     }
 
-    @SneakyThrows
-    public void slettTiltakspenger(AktorId aktorId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("tiltakspenger", false)
-                .nullField("tiltakspenger_vedtaksdato_tom")
-                .nullField("tiltakspenger_rettighet")
-                .endObject();
-
-        update(aktorId, content, format("Slettet tiltakspenger for aktorId: %s", aktorId.get()));
-    }
-
     private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
             secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
