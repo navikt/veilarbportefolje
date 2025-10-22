@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor

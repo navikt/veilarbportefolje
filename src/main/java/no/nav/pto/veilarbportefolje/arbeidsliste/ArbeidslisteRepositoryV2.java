@@ -30,14 +30,6 @@ public class ArbeidslisteRepositoryV2 {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate dbReadOnly;
 
-
-    public Optional<String> hentNavKontorForArbeidsliste(AktorId aktorId) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s=? ", NAV_KONTOR_FOR_ARBEIDSLISTE, TABLE_NAME, AKTOERID);
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(NAV_KONTOR_FOR_ARBEIDSLISTE), aktorId.get()))
-        );
-    }
-
     public Try<Arbeidsliste> retrieveArbeidsliste(Fnr bruker) {
         String sql = """
                     SELECT a.*, f.verdi FROM arbeidsliste a

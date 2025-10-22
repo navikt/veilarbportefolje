@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -164,6 +165,19 @@ public class AdminController {
         return "ferdig";
     }
 
+    @PostMapping("/hentEnsligForsorgerData")
+    @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
+    public ResponseEntity<String> hentEnsligForsorgerBruker(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
+        sjekkTilgangTilAdmin();
+        try {
+            ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(adminAktorIdRequest.aktorId());
+            return ResponseEntity.ok("Innlastning av Ensligforsørger brukerdata er ferdig");
+        } catch (Exception e) {
+            secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", adminAktorIdRequest.aktorId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Feil under innlasting av Ensligforsørger-data");
+        }
+    }
+
     private void sjekkTilgangTilAdmin() {
         boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
         boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
@@ -172,20 +186,6 @@ public class AdminController {
             return;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-
-    // slettes
-    @PostMapping("/hentEnsligForsorgerData")
-    @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public String hentEnsligForsorgerBruker(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
-        sjekkTilgangTilAdmin();
-            try {
-                ensligForsorgerService.hentOgLagreEnsligForsorgerDataFraApi(adminAktorIdRequest.aktorId());
-            } catch (Exception e) {
-                secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", adminAktorIdRequest.aktorId(), e);
-            }
-
-        return "Innlastning av Ensligforsørger brukerdata er ferdig";
     }
 
 }
