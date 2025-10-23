@@ -43,7 +43,6 @@ public class AdminController {
     private final HovedIndekserer hovedIndekserer;
     private final OpensearchIndexer opensearchIndexer;
     private final AuthContextHolder authContextHolder;
-    private final YtelsesService ytelsesService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
