@@ -178,6 +178,25 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/hentEnsligForsorgerDataBatch")
+    @Operation(summary = "Henter data om enslig forsorger for alle brukere", description = "Sjekker om bruker er enslig forsørger og henter data for alle brukere")
+    public ResponseEntity<String> hentEnsligForsorgerBruker() {
+        sjekkTilgangTilAdmin();
+        List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
+
+        log.info("Startet: Innlastning av Ensligforsørger brukerdata");
+        brukereUnderOppfolging.forEach(aktorId -> {
+            try {
+                ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId);
+            } catch (Exception e) {
+                secureLog.error("Feil under innlasting av ensligforsørger-data for aktorId {}", aktorId);
+            }
+        });
+
+        log.info("Ferdig: Innlastning av ensligforsørger brukerdata");
+        return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført");
+    }
+
     private void sjekkTilgangTilAdmin() {
         boolean erInternBrukerFraAzure = authContextHolder.erInternBruker();
         boolean erPoaoAdmin = POAO_ADMIN.equals(hentApplikasjonFraContex(authContextHolder));
