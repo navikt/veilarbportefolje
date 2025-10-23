@@ -13,7 +13,7 @@ data class AdminDataTypeResponse(
     val displayName: String
 )
 
-data class HentDataForBrukerRequest(
+data class AdminDataForBrukerRequest(
     val aktorId: AktorId,
     val valg: List<AdminDataType>
 )

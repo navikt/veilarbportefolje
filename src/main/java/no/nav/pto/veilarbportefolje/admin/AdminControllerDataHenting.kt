@@ -56,14 +56,13 @@ class AdminControllerDataHenting(
         summary = "Hent data for bruker basert på valg",
         description = "Henter spesifikk type data for en bruker basert på angitte valg."
     )
-    fun hentDataForBrukerForAngitteValg(@RequestBody request: HentDataForBrukerRequest): ResponseEntity<String> {
+    fun hentDataForBrukerForAngitteValg(@RequestBody request: AdminDataForBrukerRequest): ResponseEntity<String> {
         sjekkTilgangTilAdmin()
         if (request.valg.isEmpty()) {
             return ResponseEntity.badRequest().body("Ingen valg er angitt for datahenting")
         }
 
         val feiledeValg = mutableListOf<String>()
-
         request.valg.forEach { type ->
             try {
                 when (type) {
