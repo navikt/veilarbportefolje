@@ -19,14 +19,17 @@ import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
-class OpensearchServiceIntAccessCheckChildrenTest @Autowired constructor(
+class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
     private val opensearchService: OpensearchService,
     private val poaoTilgangWrapper: PoaoTilgangWrapper
 ) : EndToEndTest() {
+    private lateinit var TEST_ENHET: String
+    private lateinit var TEST_VEILEDER_0: String
 
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
+        TEST_VEILEDER_0 = randomVeilederId().value
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
@@ -1007,10 +1010,5 @@ class OpensearchServiceIntAccessCheckChildrenTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setNy_for_veileder(nyForVeileder)
             .setBarn_under_18_aar(barn)
-    }
-
-    companion object {
-        private var TEST_ENHET: String = randomNavKontor().value
-        private val TEST_VEILEDER_0: String = randomVeilederId().value
     }
 }
