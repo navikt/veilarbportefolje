@@ -9,17 +9,13 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.auth.AuthUtils
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
-import no.nav.pto.veilarbportefolje.domene.AktorClient
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
-import java.util.*
-import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 
 
 @Slf4j
@@ -32,13 +28,10 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 )
 
 class AdminControllerDataHenting(
-    private val aktorClient: AktorClient,
-    private val oppfolgingAvsluttetService: OppfolgingAvsluttetService,
     private val authContextHolder: AuthContextHolder,
-    private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val pdlService: PdlService,
     private val ensligForsorgerService: EnsligeForsorgereService
-)  {
+) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp",
         "poao",
@@ -48,7 +41,7 @@ class AdminControllerDataHenting(
     @GetMapping("hentDataForBruker/muligeValg")
     @Operation(
         summary = "Henter mulige valg for datahenting",
-        description = "Henter en liste over mulige datatyper som kan hentes for en bruker."
+        description = "Henter en liste over mulige datatyper som kan hentes."
     )
     fun hentDataForBrukerMuligeValg(): ResponseEntity<List<AdminDataTypeResponse>> {
         sjekkTilgangTilAdmin()
@@ -58,7 +51,7 @@ class AdminControllerDataHenting(
         return ResponseEntity.ok(muligeValg)
     }
 
-    @PostMapping
+    @PostMapping("hentDataForBruker/forValgte")
     @Operation(
         summary = "Hent data for bruker basert på valg",
         description = "Henter spesifikk type data for en bruker basert på angitte valg."
@@ -97,6 +90,7 @@ class AdminControllerDataHenting(
 
     private fun hentPdlData(aktorId: AktorId) {
         secureLog.info("Starter datahenting for PDL for aktorId {}", aktorId)
+        pdlService.hentOgLagrePdlData(aktorId)
     }
 
     private fun sjekkTilgangTilAdmin() {
