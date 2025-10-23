@@ -184,8 +184,12 @@ public class AdminController {
         sjekkTilgangTilAdmin();
         List<AktorId> brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging();
 
+        AtomicInteger antall = new AtomicInteger(0);
         log.info("Startet: Innlastning av Ensligforsørger brukerdata");
         brukereUnderOppfolging.forEach(aktorId -> {
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info("Ensligforsørger brukerdata: inlastning {}% ferdig", ((double) antall.get() / (double) brukereUnderOppfolging.size()) * 100.0);
+            }
             try {
                 ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId);
             } catch (Exception e) {
