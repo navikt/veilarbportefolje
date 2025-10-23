@@ -31,20 +31,28 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class OpensearchServiceIntAccessCheckGeneralTest @Autowired constructor(
+class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
     private val opensearchService: OpensearchService,
     private val poaoTilgangWrapper: PoaoTilgangWrapper,
     private val authContextHolder: AuthContextHolder
 ) : EndToEndTest() {
-
-
     @Autowired
     private lateinit var veilarbVeilederClient: VeilarbVeilederClient
     private lateinit var veilederePaEnhet: List<String>
+    private lateinit var TEST_ENHET: String
+    private lateinit var TEST_VEILEDER_0: String
+    private lateinit var TEST_VEILEDER_1: String
+    private lateinit var TEST_VEILEDER_2: String
+    private lateinit var TEST_VEILEDER_3: String
 
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
+        TEST_VEILEDER_0 = randomVeilederId().value
+        TEST_VEILEDER_1 = randomVeilederId().value
+        TEST_VEILEDER_2 = randomVeilederId().value
+        TEST_VEILEDER_3 = randomVeilederId().value
+
 
         veilederePaEnhet = listOf(
             TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3
@@ -676,11 +684,4 @@ class OpensearchServiceIntAccessCheckGeneralTest @Autowired constructor(
     private fun createRegularBruker(enhet: String, veileder: String? = null) =
         genererRandomBruker(enhet, veileder, null, false)
 
-    companion object {
-        private var TEST_ENHET: String = randomNavKontor().value
-        private val TEST_VEILEDER_0: String = randomVeilederId().value
-        private val TEST_VEILEDER_1: String = randomVeilederId().value
-        private val TEST_VEILEDER_2: String = randomVeilederId().value
-        private val TEST_VEILEDER_3: String = randomVeilederId().value
-    }
 }
