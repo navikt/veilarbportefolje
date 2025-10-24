@@ -9,14 +9,12 @@ import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import org.springframework.http.HttpStatus;
@@ -39,24 +37,13 @@ public class AdminController {
     private final String POAO_ADMIN = new DownstreamApi(EnvironmentUtils.isProduction().orElse(false) ?
             "prod-gcp" : "dev-gcp", "poao", "poao-admin").toString();
     private final AktorClient aktorClient;
-    private final OppfolgingAvsluttetService oppfolgingAvsluttetService;
     private final HovedIndekserer hovedIndekserer;
     private final OpensearchIndexer opensearchIndexer;
     private final AuthContextHolder authContextHolder;
-    private final YtelsesService ytelsesService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final OpensearchAdminService opensearchAdminService;
     private final PdlService pdlService;
     private final EnsligeForsorgereService ensligForsorgerService;
-
-    // denne brukes heller ikke fra pto-admin
-    @DeleteMapping("/oppfolgingsbruker")
-    @Operation(summary = "Fjern bruker", description = "Sletter en bruker og fjerner tilhørende informasjon om brukeren. Brukeren vil ikke lenger eksistere i porteføljene.")
-    public String slettOppfolgingsbruker(@RequestBody AdminAktorIdRequest request) {
-        sjekkTilgangTilAdmin();
-        oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(request.aktorId().get()));
-        return "Oppfølgingsbruker ble slettet";
-    }
 
     @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
     @PutMapping("/indeks/bruker/fnr")
@@ -151,32 +138,6 @@ public class AdminController {
         return "ferdig";
     }
 
-    @PutMapping("/pdl/lastInnDataFraPdl")
-    @Deprecated(forRemoval = true)
-    public String lastInnPDLBrukerData(@RequestParam String fnr) {
-        sjekkTilgangTilAdmin();
-        String aktorId = aktorClient.hentAktorId(Fnr.ofValidFnr(fnr)).get();
-        try {
-            pdlService.hentOgLagrePdlData(AktorId.of(aktorId));
-        } catch (Exception e) {
-            secureLog.info("pdl brukerdata: feil under innlastning av pdl data på bruker: {}", aktorId, e);
-        }
-        log.info("pdl brukerdata: ferdig med innlastning");
-        return "ferdig";
-    }
-
-    @PostMapping("/hentEnsligForsorgerData")
-    @Operation(summary = "Henter data om enslig forsorger", description = "Sjekker om bruker er enslig forsorger og henter data om det")
-    public ResponseEntity<String> hentEnsligForsorgerBruker(@RequestBody AdminAktorIdRequest adminAktorIdRequest) {
-        sjekkTilgangTilAdmin();
-        try {
-            ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(adminAktorIdRequest.aktorId());
-            return ResponseEntity.ok("Innlastning av Ensligforsørger brukerdata er ferdig");
-        } catch (Exception e) {
-            secureLog.info("Ensligforsørger brukerdata: feil under innlastning av data på bruker: {}", adminAktorIdRequest.aktorId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Feil under innlasting av Ensligforsørger-data");
-        }
-    }
 
     @PostMapping("/hentEnsligForsorgerDataBatch")
     @Operation(summary = "Henter data om enslig forsorger for alle brukere", description = "Sjekker om bruker er enslig forsørger og henter data for alle brukere")
