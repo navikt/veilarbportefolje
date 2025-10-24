@@ -21,8 +21,7 @@ import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -90,10 +89,10 @@ public class PdlIdentRepositoryTest {
         );
         pdlIdentRepository.upsertIdenter(identer);
 
-        var historiskOppfolgingStart = new SisteOppfolgingsperiodeV1(null, historiskIdent.get(), ZonedDateTime.now(), null);
-        var nyOppfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
+        var historiskOppfolgingStart = genererStartetOppfolgingsperiode(historiskIdent, ZonedDateTime.now());
+        var nyOppfolgingStart = genererStartetOppfolgingsperiode(ident, ZonedDateTime.now());
 
-        var nyOppfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
+        var nyOppfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, nyOppfolgingStart.getOppfolgingsperiodeUuid());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(historiskOppfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(nyOppfolgingStart);
@@ -111,8 +110,8 @@ public class PdlIdentRepositoryTest {
                 new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
         pdlIdentRepository.upsertIdenter(identer);
-        var opfolgingStart = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), null);
-        var opfolgingAvslutt = new SisteOppfolgingsperiodeV1(null, ident.get(), ZonedDateTime.now(), ZonedDateTime.now());
+        var opfolgingStart = genererStartetOppfolgingsperiode(ident);
+        var opfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, opfolgingStart.getOppfolgingsperiodeUuid());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);

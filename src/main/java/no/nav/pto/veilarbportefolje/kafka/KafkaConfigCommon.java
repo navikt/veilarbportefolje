@@ -20,6 +20,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
@@ -107,7 +108,8 @@ public class KafkaConfigCommon {
 
         CV_TOPIC("teampam.samtykke-status-1"),
 
-        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+//        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+        SISTE_OPPFOLGINGS_PERIODE_V2("poao.siste-oppfolgingsperiode-v2"),
 
         // Arbeidssøkerregisteret
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
@@ -359,14 +361,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV1>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV2Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.OPPFOLGING_PERIODE.topicName,
+                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V2.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
+                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV2Dto.class),
                                         oppfolgingPeriodeService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()

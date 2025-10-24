@@ -48,8 +48,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.generateJWT;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +93,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -173,7 +171,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -212,7 +210,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new  NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -250,7 +248,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -293,7 +291,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -602,7 +600,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity2 = OppfolgingsbrukerEntity.builder()
@@ -610,7 +608,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2, new  NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID_2), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(
@@ -643,7 +641,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity1, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID), VeilederId.of(TEST_VEILEDERIDENT));
         OppfolgingsbrukerEntity oppfolgingsbrukerEntity2 = OppfolgingsbrukerEntity.builder()
@@ -651,7 +649,7 @@ class ArbeidslisteIntegrationTest {
                 .nav_kontor(TEST_ENHETSID)
                 .endret_dato(ZonedDateTime.now().minusDays(10))
                 .build();
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity2, new NavKontor(TEST_ENHETSID));
         oppfolgingRepositoryV2.settUnderOppfolging(AktorId.of(TEST_AKTORID_2), ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(AktorId.of(TEST_AKTORID_2), VeilederId.of(TEST_VEILEDERIDENT));
         ArbeidslisteRepositoryV2Test.insertArbeidsliste(ArbeidslisteDTO.of(

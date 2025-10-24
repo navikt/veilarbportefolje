@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -69,18 +70,18 @@ public class BrukerRepositoryV2Test {
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
-                        "0000", null, null,
-                        null, ZonedDateTime.now().minusDays(1)));
+                        "9999", null, null,
+                        null, ZonedDateTime.now().minusDays(1)), new NavKontor("0000"));
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
-                        "0000", null, null,
-                        null, ZonedDateTime.now()));
+                        "9999", null, null,
+                        null, ZonedDateTime.now()), new NavKontor("0000"));
         List<OppfolgingsBruker> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
-                        "0001", null, null,
-                        null, ZonedDateTime.now()));
+                        "9999", null, null,
+                        null, ZonedDateTime.now()), new NavKontor("0001"));
         List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
 

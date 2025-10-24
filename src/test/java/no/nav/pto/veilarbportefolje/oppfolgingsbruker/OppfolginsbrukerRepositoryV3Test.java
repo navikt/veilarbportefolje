@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,10 +49,10 @@ public class OppfolginsbrukerRepositoryV3Test {
         OppfolgingsbrukerEntity old_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1),
                 "1002", "ORG", "OP", "TES", now().minusDays(5));
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg, new NavKontor(msg.nav_kontor()));
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(old_msg);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(old_msg,  new NavKontor(old_msg.nav_kontor()));
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isNotEqualTo(old_msg);
     }
 
@@ -62,10 +63,10 @@ public class OppfolginsbrukerRepositoryV3Test {
                 "1001", "ORG", "OP", "TES", now().minusDays(5));
         OppfolgingsbrukerEntity new_msg = new OppfolgingsbrukerEntity(fnr.get(), "TEST", now().minusDays(1), "1001", "ORG", "OP", "TES", now());
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg, new NavKontor(msg.nav_kontor()));
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
 
-        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(new_msg);
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(new_msg, new NavKontor(new_msg.nav_kontor()));
         assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(new_msg);
     }
 
@@ -90,7 +91,8 @@ public class OppfolginsbrukerRepositoryV3Test {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
                         null,
-                         now()));
+                         now()),
+                new NavKontor("0000"));
         skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
     }
 }

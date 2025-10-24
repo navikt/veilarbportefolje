@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -42,7 +44,7 @@ public class OppfolgingsbrukerRepositoryV3 {
     private final NamedParameterJdbcTemplate dbNamed;
 
     @Transactional
-    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
+    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker, NavKontor navKontor) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.fodselsnr() == null) {
             return 0;
         }
@@ -51,7 +53,10 @@ public class OppfolgingsbrukerRepositoryV3 {
         if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
             return 0;
         }
-        return upsert(oppfolgingsbruker);
+
+        var rowsChanged = upsert(oppfolgingsbruker);
+        if (navKontor != null) settNavKontor(oppfolgingsbruker.fodselsnr(), navKontor);
+        return rowsChanged;
     }
 
     public int slettOppfolgingsbruker(Fnr fnr) {
@@ -68,22 +73,30 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
-        String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
+        String fnrsCondition = fnrs.stream()
+                .map(Fnr::toString)
+                .collect(Collectors.joining(",", "{", "}"));
         String sql = """
-                                SELECT DISTINCT ON (bi1.ident)
-                                     bi1.ident as oppslag_fnr, ob.*
-                                FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
-                                INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (?::varchar[])
-                                INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
-                                WHERE ob.fodselsnr = bi2.ident
-                                AND bi2.gruppe = ?
+                        SELECT DISTINCT ON (bi1.ident)
+                             bi1.ident as oppslag_fnr, ob.*
+                        FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
+                        INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (:identer::varchar[])
+                        INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
+                        LEFT JOIN ao_kontor on ao_kontor.ident = bi2.ident
+                        WHERE ob.fodselsnr = bi2.ident
+                        AND bi2.gruppe = :gruppe
                 """;
 
-        return db.query(sql,
-                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbrukerMedOppslagFnr,
-                        fnrsCondition,
-                        PDLIdent.Gruppe.FOLKEREGISTERIDENT.name())
-                .stream().filter(Objects::nonNull).collect(Collectors.toMap(
+        return dbNamed.query(
+                        sql,
+                        new MapSqlParameterSource()
+                                .addValue("identer", fnrsCondition)
+                                .addValue("gruppe", PDLIdent.Gruppe.FOLKEREGISTERIDENT.name()),
+                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbrukerMedOppslagFnr
+                )
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(
                         OppfolgingsbrukerEntityMedOppslagFnr::oppslagFnr,
                         OppfolgingsbrukerEntityMedOppslagFnr::oppfolgingsbrukerEntity)
                 );
@@ -99,9 +112,19 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
-        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
+        String sql = """
+            SELECT * FROM BRUKER_IDENTER initiellIdent
+            INNER JOIN BRUKER_IDENTER alleIdenter on alleIdenter.person = initiellIdent.person
+            JOIN OPPFOLGINGSBRUKER_ARENA_V2 on alleIdenter.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
+            LEFT JOIN ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
+            WHERE initiellIdent = :ident
+        """;
         return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, fnr.get()))
+                queryForObjectOrNull(() -> dbNamed.queryForObject(
+                        sql,
+                        new MapSqlParameterSource().addValue("ident", fnr.get()),
+                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker
+                ))
         );
     }
 
@@ -113,29 +136,36 @@ public class OppfolgingsbrukerRepositoryV3 {
         );
     }
 
+    public int settNavKontor(String fodselsnr, NavKontor navKontor) {
+        var params = new HashMap<String, String>();
+        params.put("navKontor", navKontor.getValue());
+        params.put("ident", fodselsnr);
+        return dbNamed.update("""
+                    UPDATE ao_kontor
+                    SET kontor_id = :navKontor 
+                    where ident = :ident
+                """, params);
+    }
+
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
         return db.update("""
                         INSERT INTO oppfolgingsbruker_arena_v2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
-                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
                         hovedmaalkode,
                         endret_dato)
                         VALUES(?,?,?,?,?,?,?,?)
                         ON CONFLICT (fodselsnr) DO UPDATE SET(
                         formidlingsgruppekode, iserv_fra_dato,
-                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
                         hovedmaalkode,
                         endret_dato)
                         = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
-                        excluded.nav_kontor,
                         excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
                         excluded.hovedmaalkode,
                         excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(),
                 toTimestamp(oppfolgingsbruker.endret_dato())
@@ -152,9 +182,13 @@ public class OppfolgingsbrukerRepositoryV3 {
         if (rs == null || rs.getString(FODSELSNR) == null) {
             return null;
         }
-        return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
+        return new OppfolgingsbrukerEntity(
+                rs.getString(FODSELSNR),
+                rs.getString(FORMIDLINGSGRUPPEKODE),
                 toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
-                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
+                rs.getString(NAV_KONTOR),
+                rs.getString(KVALIFISERINGSGRUPPEKODE),
+                rs.getString(RETTIGHETSGRUPPEKODE),
                 rs.getString(HOVEDMAALKODE),
                 toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
@@ -180,10 +214,14 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+        val params = new MapSqlParameterSource()
+                .addValue("ident", fnr.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
-                        () -> db.queryForObject("select nav_kontor from oppfolgingsbruker_arena_v2 where fodselsnr = ?",
-                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("nav_kontor")), fnr.get())
+                        () -> dbNamed.queryForObject(
+                                "select kontor_id from ao_kontor where ident = :ident",
+                                params,
+                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
     }
 }
