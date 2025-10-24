@@ -154,7 +154,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         kvalifiseringsgruppekode, rettighetsgruppekode,
                         hovedmaalkode,
                         endret_dato)
-                        VALUES(?,?,?,?,?,?,?,?)
+                        VALUES(?,?,?,?,?,?,?)
                         ON CONFLICT (fodselsnr) DO UPDATE SET(
                         formidlingsgruppekode, iserv_fra_dato,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
