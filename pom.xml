@@ -194,7 +194,7 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
-            <version>7.9.0</version>
+            <version>8.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
