@@ -15,6 +15,10 @@ import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.PersonId
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteEndringsType
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1
@@ -81,33 +85,54 @@ object TestDataUtils {
     @JvmOverloads
     fun genererStartetOppfolgingsperiode(
         aktorId: AktorId,
-        startDato: ZonedDateTime? = tilfeldigDatoTilbakeITid()
-    ): SisteOppfolgingsperiodeV1 {
-        return SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktorId.get(), startDato, null)
+        startDato: ZonedDateTime? = tilfeldigDatoTilbakeITid(),
+        oppfolgingsperiodeId: UUID = UUID.randomUUID(),
+    ): GjeldendeOppfolgingsperiodeV2Dto {
+        return GjeldendeOppfolgingsperiodeV2Dto(
+            oppfolgingsperiodeId,
+            startDato!!,
+            "2020",
+            "Nav Obo",
+            aktorId.get(),
+            randomFnr().get(),
+            SisteEndringsType.OPPFOLGING_STARTET,
+            ZonedDateTime.now()
+        )
     }
 
+    /* Java does not work with default args so have to make an overloaded function in addition to default args */
     @JvmStatic
-    fun genererAvsluttetOppfolgingsperiode(aktorId: AktorId): SisteOppfolgingsperiodeV1 {
-        val periode = genererStartetOppfolgingsperiode(aktorId)
-        return SisteOppfolgingsperiodeV1(
-            periode.uuid,
+    fun genererAvsluttetOppfolgingsperiode(aktorId: AktorId) = genererAvsluttetOppfolgingsperiode(aktorId, UUID.randomUUID())
+
+    @JvmStatic
+    fun genererAvsluttetOppfolgingsperiode(
+        aktorId: AktorId,
+        oppfolgingsperiodeId: UUID = UUID.randomUUID(),
+    ): AvsluttetOppfolgingsperiodeV2 {
+        val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeId = oppfolgingsperiodeId)
+        return AvsluttetOppfolgingsperiodeV2(
+            oppfolgingsperiodeId,
+            periode.startTidspunkt,
+            tilfeldigSenereDato(periode.startTidspunkt),
             aktorId.get(),
-            periode.startDato,
-            tilfeldigSenereDato(periode.startDato)
+            periode.ident,
+            ZonedDateTime.now()
         )
     }
 
     @JvmStatic
     @JvmOverloads
     fun genererSluttdatoForOppfolgingsperiode(
-        periode: SisteOppfolgingsperiodeV1,
-        sluttDato: ZonedDateTime? = tilfeldigSenereDato(periode.startDato)
-    ): SisteOppfolgingsperiodeV1 {
-        return SisteOppfolgingsperiodeV1(
-            periode.uuid,
+        periode: GjeldendeOppfolgingsperiodeV2Dto,
+        sluttDato: ZonedDateTime? = tilfeldigSenereDato(periode.startTidspunkt)
+    ): AvsluttetOppfolgingsperiodeV2 {
+        return AvsluttetOppfolgingsperiodeV2(
+            periode.oppfolgingsperiodeUuid,
+            periode.startTidspunkt,
+            sluttDato!!,
             periode.aktorId,
-            periode.startDato,
-            sluttDato
+            periode.ident,
+            ZonedDateTime.now()
         )
     }
 

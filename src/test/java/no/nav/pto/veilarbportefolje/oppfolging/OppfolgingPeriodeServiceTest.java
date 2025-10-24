@@ -1,13 +1,17 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
+
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererAvsluttetOppfolgingsperiode;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode;
 
 public class OppfolgingPeriodeServiceTest {
     private OppfolgingStartetService oppfolgingStartetService;
@@ -25,22 +29,22 @@ public class OppfolgingPeriodeServiceTest {
     public void testOppfolgingStart() {
         String aktorId = "111111";
         ZonedDateTime startOppfolgingDate = ZonedDateTime.now();
-        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiode = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktorId, startOppfolgingDate, null);
+        GjeldendeOppfolgingsperiodeV2Dto sisteOppfolgingsperiode = genererStartetOppfolgingsperiode(AktorId.of(aktorId), startOppfolgingDate);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
-        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate);
+        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, null);
         Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(AktorId.of(aktorId));
     }
 
     @Test
     public void testOppfolgingAvslutt() {
         String aktorId = "111111";
-        ZonedDateTime startOppfolgingDate = ZonedDateTime.now().minusDays(2);
-        ZonedDateTime sluttOppfolgingDate = ZonedDateTime.now();
-        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiode = new SisteOppfolgingsperiodeV1(UUID.randomUUID(), aktorId, startOppfolgingDate, sluttOppfolgingDate);
+
+        AvsluttetOppfolgingsperiodeV2 sisteOppfolgingsperiode = genererAvsluttetOppfolgingsperiode(AktorId.of(aktorId));
+        ZonedDateTime startOppfolgingDate = sisteOppfolgingsperiode.getStartTidspunkt();
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
-        Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate);
+        Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, null);
         Mockito.verify(oppfolgingAvsluttetService, Mockito.times(1)).avsluttOppfolging(AktorId.of(aktorId));
     }
 }

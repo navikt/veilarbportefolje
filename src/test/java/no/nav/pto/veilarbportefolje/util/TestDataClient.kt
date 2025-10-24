@@ -183,9 +183,10 @@ class TestDataClient(
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
                 fnr.get(), null, null,
-                navKontor.value, null, null, null,
+                "9999", null, null, null,
                 ZonedDateTime.now()
-            )
+            ),
+            navKontor
         )
         opensearchTestClient.createUserInOpensearch(aktoerId)
     }

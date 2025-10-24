@@ -144,7 +144,7 @@ public class PostgresTable {
         public static final String FODSELSNR = "FODSELSNR";
         public static final String FORMIDLINGSGRUPPEKODE = "FORMIDLINGSGRUPPEKODE";
         public static final String ISERV_FRA_DATO = "ISERV_FRA_DATO";
-        public static final String NAV_KONTOR = "NAV_KONTOR";
+        public static final String NAV_KONTOR = "kontor_id";
         public static final String KVALIFISERINGSGRUPPEKODE = "KVALIFISERINGSGRUPPEKODE";
         public static final String RETTIGHETSGRUPPEKODE = "RETTIGHETSGRUPPEKODE";
         public static final String HOVEDMAALKODE = "HOVEDMAALKODE";

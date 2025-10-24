@@ -56,10 +56,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
                 .orElse(null);
 
-        Fnr fnr = Fnr.of(fodselsnummer);
-        EnhetId enhetForBruker = EnhetId.of(kafkaMelding.getOppfolgingsenhet());
-        oppdaterEnhetVedKontorbytteHuskelappFargekategoriArbeidsliste(fnr, enhetForBruker);
-
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
                 fodselsnummer,
                 kafkaMelding.getFormidlingsgruppe().name(),
@@ -69,14 +65,12 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
                 kafkaMelding.getSistEndretDato());
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker, null);
 
         brukerServiceV2.hentAktorId(Fnr.of(fodselsnummer))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-
                     opensearchIndexer.indekser(id);
-
                 });
     }
 
@@ -102,7 +96,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
         }
     }
 
-    public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
+    public void hentOgLagreOppfolgingsbruker(AktorId aktorId, NavKontor navKontor) {
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         Optional<OppfolgingsbrukerDTO> oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr);
@@ -116,14 +110,14 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 oppfolgingsbrukerDTO.get().getFodselsnr(),
                 oppfolgingsbrukerDTO.get().getFormidlingsgruppekode(),
                 oppfolgingsbrukerDTO.get().getIservFraDato(),
-                oppfolgingsbrukerDTO.get().getNavKontor(),
+                navKontor.getValue(),
                 oppfolgingsbrukerDTO.get().getKvalifiseringsgruppekode(),
                 oppfolgingsbrukerDTO.get().getRettighetsgruppekode(),
                 oppfolgingsbrukerDTO.get().getHovedmaalkode(),
                 oppfolgingsbrukerDTO.get().getSistEndretDato()
         );
 
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity, navKontor);
         secureLog.info("Oppfolgingsbruker hentet og lagret for aktorId: {} / fnr: {}.", aktorId, fnr);
     }
 

@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.EnhetTiltak;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -176,7 +177,9 @@ public class TiltakPostgresTest {
         ));
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null, navKontor,
-                         null, null, null, ZonedDateTime.now()));
+                         null, null, null, ZonedDateTime.now()),
+                new NavKontor(navKontor)
+        );
         String tiltaksType1 = "T123";
         String tiltaksType2 = "T321";
         String tiltaksNavn1 = "test1";

@@ -381,7 +381,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr.get(), null, null,
                         navKontor.getValue(), null, null,
-                        null, ZonedDateTime.now()));
+                        null, ZonedDateTime.now()), navKontor);
         skjermingRepository.settSkjerming(Fnr.of(fnr.get()), true);
     }
 
