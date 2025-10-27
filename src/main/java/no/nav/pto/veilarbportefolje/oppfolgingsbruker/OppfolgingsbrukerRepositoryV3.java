@@ -118,7 +118,7 @@ public class OppfolgingsbrukerRepositoryV3 {
         String sql = """
             SELECT 
                 OPPFOLGINGSBRUKER_ARENA_V2.*,
-                coalesce(ao_kontor.kontor_id, ob.nav_kontor) as kontor_id
+                coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.nav_kontor) as kontor_id
             FROM BRUKER_IDENTER initiellIdent
             INNER JOIN BRUKER_IDENTER alleIdenter on alleIdenter.person = initiellIdent.person
             JOIN OPPFOLGINGSBRUKER_ARENA_V2 on alleIdenter.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
