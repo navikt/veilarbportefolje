@@ -28,20 +28,12 @@ public class HuskelappStats implements MeterBinder {
     private final LeaderElectionClient leaderElection;
 
     private MultiGauge huskelapp_stats;
-    private MultiGauge arbeidsliste_stats;
-
 
     @Override
     public void bindTo(@NonNull MeterRegistry meterRegistry) {
         if (huskelapp_stats == null) {
             huskelapp_stats = MultiGauge.builder("huskelapp_antall")
                     .description("The number of active huskelapper")
-                    .register(meterRegistry);
-        }
-
-        if (arbeidsliste_stats == null) {
-            arbeidsliste_stats = MultiGauge.builder("arbeidsliste_antall")
-                    .description("The number of active arbeidsliste")
                     .register(meterRegistry);
         }
     }
@@ -69,26 +61,4 @@ public class HuskelappStats implements MeterBinder {
         }
     }
 
-    @Scheduled(initialDelay = 1, fixedRate = 5, timeUnit = TimeUnit.MINUTES)
-    public void oppdaterArbeidslisteMetrikk() {
-        try {
-            if (leaderElection.isLeader()) {
-                String query = String.format("select %s, count(*) as arbeidsliste_antall from %s group by %s;", PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE, PostgresTable.ARBEIDSLISTE.TABLE_NAME, PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE);
-                Map<String, Integer> arbeidslisteAntall = dbReadOnly.query(query, rs -> {
-                            Map<String, Integer> stats = new HashMap<>();
-                            while (rs.next()) {
-                                stats.put(rs.getString(PostgresTable.ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE), rs.getInt("arbeidsliste_antall"));
-                            }
-                            return stats;
-                        }
-                );
-                if (arbeidslisteAntall != null) {
-                    log.info("Updating arbeidsliste stats");
-                    arbeidsliste_stats.register(arbeidslisteAntall.entrySet().stream().map(entry -> MultiGauge.Row.of(Tags.of("enhetId", entry.getKey()), entry.getValue())).collect(Collectors.toList()), true);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Can not fetch huskelapp and arbeidsliste metrics " + e, e);
-        }
-    }
 }

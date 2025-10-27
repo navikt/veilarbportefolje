@@ -553,7 +553,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         val testBruker2 = OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
             .setOppfolging(true).setEnhet_id(TEST_ENHET).setVeileder_id(TEST_VEILEDER_0)
             .setFormidlingsgruppekode("IARBS").setKvalifiseringsgruppekode("BATT").setAktiviteter(setOf("egen"))
-            .setArbeidsliste_aktiv(true).setNy_for_veileder(true).setTrenger_vurdering(true)
+            .setNy_for_veileder(true).setTrenger_vurdering(true)
             .setVenterpasvarfranav("2018-05-09T22:00:00Z").setNyesteutlopteaktivitet("2018-05-09T22:00:00Z")
             .setHuskelapp(null).setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name)
             .setFargekategori_enhetId(TEST_ENHET)

@@ -12,11 +12,9 @@ import org.json.JSONObject;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
-import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
-import org.opensearch.core.xcontent.XContentBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -26,7 +24,6 @@ import java.util.function.Supplier;
 import static java.lang.System.currentTimeMillis;
 import static no.nav.common.json.JsonUtils.toJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
 @Slf4j
 public class OpensearchTestClient {
@@ -136,18 +133,4 @@ public class OpensearchTestClient {
         return currentTimeMillis() - t0 > 12_000;
     }
 
-    @SneakyThrows
-    public void oppdaterArbeidsliste(AktorId aktoerId, boolean isAktiv) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("arbeidsliste_aktiv", isAktiv)
-                .endObject();
-
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(indexName.getValue());
-        updateRequest.id(aktoerId.toString());
-        updateRequest.doc(content);
-
-        restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
-    }
 }

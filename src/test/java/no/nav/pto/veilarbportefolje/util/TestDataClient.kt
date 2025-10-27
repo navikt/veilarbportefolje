@@ -1,11 +1,7 @@
 package no.nav.pto.veilarbportefolje.util
 
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity
@@ -14,8 +10,6 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
-import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository
-import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3
@@ -38,79 +32,16 @@ import java.util.*
 class TestDataClient(
     private val jdbcTemplatePostgres: JdbcTemplate,
     private val oppfolgingsbrukerRepository: OppfolgingsbrukerRepositoryV3,
-    private val arbeidslisteRepositoryV2: ArbeidslisteRepositoryV2,
     private val opensearchTestClient: OpensearchTestClient,
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val pdlIdentRepository: PdlIdentRepository,
     private val pdlPersonRepository: PdlPersonRepository,
-    private val huskelappRepository: HuskelappRepository
 ) {
     fun upsertBrukerregistreringV1(aktorId: AktorId) {
         jdbcTemplatePostgres.update("""
                         INSERT INTO BRUKER_REGISTRERING (AKTOERID) VALUES (?)
                         ON CONFLICT (AKTOERID) DO NOTHING
         """.trimIndent(), aktorId.get())
-    }
-
-    fun endreNavKontorForBruker(aktoerId: AktorId, navKontor: NavKontor) {
-        jdbcTemplatePostgres.update(
-            """
-                        update oppfolgingsbruker_arena_v2 set nav_kontor = ?
-                        where fodselsnr = (select fnr from aktive_identer where aktorId = ?)
-                        
-                        """.trimIndent(),
-            navKontor.value, aktoerId.get()
-        )
-    }
-
-    fun setupBrukerMedArbeidsliste(
-        aktoerId: AktorId,
-        navKontor: NavKontor,
-        veilederId: VeilederId,
-        startDato: ZonedDateTime
-    ) {
-        val fnr = randomFnr()
-        pdlIdentRepository.upsertIdenter(
-            listOf(
-                PDLIdent(aktoerId.get(), false, Gruppe.AKTORID),
-                PDLIdent(fnr.get(), false, Gruppe.FOLKEREGISTERIDENT)
-            )
-        )
-        arbeidslisteRepositoryV2.insertArbeidsliste(
-            ArbeidslisteDTO(fnr)
-                .setAktorId(aktoerId)
-                .setNavKontorForArbeidsliste(navKontor.value)
-                .setVeilederId(veilederId)
-                .setKategori(Arbeidsliste.Kategori.GUL)
-        )
-
-        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null)
-        opensearchTestClient.oppdaterArbeidsliste(aktoerId, true)
-    }
-
-    fun setupBrukerMedHuskelapp(
-        aktoerId: AktorId,
-        navKontor: NavKontor,
-        veilederId: VeilederId,
-        startDato: ZonedDateTime
-    ) {
-        val fnr = randomFnr()
-        pdlIdentRepository.upsertIdenter(
-            listOf(
-                PDLIdent(aktoerId.get(), false, Gruppe.AKTORID),
-                PDLIdent(fnr.get(), false, Gruppe.FOLKEREGISTERIDENT)
-            )
-        )
-        huskelappRepository.opprettHuskelapp(
-            HuskelappOpprettRequest(
-                fnr,
-                LocalDate.now(),
-                "test"
-            ), veilederId, EnhetId.of(navKontor.value)
-        )
-
-        lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, startDato, null)
-        opensearchTestClient.oppdaterArbeidsliste(aktoerId, true)
     }
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
@@ -153,10 +84,6 @@ class TestDataClient(
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, navKontor: NavKontor, veilederId: VeilederId) {
         lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now(), null)
-    }
-
-    fun hentUnderOppfolgingOgAktivIdent(aktoerId: AktorId?): Boolean {
-        return oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)
     }
 
     private fun lagreBrukerUnderOppfolging(
