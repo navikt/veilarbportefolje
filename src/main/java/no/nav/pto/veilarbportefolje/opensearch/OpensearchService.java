@@ -106,7 +106,7 @@ public class OpensearchService {
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
-        List<Bruker> brukere = response.hits().getHits().stream()
+        List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
                 .collect(toList());
@@ -206,8 +206,8 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
-        Bruker bruker = Bruker.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
+    private PortefoljebrukerFrontendModell mapOppfolgingsBrukerTilBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
+        PortefoljebrukerFrontendModell bruker = PortefoljebrukerFrontendModell.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);

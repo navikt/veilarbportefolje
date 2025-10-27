@@ -144,8 +144,8 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         Assertions.assertThat(response.antall).isEqualTo(2)
 
-        val ufordeltBruker: Bruker = response.brukere.stream()
-            .filter { b: Bruker -> TEST_VEILEDER_1 == b.veilederId }
+        val ufordeltBruker: PortefoljebrukerFrontendModell = response.brukere.stream()
+            .filter { b: PortefoljebrukerFrontendModell -> TEST_VEILEDER_1 == b.veilederId }
             .toList().first()
 
         Assertions.assertThat(ufordeltBruker.isNyForEnhet).isTrue()
@@ -1168,7 +1168,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             null,
             null
         )
-        val bruker: Bruker = respons.brukere.first()
+        val bruker: PortefoljebrukerFrontendModell = respons.brukere.first()
         val utgattVarsel = bruker.utgattVarsel
 
         Assertions.assertThat(respons.antall).isEqualTo(1)
@@ -1179,11 +1179,11 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     }
 
     private fun veilederExistsInResponse(veilederId: String, brukere: BrukereMedAntall): Boolean {
-        return brukere.brukere.stream().anyMatch { bruker: Bruker -> veilederId == bruker.veilederId }
+        return brukere.brukere.stream().anyMatch { bruker: PortefoljebrukerFrontendModell -> veilederId == bruker.veilederId }
     }
 
     private fun userExistsInResponse(bruker: PortefoljebrukerOpensearchModell, brukere: BrukereMedAntall): Boolean {
-        return brukere.brukere.stream().anyMatch { b: Bruker -> bruker.fnr == b.fnr }
+        return brukere.brukere.stream().anyMatch { b: PortefoljebrukerFrontendModell -> bruker.fnr == b.fnr }
     }
 
     private fun facetResultCountForVeileder(testVeileder1: String, portefoljestorrelser: FacetResults): Long {

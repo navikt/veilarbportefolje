@@ -9,9 +9,9 @@ import java.util.List;
 @Accessors(chain = true)
 public class BrukereMedAntall {
     private final int antall;
-    private final List<Bruker> brukere;
+    private final List<PortefoljebrukerFrontendModell> brukere;
 
-    public BrukereMedAntall(int antall, List<Bruker> brukere) {
+    public BrukereMedAntall(int antall, List<PortefoljebrukerFrontendModell> brukere) {
         this.antall = antall;
         this.brukere = brukere;
     }

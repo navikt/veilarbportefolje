@@ -406,36 +406,36 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(12)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode6Bruker0, true),
-            Bruker.of(kode6Bruker1, true),
-            Bruker.of(kode6Bruker2, true),
-            Bruker.of(kode6Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode6Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker3, true)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7Bruker0, true),
-            Bruker.of(kode7Bruker1, true),
-            Bruker.of(kode7Bruker2, true),
-            Bruker.of(kode7Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker3, true)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(egenAnsattBruker0, true),
-            Bruker.of(egenAnsattBruker1, true),
-            Bruker.of(egenAnsattBruker2, true),
-            Bruker.of(egenAnsattBruker3, true)
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7Bruker0, true),
-            Bruker.of(kode7Bruker1, true),
-            Bruker.of(kode7Bruker2, true),
-            Bruker.of(kode7Bruker3, true),
-            Bruker.of(egenAnsattBruker0, true),
-            Bruker.of(egenAnsattBruker1, true),
-            Bruker.of(egenAnsattBruker2, true),
-            Bruker.of(egenAnsattBruker3, true),
-            Bruker.of(egenAnsattOgKode7Bruker0, true),
-            Bruker.of(egenAnsattOgKode7Bruker1, true),
-            Bruker.of(egenAnsattOgKode7Bruker2, true),
-            Bruker.of(egenAnsattOgKode7Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker3, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker3, true)
         )
     }
 
@@ -516,18 +516,18 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(3)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode6BrukerMedVeileder0Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode6BrukerMedVeileder0Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7BrukerMedVeileder1Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder1Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(egenAnsattBrukerMedVeileder2Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder2Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7BrukerMedVeileder3Tilordnet, false),
-            Bruker.of(egenAnsattBrukerMedVeileder3Tilordnet, false),
-            Bruker.of(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder3Tilordnet, false),
+            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder3Tilordnet, false),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false)
         )
     }
 

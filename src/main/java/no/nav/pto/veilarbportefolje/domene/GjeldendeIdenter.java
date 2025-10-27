@@ -12,7 +12,7 @@ public class GjeldendeIdenter {
     Fnr fnr;
     AktorId aktorId;
 
-    public static GjeldendeIdenter of(Bruker bruker) {
+    public static GjeldendeIdenter of(PortefoljebrukerFrontendModell bruker) {
         return GjeldendeIdenter.builder().aktorId(AktorId.of(bruker.getAktoerid())).fnr(Fnr.of(bruker.getFnr())).build();
     }
 

@@ -47,7 +47,7 @@ public class VeilederController {
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), validertSorteringsrekkefolge, validertSorteringsfelt, filtervalg, fra, antall);
-        List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
+        List<PortefoljebrukerFrontendModell> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                 sensurerteBrukereSublist,

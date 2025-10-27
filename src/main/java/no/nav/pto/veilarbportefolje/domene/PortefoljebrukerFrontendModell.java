@@ -31,7 +31,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Accessors(chain = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Bruker {
+public class PortefoljebrukerFrontendModell {
     String fnr;
     String aktoerid;
     String fornavn;
@@ -101,7 +101,7 @@ public class Bruker {
     GjeldendeVedtak14a gjeldendeVedtak14a;
     Hendelse.HendelseInnhold utgattVarsel;
 
-    public static Bruker of(PortefoljebrukerOpensearchModell bruker, boolean ufordelt) {
+    public static PortefoljebrukerFrontendModell of(PortefoljebrukerOpensearchModell bruker, boolean ufordelt) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
@@ -115,7 +115,7 @@ public class Bruker {
 
         boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
 
-        return new Bruker()
+        return new PortefoljebrukerFrontendModell()
                 .setNyForEnhet(ufordelt)
                 .setFnr(bruker.getFnr())
                 .setAktoerid(bruker.getAktoer_id())
@@ -240,7 +240,7 @@ public class Bruker {
         return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt));
     }
 
-    private Bruker addAvtaltAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+    private PortefoljebrukerFrontendModell addAvtaltAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
         if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
             return this;
         }

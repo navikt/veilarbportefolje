@@ -495,7 +495,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(3)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(listOf(bruker1.fnr, bruker3.fnr, bruker6.fnr))
         )
         response.brukere.forEach { bruker ->
@@ -555,7 +555,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(4)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(listOf(bruker1BU.fnr, bruker3B67U.fnr, bruker2B7U.fnr, bruker2BU7.fnr))
         )
 
@@ -617,7 +617,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(7)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,
@@ -694,7 +694,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(6)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,
@@ -771,7 +771,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(8)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,

@@ -277,7 +277,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         Assertions.assertThat(response.antall).isEqualTo(3)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(bruker2.fnr, bruker3.fnr, bruker4.fnr)
                 )
@@ -299,7 +299,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(bruker5.fnr, bruker6.fnr)
                 )

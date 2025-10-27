@@ -191,7 +191,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         Assertions.assertThat(response.brukere)
             .hasSize(2)
-            .extracting<Avvik14aVedtak, RuntimeException> { obj: Bruker -> obj.avvik14aVedtak }
+            .extracting<Avvik14aVedtak, RuntimeException> { obj: PortefoljebrukerFrontendModell -> obj.avvik14aVedtak }
             .containsExactlyInAnyOrder(
                 Avvik14aVedtak.INNSATSGRUPPE_ULIK,
                 Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK
@@ -257,7 +257,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         Assertions.assertThat(response.brukere)
             .hasSize(5)
-            .extracting<Avvik14aVedtak, RuntimeException> { obj: Bruker -> obj.avvik14aVedtak }
+            .extracting<Avvik14aVedtak, RuntimeException> { obj: PortefoljebrukerFrontendModell -> obj.avvik14aVedtak }
             .containsOnly(Avvik14aVedtak.INGEN_AVVIK)
     }
 
@@ -369,7 +369,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(respons.antall).isEqualTo(1)
-        val brukerFraOpenSearch: Bruker = respons.brukere.first()
+        val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerMedSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerMedSiste14aVedtakAktorId.get())
         val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
@@ -430,7 +430,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(respons.antall).isEqualTo(1)
-        val brukerFraOpenSearch: Bruker = respons.brukere.first()
+        val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerUtenSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerUtenSiste14aVedtakAktorId.get())
         val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
