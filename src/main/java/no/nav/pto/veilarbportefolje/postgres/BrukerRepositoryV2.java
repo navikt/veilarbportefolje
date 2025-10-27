@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
@@ -94,12 +93,6 @@ public class BrukerRepositoryV2 {
                                UTKAST_14A_STATUS.VEDTAKSTATUS                           as UTKAST_14A_STATUS_VEDTAKSTATUS,
                                UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                                UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
-                               ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT                as ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT,
-                               ARBEIDSLISTE.ENDRINGSTIDSPUNKT                           as ARBEIDSLISTE_ENDRINGSTIDSPUNKT,
-                               ARBEIDSLISTE.OVERSKRIFT                                  as ARBEIDSLISTE_OVERSKRIFT,
-                               ARBEIDSLISTE.FRIST                                       as ARBEIDSLISTE_FRIST,
-                               ARBEIDSLISTE.KATEGORI                                    as ARBEIDSLISTE_KATEGORI,
-                               ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE                 as ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE,
                                BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
                                BRUKER_CV.HAR_DELT_CV                                    as BRUKER_CV_HAR_DELT_CV,
                                BRUKER_CV.CV_EKSISTERER                                  as BRUKER_CV_CV_EKSISTERER,
@@ -138,7 +131,6 @@ public class BrukerRepositoryV2 {
                                  left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
                                  left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
-                                 left join ARBEIDSLISTE                                 on ARBEIDSLISTE.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_PROFILERING                           on BRUKER_PROFILERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_CV                                    on BRUKER_CV.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
@@ -242,35 +234,6 @@ public class BrukerRepositoryV2 {
         setBrukersSituasjon(bruker, rs);
         setAapKelvin(bruker, rs);
         setTiltakspenger(bruker, rs);
-
-        String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_ENDRINGSTIDSPUNKT));
-        if (arbeidslisteTidspunkt != null) {
-            String fargekategoriFraFargekategoriTabell = rs.getString(FARGEKATEGORI_VERDI);
-            String fargekategoriFraArbeidslisteTabell = rs.getString(ARBEIDSLISTE_KATEGORI);
-            String resolvedFargekategori = fargekategoriFraFargekategoriTabell != null
-                    ? ArbeidslisteMapper.mapFraFargekategoriTilKategori(fargekategoriFraFargekategoriTabell).name()
-                    : fargekategoriFraArbeidslisteTabell;
-
-            bruker.setArbeidsliste_aktiv(true)
-                    .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
-                    .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_FRIST))).orElse(getFarInTheFutureDate()))
-                    .setArbeidsliste_kategori(resolvedFargekategori)
-                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT))
-                    .setNavkontor_for_arbeidsliste(rs.getString(ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE));
-            String overskrift = rs.getString(ARBEIDSLISTE_OVERSKRIFT);
-
-            bruker.setArbeidsliste_tittel_lengde(
-                    Optional.ofNullable(overskrift)
-                            .map(String::length)
-                            .orElse(0));
-            bruker.setArbeidsliste_tittel_sortering(
-                    Optional.ofNullable(overskrift)
-                            .filter(s -> !s.isEmpty())
-                            .map(s -> s.substring(0, Math.min(2, s.length())))
-                            .orElse(""));
-        } else {
-            bruker.setArbeidsliste_aktiv(false);
-        }
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(bruker, rs);

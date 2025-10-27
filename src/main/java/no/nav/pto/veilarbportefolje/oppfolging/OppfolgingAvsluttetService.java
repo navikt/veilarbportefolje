@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
@@ -31,7 +30,6 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingAvsluttetService {
-    private final ArbeidslisteService arbeidslisteService;
     private final HuskelappService huskelappService;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final CVRepositoryV2 cvRepositoryV2;
@@ -55,7 +53,6 @@ public class OppfolgingAvsluttetService {
         arbeidssokerRegistreringRepositoryV2.slettBrukerRegistrering(aktoerId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerProfilering(aktoerId);
         arbeidssokerRegistreringRepositoryV2.slettEndringIRegistrering(aktoerId);
-        arbeidslisteService.slettArbeidsliste(aktoerId, maybeFnr, "OppfolgingAvsluttetService, 'avsluttOppfolging(AktorId aktoerId)'");
         huskelappService.sletteAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         sisteEndringService.slettSisteEndringer(aktoerId);
         cvRepositoryV2.resetHarDeltCV(aktoerId);
