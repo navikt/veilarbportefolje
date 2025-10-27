@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -406,36 +406,36 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(12)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode6Bruker0, true),
-            Bruker.of(kode6Bruker1, true),
-            Bruker.of(kode6Bruker2, true),
-            Bruker.of(kode6Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode6Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode6Bruker3, true)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7Bruker0, true),
-            Bruker.of(kode7Bruker1, true),
-            Bruker.of(kode7Bruker2, true),
-            Bruker.of(kode7Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker3, true)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(egenAnsattBruker0, true),
-            Bruker.of(egenAnsattBruker1, true),
-            Bruker.of(egenAnsattBruker2, true),
-            Bruker.of(egenAnsattBruker3, true)
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7Bruker0, true),
-            Bruker.of(kode7Bruker1, true),
-            Bruker.of(kode7Bruker2, true),
-            Bruker.of(kode7Bruker3, true),
-            Bruker.of(egenAnsattBruker0, true),
-            Bruker.of(egenAnsattBruker1, true),
-            Bruker.of(egenAnsattBruker2, true),
-            Bruker.of(egenAnsattBruker3, true),
-            Bruker.of(egenAnsattOgKode7Bruker0, true),
-            Bruker.of(egenAnsattOgKode7Bruker1, true),
-            Bruker.of(egenAnsattOgKode7Bruker2, true),
-            Bruker.of(egenAnsattOgKode7Bruker3, true)
+            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(kode7Bruker3, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker0, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker1, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker2, true),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker3, true)
         )
     }
 
@@ -516,18 +516,18 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(3)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode6BrukerMedVeileder0Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode6BrukerMedVeileder0Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7BrukerMedVeileder1Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder1Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(egenAnsattBrukerMedVeileder2Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder2Tilordnet, false)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            Bruker.of(kode7BrukerMedVeileder3Tilordnet, false),
-            Bruker.of(egenAnsattBrukerMedVeileder3Tilordnet, false),
-            Bruker.of(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false)
+            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder3Tilordnet, false),
+            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder3Tilordnet, false),
+            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false)
         )
     }
 
@@ -538,7 +538,8 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         Mockito.doReturn(Deny("", "")).`when`(poaoTilgangWrapper).harVeilederTilgangTilKode7()
         Mockito.doReturn(Deny("", "")).`when`(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt()
 
-        val testBruker1 = OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
+        val testBruker1 = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
             .setOppfolging(true).setEnhet_id(TEST_ENHET).setVeileder_id(TEST_VEILEDER_0).setHuskelapp(
                 HuskelappForBruker(
                     LocalDate.now(),
@@ -550,7 +551,8 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
                 )
             ).setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name).setFargekategori_enhetId(TEST_ENHET)
 
-        val testBruker2 = OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
+        val testBruker2 = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
             .setOppfolging(true).setEnhet_id(TEST_ENHET).setVeileder_id(TEST_VEILEDER_0)
             .setFormidlingsgruppekode("IARBS").setKvalifiseringsgruppekode("BATT").setAktiviteter(setOf("egen"))
             .setNy_for_veileder(true).setTrenger_vurdering(true)
@@ -558,7 +560,8 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
             .setHuskelapp(null).setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name)
             .setFargekategori_enhetId(TEST_ENHET)
 
-        val inaktivBruker = OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
+        val inaktivBruker = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().toString())
             .setOppfolging(true).setEnhet_id(TEST_ENHET).setVeileder_id(TEST_VEILEDER_0)
             .setFormidlingsgruppekode("ISERV")
 
@@ -607,7 +610,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(statustall.tiltakshendelser).isZero()
     }
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 
@@ -649,9 +652,9 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
 
     private fun genererRandomBruker(
         enhet: String, veilederId: String?, diskresjonskode: String?, egenAnsatt: Boolean
-    ): OppfolgingsBruker {
+    ): PortefoljebrukerOpensearchModell {
         val bruker =
-            OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
+            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
                 .setEnhet_id(enhet)
 
         if (veilederId != null) {

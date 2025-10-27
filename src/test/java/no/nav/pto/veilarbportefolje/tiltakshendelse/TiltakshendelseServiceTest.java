@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.tiltakshendelse;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Avsender;
@@ -53,7 +53,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         when(oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktorId)).thenReturn(Boolean.TRUE);
 
         opensearchTestClient.createUserInOpensearch(aktorId);
-        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(bruker.getAktoer_id()).isEqualTo(aktorId.get());
         assertThat(bruker.getTiltakshendelse()).isNull();
 
@@ -66,7 +66,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         assert (tiltakshendelser.size() == 1);
         assert (tiltakshendelser.getFirst().id().equals(expected.id()));
 
-        final OppfolgingsBruker brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(expected.id());
     }
 
@@ -82,7 +82,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         when(oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktorId)).thenReturn(Boolean.TRUE);
 
         opensearchTestClient.createUserInOpensearch(aktorId);
-        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(bruker.getAktoer_id()).isEqualTo(aktorId.get());
         assertThat(bruker.getTiltakshendelse()).isNull();
 
@@ -94,7 +94,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 1);
         assert (tiltakshendelser.getFirst().id().equals(expected.id()));
-        final OppfolgingsBruker brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(expected.id());
 
         KafkaTiltakshendelse slettKafkaData = new KafkaTiltakshendelse(id, false, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
@@ -102,7 +102,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
 
         List<Tiltakshendelse> tiltakshendelserEtterSlett = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelserEtterSlett.isEmpty());
-        final OppfolgingsBruker brukerEtterSlettIOpensearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell brukerEtterSlettIOpensearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(brukerEtterSlettIOpensearch.getTiltakshendelse()).isNull();
     }
 
@@ -120,7 +120,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         when(oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktorId)).thenReturn(Boolean.TRUE);
 
         opensearchTestClient.createUserInOpensearch(aktorId);
-        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell bruker = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(bruker.getAktoer_id()).isEqualTo(aktorId.get());
         assertThat(bruker.getTiltakshendelse()).isNull();
 
@@ -133,7 +133,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelser.size() == 2);
 
-        final OppfolgingsBruker brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(hendelseId1);
 
         KafkaTiltakshendelse slettKafkaData = new KafkaTiltakshendelse(hendelseId1, false, opprettetHendelse1, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
@@ -141,7 +141,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
 
         List<Tiltakshendelse> tiltakshendelserEtterSlett = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelserEtterSlett.size() == 1);
-        final OppfolgingsBruker brukerEtterSlettIOpensearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
+        final PortefoljebrukerOpensearchModell brukerEtterSlettIOpensearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
         assertThat(brukerEtterSlettIOpensearch.getTiltakshendelse().id()).isEqualTo(hendelseId2);
     }
 }

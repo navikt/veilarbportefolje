@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import org.json.JSONObject;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexRequest;
@@ -41,9 +41,9 @@ public class OpensearchTestClient {
         this.indexName = indexName;
     }
 
-    public OppfolgingsBruker hentBrukerFraOpensearch(AktorId aktoerId) {
+    public PortefoljebrukerOpensearchModell hentBrukerFraOpensearch(AktorId aktoerId) {
         return getDocument(aktoerId)
-                .map(resp -> JsonUtils.fromJson(resp.getSourceAsString(), OppfolgingsBruker.class))
+                .map(resp -> JsonUtils.fromJson(resp.getSourceAsString(), PortefoljebrukerOpensearchModell.class))
                 .orElseThrow();
     }
 
@@ -99,7 +99,7 @@ public class OpensearchTestClient {
         assertThat(getResponse.get()).isNotNull();
     }
 
-    public void createUserInOpensearch(OppfolgingsBruker bruker) {
+    public void createUserInOpensearch(PortefoljebrukerOpensearchModell bruker) {
         //create document
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(indexName.getValue());

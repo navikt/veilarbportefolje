@@ -26,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingsBruker {
+public class PortefoljebrukerOpensearchModell {
     String fnr;
     String aktoer_id;
     String fornavn;
