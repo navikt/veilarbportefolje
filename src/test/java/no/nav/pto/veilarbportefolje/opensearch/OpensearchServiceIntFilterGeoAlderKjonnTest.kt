@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -30,7 +30,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_returnere_brukere_basert_paa_fodselsdag_i_maaneden() {
-        val testBrukerFodselsdagSyvende = OppfolgingsBruker()
+        val testBrukerFodselsdagSyvende = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -38,7 +38,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setVeileder_id(TEST_VEILEDER_0)
 
-        val testBrukerFodselsdagNiende = OppfolgingsBruker()
+        val testBrukerFodselsdagNiende = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -76,7 +76,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_basert_paa_kjonn() {
-        val mann = OppfolgingsBruker()
+        val mann = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -84,7 +84,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setKjonn("M")
 
-        val kvinne = OppfolgingsBruker()
+        val kvinne = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -291,7 +291,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_hente_alle_brukere_fra_landgruppe() {
-        val brukerFraLandGruppe1 = OppfolgingsBruker()
+        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -302,7 +302,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setFoedelandFulltNavn("Norge")
             .setLandgruppe("1")
 
-        val brukerFraLandGruppe2 = OppfolgingsBruker()
+        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -314,7 +314,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("2")
             .setHovedStatsborgerskap(Statsborgerskap("Estland", LocalDate.now(), null))
 
-        val brukerfralandgruppe31 = OppfolgingsBruker()
+        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -326,7 +326,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("3")
             .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
 
-        val brukerfralandgruppe32 = OppfolgingsBruker()
+        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -338,7 +338,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("3")
             .setHovedStatsborgerskap(Statsborgerskap("Singapore", LocalDate.now(), null))
 
-        val brukerUkjentLandGruppe = OppfolgingsBruker()
+        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -442,7 +442,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun test_sortering_landgruppe() {
-        val brukerFraLandGruppe1 = OppfolgingsBruker()
+        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -453,7 +453,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setFoedelandFulltNavn("Norge")
             .setLandgruppe("1")
 
-        val brukerFraLandGruppe2 = OppfolgingsBruker()
+        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -464,7 +464,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("2")
             .setHovedStatsborgerskap(Statsborgerskap("Estland", LocalDate.now(), null))
 
-        val brukerfralandgruppe31 = OppfolgingsBruker()
+        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -475,7 +475,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("3")
             .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
 
-        val brukerfralandgruppe32 = OppfolgingsBruker()
+        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -486,7 +486,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("3")
             .setHovedStatsborgerskap(Statsborgerskap("Singapore", LocalDate.now(), null))
 
-        val brukerfralandgruppe33 = OppfolgingsBruker()
+        val brukerfralandgruppe33 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -497,7 +497,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setLandgruppe("3")
             .setHovedStatsborgerskap(Statsborgerskap("Botswana", LocalDate.now(), null))
 
-        val brukerUkjentLandGruppe = OppfolgingsBruker()
+        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -586,7 +586,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_hente_alle_brukere_med_bosted() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -596,7 +596,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("10")
             .setBydelsnummer("1222")
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -606,7 +606,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("12")
             .setBydelsnummer("1233")
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -616,7 +616,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("12")
             .setBydelsnummer("1234")
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -626,7 +626,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("10")
             .setBydelsnummer("1010")
 
-        val brukerUkjentBosted = OppfolgingsBruker()
+        val brukerUkjentBosted = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -701,7 +701,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun test_sortering_bostedkommune() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -710,7 +710,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setKommunenummer("10")
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -720,7 +720,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("12")
             .setBydelsnummer("1233")
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -730,7 +730,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("12")
             .setBydelsnummer("1234")
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -740,7 +740,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             .setKommunenummer("10")
             .setBydelsnummer("1010")
 
-        val brukerUkjentBosted = OppfolgingsBruker()
+        val brukerUkjentBosted = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -795,9 +795,9 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     private fun genererRandomBruker(
         enhet: String, veilederId: String?
-    ): OppfolgingsBruker {
+    ): PortefoljebrukerOpensearchModell {
         val bruker =
-            OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
+            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
                 .setEnhet_id(enhet).setEgen_ansatt(false).setDiskresjonskode(null)
 
         if (veilederId != null) {
@@ -806,7 +806,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         return bruker
     }
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 }

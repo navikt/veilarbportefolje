@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
@@ -58,7 +58,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void skal_flette_inn_gjeldende_14a_vedtak_nar_siste_14a_vedtak_er_fattet_før_lansering_av_veilarboppfolging() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -91,7 +91,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void skal_flette_inn_gjeldende_14a_vedtak_nar_siste_14a_vedtak_er_fattet_etter_lansering_av_veilarboppfolging_og_i_inneværende_oppfølgingsperiode() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -124,7 +124,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_siste_14a_vedtak_er_fattet_etter_lansering_av_veilarboppfolging_men_utenfor_inneværende_oppfølgingsperiode() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -154,7 +154,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_bruker_har_et_siste_14a_vedtak_men_ikke_er_under_oppfølging() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -179,7 +179,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_siste_14a_vedtak_er_fattet_før_lansering_av_veilarboppfolging_men_oppfølgingsperiode_startdato_er_etter_lansering_av_veilarboppfolging() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -211,13 +211,13 @@ public class FlettingAvGjeldende14aVedtakTest {
         GjeldendeIdenter oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter = genererGjeldendeIdent();
         GjeldendeIdenter oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode = new PortefoljebrukerOpensearchModell()
                 .setFnr(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getFnr().get())
                 .setAktoer_id(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId().get());
-        OppfolgingsBruker oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode = new PortefoljebrukerOpensearchModell()
                 .setFnr(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getFnr().get())
                 .setAktoer_id(oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId().get());
-        OppfolgingsBruker oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode = new PortefoljebrukerOpensearchModell()
                 .setFnr(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getFnr().get())
                 .setAktoer_id(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getAktorId().get());
 
@@ -275,10 +275,10 @@ public class FlettingAvGjeldende14aVedtakTest {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         GjeldendeIdenter ident2 = genererGjeldendeIdent();
 
-        OppfolgingsBruker oppfolgingsbruker1 = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker1 = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
-        OppfolgingsBruker oppfolgingsbruker2 = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker2 = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident2.getFnr().get())
                 .setAktoer_id(ident2.getAktorId().get());
 
@@ -307,7 +307,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2020-11-13T10:00:00+02:00");
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 
@@ -340,7 +340,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2020-11-13T10:00:00+02:00");
 
-        OppfolgingsBruker oppfolgingsbruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell()
                 .setFnr(ident1.getFnr().get())
                 .setAktoer_id(ident1.getAktorId().get());
 

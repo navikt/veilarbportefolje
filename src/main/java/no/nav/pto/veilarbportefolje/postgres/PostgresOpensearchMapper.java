@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
-import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
@@ -19,7 +18,7 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonExcept
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -59,8 +58,8 @@ public class PostgresOpensearchMapper {
     private final HendelseRepository hendelseRepository;
     private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
-    public void flettInnAktivitetsData(List<OppfolgingsBruker> brukere) {
-        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+    public void flettInnAktivitetsData(List<PortefoljebrukerOpensearchModell> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
         brukere.forEach(bruker -> {
@@ -80,13 +79,13 @@ public class PostgresOpensearchMapper {
 
     }
 
-    public void flettInnSisteEndringerData(List<OppfolgingsBruker> brukere) {
-        List<AktorId> aktoerIder = brukere.stream().map(OppfolgingsBruker::getAktoer_id).map(AktorId::of).toList();
+    public void flettInnSisteEndringerData(List<PortefoljebrukerOpensearchModell> brukere) {
+        List<AktorId> aktoerIder = brukere.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).map(AktorId::of).toList();
         Map<AktorId, Map<String, Endring>> sisteEndringerDataPostgres = sisteEndringService.hentSisteEndringerFraPostgres(aktoerIder);
         brukere.forEach(bruker -> bruker.setSiste_endringer(sisteEndringerDataPostgres.getOrDefault(AktorId.of(bruker.getAktoer_id()), new HashMap<>())));
     }
 
-    private void flettInnAktivitetData(AktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
+    private void flettInnAktivitetData(AktivitetEntity aktivitetData, PortefoljebrukerOpensearchModell bruker) {
         bruker.setAlle_aktiviteter_mote_startdato(aktivitetData.getAktivitetMoteStartdato());
         bruker.setAlle_aktiviteter_mote_utlopsdato(aktivitetData.getAktivitetMoteUtlopsdato());
         bruker.setAlle_aktiviteter_stilling_utlopsdato(aktivitetData.getAktivitetStillingUtlopsdato());
@@ -101,7 +100,7 @@ public class PostgresOpensearchMapper {
         // Dette gjøres da disse aktivitetene ikke kan være satt til "ikke avtalt"
     }
 
-    private void flettInnAvtaltAktivitetData(AvtaltAktivitetEntity aktivitetData, OppfolgingsBruker bruker) {
+    private void flettInnAvtaltAktivitetData(AvtaltAktivitetEntity aktivitetData, PortefoljebrukerOpensearchModell bruker) {
         bruker.setNyesteutlopteaktivitet(aktivitetData.getNyesteUtlopteAktivitet());
         bruker.setAktivitet_start(aktivitetData.getAktivitetStart());
         bruker.setNeste_aktivitet_start(aktivitetData.getNesteAktivitetStart());
@@ -121,8 +120,8 @@ public class PostgresOpensearchMapper {
         bruker.setTiltak(aktivitetData.getTiltak());
     }
 
-    public void flettInnStatsborgerskapData(List<OppfolgingsBruker> brukere) {
-        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).collect(Collectors.toList());
+    public void flettInnStatsborgerskapData(List<PortefoljebrukerOpensearchModell> brukere) {
+        List<Fnr> fnrs = brukere.stream().map(PortefoljebrukerOpensearchModell::getFnr).map(Fnr::of).collect(Collectors.toList());
         Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
         brukere.forEach(bruker -> {
             List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
@@ -162,12 +161,12 @@ public class PostgresOpensearchMapper {
                 statsborgerskap.getGyldigTil());
     }
 
-    public void flettInnAvvik14aVedtak(List<OppfolgingsBruker> brukere) {
+    public void flettInnAvvik14aVedtak(List<PortefoljebrukerOpensearchModell> brukere) {
         Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukere.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
         brukere.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
     }
 
-    public void flettInnBarnUnder18Aar(List<OppfolgingsBruker> brukere) {
+    public void flettInnBarnUnder18Aar(List<PortefoljebrukerOpensearchModell> brukere) {
         List<Fnr> brukereFnr = brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).toList();
         Map<Fnr, List<BarnUnder18AarData>> barnUnder18AarMap = barnUnder18AarService.hentBarnUnder18Aar(brukereFnr);
         brukere.forEach(bruker -> {
@@ -178,7 +177,7 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnEnsligeForsorgereData(List<OppfolgingsBruker> brukere) {
+    public void flettInnEnsligeForsorgereData(List<PortefoljebrukerOpensearchModell> brukere) {
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap =
                 ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukere.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
         brukere.forEach(bruker -> {
@@ -188,7 +187,7 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnTiltakshendelser(List<OppfolgingsBruker> brukere) {
+    public void flettInnTiltakshendelser(List<PortefoljebrukerOpensearchModell> brukere) {
         AtomicInteger brukereUtenTiltakshendelse = new AtomicInteger();
         AtomicInteger brukereMedTiltakshendelse = new AtomicInteger();
 
@@ -210,8 +209,8 @@ public class PostgresOpensearchMapper {
         log.info("Indeksering – Brukere med tiltakshendelse: {}, brukere uten tiltakshendelse: {}", brukereMedTiltakshendelse, brukereUtenTiltakshendelse);
     }
 
-    public void flettInnOpplysningerOmArbeidssoekerData(List<OppfolgingsBruker> brukere) {
-        List<Fnr> fnrs = brukere.stream().map(OppfolgingsBruker::getFnr).map(Fnr::of).toList();
+    public void flettInnOpplysningerOmArbeidssoekerData(List<PortefoljebrukerOpensearchModell> brukere) {
+        List<Fnr> fnrs = brukere.stream().map(PortefoljebrukerOpensearchModell::getFnr).map(Fnr::of).toList();
         List<ArbeidssoekerData> arbeidssoekerDataList = arbeidssoekerService.hentArbeidssoekerData(fnrs);
 
         brukere.forEach(bruker -> {
@@ -239,7 +238,7 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnGjeldende14aVedtak(List<OppfolgingsBruker> brukere) {
+    public void flettInnGjeldende14aVedtak(List<PortefoljebrukerOpensearchModell> brukere) {
         Set<AktorId> brukereSet = brukere.stream().map(bruker -> AktorId.of(bruker.getAktoer_id())).collect(Collectors.toSet());
         Map<AktorId, Optional<Gjeldende14aVedtak>> aktorIdGjeldende14aVedtakMap = gjeldende14aVedtakService.hentGjeldende14aVedtak(brukereSet);
 
@@ -256,7 +255,7 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnEldsteUtgattVarsel(List<OppfolgingsBruker> brukere) {
+    public void flettInnEldsteUtgattVarsel(List<PortefoljebrukerOpensearchModell> brukere) {
         brukere.forEach(bruker -> {
             try {
                 Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), Kategori.UTGATT_VARSEL);

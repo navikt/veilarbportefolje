@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -101,7 +101,7 @@ public class Bruker {
     GjeldendeVedtak14a gjeldendeVedtak14a;
     Hendelse.HendelseInnhold utgattVarsel;
 
-    public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt) {
+    public static Bruker of(PortefoljebrukerOpensearchModell bruker, boolean ufordelt) {
 
         String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
         String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();

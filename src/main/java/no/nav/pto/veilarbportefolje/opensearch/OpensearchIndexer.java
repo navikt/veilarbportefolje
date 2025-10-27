@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import org.opensearch.action.bulk.BulkRequest;
@@ -38,12 +38,12 @@ public class OpensearchIndexer {
     private final OpensearchIndexerV2 opensearchIndexerV2;
 
     public void indekser(AktorId aktoerId) {
-        Optional<OppfolgingsBruker> bruker;
+        Optional<PortefoljebrukerOpensearchModell> bruker;
         bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
         bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerV2.slettDokumenter(List.of(aktoerId)));
     }
 
-    private void indekserBruker(OppfolgingsBruker bruker) {
+    private void indekserBruker(PortefoljebrukerOpensearchModell bruker) {
         if (erUnderOppfolging(bruker)) {
             flettInnNodvendigData(List.of(bruker));
             syncronIndekseringsRequest(bruker);
@@ -53,16 +53,16 @@ public class OpensearchIndexer {
     }
 
     @SneakyThrows
-    public void syncronIndekseringsRequest(OppfolgingsBruker bruker) {
+    public void syncronIndekseringsRequest(PortefoljebrukerOpensearchModell bruker) {
         IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(bruker.getAktoer_id());
         indexRequest.source(toJson(bruker), XContentType.JSON);
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
-    public void skrivBulkTilIndeks(String indeksNavn, List<OppfolgingsBruker> oppfolgingsBrukere) {
+    public void skrivBulkTilIndeks(String indeksNavn, List<PortefoljebrukerOpensearchModell> oppfolgingsBrukere) {
         BulkRequest bulk = new BulkRequest();
-        List<String> aktoerIds = oppfolgingsBrukere.stream().map(OppfolgingsBruker::getAktoer_id).toList();
+        List<String> aktoerIds = oppfolgingsBrukere.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).toList();
         oppfolgingsBrukere.stream()
                 .map(bruker -> {
                     IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
@@ -106,7 +106,7 @@ public class OpensearchIndexer {
     public void indekserBolk(List<AktorId> aktorIds) {
         validateBatchSize(aktorIds);
 
-        List<OppfolgingsBruker> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
+        List<PortefoljebrukerOpensearchModell> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
 
         if (brukere != null && !brukere.isEmpty()) {
             flettInnNodvendigData(brukere);
@@ -114,7 +114,7 @@ public class OpensearchIndexer {
         }
     }
 
-    private void flettInnNodvendigData(List<OppfolgingsBruker> brukere) {
+    private void flettInnNodvendigData(List<PortefoljebrukerOpensearchModell> brukere) {
         postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
         postgresOpensearchMapper.flettInnAktivitetsData(brukere);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukere);

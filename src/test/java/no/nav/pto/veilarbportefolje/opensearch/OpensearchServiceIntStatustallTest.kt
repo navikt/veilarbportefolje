@@ -8,7 +8,7 @@ import no.nav.common.utils.fn.UnsafeSupplier
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -369,13 +369,13 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
 
     @Test
     fun skal_hente_riktige_statustall_for_enhet() {
-        val brukerUtenVeileder = OppfolgingsBruker()
+        val brukerUtenVeileder = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().get())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
 
-        val brukerMedVeileder = OppfolgingsBruker()
+        val brukerMedVeileder = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().get())
             .setOppfolging(true)
@@ -406,13 +406,13 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
 
     @Test
     fun skal_mappe_statustall_for_samtlige_aggregation_keys() {
-        val brukerUtenVeileder = OppfolgingsBruker()
+        val brukerUtenVeileder = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().get())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
 
-        val brukerMedVeileder = OppfolgingsBruker()
+        val brukerMedVeileder = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().get())
             .setOppfolging(true)
@@ -460,9 +460,9 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
     }
     private fun genererRandomBruker(
         enhet: String, veilederId: String?, diskresjonskode: String?, egenAnsatt: Boolean
-    ): OppfolgingsBruker {
+    ): PortefoljebrukerOpensearchModell {
         val bruker =
-            OppfolgingsBruker().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
+            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
                 .setEnhet_id(enhet)
 
         if (veilederId != null) {
@@ -479,7 +479,7 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
 
         return bruker
     }
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 }

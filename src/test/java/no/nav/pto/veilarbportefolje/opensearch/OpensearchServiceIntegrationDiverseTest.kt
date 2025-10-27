@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
@@ -70,19 +70,19 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @Test
     fun skal_kun_hente_ut_brukere_under_oppfolging() {
         val brukere = listOf(
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET),  // Markert som slettet
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(false)
@@ -109,7 +109,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @Test
     fun skal_sette_brukere_med_veileder_fra_annen_enhet_til_ufordelt() {
         val brukere = listOf(
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -117,7 +117,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 .setAktiviteter(setOf("foo"))
                 .setVeileder_id(TEST_VEILEDER_0),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setFnr(randomFnr().toString())
                 .setAktoer_id(randomAktorId().toString())
                 .setOppfolging(true)
@@ -155,7 +155,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     fun skal_hente_ut_brukere_ved_soek_paa_flere_veiledere() {
         val now = Instant.now().toString()
         val brukere = listOf(
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -163,7 +163,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 .setNyesteutlopteaktivitet(now)
                 .setVeileder_id(TEST_VEILEDER_0),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -171,7 +171,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 .setNyesteutlopteaktivitet(now)
                 .setVeileder_id(TEST_VEILEDER_1),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().get())
                 .setFnr(randomFnr().toString())
                 .setOppfolging(true)
@@ -206,21 +206,21 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @Test
     fun skal_hente_riktig_antall_ufordelte_brukere() {
         val brukere = listOf(
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(null),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(true)
                 .setEnhet_id(TEST_ENHET)
                 .setVeileder_id(TEST_VEILEDER_0),
 
-            OppfolgingsBruker()
+            PortefoljebrukerOpensearchModell()
                 .setAktoer_id(randomAktorId().toString())
                 .setFnr(randomFnr().get())
                 .setOppfolging(true)
@@ -270,7 +270,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             null
         )
             .map { id: String? ->
-                OppfolgingsBruker()
+                PortefoljebrukerOpensearchModell()
                     .setAktoer_id(randomAktorId().get())
                     .setFnr(randomFnr().toString())
                     .setVeileder_id(id)
@@ -297,7 +297,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         val tidspunkt2 = DateUtils.toIsoUTC(ZonedDateTime.now().plusDays(2))
         val tidspunkt3 = DateUtils.toIsoUTC(ZonedDateTime.now().plusDays(3))
 
-        val tidligstfristBruker = OppfolgingsBruker()
+        val tidligstfristBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -306,7 +306,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setAktivitet_mote_utlopsdato(tidspunkt1)
             .setAktiviteter(setOf("EGEN", "MOTE"))
 
-        val senestFristBruker = OppfolgingsBruker()
+        val senestFristBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -314,7 +314,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setAktivitet_egen_utlopsdato(tidspunkt2)
             .setAktiviteter(setOf("EGEN", "MOTE"))
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -374,7 +374,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 TEST_VEILEDER_0
             )
         )
-        val nyForEnhet = OppfolgingsBruker()
+        val nyForEnhet = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -382,7 +382,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
             .setTrenger_vurdering(true)
 
-        val ikkeNyForEnhet = OppfolgingsBruker()
+        val ikkeNyForEnhet = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -417,14 +417,14 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun skal_ikke_kunne_hente_brukere_veileder_ikke_har_tilgang_til() {
-        val brukerVeilederHarTilgangTil = OppfolgingsBruker()
+        val brukerVeilederHarTilgangTil = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setVeileder_id(TEST_VEILEDER_0)
 
-        val brukerVeilederIkkeHarTilgangTil = OppfolgingsBruker()
+        val brukerVeilederIkkeHarTilgangTil = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -459,14 +459,14 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             )
         )
 
-        val brukerMedUfordeltStatus = OppfolgingsBruker()
+        val brukerMedUfordeltStatus = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
 
-        val brukerMedFordeltStatus = OppfolgingsBruker()
+        val brukerMedFordeltStatus = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -501,7 +501,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_har_avtale_om_a_soke_jobber() {
-        val brukerMedSokeAvtale = OppfolgingsBruker()
+        val brukerMedSokeAvtale = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -509,7 +509,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("sokeavtale"))
 
-        val brukerMedBehandling = OppfolgingsBruker()
+        val brukerMedBehandling = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -517,7 +517,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("behandling"))
 
-        val brukerMedUtenAktiviteter = OppfolgingsBruker()
+        val brukerMedUtenAktiviteter = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -550,7 +550,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_alle_brukere_unntatt_de_som_har_avtale_om_a_soke_jobber() {
-        val brukerMedSokeAvtale = OppfolgingsBruker()
+        val brukerMedSokeAvtale = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -558,7 +558,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("sokeavtale"))
 
-        val brukerMedBehandling = OppfolgingsBruker()
+        val brukerMedBehandling = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -566,7 +566,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("behandling"))
 
-        val brukerMedUtenAktiviteter = OppfolgingsBruker()
+        val brukerMedUtenAktiviteter = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().toString())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -600,7 +600,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_alle_brukere_med_tiltak() {
-        val brukerMedTiltak = OppfolgingsBruker()
+        val brukerMedTiltak = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -608,7 +608,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("tiltak"))
 
-        val brukerMedBehandling = OppfolgingsBruker()
+        val brukerMedBehandling = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -616,7 +616,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("behandling"))
 
-        val brukerUtenAktiviteter = OppfolgingsBruker()
+        val brukerUtenAktiviteter = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -650,7 +650,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_alle_brukere_som_ikke_har_tiltak() {
-        val brukerMedTiltak = OppfolgingsBruker()
+        val brukerMedTiltak = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().toString())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -659,7 +659,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setAktiviteter(setOf("tiltak"))
             .setTiltak(setOf("VASV"))
 
-        val brukerMedBehandling = OppfolgingsBruker()
+        val brukerMedBehandling = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().toString())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -667,7 +667,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAktiviteter(setOf("behandling"))
 
-        val brukerUtenAktiviteter = OppfolgingsBruker()
+        val brukerUtenAktiviteter = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().toString())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -704,7 +704,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @Test
     fun skal_ikke_automatisk_sortere_nye_brukere_paa_top() {
         Mockito.`when`(defaultUnleash.isEnabled(ArgumentMatchers.anyString())).thenReturn(true)
-        val nyBrukerForVeileder = OppfolgingsBruker()
+        val nyBrukerForVeileder = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
@@ -712,7 +712,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(true)
             .setEtternavn("A")
-        val brukerForVeileder1 = OppfolgingsBruker()
+        val brukerForVeileder1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
@@ -720,7 +720,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEtternavn("B")
-        val brukerForVeileder2 = OppfolgingsBruker()
+        val brukerForVeileder2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
@@ -755,21 +755,21 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @Test
     fun skal_ikke_automatisk_sortere_ufordelte_brukere_paa_top() {
         Mockito.`when`(defaultUnleash.isEnabled(ArgumentMatchers.anyString())).thenReturn(true)
-        val ufordeltBruker = OppfolgingsBruker()
+        val ufordeltBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
             .setOppfolging(true)
             .setVeileder_id(null)
             .setEtternavn("A")
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEtternavn("B")
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setEnhet_id(TEST_ENHET)
@@ -802,7 +802,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
     @Test
     fun test_sortering_enslige_forsorgere() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -815,7 +815,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -829,7 +829,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -843,7 +843,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -857,7 +857,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker5 = OppfolgingsBruker()
+        val bruker5 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -955,7 +955,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         val datoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
         val datoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(fnrBruker1.get())
             .setAktoer_id(aktoridBruker1.get())
             .setEnhet_id(TEST_ENHET)
@@ -978,7 +978,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(fnrBruker2.get())
             .setAktoer_id(aktoridBruker2.get())
             .setEnhet_id(TEST_ENHET)
@@ -1001,7 +1001,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                 )
             )
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(fnrBruker3.get())
             .setAktoer_id(aktoridBruker3.get())
             .setEnhet_id(TEST_ENHET)
@@ -1076,28 +1076,28 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         val tidspunkt2 = LocalDateTime.now().plusDays(2)
         val tidspunkt3 = LocalDateTime.now().plusDays(3)
 
-        val tidligstTildeltBruker = OppfolgingsBruker()
+        val tidligstTildeltBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setTildelt_tidspunkt(tidspunkt1)
 
-        val midtImellomBruker = OppfolgingsBruker()
+        val midtImellomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setTildelt_tidspunkt(tidspunkt2)
 
-        val senestTildeltBruker = OppfolgingsBruker()
+        val senestTildeltBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setTildelt_tidspunkt(tidspunkt3)
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -1148,7 +1148,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @SneakyThrows
     fun skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
         val hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL)
-        val oppfolgingsBruker = OppfolgingsBruker()
+        val oppfolgingsBruker = PortefoljebrukerOpensearchModell()
             .setFnr("11111199999")
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -1182,7 +1182,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         return brukere.brukere.stream().anyMatch { bruker: Bruker -> veilederId == bruker.veilederId }
     }
 
-    private fun userExistsInResponse(bruker: OppfolgingsBruker, brukere: BrukereMedAntall): Boolean {
+    private fun userExistsInResponse(bruker: PortefoljebrukerOpensearchModell, brukere: BrukereMedAntall): Boolean {
         return brukere.brukere.stream().anyMatch { b: Bruker -> bruker.fnr == b.fnr }
     }
 
@@ -1191,7 +1191,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .map { obj: Facet -> obj.count }.toList().first()
     }
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 

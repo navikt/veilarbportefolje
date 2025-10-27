@@ -206,8 +206,8 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erUfordelt(oppfolgingsBruker, aktiveVeilederePaEnhet));
+    private Bruker mapOppfolgingsBrukerTilBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
+        Bruker bruker = Bruker.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
@@ -219,15 +219,15 @@ public class OpensearchService {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
         }
         if (filtervalg.harSisteEndringFilter()) {
-            bruker.kalkulerSisteEndring(oppfolgingsBruker.getSiste_endringer(), filtervalg.sisteEndringKategori);
+            bruker.kalkulerSisteEndring(brukerOpensearchModell.getSiste_endringer(), filtervalg.sisteEndringKategori);
         }
 
         return bruker;
     }
 
 
-    private boolean erUfordelt(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
-        boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
+    private boolean erUfordelt(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> veiledereMedTilgangTilEnhet) {
+        boolean harVeilederPaaSammeEnhet = brukerOpensearchModell.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(brukerOpensearchModell.getVeileder_id());
         return !harVeilederPaaSammeEnhet;
     }
 }

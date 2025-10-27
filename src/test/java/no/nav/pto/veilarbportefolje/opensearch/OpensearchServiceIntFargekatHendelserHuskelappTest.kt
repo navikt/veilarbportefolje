@@ -6,8 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
-import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
 import no.nav.pto.veilarbportefolje.util.BrukerComparator
@@ -75,7 +74,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             TEST_ENHET
         )
 
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -83,7 +82,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setHuskelapp(huskelapp1)
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -92,7 +91,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setHuskelapp(huskelapp2)
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -100,7 +99,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setHuskelapp(huskelapp3)
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -108,14 +107,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setHuskelapp(huskelapp4)
 
-        val bruker5 = OppfolgingsBruker()
+        val bruker5 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEnhet_id(TEST_ENHET)
 
-        val bruker6 = OppfolgingsBruker()
+        val bruker6 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -200,7 +199,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtering_og_sortering_fargekategori() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -209,7 +208,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name)
             .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -219,7 +218,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
             .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -228,7 +227,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
             .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -237,14 +236,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name)
             .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker5 = OppfolgingsBruker()
+        val bruker5 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEnhet_id(TEST_ENHET)
 
-        val bruker6 = OppfolgingsBruker()
+        val bruker6 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -331,7 +330,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtrering_og_statustall_tiltakshendelser() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -347,7 +346,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val bruker2Lenke = "http.cat/200"
         val bruker2Tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(bruker2Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -373,7 +372,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val bruker3Lenke = "http.cat/200"
         val bruker3Tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(bruker3Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -436,7 +435,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val lenke = "http.cat/200"
         val tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(bruker1Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -454,7 +453,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
             )
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(bruker2Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -472,7 +471,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
             )
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(bruker3Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -551,7 +550,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtrering_og_statustall_utgatte_varsel() {
-        val oppfolgingsBruker1 = OppfolgingsBruker()
+        val oppfolgingsBruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -563,7 +562,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val oppfolgingsBruker2Fnr = Fnr.of("02020222222")
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
 
-        val oppfolgingsBruker2 = OppfolgingsBruker()
+        val oppfolgingsBruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(oppfolgingsBruker2Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -576,7 +575,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val oppfolgingsBruker3Fnr = Fnr.of("03030333333")
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(oppfolgingsBruker3Fnr.toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -636,7 +635,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
 
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker1.toString())
             .setOppfolging(true)
@@ -644,7 +643,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtgatt_varsel(utgattVarselBruker1)
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker2.toString())
             .setOppfolging(true)
@@ -653,7 +652,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtgatt_varsel(utgattVarselBruker2)
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker3.toString())
             .setOppfolging(true)
@@ -702,7 +701,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
 
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker1.toString())
             .setOppfolging(true)
@@ -710,7 +709,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtgatt_varsel(utgattVarselBruker1)
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker2.toString())
             .setOppfolging(true)
@@ -719,7 +718,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtgatt_varsel(utgattVarselBruker2)
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(aktoridBruker3.toString())
             .setOppfolging(true)
@@ -755,7 +754,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertEquals(bruker2.aktoer_id, response.brukere[2].aktoerid)
     }
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 }
