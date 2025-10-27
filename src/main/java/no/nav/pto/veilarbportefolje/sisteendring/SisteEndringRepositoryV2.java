@@ -68,18 +68,18 @@ public class SisteEndringRepositoryV2 {
         db.update("delete from siste_endring where aktoerid = ?", aktoerId.get());
     }
 
-    public void setAlleSisteEndringTidspunkter(List<PortefoljebrukerOpensearchModell> oppfolgingsBrukere) {
-        if (oppfolgingsBrukere == null || oppfolgingsBrukere.isEmpty()) {
+    public void setAlleSisteEndringTidspunkter(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
+        if (brukerOpensearchModellList == null || brukerOpensearchModellList.isEmpty()) {
             throw new IllegalArgumentException("Trenger oppfolgingsBrukere for å hente ut siste_endringer");
         }
-        for (PortefoljebrukerOpensearchModell bruker : oppfolgingsBrukere) {
+        for (PortefoljebrukerOpensearchModell bruker : brukerOpensearchModellList) {
             mapDbTilOppfolgingsBruker(bruker);
         }
     }
 
     @SneakyThrows
-    private void mapDbTilOppfolgingsBruker(PortefoljebrukerOpensearchModell oppfolgingsBrukere) {
-        oppfolgingsBrukere.setSiste_endringer(getSisteEndringer(AktorId.of(oppfolgingsBrukere.getAktoer_id())));
+    private void mapDbTilOppfolgingsBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
+        brukerOpensearchModell.setSiste_endringer(getSisteEndringer(AktorId.of(brukerOpensearchModell.getAktoer_id())));
     }
 
     public Map<String, Endring> getSisteEndringer(AktorId aktoerId) {

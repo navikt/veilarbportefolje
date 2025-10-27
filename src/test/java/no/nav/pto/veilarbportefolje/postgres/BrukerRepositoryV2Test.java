@@ -75,13 +75,13 @@ public class BrukerRepositoryV2Test {
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
                         "0000", null, null,
                         null, ZonedDateTime.now()));
-        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
                         "0001", null, null,
                         null, ZonedDateTime.now()));
-        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
 
 
         Assertions.assertThat(oppfolgingsBrukers_pre_nyFnrIArena.size()).isEqualTo(1);

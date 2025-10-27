@@ -44,7 +44,7 @@ public class BrukerRepositoryV2 {
 
     private final KodeverkService kodeverkService;
 
-    public List<PortefoljebrukerOpensearchModell> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
+    public List<PortefoljebrukerOpensearchModell> hentPortefoljeBrukereTilOpensearchModell(List<AktorId> aktorIds) {
         List<PortefoljebrukerOpensearchModell> result = new ArrayList<>();
 
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
@@ -144,20 +144,20 @@ public class BrukerRepositoryV2 {
                         """,
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        PortefoljebrukerOpensearchModell bruker = mapTilOppfolgingsBruker(rs);
-                        if (bruker.getFnr() == null) {
+                        PortefoljebrukerOpensearchModell brukerOpensearchModell = mapTilPortefoljebrukerOpensearchModell(rs);
+                        if (brukerOpensearchModell.getFnr() == null) {
                             continue; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
                         if (rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR) == null) {
-                            leggTilHistoriskArenaDataHvisTilgjengelig(bruker);
+                            leggTilHistoriskArenaDataHvisTilgjengelig(brukerOpensearchModell);
                         }
-                        result.add(bruker);
+                        result.add(brukerOpensearchModell);
                     }
                     return result;
                 }, params);
     }
 
-    private void leggTilHistoriskArenaDataHvisTilgjengelig(PortefoljebrukerOpensearchModell bruker) {
+    private void leggTilHistoriskArenaDataHvisTilgjengelig(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         long startTime = System.currentTimeMillis();
         PortefoljebrukerOpensearchModell brukerMedHistoriskData = queryForObjectOrNull(() ->
                 db.queryForObject("""
@@ -176,17 +176,17 @@ public class BrukerRepositoryV2 {
                             )
                         order by ENDRET_DATO desc
                         limit 1
-                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, rs), bruker.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(brukerOpensearchModell, rs), brukerOpensearchModell.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
         if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
-            secureLog.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
+            secureLog.info("Bruker historisk ident i arena for aktor: {}", brukerOpensearchModell.getAktoer_id());
         }
     }
 
     @SneakyThrows
-    private PortefoljebrukerOpensearchModell mapTilOppfolgingsBruker(ResultSet rs) {
+    private PortefoljebrukerOpensearchModell mapTilPortefoljebrukerOpensearchModell(ResultSet rs) {
         String fnr = rs.getString(AKTIVE_IDENTER_FNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS_VEDTAKSTATUS);
 
@@ -196,7 +196,7 @@ public class BrukerRepositoryV2 {
             aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp(YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO), rs.getInt(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE), rs.getInt(YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN));
         }
 
-        PortefoljebrukerOpensearchModell bruker = new PortefoljebrukerOpensearchModell()
+        PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID))
                 .setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null))
@@ -230,24 +230,24 @@ public class BrukerRepositoryV2 {
                 .setFargekategori(rs.getString(FARGEKATEGORI_VERDI))
                 .setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
 
-        setHuskelapp(bruker, rs);
-        setBrukersSituasjon(bruker, rs);
-        setAapKelvin(bruker, rs);
-        setTiltakspenger(bruker, rs);
+        setHuskelapp(brukerOpensearchModell, rs);
+        setBrukersSituasjon(brukerOpensearchModell, rs);
+        setAapKelvin(brukerOpensearchModell, rs);
+        setTiltakspenger(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
-        flettInnOppfolgingsbruker(bruker, rs);
+        flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
 
         Date foedsels_dato = rs.getDate(BRUKER_DATA_FOEDSELSDATO);
         if (foedsels_dato != null) {
-            flettInnDataFraPDL(rs, bruker);
+            flettInnDataFraPDL(rs, brukerOpensearchModell);
         } else if (isDevelopment().orElse(false)) {
-            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
+            brukerOpensearchModell.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
-        bruker.setEgen_ansatt(rs.getBoolean(NOM_SKJERMING_ER_SKJERMET));
-        bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
+        brukerOpensearchModell.setEgen_ansatt(rs.getBoolean(NOM_SKJERMING_ER_SKJERMET));
+        brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
-        return bruker;
+        return brukerOpensearchModell;
     }
 
     @SneakyThrows
@@ -303,15 +303,15 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private PortefoljebrukerOpensearchModell flettInnOppfolgingsbruker(PortefoljebrukerOpensearchModell bruker, ResultSet rs) {
+    private PortefoljebrukerOpensearchModell flettInnOppfolgingsbruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
         String fnr = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR);
         if (fnr == null) {
-            return bruker;
+            return brukerOpensearchModell;
         }
 
         String formidlingsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
-        return bruker
+        return brukerOpensearchModell
                 .setFnr(fnr)
                 .setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)))
@@ -324,7 +324,7 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private void flettInnDataFraPDL(ResultSet rs, PortefoljebrukerOpensearchModell bruker) {
+    private void flettInnDataFraPDL(ResultSet rs, PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         Date foedselsdato = rs.getDate(BRUKER_DATA_FOEDSELSDATO);
         String mellomnavn = rs.getString(BRUKER_DATA_MELLOMNAVN);
         String fornavn = rs.getString(BRUKER_DATA_FORNAVN);
@@ -340,7 +340,7 @@ public class BrukerRepositoryV2 {
         Date sikkerhetstiltakGyldigtil = rs.getDate(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL);
         boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.toLocalDate().isAfter(LocalDate.now()));
 
-        bruker
+        brukerOpensearchModell
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
                 .setFullt_navn(String.format("%s, %s", etternavn, fornavn))

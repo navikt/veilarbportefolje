@@ -12,8 +12,8 @@ public class GjeldendeIdenter {
     Fnr fnr;
     AktorId aktorId;
 
-    public static GjeldendeIdenter of(PortefoljebrukerFrontendModell bruker) {
-        return GjeldendeIdenter.builder().aktorId(AktorId.of(bruker.getAktoerid())).fnr(Fnr.of(bruker.getFnr())).build();
+    public static GjeldendeIdenter of(PortefoljebrukerFrontendModell brukerFrontendModell) {
+        return GjeldendeIdenter.builder().aktorId(AktorId.of(brukerFrontendModell.getAktoerid())).fnr(Fnr.of(brukerFrontendModell.getFnr())).build();
     }
 
     public static GjeldendeIdenter of(PortefoljebrukerOpensearchModell brukerOpensearchModell) {

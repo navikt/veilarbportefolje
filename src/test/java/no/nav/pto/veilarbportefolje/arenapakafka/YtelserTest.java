@@ -93,7 +93,7 @@ public class YtelserTest extends EndToEndTest {
 
         ytelsesService.behandleKafkaMelding(dto, TypeKafkaYtelse.AAP);
 
-        List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+        List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
         assertThat(brukerOpensearchModellList.size()).isEqualTo(1);
         assertThat(brukerOpensearchModellList.get(0).getYtelse()).isEqualTo("AAP_MAXTID");
     }

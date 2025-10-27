@@ -38,32 +38,32 @@ public class OpensearchIndexer {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     public void indekser(AktorId aktoerId) {
-        Optional<PortefoljebrukerOpensearchModell> bruker;
-        bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-        bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerPaDatafelt.slettDokumenter(List.of(aktoerId)));
+        Optional<PortefoljebrukerOpensearchModell> brukerOpensearchModell;
+        brukerOpensearchModell = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktoerId)).stream().findAny();
+        brukerOpensearchModell.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerPaDatafelt.slettDokumenter(List.of(aktoerId)));
     }
 
-    private void indekserBruker(PortefoljebrukerOpensearchModell bruker) {
-        if (erUnderOppfolging(bruker)) {
-            flettInnNodvendigData(List.of(bruker));
-            syncronIndekseringsRequest(bruker);
+    private void indekserBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
+        if (erUnderOppfolging(brukerOpensearchModell)) {
+            flettInnNodvendigData(List.of(brukerOpensearchModell));
+            syncronIndekseringsRequest(brukerOpensearchModell);
         } else {
-            opensearchIndexerPaDatafelt.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
+            opensearchIndexerPaDatafelt.slettDokumenter(List.of(AktorId.of(brukerOpensearchModell.getAktoer_id())));
         }
     }
 
     @SneakyThrows
-    public void syncronIndekseringsRequest(PortefoljebrukerOpensearchModell bruker) {
-        IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(bruker.getAktoer_id());
-        indexRequest.source(toJson(bruker), XContentType.JSON);
+    public void syncronIndekseringsRequest(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
+        IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(brukerOpensearchModell.getAktoer_id());
+        indexRequest.source(toJson(brukerOpensearchModell), XContentType.JSON);
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
-    public void skrivBulkTilIndeks(String indeksNavn, List<PortefoljebrukerOpensearchModell> oppfolgingsBrukere) {
+    public void skrivBulkTilIndeks(String indeksNavn, List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
         BulkRequest bulk = new BulkRequest();
-        List<String> aktoerIds = oppfolgingsBrukere.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).toList();
-        oppfolgingsBrukere.stream()
+        List<String> aktoerIds = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).toList();
+        brukerOpensearchModellList.stream()
                 .map(bruker -> {
                     IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
                     return indexRequest.source(toJson(bruker), XContentType.JSON);
@@ -72,7 +72,7 @@ public class OpensearchIndexer {
 
         try {
             restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
-            secureLog.info("Skrev {} brukere til indeks: {}", oppfolgingsBrukere.size(), aktoerIds);
+            secureLog.info("Skrev {} brukere til indeks: {}", brukerOpensearchModellList.size(), aktoerIds);
         } catch (IOException e) {
             secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
             throw e;
@@ -106,7 +106,7 @@ public class OpensearchIndexer {
     public void indekserBolk(List<AktorId> aktorIds) {
         validateBatchSize(aktorIds);
 
-        List<PortefoljebrukerOpensearchModell> brukere = brukerRepositoryV2.hentOppfolgingsBrukere(aktorIds);
+        List<PortefoljebrukerOpensearchModell> brukere = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(aktorIds);
 
         if (brukere != null && !brukere.isEmpty()) {
             flettInnNodvendigData(brukere);
@@ -114,19 +114,19 @@ public class OpensearchIndexer {
         }
     }
 
-    private void flettInnNodvendigData(List<PortefoljebrukerOpensearchModell> brukere) {
-        postgresOpensearchMapper.flettInnAvvik14aVedtak(brukere);
-        postgresOpensearchMapper.flettInnAktivitetsData(brukere);
-        postgresOpensearchMapper.flettInnSisteEndringerData(brukere);
-        postgresOpensearchMapper.flettInnStatsborgerskapData(brukere);
-        postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukere);
-        postgresOpensearchMapper.flettInnBarnUnder18Aar(brukere);
-        postgresOpensearchMapper.flettInnTiltakshendelser(brukere);
-        postgresOpensearchMapper.flettInnEldsteUtgattVarsel(brukere);
-        postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukere);
-        postgresOpensearchMapper.flettInnGjeldende14aVedtak(brukere);
+    private void flettInnNodvendigData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModell) {
+        postgresOpensearchMapper.flettInnAvvik14aVedtak(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnAktivitetsData(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnSisteEndringerData(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnStatsborgerskapData(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnBarnUnder18Aar(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnTiltakshendelser(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnEldsteUtgattVarsel(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukerOpensearchModell);
+        postgresOpensearchMapper.flettInnGjeldende14aVedtak(brukerOpensearchModell);
 
-        if (brukere.isEmpty()) {
+        if (brukerOpensearchModell.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
         }
     }

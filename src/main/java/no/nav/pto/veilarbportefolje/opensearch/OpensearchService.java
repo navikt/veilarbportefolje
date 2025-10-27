@@ -108,7 +108,7 @@ public class OpensearchService {
 
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
+                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -206,7 +206,7 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private PortefoljebrukerFrontendModell mapOppfolgingsBrukerTilBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
+    private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
         PortefoljebrukerFrontendModell bruker = PortefoljebrukerFrontendModell.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
 
         if (filtervalg.harAktiviteterForenklet()) {
