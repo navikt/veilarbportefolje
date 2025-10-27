@@ -148,7 +148,7 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
-                                 left join ao_kontor                                    on ao_kontor.ident = AKTIVE_IDENTER.FNR
+                                 left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
                 (ResultSet rs) -> {

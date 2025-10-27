@@ -83,8 +83,8 @@ public class BrukerRepositoryV2Test {
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
                         "9999", null, null,
                         null, ZonedDateTime.now()), new NavKontor("0001"));
-        List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
+        List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
 
         Assertions.assertThat(oppfolgingsBrukers_pre_nyFnrIArena.size()).isEqualTo(1);
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.size()).isEqualTo(1);
