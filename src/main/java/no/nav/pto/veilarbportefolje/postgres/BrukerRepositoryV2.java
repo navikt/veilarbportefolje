@@ -62,7 +62,7 @@ public class BrukerRepositoryV2 {
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-coalesce(ao_kontor.kontor_id ,OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)                    as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)                   as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                                OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
@@ -148,7 +148,7 @@ coalesce(ao_kontor.kontor_id ,OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)            
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
-                                 left join ao_kontor on ao_kontor.ident = AKTIVE_IDENTER.FNR
+                                 left join ao_kontor                                    on ao_kontor.ident = AKTIVE_IDENTER.FNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
                 (ResultSet rs) -> {
