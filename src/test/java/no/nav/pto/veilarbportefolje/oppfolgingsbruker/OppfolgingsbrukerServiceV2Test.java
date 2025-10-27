@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
@@ -69,6 +70,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .sperretAnsatt(false).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
+        oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), new NavKontor("007"));
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
