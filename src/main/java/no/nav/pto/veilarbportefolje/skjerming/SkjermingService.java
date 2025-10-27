@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class SkjermingService {
     private final SkjermingRepository skjermingRepository;
     private final BrukerServiceV2 brukerService;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     @SneakyThrows
     public void behandleSkjermedePersoner(ConsumerRecord<String, SkjermingDTO> kafkaMelding) {
@@ -44,7 +44,7 @@ public class SkjermingService {
         skjermingRepository.settSkjermingPeriode(fnr, DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
 
         brukerService.hentAktorId(fnr).ifPresent(aktorId ->
-                opensearchIndexerV2.updateSkjermetTil(aktorId, skjermetTil)
+                opensearchIndexerPaDatafelt.updateSkjermetTil(aktorId, skjermetTil)
         );
     }
 
@@ -59,7 +59,7 @@ public class SkjermingService {
         }
 
         brukerService.hentAktorId(fnr).ifPresent(aktorId ->
-                opensearchIndexerV2.updateErSkjermet(aktorId, erSkjermet)
+                opensearchIndexerPaDatafelt.updateErSkjermet(aktorId, erSkjermet)
         );
     }
 }

@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
@@ -49,7 +49,7 @@ class ArbeidssoekerService(
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
     private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
-    private val opensearchIndexerV2: OpensearchIndexerV2
+    private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
 
     @Transactional
@@ -83,7 +83,7 @@ class ArbeidssoekerService(
             opplysningerOmArbeidssoeker
         )
         if (aktorId != null) {
-            opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
+            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
         }
 
         secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
@@ -102,7 +102,7 @@ class ArbeidssoekerService(
 
         profileringRepository.insertProfilering(profilering)
         if (aktorId != null) {
-            opensearchIndexerV2.updateProfilering(aktorId, profilering)
+            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profilering)
         }
         secureLog.info("Lagret profilering fra topic for bruker med fnr: $fnr")
     }
@@ -147,7 +147,7 @@ class ArbeidssoekerService(
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerEntity)
 
         if (aktorId != null) {
-            opensearchIndexerV2.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
+            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
         }
 
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
@@ -180,7 +180,7 @@ class ArbeidssoekerService(
 
         profileringRepository.insertProfilering(profileringEntity)
         if (aktorId != null) {
-            opensearchIndexerV2.updateProfilering(aktorId, profileringEntity)
+            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profileringEntity)
         }
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }

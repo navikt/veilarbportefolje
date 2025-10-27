@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -41,7 +41,7 @@ class TiltakspengerServiceTest(
     @Autowired private val tiltakspengerRespository: TiltakspengerRespository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
     @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
-    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2,
+    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
     @Autowired private val opensearchService: OpensearchService,
     ) : EndToEndTest() {
 
@@ -68,7 +68,7 @@ class TiltakspengerServiceTest(
             oppfolgingRepositoryV2,
             pdlIdentRepository,
             aktorClient,
-            opensearchIndexerV2
+            opensearchIndexerPaDatafelt
         )
     }
 
