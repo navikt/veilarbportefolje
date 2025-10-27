@@ -123,7 +123,7 @@ public class OppfolgingsbrukerRepositoryV3 {
             INNER JOIN BRUKER_IDENTER alleIdenter on alleIdenter.person = initiellIdent.person
             JOIN OPPFOLGINGSBRUKER_ARENA_V2 on alleIdenter.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
             LEFT JOIN ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
-            WHERE initiellIdent = :ident
+            WHERE initiellIdent.ident = :ident
         """;
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> dbNamed.queryForObject(
@@ -223,8 +223,12 @@ public class OppfolgingsbrukerRepositoryV3 {
                 .addValue("ident", fnr.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
-                        () -> dbNamed.queryForObject(
-                                "select kontor_id from ao_kontor where ident = :ident",
+                        () -> dbNamed.queryForObject("""
+                                    select coalesce(ao.kontor_id, ob.nav_kontor) as kontor_id
+                                    from oppfolgingsbruker_arena_v2 ob
+                                    left join ao_kontor ao on ob.fodselsnr = ao.ident
+                                    where ob.fodselsnr = :ident
+                                """,
                                 params,
                                 (rs, i) -> NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
