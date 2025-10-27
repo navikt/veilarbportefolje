@@ -25,7 +25,7 @@ public class OppfolginsbrukerRepositoryV3Test {
     private SkjermingRepository skjermingRepository;
 
 
-    private final Fnr fnr = Fnr.of("0");
+    private final Fnr fnr = Fnr.of("01010112345");
 
     @Autowired
     public void OppfolginsbrukerRepositoryTestV2(JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {

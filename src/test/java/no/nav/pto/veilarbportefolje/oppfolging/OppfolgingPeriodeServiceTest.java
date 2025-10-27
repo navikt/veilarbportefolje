@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto;
@@ -33,7 +34,8 @@ public class OppfolgingPeriodeServiceTest {
         GjeldendeOppfolgingsperiodeV2Dto sisteOppfolgingsperiode = genererStartetOppfolgingsperiode(AktorId.of(aktorId), startOppfolgingDate);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
-        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontorId()));
+        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).behandleOppfølgingStartetEllerKontorEndret(Fnr.of(sisteOppfolgingsperiode.getIdent()), AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontorId()));
+        Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontorId()));
         Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(AktorId.of(aktorId));
     }
 
