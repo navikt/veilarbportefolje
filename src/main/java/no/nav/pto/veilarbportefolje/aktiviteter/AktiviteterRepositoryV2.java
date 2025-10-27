@@ -132,7 +132,8 @@ public class AktiviteterRepositoryV2 {
                         inner join aktive_identer ai on op.fodselsnr = ai.fnr
                         inner join oppfolging_data od on od.aktoerid = ai.aktorid
                         inner join aktiviteter a on a.aktoerid = ai.aktorid
-                        where op.nav_kontor = :enhet::varchar
+                        left join ao_kontor on ao_kontor.ident = op.fodselsnr
+                        where coalesce(ao_kontor.kontor_id, op.nav_kontor) = :enhet::varchar
                         AND od.veilederid = :veilederIdent::varchar
                         AND a.aktivitettype = 'mote'
                         AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)

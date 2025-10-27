@@ -73,24 +73,26 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
-        String fnrsCondition = fnrs.stream()
+        var fnrStrings = fnrs.stream()
                 .map(Fnr::toString)
-                .collect(Collectors.joining(",", "{", "}"));
+                .collect(Collectors.toSet());
         String sql = """
                         SELECT DISTINCT ON (bi1.ident)
-                             bi1.ident as oppslag_fnr, ob.*
+                             bi1.ident as oppslag_fnr, 
+                             coalesce(ao_kontor.kontor_id, ob.nav_kontor) as kontor_id,
+                             ob.*
                         FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
-                        INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (:identer::varchar[])
+                        INNER JOIN BRUKER_IDENTER bi1 on bi1.ident in (:identer)
                         INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
                         LEFT JOIN ao_kontor on ao_kontor.ident = bi2.ident
                         WHERE ob.fodselsnr = bi2.ident
                         AND bi2.gruppe = :gruppe
                 """;
 
-        return dbNamed.query(
+        var result = dbNamed.query(
                         sql,
                         new MapSqlParameterSource()
-                                .addValue("identer", fnrsCondition)
+                                .addValue("identer", fnrStrings)
                                 .addValue("gruppe", PDLIdent.Gruppe.FOLKEREGISTERIDENT.name()),
                         OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbrukerMedOppslagFnr
                 )
@@ -100,6 +102,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         OppfolgingsbrukerEntityMedOppslagFnr::oppslagFnr,
                         OppfolgingsbrukerEntityMedOppslagFnr::oppfolgingsbrukerEntity)
                 );
+        return result;
     }
 
     @SneakyThrows
@@ -113,7 +116,10 @@ public class OppfolgingsbrukerRepositoryV3 {
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
         String sql = """
-            SELECT * FROM BRUKER_IDENTER initiellIdent
+            SELECT 
+                OPPFOLGINGSBRUKER_ARENA_V2.*,
+                coalesce(ao_kontor.kontor_id, ob.nav_kontor) as kontor_id
+            FROM BRUKER_IDENTER initiellIdent
             INNER JOIN BRUKER_IDENTER alleIdenter on alleIdenter.person = initiellIdent.person
             JOIN OPPFOLGINGSBRUKER_ARENA_V2 on alleIdenter.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
             LEFT JOIN ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
@@ -137,13 +143,12 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public int settNavKontor(String fodselsnr, NavKontor navKontor) {
-        var params = new HashMap<String, String>();
-        params.put("navKontor", navKontor.getValue());
-        params.put("ident", fodselsnr);
+        var params = new MapSqlParameterSource()
+                .addValue("ident", fodselsnr)
+                .addValue("navKontor", navKontor.getValue());
         return dbNamed.update("""
-                    UPDATE ao_kontor
-                    SET kontor_id = :navKontor 
-                    where ident = :ident
+                    INSERT INTO ao_kontor (ident, kontor_id) VALUES (:ident, :navKontor)
+                    ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id
                 """, params);
     }
 
