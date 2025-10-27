@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteDTO;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
 import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
@@ -255,46 +254,6 @@ public class OpensearchIndexerV2 {
         );
     }
 
-    @SneakyThrows
-    public void updateArbeidsliste(ArbeidslisteDTO arbeidslisteDTO) {
-        secureLog.info("Oppdater arbeidsliste for {} med frist {}", arbeidslisteDTO.getAktorId(), arbeidslisteDTO.getFrist());
-        final String frist = toIsoUTC(arbeidslisteDTO.getFrist());
-        int arbeidsListeLengde = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
-                .map(String::length).orElse(0);
-        String arbeidsListeSorteringsVerdi = Optional.ofNullable(arbeidslisteDTO.getOverskrift())
-                .filter(s -> !s.isEmpty())
-                .map(s -> s.substring(0, Math.min(2, s.length())))
-                .orElse("");
-
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("arbeidsliste_aktiv", true)
-                .field("arbeidsliste_tittel_sortering", arbeidsListeSorteringsVerdi)
-                .field("arbeidsliste_tittel_lengde", arbeidsListeLengde)
-                .field("arbeidsliste_frist", Optional.ofNullable(frist).orElse(getFarInTheFutureDate()))
-                .field("arbeidsliste_sist_endret_av_veilederid", arbeidslisteDTO.getVeilederId().getValue())
-                .field("arbeidsliste_endringstidspunkt", toIsoUTC(arbeidslisteDTO.getEndringstidspunkt()))
-                .field("arbeidsliste_kategori", arbeidslisteDTO.getKategori().name())
-                .endObject();
-
-        update(arbeidslisteDTO.getAktorId(), content, format("Oppdatert arbeidsliste med frist: %s", frist));
-    }
-
-    @SneakyThrows
-    public void slettArbeidsliste(AktorId aktoerId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .field("arbeidsliste_aktiv", false)
-                .field("arbeidsliste_tittel_sortering", (String) null)
-                .field("arbeidsliste_tittel_lengde", 0)
-                .field("arbeidsliste_sist_endret_av_veilederid", (String) null)
-                .field("arbeidsliste_endringstidspunkt", (String) null)
-                .field("arbeidsliste_frist", (String) null)
-                .field("arbeidsliste_kategori", (String) null)
-                .endObject();
-
-        update(aktoerId, content, "Sletter arbeidsliste");
-    }
 
     @SneakyThrows
     public void updateOvergangsstonad(AktorId aktorId, EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgerOvergangsstønadTiltakDto) {

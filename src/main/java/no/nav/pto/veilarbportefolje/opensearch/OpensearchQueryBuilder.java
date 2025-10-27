@@ -1017,10 +1017,6 @@ public class OpensearchQueryBuilder {
             case UTLOPTE_AKTIVITETER:
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
                 break;
-            case MIN_ARBEIDSLISTE:
-                // Ikkje filtrer på arbeidslister fram til vi får fjerna MIN_ARBEIDSLISTE frå lagra filter i veilarbfilter
-                queryBuilder = matchAllQuery(); // Returnerer alle resultat, som om ein ikkje hadde filtrert på arbeidsliste
-                break;
             case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
                 break;
@@ -1115,16 +1111,6 @@ public class OpensearchQueryBuilder {
                             .gt(format("now-%sy-1d", tilAlder + 1))
             );
         }
-    }
-
-    static SearchSourceBuilder byggArbeidslisteQuery(String enhetId, String veilederId) {
-        return new SearchSourceBuilder().query(
-                boolQuery()
-                        .must(termQuery("oppfolging", true))
-                        .must(termQuery("enhet_id", enhetId))
-                        .must(termQuery("veileder_id", veilederId))
-                        .must(termQuery("arbeidsliste_aktiv", true))
-        );
     }
 
     static SearchSourceBuilder byggPortefoljestorrelserQuery(String enhetId) {

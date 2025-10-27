@@ -33,46 +33,11 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     private lateinit var TEST_ENHET: String
     private lateinit var TEST_VEILEDER_0: String
-    
+
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
         TEST_VEILEDER_0 = randomVeilederId().value
-    }
-    @Test
-    fun skal_hente_ut_riktig_antall_brukere_med_arbeidsliste() {
-        val brukerMedArbeidsliste =
-            OppfolgingsBruker()
-                .setAktoer_id(randomAktorId().get())
-                .setFnr(randomFnr().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setEnhet_id(TEST_ENHET)
-                .setArbeidsliste_aktiv(true)
-
-
-        val brukerUtenArbeidsliste =
-            OppfolgingsBruker()
-                .setAktoer_id(randomAktorId().get())
-                .setFnr(randomFnr().toString())
-                .setOppfolging(true)
-                .setVeileder_id(TEST_VEILEDER_0)
-                .setEnhet_id(TEST_ENHET)
-                .setArbeidsliste_aktiv(false)
-        val liste = listOf(brukerMedArbeidsliste, brukerUtenArbeidsliste)
-
-        skrivBrukereTilTestindeks(liste)
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val request = OpensearchQueryBuilder.byggArbeidslisteQuery(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
-        val response: OpensearchResponse = opensearchService.search(
-            request, indexName.value,
-            OpensearchResponse::class.java
-        )
-        Assertions.assertThat(response.hits.total.value).isEqualTo(1)
     }
 
     @Test
