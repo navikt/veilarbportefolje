@@ -35,12 +35,12 @@ public class OpensearchIndexer {
     private final BrukerRepositoryV2 brukerRepositoryV2;
     private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     public void indekser(AktorId aktoerId) {
         Optional<PortefoljebrukerOpensearchModell> bruker;
         bruker = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktoerId)).stream().findAny();
-        bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerV2.slettDokumenter(List.of(aktoerId)));
+        bruker.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerPaDatafelt.slettDokumenter(List.of(aktoerId)));
     }
 
     private void indekserBruker(PortefoljebrukerOpensearchModell bruker) {
@@ -48,7 +48,7 @@ public class OpensearchIndexer {
             flettInnNodvendigData(List.of(bruker));
             syncronIndekseringsRequest(bruker);
         } else {
-            opensearchIndexerV2.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
+            opensearchIndexerPaDatafelt.slettDokumenter(List.of(AktorId.of(bruker.getAktoer_id())));
         }
     }
 

@@ -123,7 +123,7 @@ import static org.mockito.Mockito.when;
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
         OpensearchIndexer.class,
-        OpensearchIndexerV2.class,
+        OpensearchIndexerPaDatafelt.class,
         OpensearchAdminService.class,
         HovedIndekserer.class,
         AktiviteterRepositoryV2.class,

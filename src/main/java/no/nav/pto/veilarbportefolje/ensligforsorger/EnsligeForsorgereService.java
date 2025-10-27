@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService<VedtakOvergangsstønadArbeidsoppfølging> {
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final EnsligeForsorgereRepository ensligeForsorgereRepository;
     private final AktorClient aktorClient;
     private final EnsligForsorgerClient ensligForsorgerClient;
@@ -105,9 +105,9 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(personIdent));
 
         if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
-            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
+            opensearchIndexerPaDatafelt.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
         } else {
-            opensearchIndexerV2.deleteOvergansstonad(aktorId);
+            opensearchIndexerPaDatafelt.deleteOvergansstonad(aktorId);
         }
     }
 

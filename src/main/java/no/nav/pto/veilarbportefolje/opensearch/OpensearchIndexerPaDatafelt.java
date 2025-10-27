@@ -43,7 +43,7 @@ import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OpensearchIndexerV2 {
+public class OpensearchIndexerPaDatafelt {
 
     private final IndexName indexName;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;

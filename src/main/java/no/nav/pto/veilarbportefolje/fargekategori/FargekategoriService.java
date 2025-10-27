@@ -7,7 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class FargekategoriService {
 
     private final FargekategoriRepository fargekategoriRepository;
     private final PdlIdentRepository pdlIdentRepository;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final BrukerServiceV2 brukerServiceV2;
 
     public Optional<FargekategoriEntity> hentFargekategoriForBruker(FargekategoriController.HentFargekategoriRequest request) {
@@ -45,12 +45,12 @@ public class FargekategoriService {
 
     private void slettIOpensearch(Fnr fnr) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
-        opensearchIndexerV2.slettFargekategori(aktorId);
+        opensearchIndexerPaDatafelt.slettFargekategori(aktorId);
     }
 
     private void oppdaterIOpensearch(Fnr fnr, String fargekategori, String enhetId) {
         AktorId aktorId = Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr)).orElseThrow(RuntimeException::new);
-        opensearchIndexerV2.updateFargekategori(aktorId, fargekategori, enhetId);
+        opensearchIndexerPaDatafelt.updateFargekategori(aktorId, fargekategori, enhetId);
     }
 
     public void slettFargekategoriPaaBruker(AktorId aktorId, Optional<Fnr> maybeFnr) {
@@ -58,7 +58,7 @@ public class FargekategoriService {
             secureLog.info("Sletter fargekategori på bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
                 fargekategoriRepository.deleteFargekategori(maybeFnr.get());
-                opensearchIndexerV2.slettFargekategori(aktorId);
+                opensearchIndexerPaDatafelt.slettFargekategori(aktorId);
             } else {
                 secureLog.warn("Kunne ikke slette fargekategori for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
             }
