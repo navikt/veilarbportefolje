@@ -8,7 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.*;
@@ -55,7 +55,7 @@ public class BarnUnder18AarKafkaTest {
     @MockBean
     private OpensearchIndexer opensearchIndexer;
     @MockBean
-    private OpensearchIndexerV2 opensearchIndexerV2;
+    private OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
@@ -104,7 +104,7 @@ public class BarnUnder18AarKafkaTest {
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
                 opensearchIndexer,
-                opensearchIndexerV2
+                opensearchIndexerPaDatafelt
         );
     }
 
