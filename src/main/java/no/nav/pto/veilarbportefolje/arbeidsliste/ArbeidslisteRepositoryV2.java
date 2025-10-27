@@ -51,7 +51,8 @@ public class ArbeidslisteRepositoryV2 {
                                 INNER JOIN aktive_identer ai on ai.aktorid = a.aktoerid
                                 INNER JOIN oppfolgingsbruker_arena_v2 ob on ai.fnr = ob.fodselsnr
                                 LEFT JOIN fargekategori f on f.fnr = ai.fnr
-                                WHERE ob.nav_kontor = ?
+                                LEFT JOIN ao_kontor on ao_kontor.ident = ai.fnr
+                                WHERE coalesce(ao_kontor.kontor_id, ob.nav_kontor) = ?
                                 AND o.veilederid = ?""",
                         enhet.get(),
                         veilederident.getValue()
