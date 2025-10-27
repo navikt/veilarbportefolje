@@ -107,7 +107,6 @@ public class OppfolgingsBruker {
     Set<String> alleAktiviteter = emptySet();
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
-    boolean har_veileder_fra_enhet;
     String utkast_14a_status;
     String utkast_14a_status_endret;
     String utkast_14a_ansvarlig_veileder;
