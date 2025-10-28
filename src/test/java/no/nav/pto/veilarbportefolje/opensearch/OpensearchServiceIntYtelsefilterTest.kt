@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -35,7 +35,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_som_rettighetsgruppefilter() {
-        val brukerMedAAP = OppfolgingsBruker()
+        val brukerMedAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -43,7 +43,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
 
-        val brukerUtenAAP = OppfolgingsBruker()
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -78,7 +78,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_behandlet_i_arena() {
-        val brukerMedAAPUnntak = OppfolgingsBruker()
+        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -86,7 +86,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("AAP_UNNTAK")
 
-        val brukerMedAAPOrdinar = OppfolgingsBruker()
+        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -94,7 +94,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("AAP_MAXTID")
 
-        val brukerUtenAAP = OppfolgingsBruker()
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -130,7 +130,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun antall_brukere_med_arbeidsavklaringspenger_skal_vere_like_for_ytelsesfilter_og_aapArenafilter() {
-        val brukerMedAAPUnntak = OppfolgingsBruker()
+        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -138,7 +138,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("AAP_UNNTAK")
 
-        val brukerMedAAPOrdinar = OppfolgingsBruker()
+        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -146,7 +146,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("AAP_MAXTID")
 
-        val brukerMedAAPUnntak2 = OppfolgingsBruker()
+        val brukerMedAAPUnntak2 = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -154,7 +154,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("AAP_UNNTAK")
 
-        val brukerUtenAap = OppfolgingsBruker()
+        val brukerUtenAap = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -220,7 +220,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_behandlet_i_kelvin() {
-        val brukerMedAAP = OppfolgingsBruker()
+        val brukerMedAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -228,7 +228,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setAap_kelvin(true)
 
-        val brukerUtenAAP = OppfolgingsBruker()
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -263,7 +263,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_tiltakspenger_behandlet_i_tpsak() {
-        val brukerMedTiltakspenger = OppfolgingsBruker()
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -271,7 +271,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setTiltakspenger(true)
 
-        val brukerUtenTiltakspenger = OppfolgingsBruker()
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -307,7 +307,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_tiltakspenger_behandlet_i_arena() {
-        val brukerMedTiltakspenger = OppfolgingsBruker()
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -315,7 +315,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("TILTAKSPENGER")
 
-        val brukerUtenTiltakspenger = OppfolgingsBruker()
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -352,7 +352,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun antall_brukere_med_tiltakspenger_skal_vere_like_for_ytelsesfilter_og_tiltakspengerArenafilter() {
-        val brukerMedTiltakspenger = OppfolgingsBruker()
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -360,7 +360,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("TILTAKSPENGER")
 
-        val brukerUtenTiltakspenger = OppfolgingsBruker()
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -415,7 +415,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_filtrert_paa_dagpenger_som_ytelse() {
-        val brukerMedDagpengerMedPermittering = OppfolgingsBruker()
+        val brukerMedDagpengerMedPermittering = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -425,7 +425,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name)
 
 
-        val brukerMedPermitteringFiskeindustri = OppfolgingsBruker()
+        val brukerMedPermitteringFiskeindustri = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -434,7 +434,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
             .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
 
-        val brukerMedAAP = OppfolgingsBruker()
+        val brukerMedAAP = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -443,7 +443,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name)
             .setYtelse(YtelseMapping.AAP_MAXTID.name)
 
-        val brukerMedAnnenVeileder = OppfolgingsBruker()
+        val brukerMedAnnenVeileder = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -485,7 +485,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun test_sortering_AAP() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -494,7 +494,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setYtelse("AAP_UNNTAK")
             .setUtlopsdato("2023-06-30T21:59:59Z")
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -505,7 +505,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAapmaxtiduke(43)
             .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"))
 
-        val bruker3 = OppfolgingsBruker()
+        val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -514,7 +514,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setYtelse("AAP_UNNTAK")
             .setEnhet_id(TEST_ENHET)
 
-        val bruker4 = OppfolgingsBruker()
+        val bruker4 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -523,7 +523,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setYtelse("AAP_MAXTID")
             .setEnhet_id(TEST_ENHET)
 
-        val bruker5 = OppfolgingsBruker()
+        val bruker5 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -532,7 +532,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setYtelse("AAP_UNNTAK")
             .setUtlopsdato("2023-08-30T21:59:59Z")
 
-        val bruker6 = OppfolgingsBruker()
+        val bruker6 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -594,7 +594,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
 
-        val tidligstTomBruker = OppfolgingsBruker()
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -602,7 +602,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt1)
 
-        val midtImellomBruker = OppfolgingsBruker()
+        val midtImellomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -610,7 +610,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt2)
 
-        val senestTomBruker = OppfolgingsBruker()
+        val senestTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -618,7 +618,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt3)
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -673,7 +673,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
 
-        val tidligstTomBruker = OppfolgingsBruker()
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -681,7 +681,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt1)
 
-        val midtImellomBruker = OppfolgingsBruker()
+        val midtImellomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -689,7 +689,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt2)
 
-        val senestTomBruker = OppfolgingsBruker()
+        val senestTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -697,7 +697,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt3)
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -752,7 +752,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_sortere_brukere_pa_aap_rettighetstype() {
-        val bistandsbehovBruker = OppfolgingsBruker()
+        val bistandsbehovBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -760,7 +760,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.BISTANDSBEHOV)
 
-        val studentBruker = OppfolgingsBruker()
+        val studentBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -768,7 +768,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.STUDENT)
 
-        val sykepengeerstatningBruker = OppfolgingsBruker()
+        val sykepengeerstatningBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -776,7 +776,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -828,7 +828,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_sortere_brukere_pa_tiltakspenger_rettighet() {
-        val bruker1 = OppfolgingsBruker()
+        val bruker1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -836,7 +836,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setTiltakspenger(true)
             .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
 
-        val bruker2 = OppfolgingsBruker()
+        val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -844,7 +844,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setTiltakspenger(true)
             .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG)
 
-        val nullBruker = OppfolgingsBruker()
+        val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -898,7 +898,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     }
 
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 }

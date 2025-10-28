@@ -14,7 +14,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,9 +93,9 @@ public class YtelserTest extends EndToEndTest {
 
         ytelsesService.behandleKafkaMelding(dto, TypeKafkaYtelse.AAP);
 
-        List<OppfolgingsBruker> oppfolgingsBrukerList = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
-        assertThat(oppfolgingsBrukerList.size()).isEqualTo(1);
-        assertThat(oppfolgingsBrukerList.get(0).getYtelse()).isEqualTo("AAP_MAXTID");
+        List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
+        assertThat(brukerOpensearchModellList.size()).isEqualTo(1);
+        assertThat(brukerOpensearchModellList.get(0).getYtelse()).isEqualTo("AAP_MAXTID");
     }
 
     @Test

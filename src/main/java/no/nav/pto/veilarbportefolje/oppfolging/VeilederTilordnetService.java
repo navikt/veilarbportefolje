@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
@@ -28,7 +28,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final PdlIdentRepository pdlIdentRepository;
 
     @Override
@@ -45,7 +45,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
         oppfolgingRepositoryV2.settTildeltTidspunkt(aktoerId, tildeltTidspunkt);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
-        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt);
+        opensearchIndexerPaDatafelt.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt);
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));

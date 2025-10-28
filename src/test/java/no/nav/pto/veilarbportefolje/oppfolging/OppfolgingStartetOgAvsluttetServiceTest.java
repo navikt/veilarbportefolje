@@ -284,40 +284,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertNotNull(profilering);
     }
 
-    @Test
-    void når_oppfølging_avsluttes_skal_arbeidsliste_registrering_og_oppfølgingsdata_slettes() {
-        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-
-        testDataClient.setupBrukerMedArbeidsliste(
-                aktorId,
-                randomNavKontor(),
-                randomVeilederId(),
-                ZonedDateTime.parse("2020-12-01T00:00:00+02:00")
-        );
-
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
-
-        List<String> arbeidsliste =
-                jdbcTemplate.queryForList(
-                        "SELECT aktoerid from arbeidsliste where aktoerid = ?",
-                        String.class,
-                        aktorId.get()
-                );
-
-        List<String> registrering =
-                jdbcTemplate.query(
-                        "select * from bruker_registrering where aktoerid = ?",
-                        (r, i) -> r.getString("aktoerid"),
-                        aktorId.get()
-                );
-
-        assertThat(arbeidsliste.isEmpty()).isTrue();
-        assertThat(registrering.size()).isEqualTo(0);
-        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktorId)).isFalse();
-        Map<String, Object> source = opensearchTestClient.fetchDocument(aktorId).getSourceAsMap();
-        assertThat(source).isNull();
-    }
 
     @Test
     void når_oppfølging_avsluttes_skal_siste_14a_vedtak_slettes() {

@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
-import no.nav.pto.veilarbportefolje.domene.Bruker
+import no.nav.pto.veilarbportefolje.domene.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.domene.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
@@ -52,7 +52,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -81,7 +81,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -114,7 +114,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -160,7 +160,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -203,7 +203,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -247,7 +247,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -299,7 +299,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -336,7 +336,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -382,7 +382,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
@@ -438,7 +438,7 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: Bruker = opensearchService.hentBrukere(
+        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,

@@ -4,7 +4,7 @@ import no.nav.poao_tilgang.client.Decision.Deny
 import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient
@@ -495,7 +495,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(3)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(listOf(bruker1.fnr, bruker3.fnr, bruker6.fnr))
         )
         response.brukere.forEach { bruker ->
@@ -555,7 +555,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(4)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(listOf(bruker1BU.fnr, bruker3B67U.fnr, bruker2B7U.fnr, bruker2BU7.fnr))
         )
 
@@ -617,7 +617,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(7)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,
@@ -694,7 +694,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(6)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,
@@ -771,7 +771,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         assertThat(response.antall).isEqualTo(8)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().map { obj: Bruker -> obj.fnr }.toList()
+            response.brukere.stream().map { obj: PortefoljebrukerFrontendModell -> obj.fnr }.toList()
                 .containsAll(
                     listOf(
                         bruker1BU.fnr,
@@ -922,13 +922,13 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         assertThat(response.brukere[2].fnr).isEqualTo(bruker4.fnr)
     }
 
-    private fun skrivBrukereTilTestindeks(brukere: List<OppfolgingsBruker>) {
+    private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }
 
 
-    fun brukerMed1BarnUtenDiskresjonskode(): OppfolgingsBruker {
-        return OppfolgingsBruker()
+    fun brukerMed1BarnUtenDiskresjonskode(): PortefoljebrukerOpensearchModell {
+        return PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)
@@ -937,14 +937,14 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
             .setBarn_under_18_aar(listOf(BarnUnder18AarData(8, null)))
     }
 
-    fun brukerMed2Barn6og7(): OppfolgingsBruker {
+    fun brukerMed2Barn6og7(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(1, "6"), BarnUnder18AarData(12, "7")),
             nyForVeileder = false
         )
     }
 
-    fun brukerMed3Barn67ogIngen(): OppfolgingsBruker {
+    fun brukerMed3Barn67ogIngen(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(
                 BarnUnder18AarData(1, "7"),
@@ -955,54 +955,54 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         )
     }
 
-    fun brukerMed2Barn7ogIngen(): OppfolgingsBruker {
+    fun brukerMed2Barn7ogIngen(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(5, "7"), BarnUnder18AarData(11, null)),
             nyForVeileder = false
         )
     }
 
-    fun brukerMed2BarnIngenog7(): OppfolgingsBruker {
+    fun brukerMed2BarnIngenog7(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(5, null), BarnUnder18AarData(11, "7")),
             nyForVeileder = false
         )
     }
 
-    fun brukerMed2BarnMedKode7(): OppfolgingsBruker {
+    fun brukerMed2BarnMedKode7(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(5, "7"), BarnUnder18AarData(11, "7")),
             nyForVeileder = false
         )
     }
 
-    fun brukerMed2BarnKode6(): OppfolgingsBruker {
+    fun brukerMed2BarnKode6(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(5, "6"), BarnUnder18AarData(11, "6")),
             nyForVeileder = false
         )
     }
 
-    fun brukerMedBarnKode19(): OppfolgingsBruker {
+    fun brukerMedBarnKode19(): PortefoljebrukerOpensearchModell {
         return opprettBruker(
             listOf(BarnUnder18AarData(5, "19"), BarnUnder18AarData(3, "19")),
             nyForVeileder = false
         )
     }
 
-    fun brukerMedTomBarnliste(): OppfolgingsBruker {
+    fun brukerMedTomBarnliste(): PortefoljebrukerOpensearchModell {
         return opprettBruker(emptyList(), nyForVeileder = false)
     }
 
-    fun brukerUtenBarnliste(): OppfolgingsBruker {
+    fun brukerUtenBarnliste(): PortefoljebrukerOpensearchModell {
         return opprettBruker(null, nyForVeileder = false)
     }
 
     fun opprettBruker(
         barn: List<BarnUnder18AarData>? = null,
         nyForVeileder: Boolean = false
-    ): OppfolgingsBruker {
-        return OppfolgingsBruker()
+    ): PortefoljebrukerOpensearchModell {
+        return PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
             .setOppfolging(true)

@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder, tilordnet));
 
-        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
+        final PortefoljebrukerOpensearchModell bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
         assertThat(tilordnetVeileder).isEqualTo(nyVeileder);
@@ -58,7 +58,7 @@ class VeilederTilordnetServiceTest extends EndToEndTest {
 
         veilederTilordnetService.behandleKafkaMeldingLogikk(new VeilederTilordnetDTO(aktoerId, nyVeileder, null));
 
-        final OppfolgingsBruker bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
+        final PortefoljebrukerOpensearchModell bruker = opensearchTestClient.hentBrukerFraOpensearch(aktoerId);
         final VeilederId tilordnetVeileder = VeilederId.of(bruker.getVeileder_id());
 
 

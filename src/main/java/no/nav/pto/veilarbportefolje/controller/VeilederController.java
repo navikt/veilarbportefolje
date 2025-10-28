@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.arbeidsliste.Arbeidsliste;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
@@ -28,7 +26,6 @@ import java.util.Optional;
 public class VeilederController {
     private final OpensearchService opensearchService;
     private final AuthService authService;
-    private final ArbeidslisteService arbeidslisteService;
     private final AktivitetService aktivitetService;
 
     @PostMapping("/{veilederident}/portefolje")
@@ -50,7 +47,7 @@ public class VeilederController {
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), validertSorteringsrekkefolge, validertSorteringsfelt, filtervalg, fra, antall);
-        List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
+        List<PortefoljebrukerFrontendModell> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                 sensurerteBrukereSublist,
@@ -68,16 +65,6 @@ public class VeilederController {
         return new VeilederPortefoljeStatustallRespons(
                 opensearchService.hentStatustallForVeilederPortefolje(veilederIdent, enhet)
         );
-    }
-
-    @GetMapping("/{veilederident}/hentArbeidslisteForVeileder")
-    @Operation(summary = "Hent arbeidslister for veileder", description = "Henter en liste av arbeidslister for en gitt veileder på en gitt enhet.")
-    public List<Arbeidsliste> hentArbeidslisteForVeileder(@PathVariable("veilederident") VeilederId veilederIdent, @RequestParam("enhet") EnhetId enhet) {
-        ValideringsRegler.sjekkEnhet(enhet.get());
-        ValideringsRegler.sjekkVeilederIdent(veilederIdent.getValue(), false);
-        authService.innloggetVeilederHarTilgangTilEnhet(enhet.get());
-
-        return arbeidslisteService.getArbeidslisteForVeilederPaEnhet(enhet, veilederIdent);
     }
 
     @GetMapping("{veilederident}/moteplan")

@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.lucene.search.join.ScoreMode;
@@ -516,9 +516,9 @@ public class OpensearchQueryBuilder {
      * <p>
      * Merk: {@link Sorteringsfelt} er en enum som representerer lovlige sorteringsfelter slik frontend har definert dem.
      * Disse mappes til felter i OpenSearch, dvs. for enkelte verdier av {@link Sorteringsfelt} kan det være at feltet
-     * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link OppfolgingsBruker} er "fasiten" for hvilke felter
+     * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link PortefoljebrukerOpensearchModell} er "fasiten" for hvilke felter
      * som er lov å sortere på i OpenSearch er det viktig at vi ikke legger til nye sorteringsfelter i {@link Sorteringsfelt}
-     * uten å sørge for at disse også er tilgjengelige i {@link OppfolgingsBruker}.
+     * uten å sørge for at disse også er tilgjengelige i {@link PortefoljebrukerOpensearchModell}.
      */
     static SearchSourceBuilder sorterQueryParametere(
             Sorteringsrekkefolge sorteringsrekkefolge,
@@ -1017,10 +1017,6 @@ public class OpensearchQueryBuilder {
             case UTLOPTE_AKTIVITETER:
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
                 break;
-            case MIN_ARBEIDSLISTE:
-                // Ikkje filtrer på arbeidslister fram til vi får fjerna MIN_ARBEIDSLISTE frå lagra filter i veilarbfilter
-                queryBuilder = matchAllQuery(); // Returnerer alle resultat, som om ein ikkje hadde filtrert på arbeidsliste
-                break;
             case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
                 break;
@@ -1115,16 +1111,6 @@ public class OpensearchQueryBuilder {
                             .gt(format("now-%sy-1d", tilAlder + 1))
             );
         }
-    }
-
-    static SearchSourceBuilder byggArbeidslisteQuery(String enhetId, String veilederId) {
-        return new SearchSourceBuilder().query(
-                boolQuery()
-                        .must(termQuery("oppfolging", true))
-                        .must(termQuery("enhet_id", enhetId))
-                        .must(termQuery("veileder_id", veilederId))
-                        .must(termQuery("arbeidsliste_aktiv", true))
-        );
     }
 
     static SearchSourceBuilder byggPortefoljestorrelserQuery(String enhetId) {

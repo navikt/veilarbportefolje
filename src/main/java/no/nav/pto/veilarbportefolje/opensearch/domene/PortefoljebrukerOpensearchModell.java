@@ -26,7 +26,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingsBruker {
+public class PortefoljebrukerOpensearchModell {
     String fnr;
     String aktoer_id;
     String fornavn;
@@ -95,19 +95,10 @@ public class OppfolgingsBruker {
     String alle_aktiviteter_behandling_utlopsdato = getFarInTheFutureDate();
     String alle_aktiviteter_ijobb_utlopsdato = getFarInTheFutureDate();
     String alle_aktiviteter_sokeavtale_utlopsdato = getFarInTheFutureDate();
-    boolean arbeidsliste_aktiv;
-    String arbeidsliste_sist_endret_av_veilederid;
-    String arbeidsliste_endringstidspunkt;
-    String arbeidsliste_frist;
-    String arbeidsliste_kategori;
-    String arbeidsliste_tittel_sortering;
-    String navkontor_for_arbeidsliste;
-    int arbeidsliste_tittel_lengde;
     String oppfolging_startdato;
     Set<String> alleAktiviteter = emptySet();
     Set<String> aktiviteter = emptySet();
     Set<String> tiltak = emptySet();
-    boolean har_veileder_fra_enhet;
     String utkast_14a_status;
     String utkast_14a_status_endret;
     String utkast_14a_ansvarlig_veileder;

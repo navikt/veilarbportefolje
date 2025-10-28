@@ -13,5 +13,5 @@ public class Portefolje {
     int antallTotalt;
     int antallReturnert;
     int fraIndex;
-    List<Bruker> brukere;
+    List<PortefoljebrukerFrontendModell> brukere;
 }

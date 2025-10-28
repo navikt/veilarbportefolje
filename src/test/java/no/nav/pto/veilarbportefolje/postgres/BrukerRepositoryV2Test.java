@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
@@ -76,15 +76,14 @@ public class BrukerRepositoryV2Test {
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
                         "9999", null, null,
-                        null, ZonedDateTime.now()), new NavKontor("0000"));
-        List<OppfolgingsBruker> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+                        null, ZonedDateTime.now()), new  NavKontor("0000"));
+        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
                         "9999", null, null,
-                        null, ZonedDateTime.now()), new NavKontor("0001"));
-
-        List<OppfolgingsBruker> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentOppfolgingsBrukere(List.of(aktorId));
+                        null, ZonedDateTime.now()),  new NavKontor("0001"));
+        List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
 
         Assertions.assertThat(oppfolgingsBrukers_pre_nyFnrIArena.size()).isEqualTo(1);
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.size()).isEqualTo(1);

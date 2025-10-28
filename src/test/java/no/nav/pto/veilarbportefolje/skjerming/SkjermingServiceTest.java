@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.skjerming;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +21,8 @@ public class SkjermingServiceTest {
         skjermingRepository = Mockito.mock(SkjermingRepository.class);
         BrukerServiceV2 brukerServiceV2 = Mockito.mock(BrukerServiceV2.class);
         Mockito.when(brukerServiceV2.hentAktorId(Mockito.any())).thenReturn(Optional.of(AktorId.of("1111")));
-        OpensearchIndexerV2 opensearchIndexerV2 = Mockito.mock(OpensearchIndexerV2.class);
-        skjermingService = new SkjermingService(skjermingRepository, brukerServiceV2, opensearchIndexerV2);
+        OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt = Mockito.mock(OpensearchIndexerPaDatafelt.class);
+        skjermingService = new SkjermingService(skjermingRepository, brukerServiceV2, opensearchIndexerPaDatafelt);
 
     }
 

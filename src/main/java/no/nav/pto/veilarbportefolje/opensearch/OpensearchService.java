@@ -106,9 +106,9 @@ public class OpensearchService {
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
-        List<Bruker> brukere = response.hits().getHits().stream()
+        List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapOppfolgingsBrukerTilBruker(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
+                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
                 .collect(toList());
 
         return new BrukereMedAntall(totalHits, brukere);
@@ -206,8 +206,8 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private Bruker mapOppfolgingsBrukerTilBruker(OppfolgingsBruker oppfolgingsBruker, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
-        Bruker bruker = Bruker.of(oppfolgingsBruker, erUfordelt(oppfolgingsBruker, aktiveVeilederePaEnhet));
+    private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
+        PortefoljebrukerFrontendModell bruker = PortefoljebrukerFrontendModell.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
 
         if (filtervalg.harAktiviteterForenklet()) {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
@@ -219,15 +219,15 @@ public class OpensearchService {
             bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
         }
         if (filtervalg.harSisteEndringFilter()) {
-            bruker.kalkulerSisteEndring(oppfolgingsBruker.getSiste_endringer(), filtervalg.sisteEndringKategori);
+            bruker.kalkulerSisteEndring(brukerOpensearchModell.getSiste_endringer(), filtervalg.sisteEndringKategori);
         }
 
         return bruker;
     }
 
 
-    private boolean erUfordelt(OppfolgingsBruker oppfolgingsBruker, List<String> veiledereMedTilgangTilEnhet) {
-        boolean harVeilederPaaSammeEnhet = oppfolgingsBruker.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(oppfolgingsBruker.getVeileder_id());
+    private boolean erUfordelt(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> veiledereMedTilgangTilEnhet) {
+        boolean harVeilederPaaSammeEnhet = brukerOpensearchModell.getVeileder_id() != null && veiledereMedTilgangTilEnhet.contains(brukerOpensearchModell.getVeileder_id());
         return !harVeilederPaaSammeEnhet;
     }
 }

@@ -6,6 +6,6 @@ import lombok.Data;
 public class Hit {
     String _index;
     String _id;
-    OppfolgingsBruker _source;
+    PortefoljebrukerOpensearchModell _source;
 }
 

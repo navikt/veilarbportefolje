@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -31,7 +31,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Accessors(chain = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Bruker {
+public class PortefoljebrukerFrontendModell {
     String fnr;
     String aktoerid;
     String fornavn;
@@ -101,94 +101,94 @@ public class Bruker {
     GjeldendeVedtak14a gjeldendeVedtak14a;
     Hendelse.HendelseInnhold utgattVarsel;
 
-    public static Bruker of(OppfolgingsBruker bruker, boolean ufordelt) {
+    public static PortefoljebrukerFrontendModell of(PortefoljebrukerOpensearchModell brukerOpensearchModell, boolean ufordelt) {
 
-        String formidlingsgruppekode = bruker.getFormidlingsgruppekode();
-        String kvalifiseringsgruppekode = bruker.getKvalifiseringsgruppekode();
-        String sikkerhetstiltak = bruker.getSikkerhetstiltak();
-        Profileringsresultat profileringResultat = bruker.getProfilering_resultat();
-        String diskresjonskode = bruker.getDiskresjonskode();
-        LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(bruker.getOppfolging_startdato());
+        String formidlingsgruppekode = brukerOpensearchModell.getFormidlingsgruppekode();
+        String kvalifiseringsgruppekode = brukerOpensearchModell.getKvalifiseringsgruppekode();
+        String sikkerhetstiltak = brukerOpensearchModell.getSikkerhetstiltak();
+        Profileringsresultat profileringResultat = brukerOpensearchModell.getProfilering_resultat();
+        String diskresjonskode = brukerOpensearchModell.getDiskresjonskode();
+        LocalDateTime oppfolgingStartDato = toLocalDateTimeOrNull(brukerOpensearchModell.getOppfolging_startdato());
 
-        VurderingsBehov vurderingsBehov = bruker.isTrenger_vurdering() ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
-        boolean trengerOppfolgingsvedtak = bruker.getGjeldendeVedtak14a() == null;
+        VurderingsBehov vurderingsBehov = brukerOpensearchModell.isTrenger_vurdering() ? vurderingsBehov(kvalifiseringsgruppekode, profileringResultat) : null;
+        boolean trengerOppfolgingsvedtak = brukerOpensearchModell.getGjeldendeVedtak14a() == null;
 
-        boolean harUtenlandskAdresse = bruker.getUtenlandskAdresse() != null;
+        boolean harUtenlandskAdresse = brukerOpensearchModell.getUtenlandskAdresse() != null;
 
-        return new Bruker()
+        return new PortefoljebrukerFrontendModell()
                 .setNyForEnhet(ufordelt)
-                .setFnr(bruker.getFnr())
-                .setAktoerid(bruker.getAktoer_id())
-                .setNyForVeileder(bruker.isNy_for_veileder())
-                .setTildeltTidspunkt(bruker.getTildelt_tidspunkt())
+                .setFnr(brukerOpensearchModell.getFnr())
+                .setAktoerid(brukerOpensearchModell.getAktoer_id())
+                .setNyForVeileder(brukerOpensearchModell.isNy_for_veileder())
+                .setTildeltTidspunkt(brukerOpensearchModell.getTildelt_tidspunkt())
                 .setVurderingsBehov(vurderingsBehov)
                 .setTrengerOppfolgingsvedtak(trengerOppfolgingsvedtak)
                 .setProfileringResultat(profileringResultat)
                 .setErSykmeldtMedArbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode)) // Etiketten sykemeldt ska vises oavsett om brukeren har ett påbegynnt vedtak eller ej
                 .setInnsatsgruppe(INNSATSGRUPPEKODER.contains(kvalifiseringsgruppekode) ? kvalifiseringsgruppekode : null)
-                .setFornavn(bruker.getFornavn())
-                .setEtternavn(bruker.getEtternavn())
-                .setVeilederId(bruker.getVeileder_id())
+                .setFornavn(brukerOpensearchModell.getFornavn())
+                .setEtternavn(brukerOpensearchModell.getEtternavn())
+                .setVeilederId(brukerOpensearchModell.getVeileder_id())
                 .setDiskresjonskode((Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode)) ? diskresjonskode : null)
-                .setEgenAnsatt(bruker.isEgen_ansatt())
-                .setSkjermetTil(bruker.getSkjermet_til())
-                .setErDoed(bruker.isEr_doed())
+                .setEgenAnsatt(brukerOpensearchModell.isEgen_ansatt())
+                .setSkjermetTil(brukerOpensearchModell.getSkjermet_til())
+                .setErDoed(brukerOpensearchModell.isEr_doed())
                 .setSikkerhetstiltak(sikkerhetstiltak == null ? new ArrayList<>() : Collections.singletonList(sikkerhetstiltak)) //TODO: Hvorfor er dette en liste?
-                .setFoedeland(bruker.getFoedelandFulltNavn())
-                .setYtelse(YtelseMapping.of(bruker.getYtelse()))
-                .setUtlopsdato(toLocalDateTimeOrNull(bruker.getUtlopsdato()))
-                .setDagputlopUke(bruker.getDagputlopuke())
-                .setPermutlopUke(bruker.getPermutlopuke())
-                .setAapmaxtidUke(bruker.getAapmaxtiduke())
-                .setAapUnntakUkerIgjen(bruker.getAapunntakukerigjen())
-                .setAapordinerutlopsdato(bruker.getAapordinerutlopsdato())
+                .setFoedeland(brukerOpensearchModell.getFoedelandFulltNavn())
+                .setYtelse(YtelseMapping.of(brukerOpensearchModell.getYtelse()))
+                .setUtlopsdato(toLocalDateTimeOrNull(brukerOpensearchModell.getUtlopsdato()))
+                .setDagputlopUke(brukerOpensearchModell.getDagputlopuke())
+                .setPermutlopUke(brukerOpensearchModell.getPermutlopuke())
+                .setAapmaxtidUke(brukerOpensearchModell.getAapmaxtiduke())
+                .setAapUnntakUkerIgjen(brukerOpensearchModell.getAapunntakukerigjen())
+                .setAapordinerutlopsdato(brukerOpensearchModell.getAapordinerutlopsdato())
                 .setAapKelvin(AapKelvinForBruker.of(
-                        bruker.getAap_kelvin_tom_vedtaksdato(),
-                        bruker.getAap_kelvin_rettighetstype()))
+                        brukerOpensearchModell.getAap_kelvin_tom_vedtaksdato(),
+                        brukerOpensearchModell.getAap_kelvin_rettighetstype()))
                 .setTiltakspenger(TiltakspengerForBruker.of(
-                        bruker.getTiltakspenger_vedtaksdato_tom(),
-                        bruker.getTiltakspenger_rettighet()))
-                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(bruker.getVenterpasvarfranav()))
-                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(bruker.getVenterpasvarfrabruker()))
-                .setNyesteUtlopteAktivitet(toLocalDateTimeOrNull(bruker.getNyesteutlopteaktivitet()))
-                .setAktivitetStart(toLocalDateTimeOrNull(bruker.getAktivitet_start()))
-                .setNesteAktivitetStart(toLocalDateTimeOrNull(bruker.getNeste_aktivitet_start()))
-                .setForrigeAktivitetStart(toLocalDateTimeOrNull(bruker.getForrige_aktivitet_start()))
-                .setMoteStartTid(toLocalDateTimeOrNull(bruker.getAktivitet_mote_startdato()))
-                .setAlleMoterStartTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_startdato()))
-                .setAlleMoterSluttTid(toLocalDateTimeOrNull(bruker.getAlle_aktiviteter_mote_utlopsdato()))
-                .setNesteSvarfristCvStillingFraNav(bruker.getNeste_svarfrist_stilling_fra_nav())
+                        brukerOpensearchModell.getTiltakspenger_vedtaksdato_tom(),
+                        brukerOpensearchModell.getTiltakspenger_rettighet()))
+                .setVenterPaSvarFraNAV(toLocalDateTimeOrNull(brukerOpensearchModell.getVenterpasvarfranav()))
+                .setVenterPaSvarFraBruker(toLocalDateTimeOrNull(brukerOpensearchModell.getVenterpasvarfrabruker()))
+                .setNyesteUtlopteAktivitet(toLocalDateTimeOrNull(brukerOpensearchModell.getNyesteutlopteaktivitet()))
+                .setAktivitetStart(toLocalDateTimeOrNull(brukerOpensearchModell.getAktivitet_start()))
+                .setNesteAktivitetStart(toLocalDateTimeOrNull(brukerOpensearchModell.getNeste_aktivitet_start()))
+                .setForrigeAktivitetStart(toLocalDateTimeOrNull(brukerOpensearchModell.getForrige_aktivitet_start()))
+                .setMoteStartTid(toLocalDateTimeOrNull(brukerOpensearchModell.getAktivitet_mote_startdato()))
+                .setAlleMoterStartTid(toLocalDateTimeOrNull(brukerOpensearchModell.getAlle_aktiviteter_mote_startdato()))
+                .setAlleMoterSluttTid(toLocalDateTimeOrNull(brukerOpensearchModell.getAlle_aktiviteter_mote_utlopsdato()))
+                .setNesteSvarfristCvStillingFraNav(brukerOpensearchModell.getNeste_svarfrist_stilling_fra_nav())
                 .setUtkast14a(Utkast14a.of(
-                        bruker.getUtkast_14a_status(),
-                        toLocalDateTimeOrNull(bruker.getUtkast_14a_status_endret()),
-                        bruker.getUtkast_14a_ansvarlig_veileder()))
+                        brukerOpensearchModell.getUtkast_14a_status(),
+                        toLocalDateTimeOrNull(brukerOpensearchModell.getUtkast_14a_status_endret()),
+                        brukerOpensearchModell.getUtkast_14a_ansvarlig_veileder()))
                 .setOppfolgingStartdato(oppfolgingStartDato)
-                .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(bruker.getAktivitet_tiltak_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(bruker.getAktivitet_behandling_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("sokeavtale", dateToTimestamp(bruker.getAktivitet_sokeavtale_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("stilling", dateToTimestamp(bruker.getAktivitet_stilling_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("ijobb", dateToTimestamp(bruker.getAktivitet_ijobb_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("egen", dateToTimestamp(bruker.getAktivitet_egen_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(bruker.getAktivitet_gruppeaktivitet_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("mote", dateToTimestamp(bruker.getAktivitet_mote_utlopsdato()))
-                .addAvtaltAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(bruker.getAktivitet_utdanningaktivitet_utlopsdato()))
-                .setTolkebehov(Tolkebehov.of(bruker.getTalespraaktolk(), bruker.getTegnspraaktolk(), bruker.getTolkBehovSistOppdatert()))
-                .setHovedStatsborgerskap(bruker.getHovedStatsborgerskap())
-                .setBostedBydel(bruker.getBydelsnummer())
-                .setBostedKommune(bruker.getKommunenummer())
+                .addAvtaltAktivitetUtlopsdato("tiltak", dateToTimestamp(brukerOpensearchModell.getAktivitet_tiltak_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("behandling", dateToTimestamp(brukerOpensearchModell.getAktivitet_behandling_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("sokeavtale", dateToTimestamp(brukerOpensearchModell.getAktivitet_sokeavtale_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("stilling", dateToTimestamp(brukerOpensearchModell.getAktivitet_stilling_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("ijobb", dateToTimestamp(brukerOpensearchModell.getAktivitet_ijobb_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("egen", dateToTimestamp(brukerOpensearchModell.getAktivitet_egen_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("gruppeaktivitet", dateToTimestamp(brukerOpensearchModell.getAktivitet_gruppeaktivitet_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("mote", dateToTimestamp(brukerOpensearchModell.getAktivitet_mote_utlopsdato()))
+                .addAvtaltAktivitetUtlopsdato("utdanningaktivitet", dateToTimestamp(brukerOpensearchModell.getAktivitet_utdanningaktivitet_utlopsdato()))
+                .setTolkebehov(Tolkebehov.of(brukerOpensearchModell.getTalespraaktolk(), brukerOpensearchModell.getTegnspraaktolk(), brukerOpensearchModell.getTolkBehovSistOppdatert()))
+                .setHovedStatsborgerskap(brukerOpensearchModell.getHovedStatsborgerskap())
+                .setBostedBydel(brukerOpensearchModell.getBydelsnummer())
+                .setBostedKommune(brukerOpensearchModell.getKommunenummer())
                 .setHarUtelandsAddresse(harUtenlandskAdresse)
-                .setHarUkjentBosted(bruker.isHarUkjentBosted())
-                .setBostedSistOppdatert(bruker.getBostedSistOppdatert())
-                .setAvvik14aVedtak(bruker.getAvvik14aVedtak())
-                .setBarnUnder18AarData(bruker.getBarn_under_18_aar())
-                .setEnsligeForsorgereOvergangsstonad(EnsligeForsorgereOvergangsstonadFrontend.of(bruker.getEnslige_forsorgere_overgangsstonad()))
-                .setUtdanningOgSituasjonSistEndret(bruker.getUtdanning_og_situasjon_sist_endret())
-                .setHuskelapp(bruker.getHuskelapp())
-                .setFargekategori(bruker.getFargekategori())
-                .setFargekategoriEnhetId(bruker.getFargekategori_enhetId())
-                .setTiltakshendelse(TiltakshendelseForBruker.of(bruker.getTiltakshendelse()))
-                .setGjeldendeVedtak14a(bruker.getGjeldendeVedtak14a())
-                .setUtgattVarsel(bruker.getUtgatt_varsel())
+                .setHarUkjentBosted(brukerOpensearchModell.isHarUkjentBosted())
+                .setBostedSistOppdatert(brukerOpensearchModell.getBostedSistOppdatert())
+                .setAvvik14aVedtak(brukerOpensearchModell.getAvvik14aVedtak())
+                .setBarnUnder18AarData(brukerOpensearchModell.getBarn_under_18_aar())
+                .setEnsligeForsorgereOvergangsstonad(EnsligeForsorgereOvergangsstonadFrontend.of(brukerOpensearchModell.getEnslige_forsorgere_overgangsstonad()))
+                .setUtdanningOgSituasjonSistEndret(brukerOpensearchModell.getUtdanning_og_situasjon_sist_endret())
+                .setHuskelapp(brukerOpensearchModell.getHuskelapp())
+                .setFargekategori(brukerOpensearchModell.getFargekategori())
+                .setFargekategoriEnhetId(brukerOpensearchModell.getFargekategori_enhetId())
+                .setTiltakshendelse(TiltakshendelseForBruker.of(brukerOpensearchModell.getTiltakshendelse()))
+                .setGjeldendeVedtak14a(brukerOpensearchModell.getGjeldendeVedtak14a())
+                .setUtgattVarsel(brukerOpensearchModell.getUtgatt_varsel())
                 .setNesteUtlopsdatoAktivitet(null);
     }
 
@@ -240,7 +240,7 @@ public class Bruker {
         return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt));
     }
 
-    private Bruker addAvtaltAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
+    private PortefoljebrukerFrontendModell addAvtaltAktivitetUtlopsdato(String type, Timestamp utlopsdato) {
         if (Objects.isNull(utlopsdato) || isFarInTheFutureDate(utlopsdato)) {
             return this;
         }
