@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.ArenaInnholdKafka;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GoldenGateDTO;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

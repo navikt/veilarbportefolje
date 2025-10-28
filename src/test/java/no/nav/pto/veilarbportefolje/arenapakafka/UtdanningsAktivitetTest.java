@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitet
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;

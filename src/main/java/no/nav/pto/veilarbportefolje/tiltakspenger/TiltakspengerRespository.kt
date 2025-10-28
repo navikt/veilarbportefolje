@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_TILTAKSPENGER
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtak
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtakEntity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
@@ -47,11 +47,11 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
         )
     }
 
-    fun hentTiltakspenger(norskIdent: NorskIdent): TiltakspengerVedtak? {
+    fun hentTiltakspenger(norskIdent: NorskIdent): TiltakspengerVedtakEntity? {
         val sql = "SELECT * FROM ${YTELSER_TILTAKSPENGER.TABLE_NAME} WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?"
         return try {
             db.queryForObject(sql, { rs, _ ->
-                TiltakspengerVedtak(
+                TiltakspengerVedtakEntity(
                     sakId = rs.getString(YTELSER_TILTAKSPENGER.SAKSID),
                     fom = rs.getDate(YTELSER_TILTAKSPENGER.NYESTE_PERIODE_FOM).toLocalDate(),
                     tom = rs.getDate(YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM).toLocalDate(),

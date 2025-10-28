@@ -7,6 +7,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,7 +121,7 @@ public class SensurerBrukerTest {
         PortefoljebrukerFrontendModell filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn());
         sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
         sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
-        assertEquals(2, filtrertBruker.barnUnder18AarData.size());
+        assertEquals(2, filtrertBruker.getBarnUnder18AarData().size());
     }
 
     @Test

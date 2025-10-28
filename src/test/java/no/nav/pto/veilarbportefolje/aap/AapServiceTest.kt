@@ -2,11 +2,15 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
+import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2

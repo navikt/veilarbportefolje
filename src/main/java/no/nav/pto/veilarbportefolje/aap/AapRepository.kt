@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.poao_tilgang.client.NorskIdent
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakPeriode
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakPeriodeEntity
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,11 +54,11 @@ class AapRepository(@Autowired private val db: JdbcTemplate) {
         )
     }
 
-    fun hentAap(norskIdent: NorskIdent): AapVedtakPeriode? {
+    fun hentAap(norskIdent: NorskIdent): AapVedtakPeriodeEntity? {
         val sql = "SELECT * FROM ${YTELSER_AAP.TABLE_NAME} WHERE ${YTELSER_AAP.NORSK_IDENT} = ?"
         return try {
             db.queryForObject(sql, { rs, _ ->
-                AapVedtakPeriode(
+                AapVedtakPeriodeEntity(
                     status = AapVedtakStatus.fraDb(rs.getString(YTELSER_AAP.STATUS)),
                     periodeFom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_FOM).toLocalDate(),
                     periodeTom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_TOM).toLocalDate()

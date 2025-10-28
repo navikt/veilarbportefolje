@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_TILTAKSPENGER
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

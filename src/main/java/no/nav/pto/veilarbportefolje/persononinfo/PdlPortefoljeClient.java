@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.FileUtils;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.*;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;

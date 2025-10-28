@@ -2,14 +2,14 @@ package no.nav.pto.veilarbportefolje.arenapakafka;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetInnhold;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;

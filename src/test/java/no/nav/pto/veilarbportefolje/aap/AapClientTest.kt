@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import org.assertj.core.api.Assertions
 import org.junit.Rule

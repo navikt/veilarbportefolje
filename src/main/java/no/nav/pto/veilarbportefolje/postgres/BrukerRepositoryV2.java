@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;

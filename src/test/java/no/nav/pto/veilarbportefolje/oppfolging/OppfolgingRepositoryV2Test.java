@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.junit.Before;

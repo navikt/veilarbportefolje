@@ -3,12 +3,11 @@ package no.nav.pto.veilarbportefolje.fargekategori;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriController.OppdaterFargekategoriRequest;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
