@@ -89,7 +89,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                         AND bi2.gruppe = :gruppe
                 """;
 
-        var result = dbNamed.query(
+        return dbNamed.query(
                         sql,
                         new MapSqlParameterSource()
                                 .addValue("identer", fnrStrings)
@@ -102,7 +102,6 @@ public class OppfolgingsbrukerRepositoryV3 {
                         OppfolgingsbrukerEntityMedOppslagFnr::oppslagFnr,
                         OppfolgingsbrukerEntityMedOppslagFnr::oppfolgingsbrukerEntity)
                 );
-        return result;
     }
 
     @SneakyThrows
