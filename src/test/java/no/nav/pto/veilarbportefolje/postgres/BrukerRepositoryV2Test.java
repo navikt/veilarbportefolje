@@ -61,8 +61,7 @@ public class BrukerRepositoryV2Test {
         AktorId aktorId = randomAktorId();
         List<PDLIdent> identer = List.of(
                 new PDLIdent(fnr_1.get(), true, FOLKEREGISTERIDENT),
-                new PDLIdent(fnr_2.get(), true, FOLKEREGISTERIDENT),
-                new PDLIdent(fnr_ny.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_2.get(), false, FOLKEREGISTERIDENT),
                 new PDLIdent(aktorId.get(), false, AKTORID)
         );
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
@@ -79,6 +78,14 @@ public class BrukerRepositoryV2Test {
                         null, ZonedDateTime.now()), new  NavKontor("0000"));
         List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
 
+        List<PDLIdent> oppdaterteIdenter = List.of(
+                new PDLIdent(fnr_1.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_2.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_ny.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID)
+        );
+        pdlIdentRepository.upsertIdenter(oppdaterteIdenter);
+
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
                         "9999", null, null,
@@ -92,6 +99,4 @@ public class BrukerRepositoryV2Test {
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_ny.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getEnhet_id()).isEqualTo("0001");
     }
-
-
 }
