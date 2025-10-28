@@ -11,10 +11,10 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
 import no.nav.pto.veilarbportefolje.aap.AapClient
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient

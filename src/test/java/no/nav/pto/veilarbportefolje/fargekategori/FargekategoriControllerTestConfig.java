@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.fargekategori;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import org.springframework.boot.test.context.TestConfiguration;
 
 @TestConfiguration

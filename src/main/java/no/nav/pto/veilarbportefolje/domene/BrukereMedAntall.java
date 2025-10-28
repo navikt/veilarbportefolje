@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 
 import java.util.List;
 

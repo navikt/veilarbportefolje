@@ -12,12 +12,12 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DialogService extends KafkaCommonNonKeyedConsumerService<Dialogdata> {
+public class DialogService extends KafkaCommonNonKeyedConsumerService<DialogdataDto> {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final DialogRepositoryV2 dialogRepositoryV2;
 
     @Override
-    public void behandleKafkaMeldingLogikk(Dialogdata melding) {
+    public void behandleKafkaMeldingLogikk(DialogdataDto melding) {
         dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
 
         secureLog.info("Oppdatert dialog for bruker: {} med 'venter på svar fra Nav': {}, 'venter på svar fra bruker': {}, sist endret: {}", melding.getAktorId(), toIsoUTC(melding.getTidspunktEldsteUbehandlede()), toIsoUTC(melding.getTidspunktEldsteVentende()), melding.getSisteEndring());

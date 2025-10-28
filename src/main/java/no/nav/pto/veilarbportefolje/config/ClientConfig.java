@@ -13,8 +13,8 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregiste
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;

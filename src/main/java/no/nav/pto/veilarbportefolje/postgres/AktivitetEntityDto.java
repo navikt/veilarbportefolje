@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.postgres;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 
 import java.sql.Date;
 import java.sql.ResultSet;

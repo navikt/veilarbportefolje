@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 
 import java.sql.Timestamp;
 

@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.pto.veilarbportefolje.domene.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.domene.Portefolje;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.controller.dto.Portefolje;
 
 import java.util.List;
 

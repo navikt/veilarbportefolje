@@ -4,7 +4,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchHealthCheck;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

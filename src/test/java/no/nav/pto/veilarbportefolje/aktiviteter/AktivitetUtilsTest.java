@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;

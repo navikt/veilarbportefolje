@@ -4,6 +4,9 @@ import no.nav.poao_tilgang.client.Decision.Deny
 import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
 import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.BarnUnder18Aar
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.util.EndToEndTest

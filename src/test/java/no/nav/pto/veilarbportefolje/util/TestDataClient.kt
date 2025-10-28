@@ -8,8 +8,8 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.Kjonn
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3
