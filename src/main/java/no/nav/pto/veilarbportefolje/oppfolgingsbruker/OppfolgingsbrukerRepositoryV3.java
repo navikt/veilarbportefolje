@@ -218,18 +218,18 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+        val sql = """
+                select coalesce(ao.kontor_id, ob.nav_kontor) as kontor_id
+                from oppfolgingsbruker_arena_v2 ob
+                left join ao_kontor ao on ob.fodselsnr = ao.ident
+                where ob.fodselsnr = :ident
+                """;
         val params = new MapSqlParameterSource()
                 .addValue("ident", fnr.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
-                        () -> dbNamed.queryForObject("""
-                                    select coalesce(ao.kontor_id, ob.nav_kontor) as kontor_id
-                                    from oppfolgingsbruker_arena_v2 ob
-                                    left join ao_kontor ao on ob.fodselsnr = ao.ident
-                                    where ob.fodselsnr = :ident
-                                """,
-                                params,
-                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("kontor_id")))
+                        () -> dbNamed.queryForObject(sql, params, (rs, i) ->
+                                NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
     }
 }
