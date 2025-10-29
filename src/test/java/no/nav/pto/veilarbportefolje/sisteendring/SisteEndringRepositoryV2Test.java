@@ -55,7 +55,8 @@ public class SisteEndringRepositoryV2Test {
         sisteEndringRepository.upsert(dto_2);
         sisteEndringRepository.oppdaterHarSett(dto_1.getAktoerId(), SisteEndringsKategori.NY_IJOBB, true);
 
-        PortefoljebrukerOpensearchModell bruker = new PortefoljebrukerOpensearchModell().setAktoer_id(AKTORID.get());
+        PortefoljebrukerOpensearchModell bruker = new PortefoljebrukerOpensearchModell();
+        bruker.setAktoer_id(AKTORID.get());
         sisteEndringRepository.setAlleSisteEndringTidspunkter(List.of(bruker));
 
         assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_1)));

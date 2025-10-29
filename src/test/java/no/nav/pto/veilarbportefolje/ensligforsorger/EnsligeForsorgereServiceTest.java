@@ -5,10 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.NavKontor;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
@@ -30,7 +27,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static io.vavr.API.println;
 import static java.util.Optional.empty;
 import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere.OVERGANGSSTONAD;
@@ -136,45 +132,44 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
     @Test
     public void test_filtrering_enslige_forsorgere() {
-        var bruker1 = new PortefoljebrukerOpensearchModell()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(veilederId.toString())
-                .setEnhet_id(navKontor.toString());
+        var bruker1 = new PortefoljebrukerOpensearchModell();
+        bruker1.setFnr(randomFnr().toString());
+        bruker1.setAktoer_id(randomAktorId().toString());
+        bruker1.setOppfolging(true);
+        bruker1.setVeileder_id(veilederId.toString());
+        bruker1.setEnhet_id(navKontor.toString());
 
-        var bruker2 = new PortefoljebrukerOpensearchModell()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(veilederId.toString())
-                .setNy_for_veileder(false)
-                .setEnhet_id(navKontor.toString())
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse", false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
+        var bruker2 = new PortefoljebrukerOpensearchModell();
+        bruker2.setFnr(randomFnr().toString());
+        bruker2.setAktoer_id(randomAktorId().toString());
+        bruker2.setOppfolging(true);
+        bruker2.setVeileder_id(veilederId.toString());
+        bruker2.setNy_for_veileder(false);
+        bruker2.setEnhet_id(navKontor.toString());
+        bruker2.setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Forlengelse", false, LocalDate.now().plusMonths(3), LocalDate.now().plusMonths(7)));
 
-        var bruker3 = new PortefoljebrukerOpensearchModell()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(veilederId.toString())
-                .setNy_for_veileder(false)
-                .setEnhet_id(navKontor.toString())
-                .setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse", false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
+        var bruker3 = new PortefoljebrukerOpensearchModell();
+        bruker3.setFnr(randomFnr().toString());
+        bruker3.setAktoer_id(randomAktorId().toString());
+        bruker3.setOppfolging(true);
+        bruker3.setVeileder_id(veilederId.toString());
+        bruker3.setNy_for_veileder(false);
+        bruker3.setEnhet_id(navKontor.toString());
+        bruker3.setEnslige_forsorgere_overgangsstonad(new EnsligeForsorgereOvergangsstonad("Utvidelse", false, LocalDate.now().plusMonths(1), LocalDate.now().minusMonths(3)));
 
-        var bruker4 = new PortefoljebrukerOpensearchModell()
-                .setFnr(randomFnr().toString())
-                .setAktoer_id(randomAktorId().toString())
-                .setOppfolging(true)
-                .setVeileder_id(veilederId.toString())
-                .setNy_for_veileder(false)
-                .setEnhet_id(navKontor.toString());
+        var bruker4 = new PortefoljebrukerOpensearchModell();
+        bruker4.setFnr(randomFnr().toString());
+        bruker4.setAktoer_id(randomAktorId().toString());
+        bruker4.setOppfolging(true);
+        bruker4.setVeileder_id(veilederId.toString());
+        bruker4.setNy_for_veileder(false);
+        bruker4.setEnhet_id(navKontor.toString());
 
         var liste = List.of(bruker1, bruker2, bruker3, bruker4);
 
         skrivBrukereTilTestindeks(liste);
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
-
 
         Filtervalg filterValg = new Filtervalg()
                 .setFerdigfilterListe(List.of())
@@ -363,7 +358,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Mockito.when(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr)).thenReturn(expected);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> {return rs.getString("vedtakid");}, fnr.get());
+        String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> {
+            return rs.getString("vedtakid");
+        }, fnr.get());
         assertThat(vedtakid).isNotNull();
         assertThat(vedtakid).isEqualTo("20532");
     }

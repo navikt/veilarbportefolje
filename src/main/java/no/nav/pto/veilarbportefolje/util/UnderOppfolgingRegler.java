@@ -9,6 +9,6 @@ public class UnderOppfolgingRegler {
     }
 
     private static boolean oppfolgingsFlaggErSatt(PortefoljebrukerOpensearchModell bruker) {
-        return bruker.isOppfolging();
+        return bruker.getOppfolging();
     }
 }

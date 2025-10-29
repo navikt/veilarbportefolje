@@ -29,7 +29,7 @@ import java.util.*
 
 class OpensearchServiceInt14aVedtakTest @Autowired constructor(
     private val opensearchService: OpensearchService,
-) : EndToEndTest(){
+) : EndToEndTest() {
 
     private lateinit var TEST_ENHET: String
     private lateinit var TEST_VEILEDER_0: String
@@ -42,53 +42,58 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_hente_alle_brukere_som_har_vedtak() {
-        val brukerMedVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Utkast")
-            .setUtkast_14a_ansvarlig_veileder("BVeileder")
+        val brukerMedVedtak = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            utkast_14a_status = "Utkast",
+            utkast_14a_ansvarlig_veileder = "BVeileder",
+        )
 
-        val brukerMedVedtak1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Venter på tilbakemelding")
-            .setUtkast_14a_ansvarlig_veileder("CVeileder")
+        val brukerMedVedtak1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            utkast_14a_status = "Venter på tilbakemelding",
+            utkast_14a_ansvarlig_veileder = "CVeileder",
+        )
 
-        val brukerMedVedtak2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Venter på tilbakemelding")
-            .setUtkast_14a_ansvarlig_veileder("AVeileder")
+        val brukerMedVedtak2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            utkast_14a_status = "Venter på tilbakemelding",
+            utkast_14a_ansvarlig_veileder = "AVeileder",
+        )
 
-        val brukerMedVedtakUtenAnsvarligVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Utkast")
+        val brukerMedVedtakUtenAnsvarligVeileder = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            utkast_14a_status = "Utkast",
+        )
 
-        val brukerUtenVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setAktiviteter(setOf("egen"))
+        val brukerUtenVedtak = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            aktiviteter = setOf("egen"),
+        )
 
         val liste = listOf(
             brukerMedVedtak,
@@ -133,40 +138,45 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_filtrere_brukere_med_riktige_avvikstyper_naar_filter_for_avvik_er_valgt_hvor_noen_brukere_har_avvik_og_noen_ikke_har_avvik() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE,
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_ULIK,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK)
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.HOVEDMAAL_ULIK,
+        )
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK)
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
 
@@ -204,40 +214,45 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_filtrere_brukere_med_riktige_avvikstyper_naar_filter_for_avvik_er_valgt_hvor_alle_brukere_ikke_har_avvik() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
 
@@ -267,40 +282,50 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_ikke_filtrere_paa_avvikstype_naar_filter_for_avvik_ikke_er_valgt() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE)
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK)
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_ULIK,
+        )
+
+
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.HOVEDMAAL_ULIK,
+        )
+
+
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            avvik14aVedtak = Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK,
+        )
+
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
 
@@ -342,23 +367,24 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         )
         skrivBrukereTilTestindeks(
             listOf(
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerMedSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
-                    .setGjeldendeVedtak14a(
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerMedSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerMedSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                    gjeldendeVedtak14a =
                         GjeldendeVedtak14a(
                             siste14aVedtakForBruker.innsatsgruppe,
                             siste14aVedtakForBruker.hovedmal,
                             siste14aVedtakForBruker.fattetDato
                         )
-                    ),
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerUtenSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerUtenSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
+                ),
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerUtenSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerUtenSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                )
             )
         )
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == 2 }
@@ -403,23 +429,24 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         )
         skrivBrukereTilTestindeks(
             listOf(
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerMedSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
-                    .setGjeldendeVedtak14a(
-                        GjeldendeVedtak14a(
-                            siste14aVedtakForBruker.innsatsgruppe,
-                            siste14aVedtakForBruker.hovedmal,
-                            siste14aVedtakForBruker.fattetDato
-                        )
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerMedSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerMedSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                    gjeldendeVedtak14a = GjeldendeVedtak14a(
+                        siste14aVedtakForBruker.innsatsgruppe,
+                        siste14aVedtakForBruker.hovedmal,
+                        siste14aVedtakForBruker.fattetDato
                     ),
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerUtenSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerUtenSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
+                ),
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerUtenSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerUtenSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                )
+
             )
         )
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == 2 }
@@ -460,23 +487,23 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         )
         skrivBrukereTilTestindeks(
             listOf(
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerMedSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerMedSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
-                    .setGjeldendeVedtak14a(
-                        GjeldendeVedtak14a(
-                            siste14aVedtakForBruker.innsatsgruppe,
-                            siste14aVedtakForBruker.hovedmal,
-                            siste14aVedtakForBruker.fattetDato
-                        )
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerMedSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerMedSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                    gjeldendeVedtak14a = GjeldendeVedtak14a(
+                        siste14aVedtakForBruker.innsatsgruppe,
+                        siste14aVedtakForBruker.hovedmal,
+                        siste14aVedtakForBruker.fattetDato
                     ),
-                PortefoljebrukerOpensearchModell()
-                    .setFnr(brukerUtenSiste14aVedtakFnr.get())
-                    .setAktoer_id(brukerUtenSiste14aVedtakAktorId.get())
-                    .setEnhet_id(TEST_ENHET)
-                    .setOppfolging(true)
+                ),
+                PortefoljebrukerOpensearchModell(
+                    fnr = brukerUtenSiste14aVedtakFnr.get(),
+                    aktoer_id = brukerUtenSiste14aVedtakAktorId.get(),
+                    enhet_id = TEST_ENHET,
+                    oppfolging = true,
+                )
             )
         )
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == 2 }
@@ -505,50 +532,48 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
         val vedtaksdatoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().get())
-            .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a1.get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.VARIG_TILPASSET_INNSATS,
-                    Hovedmal.OKE_DELTAKELSE,
-                    vedtaksdatoBruker1
-                )
-            )
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().get(),
+            aktoer_id = aktoridBrukerMedGjeldendeVedtak14a1.get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.VARIG_TILPASSET_INNSATS,
+                Hovedmal.OKE_DELTAKELSE,
+                vedtaksdatoBruker1
+            ),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().get())
-            .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a2.get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
-                    Hovedmal.SKAFFE_ARBEID,
-                    vedtaksdatoBruker2
-                )
-            )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().get(),
+            aktoer_id = aktoridBrukerMedGjeldendeVedtak14a2.get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                Hovedmal.SKAFFE_ARBEID,
+                vedtaksdatoBruker2
+            ),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().get())
-            .setAktoer_id(aktoridBrukerMedGjeldendeVedtak14a3.get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.STANDARD_INNSATS,
-                    Hovedmal.BEHOLDE_ARBEID,
-                    vedtaksdatoBruker3
-                )
-            )
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().get(),
+            aktoer_id = aktoridBrukerMedGjeldendeVedtak14a3.get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.STANDARD_INNSATS,
+                Hovedmal.BEHOLDE_ARBEID,
+                vedtaksdatoBruker3
+            ),
+        )
 
-        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().get())
-            .setAktoer_id(aktoridBrukerUtenVedtak.get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
+        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().get(),
+            aktoer_id = aktoridBrukerUtenVedtak.get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak)
         skrivBrukereTilTestindeks(liste)
@@ -682,50 +707,36 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
         val vedtaksdatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr1.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    innsatsgruppeBruker1,
-                    hovedmalBruker1,
-                    vedtaksdatoBruker1
-                )
-            )
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr1.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker1, hovedmalBruker1, vedtaksdatoBruker1),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr2.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    innsatsgruppeBruker2,
-                    hovedmalBruker2,
-                    vedtaksdatoBruker2
-                )
-            )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr2.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker2, hovedmalBruker2, vedtaksdatoBruker2),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr3.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    innsatsgruppeBruker3,
-                    hovedmalBruker3,
-                    vedtaksdatoBruker3
-                )
-            )
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr3.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker3, hovedmalBruker3, vedtaksdatoBruker3),
+        )
 
-        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerUtenSiste14aVedtakFnr.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
+        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell(
+            fnr = brukerUtenSiste14aVedtakFnr.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak)
         skrivBrukereTilTestindeks(liste)
@@ -820,50 +831,48 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333")
         val brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444")
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr1.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.VARIG_TILPASSET_INNSATS,
-                    Hovedmal.OKE_DELTAKELSE,
-                    ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
-            )
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr1.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.VARIG_TILPASSET_INNSATS,
+                Hovedmal.OKE_DELTAKELSE,
+                ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+            ),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr2.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
-                    Hovedmal.SKAFFE_ARBEID,
-                    ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
-            )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr2.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                Hovedmal.SKAFFE_ARBEID,
+                ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+            ),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr3.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.STANDARD_INNSATS,
-                    Hovedmal.BEHOLDE_ARBEID,
-                    ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
-            )
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr3.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.STANDARD_INNSATS,
+                Hovedmal.BEHOLDE_ARBEID,
+                ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+            ),
+        )
 
-        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerUtenSiste14aVedtakFnr.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
+        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell(
+            fnr = brukerUtenSiste14aVedtakFnr.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak)
         skrivBrukereTilTestindeks(liste)
@@ -903,50 +912,48 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerMedSiste14aVedtakFnr3 = Fnr.of("33333333333")
         val brukerUtenSiste14aVedtakFnr = Fnr.of("44444444444")
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr1.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
-                    Hovedmal.OKE_DELTAKELSE,
-                    ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
-            )
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr1.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                Hovedmal.OKE_DELTAKELSE,
+                ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+            ),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr2.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
-                    Hovedmal.SKAFFE_ARBEID,
-                    ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
-            )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr2.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
+                Hovedmal.SKAFFE_ARBEID,
+                ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+            ),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerMedSiste14aVedtakFnr3.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setGjeldendeVedtak14a(
-                GjeldendeVedtak14a(
-                    Innsatsgruppe.STANDARD_INNSATS,
-                    Hovedmal.BEHOLDE_ARBEID,
-                    ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-                )
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = brukerMedSiste14aVedtakFnr3.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                Innsatsgruppe.STANDARD_INNSATS,
+                Hovedmal.BEHOLDE_ARBEID,
+                ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
             )
+        )
 
-        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell()
-            .setFnr(brukerUtenSiste14aVedtakFnr.get())
-            .setAktoer_id(randomAktorId().get())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
+        val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell(
+            fnr = brukerUtenSiste14aVedtakFnr.get(),
+            aktoer_id = randomAktorId().get(),
+            enhet_id = TEST_ENHET,
+            oppfolging = true,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, brukerUtenGjeldendeVedtak)
         skrivBrukereTilTestindeks(liste)
@@ -973,6 +980,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerFraOpenSearch1 = respons.brukere[1]
         Assertions.assertThat(brukerFraOpenSearch1.fnr).isEqualTo(brukerMedSiste14aVedtakFnr2.get())
     }
+
     private fun sorterBrukerePaStandardsorteringenAktorid(osService: OpensearchService): BrukereMedAntall {
         return osService.hentBrukere(
             TEST_ENHET,
@@ -984,6 +992,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
     }
+
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
     }

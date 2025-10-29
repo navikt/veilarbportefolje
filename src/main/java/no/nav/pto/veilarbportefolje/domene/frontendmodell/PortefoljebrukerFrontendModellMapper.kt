@@ -34,7 +34,7 @@ object PortefoljebrukerFrontendModellMapper {
         val diskresjonskodeFortrolig = if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
             || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
         ) opensearchBruker.diskresjonskode else null
-        val sikkerhetstiltak = if (opensearchBruker.sikkerhetstiltak == null) emptyList() else listOf(opensearchBruker.sikkerhetstiltak)
+        val sikkerhetstiltak = if (opensearchBruker.sikkerhetstiltak == null) emptyList() else listOf(opensearchBruker.sikkerhetstiltak!!)
 
 
         var frontendbruker = PortefoljebrukerFrontendModell(

@@ -76,12 +76,13 @@ public abstract class EndToEndTest {
         List<PortefoljebrukerOpensearchModell> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
 
-            brukere.add(new PortefoljebrukerOpensearchModell()
-                    .setAktoer_id(aktoerId)
-                    .setOppfolging(true)
-                    .setEnhet_id(enhetId.getValue())
-                    .setVeileder_id(veilederId.getValue())
-            );
+            PortefoljebrukerOpensearchModell bruker = new PortefoljebrukerOpensearchModell();
+            bruker.setAktoer_id(aktoerId);
+            bruker.setOppfolging(true);
+            bruker.setEnhet_id(enhetId.getValue());
+            bruker.setVeileder_id(veilederId.getValue());
+
+            brukere.add(bruker);
         }
         brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
