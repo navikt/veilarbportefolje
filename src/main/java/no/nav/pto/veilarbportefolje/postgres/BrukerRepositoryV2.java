@@ -196,39 +196,39 @@ public class BrukerRepositoryV2 {
             aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp(YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO), rs.getInt(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE), rs.getInt(YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN));
         }
 
-        PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell()
-                .setFnr(fnr)
-                .setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID))
-                .setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null))
-                .setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING))
-                .setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT))
-                .setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT))
-                .setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)))
-                .setHar_delt_cv(rs.getBoolean(BRUKER_CV_HAR_DELT_CV))
-                .setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER))
-                .setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING))
-                .setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER))
-                .setTildelt_tidspunkt(toLocalDateTimeOrNull(rs.getTimestamp(OPPFOLGING_DATA_TILDELT_TIDSPUNKT)))
-                .setVeileder_id(rs.getString(OPPFOLGING_DATA_VEILEDERID))
-                .setManuell_bruker(rs.getBoolean(OPPFOLGING_DATA_MANUELL) ? "MANUELL" : null)
-                .setOppfolging_startdato(toIsoUTC(rs.getTimestamp(OPPFOLGING_DATA_STARTDATO)))
-                .setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(DIALOG_VENTER_PA_BRUKER)))
-                .setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(DIALOG_VENTER_PA_NAV)))
-                .setUtkast_14a_status(Optional.ofNullable(utkast14aStatus)
-                        .map(Kafka14aStatusendring.Status::valueOf)
-                        .map(Kafka14aStatusendring::statusTilTekst)
-                        .orElse(null))
-                .setUtkast_14a_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_STATUS_ENDRET_TIDSPUNKT)))
-                .setUtkast_14a_ansvarlig_veileder(rs.getString(UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN))
-                .setYtelse(rs.getString(YTELSE_STATUS_FOR_BRUKER_YTELSE))
-                .setUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO)))
-                .setDagputlopuke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_DAGPUTLOPUKE, Integer.class))
-                .setPermutlopuke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE, Integer.class))
-                .setAapmaxtiduke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE, Integer.class))
-                .setAapordinerutlopsdato(aapordinerutlopsdato)
-                .setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)))
-                .setFargekategori(rs.getString(FARGEKATEGORI_VERDI))
-                .setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
+        PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell();
+        brukerOpensearchModell.setFnr(fnr);
+        brukerOpensearchModell.setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID));
+        brukerOpensearchModell.setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null));
+        brukerOpensearchModell.setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING));
+        brukerOpensearchModell.setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT));
+        brukerOpensearchModell.setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT));
+        brukerOpensearchModell.setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)));
+        brukerOpensearchModell.setHar_delt_cv(rs.getBoolean(BRUKER_CV_HAR_DELT_CV));
+        brukerOpensearchModell.setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER));
+        brukerOpensearchModell.setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING));
+        brukerOpensearchModell.setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER));
+        brukerOpensearchModell.setTildelt_tidspunkt(toLocalDateTimeOrNull(rs.getTimestamp(OPPFOLGING_DATA_TILDELT_TIDSPUNKT)));
+        brukerOpensearchModell.setVeileder_id(rs.getString(OPPFOLGING_DATA_VEILEDERID));
+        brukerOpensearchModell.setManuell_bruker(rs.getBoolean(OPPFOLGING_DATA_MANUELL) ? "MANUELL" : null);
+        brukerOpensearchModell.setOppfolging_startdato(toIsoUTC(rs.getTimestamp(OPPFOLGING_DATA_STARTDATO)));
+        brukerOpensearchModell.setVenterpasvarfrabruker(toIsoUTC(rs.getTimestamp(DIALOG_VENTER_PA_BRUKER)));
+        brukerOpensearchModell.setVenterpasvarfranav(toIsoUTC(rs.getTimestamp(DIALOG_VENTER_PA_NAV)));
+        brukerOpensearchModell.setUtkast_14a_status(Optional.ofNullable(utkast14aStatus)
+                .map(Kafka14aStatusendring.Status::valueOf)
+                .map(Kafka14aStatusendring::statusTilTekst)
+                .orElse(null));
+        brukerOpensearchModell.setUtkast_14a_status_endret(toIsoUTC(rs.getTimestamp(UTKAST_14A_STATUS_ENDRET_TIDSPUNKT)));
+        brukerOpensearchModell.setUtkast_14a_ansvarlig_veileder(rs.getString(UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN));
+        brukerOpensearchModell.setYtelse(rs.getString(YTELSE_STATUS_FOR_BRUKER_YTELSE));
+        brukerOpensearchModell.setUtlopsdato(toIsoUTC(rs.getTimestamp(YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO)));
+        brukerOpensearchModell.setDagputlopuke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_DAGPUTLOPUKE, Integer.class));
+        brukerOpensearchModell.setPermutlopuke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE, Integer.class));
+        brukerOpensearchModell.setAapmaxtiduke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE, Integer.class));
+        brukerOpensearchModell.setAapordinerutlopsdato(aapordinerutlopsdato);
+        brukerOpensearchModell.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)));
+        brukerOpensearchModell.setFargekategori(rs.getString(FARGEKATEGORI_VERDI));
+        brukerOpensearchModell.setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
 
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
@@ -311,15 +311,17 @@ public class BrukerRepositoryV2 {
 
         String formidlingsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
-        return brukerOpensearchModell
-                .setFnr(fnr)
-                .setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR))
-                .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)))
-                .setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE))
-                .setFormidlingsgruppekode(formidlingsgruppekode)
-                .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
-                .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))
-                .setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));
+
+        brukerOpensearchModell.setFnr(fnr);
+        brukerOpensearchModell.setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR));
+        brukerOpensearchModell.setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)));
+        brukerOpensearchModell.setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE));
+        brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
+        brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
+        brukerOpensearchModell.setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode));
+        brukerOpensearchModell.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));
+
+        return brukerOpensearchModell;
     }
 
     @SneakyThrows
@@ -339,29 +341,28 @@ public class BrukerRepositoryV2 {
         Date sikkerhetstiltakGyldigtil = rs.getDate(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL);
         boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.toLocalDate().isAfter(LocalDate.now()));
 
-        brukerOpensearchModell
-                .setFornavn(fornavn)
-                .setEtternavn(etternavn)
-                .setFullt_navn(String.format("%s, %s", etternavn, fornavn))
-                .setEr_doed(rs.getBoolean(BRUKER_DATA_ER_DOED))
-                .setFodselsdag_i_mnd(foedselsdato.toLocalDate().getDayOfMonth())
-                .setFodselsdato(lagFodselsdato(foedselsdato.toLocalDate()))
-                .setFoedeland(foedeland)
-                .setFoedelandFulltNavn(foedelandFulltNavn)
-                .setKjonn(rs.getString(BRUKER_DATA_KJOENN))
-                .setTalespraaktolk(rs.getString(BRUKER_DATA_TALESPRAAKTOLK))
-                .setTegnspraaktolk(rs.getString(BRUKER_DATA_TEGNSPRAAKTOLK))
-                .setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString(BRUKER_DATA_TOLKBEHOVSISTOPPDATERT)))
-                .setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null)
-                .setBydelsnummer(rs.getString(BRUKER_DATA_BYDELSNUMMER))
-                .setKommunenummer(rs.getString(BRUKER_DATA_KOMMUNENUMMER))
-                .setUtenlandskAdresse(rs.getString(BRUKER_DATA_UTENLANDSKADRESSE))
-                .setHarUkjentBosted(rs.getBoolean(BRUKER_DATA_HARUKJENTBOSTED))
-                .setBostedSistOppdatert(toLocalDateOrNull(rs.getString(BRUKER_DATA_BOSTEDSISTOPPDATERT)))
-                .setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_TYPE) : null)
-                .setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA) : null)
-                .setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL) : null)
-                .setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE) : null)
-                .setDiskresjonskode(rs.getString(BRUKER_DATA_DISKRESJONKODE));
+        brukerOpensearchModell.setFornavn(fornavn);
+        brukerOpensearchModell.setEtternavn(etternavn);
+        brukerOpensearchModell.setFullt_navn(String.format("%s, %s", etternavn, fornavn));
+        brukerOpensearchModell.setEr_doed(rs.getBoolean(BRUKER_DATA_ER_DOED));
+        brukerOpensearchModell.setFodselsdag_i_mnd(foedselsdato.toLocalDate().getDayOfMonth());
+        brukerOpensearchModell.setFodselsdato(lagFodselsdato(foedselsdato.toLocalDate()));
+        brukerOpensearchModell.setFoedeland(foedeland);
+        brukerOpensearchModell.setFoedelandFulltNavn(foedelandFulltNavn);
+        brukerOpensearchModell.setKjonn(rs.getString(BRUKER_DATA_KJOENN));
+        brukerOpensearchModell.setTalespraaktolk(rs.getString(BRUKER_DATA_TALESPRAAKTOLK));
+        brukerOpensearchModell.setTegnspraaktolk(rs.getString(BRUKER_DATA_TEGNSPRAAKTOLK));
+        brukerOpensearchModell.setTolkBehovSistOppdatert(DateUtils.toLocalDateOrNull(rs.getString(BRUKER_DATA_TOLKBEHOVSISTOPPDATERT)));
+        brukerOpensearchModell.setLandgruppe((landGruppe != null && !landGruppe.isEmpty()) ? landGruppe : null);
+        brukerOpensearchModell.setBydelsnummer(rs.getString(BRUKER_DATA_BYDELSNUMMER));
+        brukerOpensearchModell.setKommunenummer(rs.getString(BRUKER_DATA_KOMMUNENUMMER));
+        brukerOpensearchModell.setUtenlandskAdresse(rs.getString(BRUKER_DATA_UTENLANDSKADRESSE));
+        brukerOpensearchModell.setHarUkjentBosted(rs.getBoolean(BRUKER_DATA_HARUKJENTBOSTED));
+        brukerOpensearchModell.setBostedSistOppdatert(toLocalDateOrNull(rs.getString(BRUKER_DATA_BOSTEDSISTOPPDATERT)));
+        brukerOpensearchModell.setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_TYPE) : null);
+        brukerOpensearchModell.setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA) : null);
+        brukerOpensearchModell.setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL) : null);
+        brukerOpensearchModell.setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE) : null);
+        brukerOpensearchModell.setDiskresjonskode(rs.getString(BRUKER_DATA_DISKRESJONKODE));
     }
 }
