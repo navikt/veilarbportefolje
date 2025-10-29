@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import org.assertj.core.api.Assertions
 import org.junit.Rule

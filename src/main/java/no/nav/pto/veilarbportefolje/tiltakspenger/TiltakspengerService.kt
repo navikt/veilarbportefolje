@@ -2,12 +2,12 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog

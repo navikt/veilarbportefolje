@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.arenapakafka.ytelser;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

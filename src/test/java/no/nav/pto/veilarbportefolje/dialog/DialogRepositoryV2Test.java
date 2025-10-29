@@ -29,14 +29,14 @@ public class DialogRepositoryV2Test {
         ZonedDateTime ventend = now();
 
         dialogRepositoryV2.oppdaterDialogInfoForBruker(lagDialogData(ubehandled, ventend));
-        Dialogdata dialogFraDatabase = dialogRepositoryV2.retrieveDialogData(aktoerId).get();
+        DialogdataDto dialogFraDatabase = dialogRepositoryV2.retrieveDialogData(aktoerId).get();
 
         assertThat(dialogFraDatabase.getTidspunktEldsteUbehandlede()).isEqualTo(ubehandled);
         assertThat(dialogFraDatabase.getTidspunktEldsteVentende()).isEqualTo(ventend);
     }
 
-    private Dialogdata lagDialogData(ZonedDateTime ubehandled, ZonedDateTime ventend) {
-        return new Dialogdata()
+    private DialogdataDto lagDialogData(ZonedDateTime ubehandled, ZonedDateTime ventend) {
+        return new DialogdataDto()
                 .setAktorId(aktoerId.get())
                 .setTidspunktEldsteUbehandlede(ubehandled)
                 .setTidspunktEldsteVentende(ventend);

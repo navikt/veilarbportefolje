@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene
 
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.TiltakspengerForBruker
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import org.junit.Test
 import org.junit.jupiter.api.Assertions

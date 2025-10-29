@@ -7,9 +7,9 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
-import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -32,7 +32,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.mapTilUtdanning;
@@ -209,7 +208,7 @@ public class OpensearchIndexerPaDatafelt {
     }
 
     @SneakyThrows
-    public void updateDialog(Dialogdata melding) {
+    public void updateDialog(DialogdataDto melding) {
         final String venterPaaSvarFraBruker = toIsoUTC(melding.getTidspunktEldsteVentende());
         final String venterPaaSvarFraNav = toIsoUTC(melding.getTidspunktEldsteUbehandlede());
 

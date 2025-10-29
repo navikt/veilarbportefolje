@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.rest.client.RestClient.baseClient
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakRequest
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakRequest
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request

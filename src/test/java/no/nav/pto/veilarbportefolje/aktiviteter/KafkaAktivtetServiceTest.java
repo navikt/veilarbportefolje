@@ -1,4 +1,5 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;

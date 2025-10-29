@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient

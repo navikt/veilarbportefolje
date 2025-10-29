@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo.personopprinelse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.domene.Foedeland;
-import no.nav.pto.veilarbportefolje.domene.TolkSpraak;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.util.StringUtils;
 import org.springframework.stereotype.Service;

@@ -3,6 +3,10 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
