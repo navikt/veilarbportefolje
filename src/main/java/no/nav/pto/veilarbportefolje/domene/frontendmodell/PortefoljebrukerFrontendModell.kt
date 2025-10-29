@@ -15,24 +15,24 @@ import java.time.LocalDateTime
 
 data class PortefoljebrukerFrontendModell(
     // personaliaData
-    val fnr: String?,
-    val aktoerid: String?,
-    val fornavn: String?,
-    val etternavn: String?,
-    val erDoed: Boolean?,
-    val barnUnder18AarData: List<BarnUnder18AarData>?,
-    val sikkerhetstiltak: List<String>?, //todo, endre til string og ikke liste
-    val diskresjonskode: String?,
-    val tolkebehov: Tolkebehov?,
+    var fnr: String?,
+    var aktoerid: String?,
+    var fornavn: String?,
+    var etternavn: String?,
+    var erDoed: Boolean?,
+    var barnUnder18AarData: List<BarnUnder18AarData>?,
+    var sikkerhetstiltak: List<String>?, //todo, endre til string og ikke liste
+    var diskresjonskode: String?,
+    var tolkebehov: Tolkebehov?,
 
-    val foedeland: String?,
-    val hovedStatsborgerskap: Statsborgerskap?,
+    var foedeland: String?,
+    var hovedStatsborgerskap: Statsborgerskap?,
 
-    val bostedKommune: String?,
-    val bostedBydel: String?,
-    val bostedSistOppdatert: LocalDate?,
-    val harUtelandsAddresse: Boolean?,
-    val harUkjentBosted: Boolean?,
+    var bostedKommune: String?,
+    var bostedBydel: String?,
+    var bostedSistOppdatert: LocalDate?,
+    var harUtelandsAddresse: Boolean?,
+    var harUkjentBosted: Boolean?,
 
     // 0ppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak?,
@@ -89,15 +89,15 @@ data class PortefoljebrukerFrontendModell(
 
     // NavAnasattData
     val egenAnsatt: Boolean?,
-    val skjermetTil: LocalDateTime?,
+    var skjermetTil: LocalDateTime?,
 
     // CvData
     val nesteSvalfristCvStillingFraNav: LocalDate?, // todo fikse typo
 
 
     // AnnetData
-    val huskelapp: HuskelappForBruker?,
-    val fargekategori: String?,
+    var huskelapp: HuskelappForBruker?,
+    var fargekategori: String?,
     val fargekategoriEnhetId: String?,
     val tiltakshendelse: TiltakshendelseForBruker?,
     val utgattvalsel: Hendelse.HendelseInnhold?, // todo lag egen frontendtype her

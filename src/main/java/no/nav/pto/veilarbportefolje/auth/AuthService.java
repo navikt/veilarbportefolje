@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFronte
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -89,11 +90,12 @@ public class AuthService {
             );
         }
 
-        if (!bruker.erKonfidensiell()) {
+        String diskresjonskode = bruker.getDiskresjonskode();
+
+        boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || Boolean.TRUE.equals(bruker.getEgenAnsatt());
+        if (!erKonfidensiell) {
             return bruker;
         }
-
-        String diskresjonskode = bruker.getDiskresjonskode();
 
         if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
@@ -101,7 +103,7 @@ public class AuthService {
         if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
+        if (Boolean.TRUE.equals(bruker.getEgenAnsatt()) && !harVeilederTilgangTilEgenAnsatt()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         return bruker;

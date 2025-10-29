@@ -150,7 +150,7 @@ public class SensurerBrukerTest {
         assertThat(bruker.getHovedStatsborgerskap()).isNull();
         assertThat(bruker.getBostedBydel()).isNull();
         assertThat(bruker.getBostedKommune()).isNull();
-        assertThat(bruker.isHarUtelandsAddresse()).isEqualTo(false);
+        assertThat(bruker.getHarUtelandsAddresse()).isEqualTo(false);
     }
 
     private void sjekkAtBarnMedKode6ErFjernet(PortefoljebrukerFrontendModell bruker) {

@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Avvik14aStatistikkResponse.Avvik14aStatistikkAggregation.Avvik14aStatistikkFilter.Avvik14aStatistikkBuckets;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
@@ -111,7 +112,6 @@ public class OpensearchService {
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
                 .collect(toList());
-
         return new BrukereMedAntall(totalHits, brukere);
     }
 
@@ -208,22 +208,7 @@ public class OpensearchService {
     }
 
     private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
-        PortefoljebrukerFrontendModell bruker = PortefoljebrukerFrontendModell.of(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet));
-
-        if (filtervalg.harAktiviteterForenklet()) {
-            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetFornklet(filtervalg.aktiviteterForenklet);
-        } else if (!filtervalg.tiltakstyper.isEmpty()) {
-            bruker.kalkulerNesteUtlopsdatoAvValgtTiltakstype();
-        }
-
-        if (filtervalg.harAktivitetFilter()) {
-            bruker.kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(filtervalg.aktiviteter);
-        }
-        if (filtervalg.harSisteEndringFilter()) {
-            bruker.kalkulerSisteEndring(brukerOpensearchModell.getSiste_endringer(), filtervalg.sisteEndringKategori);
-        }
-
-        return bruker;
+        return PortefoljebrukerFrontendModellMapper.INSTANCE.toPortefoljebrukerFrontendModell(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet), filtervalg);
     }
 
 
