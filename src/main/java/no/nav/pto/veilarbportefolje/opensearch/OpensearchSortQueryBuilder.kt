@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import org.opensearch.script.Script
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.opensearch.search.sort.FieldSortBuilder
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service
 @Service
 class OpensearchSortQueryBuilder {
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(OpensearchFilterQueryBuilder::class.java)
+        private val log: Logger = LoggerFactory.getLogger(OpensearchSortQueryBuilder::class.java)
     }
     fun byggVeilederPaaEnhetScript(veilederePaaEnhet: List<String?>): String {
         val veiledere = veilederePaaEnhet.stream()

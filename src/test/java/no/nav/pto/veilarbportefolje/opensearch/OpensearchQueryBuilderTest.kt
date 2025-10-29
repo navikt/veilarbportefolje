@@ -2,8 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg
-import no.nav.pto.veilarbportefolje.domene.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.util.TestUtil

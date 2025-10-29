@@ -4,9 +4,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
