@@ -387,4 +387,14 @@ public class ApplicationConfigTest {
     public OppfolgingClient oppfolgingClient() {
         return mock(OppfolgingClient.class);
     }
+
+    @Bean
+    public OpensearchFilterQueryBuilder opensearchFilterQueryBuilder() {
+        return new OpensearchFilterQueryBuilder();
+    }
+
+    @Bean
+    public OpensearchSortQueryBuilder opensearchSortQueryBuilder() {
+        return new OpensearchSortQueryBuilder();
+    }
 }

@@ -35,7 +35,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
-import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static org.opensearch.index.query.QueryBuilders.*;
 import static org.opensearch.search.aggregations.AggregationBuilders.filters;
 
@@ -47,6 +46,8 @@ public class OpensearchService {
     private final IndexName indexName;
     private final DefaultUnleash defaultUnleash;
     private final AuthService authService;
+    private final OpensearchFilterQueryBuilder filterQueryBuilder = new OpensearchFilterQueryBuilder();
+    private final OpensearchSortQueryBuilder sortQueryBuilder = new OpensearchSortQueryBuilder();
 
     public BrukereMedAntall hentBrukere(
             String enhetId,
@@ -79,10 +80,10 @@ public class OpensearchService {
 
         if (filtervalg.harAktiveFilter()) {
             filtervalg.ferdigfilterListe.forEach(
-                    filter -> boolQuery.filter(leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
+                    filter -> boolQuery.filter(filterQueryBuilder.leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
             );
 
-            leggTilManuelleFilter(boolQuery, filtervalg);
+            filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
         if (filtervalg.harBarnUnder18AarFilter()) {
@@ -90,19 +91,19 @@ public class OpensearchService {
                 String[] fraTilAlder = filtervalg.barnUnder18AarAlder.getFirst().split("-");
                 int fraAlder = parseInt(fraTilAlder[0]);
                 int tilAlder = parseInt(fraTilAlder[1]);
-                leggTilBarnAlderFilter(boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7(), fraAlder, tilAlder);
+                filterQueryBuilder.leggTilBarnAlderFilter(boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7(), fraAlder, tilAlder);
             } else if (filtervalg.barnUnder18Aar != null && !filtervalg.barnUnder18Aar.isEmpty()) {
-                leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
+                filterQueryBuilder.leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
             }
         }
 
         searchSourceBuilder.query(boolQuery);
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash)) {
-            leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+            filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
+        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
         OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
@@ -122,10 +123,10 @@ public class OpensearchService {
                 .must(termQuery("veileder_id", veilederId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash)) {
-            leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+            filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(veilederOgEnhetQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        SearchSourceBuilder request = byggStatustallQuery(veilederOgEnhetQuery, emptyList());
+        SearchSourceBuilder request = filterQueryBuilder.byggStatustallQuery(veilederOgEnhetQuery, emptyList());
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -147,10 +148,10 @@ public class OpensearchService {
                 .must(termQuery("enhet_id", enhetId));
 
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash)) {
-            leggTilBrukerinnsynTilgangFilter(enhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
+            filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(enhetQuery, brukerInnsynTilganger, brukerinnsynTilgangFilterType);
         }
 
-        SearchSourceBuilder request = byggStatustallQuery(enhetQuery, veilederPaaEnhet);
+        SearchSourceBuilder request = filterQueryBuilder.byggStatustallQuery(enhetQuery, veilederPaaEnhet);
 
         StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
@@ -158,7 +159,7 @@ public class OpensearchService {
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
-        SearchSourceBuilder request = byggPortefoljestorrelserQuery(enhetId);
+        SearchSourceBuilder request = filterQueryBuilder.byggPortefoljestorrelserQuery(enhetId);
         PortefoljestorrelserResponse response = search(request, indexName.getValue(), PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
