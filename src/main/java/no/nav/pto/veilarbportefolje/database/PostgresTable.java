@@ -62,14 +62,6 @@ public class PostgresTable {
         public static final String UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN = "UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN";
         public static final String UTKAST_14A_STATUS_ENDRET_TIDSPUNKT = "UTKAST_14A_STATUS_ENDRET_TIDSPUNKT";
 
-        // ARBEIDSLISTE
-        public static final String ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT = "ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT";
-        public static final String ARBEIDSLISTE_ENDRINGSTIDSPUNKT = "ARBEIDSLISTE_ENDRINGSTIDSPUNKT";
-        public static final String ARBEIDSLISTE_OVERSKRIFT = "ARBEIDSLISTE_OVERSKRIFT";
-        public static final String ARBEIDSLISTE_FRIST = "ARBEIDSLISTE_FRIST";
-        public static final String ARBEIDSLISTE_KATEGORI = "ARBEIDSLISTE_KATEGORI";
-        public static final String ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE = "ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE";
-
         // BRUKER_PROFILERING
         public static final String BRUKER_PROFILERING_PROFILERING_RESULTAT = "BRUKER_PROFILERING_PROFILERING_RESULTAT";
 
@@ -115,6 +107,10 @@ public class PostgresTable {
         public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
         public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
 
+        // YTELSER TILTAKSPENGER
+        public static final String YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM = "YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM";
+        public static final String YTELSER_TILTAKSPENGER_RETTIGHET = "YTELSER_TILTAKSPENGER_RETTIGHET";
+
     }
 
     public static final class OPPFOLGING_DATA {
@@ -156,21 +152,6 @@ public class PostgresTable {
         public static final String AKTOERID = "AKTOERID";
         public static final String VENTER_PA_BRUKER = "VENTER_PA_BRUKER";
         public static final String VENTER_PA_NAV = "VENTER_PA_NAV";
-    }
-
-    public static final class ARBEIDSLISTE {
-
-        private ARBEIDSLISTE() { /* no-op */ }
-
-        public static final String TABLE_NAME = "ARBEIDSLISTE";
-        public static final String AKTOERID = "AKTOERID";
-        public static final String SIST_ENDRET_AV_VEILEDERIDENT = "SIST_ENDRET_AV_VEILEDERIDENT";
-        public static final String ENDRINGSTIDSPUNKT = "ENDRINGSTIDSPUNKT";
-        public static final String OVERSKRIFT = "OVERSKRIFT";
-        public static final String KOMMENTAR = "KOMMENTAR";
-        public static final String FRIST = "FRIST";
-        public static final String KATEGORI = "KATEGORI";
-        public static final String NAV_KONTOR_FOR_ARBEIDSLISTE = "NAV_KONTOR_FOR_ARBEIDSLISTE";
     }
 
     public static final class FARGEKATEGORI {
@@ -475,6 +456,18 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
         public static final String OPPHORSAARSAK = "OPPHORSAARSAK";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class YTELSER_TILTAKSPENGER {
+        private YTELSER_TILTAKSPENGER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_TILTAKSPENGER";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String SAKSID = "SAKSID";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String RETTIGHET = "RETTIGHET";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 

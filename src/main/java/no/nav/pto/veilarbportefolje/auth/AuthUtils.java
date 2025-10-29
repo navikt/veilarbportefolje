@@ -4,9 +4,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.Tolkebehov;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tolkebehov;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,7 +21,7 @@ import static java.util.Optional.ofNullable;
 
 public class AuthUtils {
 
-    static Bruker fjernKonfidensiellInfo(Bruker bruker) {
+    static PortefoljebrukerFrontendModell fjernKonfidensiellInfo(PortefoljebrukerFrontendModell bruker) {
         return bruker.setFnr("")
                 .setEtternavn("").setFornavn("")
                 .setSkjermetTil(null)

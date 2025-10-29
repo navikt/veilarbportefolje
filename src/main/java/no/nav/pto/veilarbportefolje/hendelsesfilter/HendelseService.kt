@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
@@ -27,7 +27,7 @@ import java.util.*
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2
+    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -86,7 +86,6 @@ class HendelseService(
 
                 if (eldsteUtgattVarselHendelse.id == hendelse.id) {
                     oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
-
                     logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
                 } else {
                     logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB")
@@ -94,6 +93,9 @@ class HendelseService(
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB")
             }
         }
@@ -129,6 +131,9 @@ class HendelseService(
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
             }
         }
@@ -170,12 +175,14 @@ class HendelseService(
 
                 if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
                     oppdaterUtgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
-
                     logger.info("Hendelse med id ${hendelse.id}  og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
                 }
             }
 
             Kategori.UDELT_SAMTALEREFERAT -> {
+                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
+                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
+                 */
                 logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB.")
             }
         }
@@ -184,12 +191,12 @@ class HendelseService(
     private fun oppdaterUtgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
         // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-        opensearchIndexerV2.oppdaterUtgattVarsel(hendelse, aktorId)
+        opensearchIndexerPaDatafelt.oppdaterUtgattVarsel(hendelse, aktorId)
     }
 
     private fun slettUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
         // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-        opensearchIndexerV2.slettUtgattVarsel(aktorId)
+        opensearchIndexerPaDatafelt.slettUtgattVarsel(aktorId)
     }
 }

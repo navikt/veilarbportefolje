@@ -1,13 +1,13 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.Portefolje;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.controller.dto.Portefolje;
 
 import java.util.List;
 
 public class PortefoljeUtils {
 
-    public static Portefolje buildPortefolje(int antall, List<Bruker> brukereSublist, String enhet, int fra) {
+    public static Portefolje buildPortefolje(int antall, List<PortefoljebrukerFrontendModell> brukereSublist, String enhet, int fra) {
 
         return new Portefolje()
                 .setEnhet(enhet)

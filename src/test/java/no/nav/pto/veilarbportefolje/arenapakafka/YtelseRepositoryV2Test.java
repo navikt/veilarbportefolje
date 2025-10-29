@@ -7,7 +7,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseDAO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.PersonId;
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

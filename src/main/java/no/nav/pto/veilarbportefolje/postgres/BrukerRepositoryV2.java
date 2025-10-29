@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteMapper;
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -44,8 +44,8 @@ public class BrukerRepositoryV2 {
 
     private final KodeverkService kodeverkService;
 
-    public List<OppfolgingsBruker> hentOppfolgingsBrukere(List<AktorId> aktorIds) {
-        List<OppfolgingsBruker> result = new ArrayList<>();
+    public List<PortefoljebrukerOpensearchModell> hentPortefoljeBrukereTilOpensearchModell(List<AktorId> aktorIds) {
+        List<PortefoljebrukerOpensearchModell> result = new ArrayList<>();
 
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         return db.query("""
@@ -93,12 +93,6 @@ public class BrukerRepositoryV2 {
                                UTKAST_14A_STATUS.VEDTAKSTATUS                           as UTKAST_14A_STATUS_VEDTAKSTATUS,
                                UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                                UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
-                               ARBEIDSLISTE.SIST_ENDRET_AV_VEILEDERIDENT                as ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT,
-                               ARBEIDSLISTE.ENDRINGSTIDSPUNKT                           as ARBEIDSLISTE_ENDRINGSTIDSPUNKT,
-                               ARBEIDSLISTE.OVERSKRIFT                                  as ARBEIDSLISTE_OVERSKRIFT,
-                               ARBEIDSLISTE.FRIST                                       as ARBEIDSLISTE_FRIST,
-                               ARBEIDSLISTE.KATEGORI                                    as ARBEIDSLISTE_KATEGORI,
-                               ARBEIDSLISTE.NAV_KONTOR_FOR_ARBEIDSLISTE                 as ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE,
                                BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
                                BRUKER_CV.HAR_DELT_CV                                    as BRUKER_CV_HAR_DELT_CV,
                                BRUKER_CV.CV_EKSISTERER                                  as BRUKER_CV_CV_EKSISTERER,
@@ -127,7 +121,9 @@ public class BrukerRepositoryV2 {
                                HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
                                YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
                                YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
-                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE
+                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
+                               YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
+                               YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET
                         from OPPFOLGING_DATA
                                  inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -135,7 +131,6 @@ public class BrukerRepositoryV2 {
                                  left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
                                  left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
-                                 left join ARBEIDSLISTE                                 on ARBEIDSLISTE.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_PROFILERING                           on BRUKER_PROFILERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_CV                                    on BRUKER_CV.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
@@ -144,26 +139,27 @@ public class BrukerRepositoryV2 {
                                  left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
                 (ResultSet rs) -> {
                     while (rs.next()) {
-                        OppfolgingsBruker bruker = mapTilOppfolgingsBruker(rs);
-                        if (bruker.getFnr() == null) {
+                        PortefoljebrukerOpensearchModell brukerOpensearchModell = mapTilPortefoljebrukerOpensearchModell(rs);
+                        if (brukerOpensearchModell.getFnr() == null) {
                             continue; // NB: Dolly brukere kan ha kun aktoerId, dette vil også gjelde personer med kun NPID
                         }
                         if (rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR) == null) {
-                            leggTilHistoriskArenaDataHvisTilgjengelig(bruker);
+                            leggTilHistoriskArenaDataHvisTilgjengelig(brukerOpensearchModell);
                         }
-                        result.add(bruker);
+                        result.add(brukerOpensearchModell);
                     }
                     return result;
                 }, params);
     }
 
-    private void leggTilHistoriskArenaDataHvisTilgjengelig(OppfolgingsBruker bruker) {
+    private void leggTilHistoriskArenaDataHvisTilgjengelig(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         long startTime = System.currentTimeMillis();
-        OppfolgingsBruker brukerMedHistoriskData = queryForObjectOrNull(() ->
+        PortefoljebrukerOpensearchModell brukerMedHistoriskData = queryForObjectOrNull(() ->
                 db.queryForObject("""
                         select
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
@@ -180,17 +176,17 @@ public class BrukerRepositoryV2 {
                             )
                         order by ENDRET_DATO desc
                         limit 1
-                        """, (rs, i) -> flettInnOppfolgingsbruker(bruker, rs), bruker.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(brukerOpensearchModell, rs), brukerOpensearchModell.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
         if (brukerMedHistoriskData != null && brukerMedHistoriskData.getEnhet_id() != null) {
-            secureLog.info("Bruker historisk ident i arena for aktor: {}", bruker.getAktoer_id());
+            secureLog.info("Bruker historisk ident i arena for aktor: {}", brukerOpensearchModell.getAktoer_id());
         }
     }
 
     @SneakyThrows
-    private OppfolgingsBruker mapTilOppfolgingsBruker(ResultSet rs) {
+    private PortefoljebrukerOpensearchModell mapTilPortefoljebrukerOpensearchModell(ResultSet rs) {
         String fnr = rs.getString(AKTIVE_IDENTER_FNR);
         String utkast14aStatus = rs.getString(UTKAST_14A_STATUS_VEDTAKSTATUS);
 
@@ -200,7 +196,7 @@ public class BrukerRepositoryV2 {
             aapordinerutlopsdato = DateUtils.addWeeksToTodayAndGetNthDay(rs.getTimestamp(YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO), rs.getInt(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE), rs.getInt(YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN));
         }
 
-        OppfolgingsBruker bruker = new OppfolgingsBruker()
+        PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell()
                 .setFnr(fnr)
                 .setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID))
                 .setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null))
@@ -234,69 +230,54 @@ public class BrukerRepositoryV2 {
                 .setFargekategori(rs.getString(FARGEKATEGORI_VERDI))
                 .setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
 
-        setHuskelapp(bruker, rs);
-        setBrukersSituasjon(bruker, rs);
-        setAapKelvin(bruker, rs);
-
-        String arbeidslisteTidspunkt = toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_ENDRINGSTIDSPUNKT));
-        if (arbeidslisteTidspunkt != null) {
-            String fargekategoriFraFargekategoriTabell = rs.getString(FARGEKATEGORI_VERDI);
-            String fargekategoriFraArbeidslisteTabell = rs.getString(ARBEIDSLISTE_KATEGORI);
-            String resolvedFargekategori = fargekategoriFraFargekategoriTabell != null
-                    ? ArbeidslisteMapper.mapFraFargekategoriTilKategori(fargekategoriFraFargekategoriTabell).name()
-                    : fargekategoriFraArbeidslisteTabell;
-
-            bruker.setArbeidsliste_aktiv(true)
-                    .setArbeidsliste_endringstidspunkt(arbeidslisteTidspunkt)
-                    .setArbeidsliste_frist(Optional.ofNullable(toIsoUTC(rs.getTimestamp(ARBEIDSLISTE_FRIST))).orElse(getFarInTheFutureDate()))
-                    .setArbeidsliste_kategori(resolvedFargekategori)
-                    .setArbeidsliste_sist_endret_av_veilederid(rs.getString(ARBEIDSLISTE_SIST_ENDRET_AV_VEILEDERIDENT))
-                    .setNavkontor_for_arbeidsliste(rs.getString(ARBEIDSLISTE_NAV_KONTOR_FOR_ARBEIDSLISTE));
-            String overskrift = rs.getString(ARBEIDSLISTE_OVERSKRIFT);
-
-            bruker.setArbeidsliste_tittel_lengde(
-                    Optional.ofNullable(overskrift)
-                            .map(String::length)
-                            .orElse(0));
-            bruker.setArbeidsliste_tittel_sortering(
-                    Optional.ofNullable(overskrift)
-                            .filter(s -> !s.isEmpty())
-                            .map(s -> s.substring(0, Math.min(2, s.length())))
-                            .orElse(""));
-        } else {
-            bruker.setArbeidsliste_aktiv(false);
-        }
+        setHuskelapp(brukerOpensearchModell, rs);
+        setBrukersSituasjon(brukerOpensearchModell, rs);
+        setAapKelvin(brukerOpensearchModell, rs);
+        setTiltakspenger(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
-        flettInnOppfolgingsbruker(bruker, rs);
+        flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
 
         Date foedsels_dato = rs.getDate(BRUKER_DATA_FOEDSELSDATO);
         if (foedsels_dato != null) {
-            flettInnDataFraPDL(rs, bruker);
+            flettInnDataFraPDL(rs, brukerOpensearchModell);
         } else if (isDevelopment().orElse(false)) {
-            bruker.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
+            brukerOpensearchModell.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
-        bruker.setEgen_ansatt(rs.getBoolean(NOM_SKJERMING_ER_SKJERMET));
-        bruker.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
+        brukerOpensearchModell.setEgen_ansatt(rs.getBoolean(NOM_SKJERMING_ER_SKJERMET));
+        brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
-        return bruker;
+        return brukerOpensearchModell;
     }
 
     @SneakyThrows
-    private void setAapKelvin(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
-        boolean harStatusLøpende = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
-        LocalDate tomVedtaksDato = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean tomDatoErIkkeUtgått = tomVedtaksDato != null && tomVedtaksDato.isAfter(LocalDate.now().minusDays(1));
+    private void setAapKelvin(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
+        boolean harAktivYtelseStatus = rs.getString(YTELSER_AAP_STATUS) != null && rs.getString(YTELSER_AAP_STATUS).equals("LØPENDE");
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
         String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
-        Rettighetstype rettighetstypeOrNull = rettighetstype == null ? null : Rettighetstype.valueOf(rettighetstype);
+        AapRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : AapRettighetstype.valueOf(rettighetstype);
 
-        oppfolgingsBruker.setAap_kelvin(harStatusLøpende && tomDatoErIkkeUtgått);
-        oppfolgingsBruker.setAap_kelvin_tom_vedtaksdato(tomVedtaksDato);
-        oppfolgingsBruker.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
+        brukerOpensearchModell.setAap_kelvin(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        brukerOpensearchModell.setAap_kelvin_tom_vedtaksdato(vedtaksDatoTom);
+        brukerOpensearchModell.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
     }
 
     @SneakyThrows
-    private void setHuskelapp(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+    private void setTiltakspenger(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
+        String rettighet = rs.getString(YTELSER_TILTAKSPENGER_RETTIGHET);
+        TiltakspengerRettighet rettighetstypeOrNull = rettighet == null ? null : TiltakspengerRettighet.valueOf(rettighet);
+        boolean harAktivYtelseStatus = rettighetstypeOrNull != null && rettighetstypeOrNull != TiltakspengerRettighet.INGENTING;
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
+
+        brukerOpensearchModell.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
+        brukerOpensearchModell.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
+        brukerOpensearchModell.setTiltakspenger_rettighet(rettighetstypeOrNull);
+    }
+
+    @SneakyThrows
+    private void setHuskelapp(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
         LocalDate frist = toLocalDate(rs.getTimestamp(HUSKELAPP_FRIST));
         String kommentar = rs.getString(HUSKELAPP_KOMMENTAR);
         String huskelappId = rs.getString(HUSKELAPP_HUSKELAPP_ID);
@@ -304,12 +285,12 @@ public class BrukerRepositoryV2 {
         VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HUSKELAPP_ENDRET_AV_VEILEDER));
         String enhetId = rs.getString(HUSKELAPP_ENHET_ID);
         if (frist != null || kommentar != null) {
-            oppfolgingsBruker.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId, enhetId));
+            brukerOpensearchModell.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId, enhetId));
         }
     }
 
     @SneakyThrows
-    private void setBrukersSituasjon(OppfolgingsBruker oppfolgingsBruker, ResultSet rs) {
+    private void setBrukersSituasjon(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
         boolean harOppdatertBrukersSituasjon = rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) != null && rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET) != null;
         LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDate(rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET));
         LocalDate brukesSituasjonOpprettetDato = toLocalDate(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
@@ -317,20 +298,20 @@ public class BrukerRepositoryV2 {
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) : rs.getString(BRUKER_REGISTRERING_BRUKERS_SITUASJON);
         LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
-        oppfolgingsBruker.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
-        oppfolgingsBruker.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
+        brukerOpensearchModell.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
+        brukerOpensearchModell.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 
     @SneakyThrows
-    private OppfolgingsBruker flettInnOppfolgingsbruker(OppfolgingsBruker bruker, ResultSet rs) {
+    private PortefoljebrukerOpensearchModell flettInnOppfolgingsbruker(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
         String fnr = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR);
         if (fnr == null) {
-            return bruker;
+            return brukerOpensearchModell;
         }
 
         String formidlingsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
-        return bruker
+        return brukerOpensearchModell
                 .setFnr(fnr)
                 .setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)))
@@ -343,7 +324,7 @@ public class BrukerRepositoryV2 {
     }
 
     @SneakyThrows
-    private void flettInnDataFraPDL(ResultSet rs, OppfolgingsBruker bruker) {
+    private void flettInnDataFraPDL(ResultSet rs, PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         Date foedselsdato = rs.getDate(BRUKER_DATA_FOEDSELSDATO);
         String mellomnavn = rs.getString(BRUKER_DATA_MELLOMNAVN);
         String fornavn = rs.getString(BRUKER_DATA_FORNAVN);
@@ -359,7 +340,7 @@ public class BrukerRepositoryV2 {
         Date sikkerhetstiltakGyldigtil = rs.getDate(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL);
         boolean showSikkerhetsTiltak = (sikkerhetstiltakGyldigtil == null || sikkerhetstiltakGyldigtil.toLocalDate().isAfter(LocalDate.now()));
 
-        bruker
+        brukerOpensearchModell
                 .setFornavn(fornavn)
                 .setEtternavn(etternavn)
                 .setFullt_navn(String.format("%s, %s", etternavn, fornavn))

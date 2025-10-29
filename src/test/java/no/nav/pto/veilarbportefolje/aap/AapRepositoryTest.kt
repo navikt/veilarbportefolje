@@ -1,9 +1,8 @@
 package no.nav.pto.veilarbportefolje.aap
 
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.Rettighetstype
-import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
-import no.nav.pto.veilarbportefolje.aap.repository.AapStatus
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +33,7 @@ class AapRepositoryTest(
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
-        assertThat(resultatAvHenting!!.status).isEqualTo(AapStatus.LOPENDE)
+        assertThat(resultatAvHenting!!.status).isEqualTo(AapVedtakStatus.LØPENDE)
         assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2024, 1, 1))
         assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2024, 12, 31))
     }
@@ -57,7 +56,7 @@ class AapRepositoryTest(
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
-        assertThat(resultatAvHenting!!.status).isEqualTo(AapStatus.LOPENDE)
+        assertThat(resultatAvHenting!!.status).isEqualTo(AapVedtakStatus.LØPENDE)
         assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2025, 1, 1))
         assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2025, 12, 31))
     }
@@ -86,14 +85,14 @@ class AapRepositoryTest(
 
 
     val aapVedtakDto = AapVedtakResponseDto.Vedtak(
-        status = "LØPENDE",
+        status = AapVedtakStatus.LØPENDE,
         saksnummer = "SAK-1",
         periode = AapVedtakResponseDto.Periode(
             fraOgMedDato = LocalDate.of(2024, 1, 1),
             tilOgMedDato = LocalDate.of(2024, 12, 31)
         ),
         kildesystem = "KELVIN",
-        rettighetsType = Rettighetstype.ARBEIDSSØKER,
+        rettighetsType = AapRettighetstype.ARBEIDSSØKER,
         opphorsAarsak = null
     )
 

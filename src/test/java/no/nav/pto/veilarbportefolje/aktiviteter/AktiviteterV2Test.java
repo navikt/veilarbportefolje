@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;

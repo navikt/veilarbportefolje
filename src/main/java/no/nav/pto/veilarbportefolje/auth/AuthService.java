@@ -11,8 +11,8 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,13 +74,13 @@ public class AuthService {
         AuthUtils.test("tilgangTilBruker", fnr, response);
     }
 
-    public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
+    public List<PortefoljebrukerFrontendModell> sensurerBrukere(List<PortefoljebrukerFrontendModell> brukere) {
         return brukere.stream()
                 .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
                 .collect(toList());
     }
 
-    public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker) {
+    public PortefoljebrukerFrontendModell fjernKonfidensiellInfoDersomIkkeTilgang(PortefoljebrukerFrontendModell bruker) {
         if (bruker.getBarnUnder18AarData() != null) {
             bruker.setBarnUnder18AarData(
                     bruker.getBarnUnder18AarData().stream().filter(

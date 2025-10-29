@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene.value;
 
 import no.nav.common.json.JsonUtils;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

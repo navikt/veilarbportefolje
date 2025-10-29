@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.opensearch;
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
-import no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg;
-import no.nav.pto.veilarbportefolje.domene.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge;
 import org.junit.BeforeClass;
@@ -13,8 +13,8 @@ import org.opensearch.search.builder.SearchSourceBuilder;
 import java.util.List;
 import java.util.Map;
 
-import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchQueryBuilder.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

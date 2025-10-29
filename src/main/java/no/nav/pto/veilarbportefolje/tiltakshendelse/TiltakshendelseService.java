@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class TiltakshendelseService extends KafkaCommonNonKeyedConsumerService<KafkaTiltakshendelse> {
     private final TiltakshendelseRepository repository;
     private final BrukerServiceV2 brukerServiceV2;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     @Override
     protected void behandleKafkaMeldingLogikk(KafkaTiltakshendelse tiltakshendelseData) {
@@ -35,7 +35,7 @@ public class TiltakshendelseService extends KafkaCommonNonKeyedConsumerService<K
         boolean erEldsteTiltakshendelse = repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(tiltakshendelseData);
 
         if (erEldsteTiltakshendelse) {
-            opensearchIndexerV2.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
+            opensearchIndexerPaDatafelt.updateTiltakshendelse(aktorId, KafkaTiltakshendelse.mapTilTiltakshendelse(tiltakshendelseData));
         }
     }
 
@@ -43,9 +43,9 @@ public class TiltakshendelseService extends KafkaCommonNonKeyedConsumerService<K
         Tiltakshendelse eldsteTiltakshendelse = repository.slettTiltakshendelseOgHentEldste(tiltakshendelseData.id(), tiltakshendelseData.fnr());
 
         if (eldsteTiltakshendelse != null) {
-            opensearchIndexerV2.updateTiltakshendelse(aktorId, eldsteTiltakshendelse);
+            opensearchIndexerPaDatafelt.updateTiltakshendelse(aktorId, eldsteTiltakshendelse);
         } else {
-            opensearchIndexerV2.slettTiltakshendelse(aktorId);
+            opensearchIndexerPaDatafelt.slettTiltakshendelse(aktorId);
         }
     }
 }

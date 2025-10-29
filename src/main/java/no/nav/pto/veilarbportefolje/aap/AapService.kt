@@ -2,18 +2,18 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_MELDINGSTYPE
-import no.nav.pto.veilarbportefolje.aap.domene.YTELSE_TYPE
-import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO
-import no.nav.pto.veilarbportefolje.aap.repository.AapRepository
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -36,28 +36,26 @@ class AapService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aapRepository: AapRepository,
-    val opensearchIndexerV2: OpensearchIndexerV2
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personident)
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.KELVIN) {
+            logger.warn("Mottok ytelse-melding  for AAP med uventet kildesystem: ${kafkaMelding.kildesystem}, forventet KELVIN. Ignorerer melding.")
+            return
+        }
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
 
         if (!erUnderOppfolging) {
-            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personident)
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", kafkaMelding.personId)
             return
         }
 
-        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personident))
+        val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(kafkaMelding.personident, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
-    }
-
-    fun hentOgLagreAapForBrukerVedBatchjobb(aktorId: AktorId) {
-        val personIdent = aktorClient.hentFnr(aktorId).get()
-        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreAapForBruker(personIdent, aktorId, oppfolgingsStartdato, YTELSE_MELDINGSTYPE.OPPRETT)
+        lagreAapForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
     fun hentOgLagreAapForBrukerVedOppfolgingStart(aktorId: AktorId) {
@@ -73,19 +71,19 @@ class AapService(
                 secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
                         "sletter eventuell eksisterende AAP-periode i databasen", personIdent)
                 slettAapForAlleIdenterForBruker(personIdent)
-                opensearchIndexerV2.slettAapKelvin(aktorId)
+                opensearchIndexerPaDatafelt.slettAapKelvin(aktorId)
                 return
             } else {
                 secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, ignorerer aap-ytelse melding.", personIdent)
                 return
             }
 
-        val harAktivAap = sisteAapPeriode.status == "LØPENDE" && sisteAapPeriode.periode.tilOgMedDato.isAfter(
+        val harAktivAap = sisteAapPeriode.status == AapVedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
             LocalDate.now().minusDays(1)
         )
 
-        upsertAapForAktivIdentForBruker(personIdent, aktorId, sisteAapPeriode)
-        opensearchIndexerV2.oppdaterAapKelvin(
+        upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
+        opensearchIndexerPaDatafelt.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
             sisteAapPeriode.periode.tilOgMedDato,
@@ -93,7 +91,7 @@ class AapService(
         )
     }
 
-    fun upsertAapForAktivIdentForBruker(personIdent: String, aktorId: AktorId, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+    fun upsertAapForAktivIdentForBruker(personIdent: String, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->
@@ -105,15 +103,13 @@ class AapService(
     }
 
     fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
-        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid. Bør sjekkes nøyere med aap om
-        // hvordan periodene man sender inn behandles (de ser ikke ut til å filtrere på periodene)
+        //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid.
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
         val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .mapNotNull { vedtak ->
-                val filtrertPeriode = filtrerAapKunIOppfolgingPeriode(oppfolgingsStartdato, vedtak.periode)
-                filtrertPeriode?.let { vedtak.copy(periode = it) }
+            .filter { vedtak ->
+                vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
         val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
@@ -142,17 +138,6 @@ class AapService(
         alleFnrIdenterForBruker.forEach { ident ->
             aapRepository.slettAapForBruker(ident)
         }
-    }
-
-    fun filtrerAapKunIOppfolgingPeriode(
-        oppfolgingsStartdato: LocalDate,
-        aapPeriode: AapVedtakResponseDto.Periode
-    ): AapVedtakResponseDto.Periode? {
-        if (aapPeriode.tilOgMedDato.isBefore(oppfolgingsStartdato)
-        ) {
-            return null
-        }
-        return aapPeriode
     }
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {

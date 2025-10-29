@@ -1,7 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import org.junit.jupiter.api.BeforeEach;

@@ -4,11 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar;
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import org.apache.lucene.search.join.ScoreMode;
@@ -36,8 +34,8 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering;
-import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.JA;
-import static no.nav.pto.veilarbportefolje.domene.AktivitetFiltervalg.NEI;
+import static no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg.JA;
+import static no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg.NEI;
 import static no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
@@ -199,17 +197,64 @@ public class OpensearchQueryBuilder {
             );
         }
 
-        if (filtervalg.harYtelseAapKelvinFilter()) {
-            BoolQueryBuilder subQuery = boolQuery();
-            filtervalg.ytelseAapKelvin.forEach(ytelse -> {
-                switch (ytelse) {
-                    case HAR_AAP -> subQuery.should(termQuery("aap_kelvin", true));
-                    case HAR_IKKE_AAP -> subQuery.should(termQuery("aap_kelvin", false));
+        if (filtervalg.harYtelseAapArenaFilter() || filtervalg.harYtelseAapKelvinFilter()) {
+            BoolQueryBuilder subQueryKelvin = boolQuery();
+            BoolQueryBuilder subQueryArena = boolQuery();
+            BoolQueryBuilder combinedSubQuery = boolQuery();
+
+            filtervalg.ytelseAapArena.forEach(ytelseArena -> {
+                switch (ytelseArena) {
+                    case HAR_AAP_ORDINAR -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_MAXTID));
+                    case HAR_AAP_UNNTAK -> subQueryArena.should(matchQuery("ytelse", YtelseMapping.AAP_UNNTAK));
                 }
             });
 
-            queryBuilder.must(subQuery);
+            filtervalg.ytelseAapKelvin.forEach(ytelseKelvin -> {
+                switch (ytelseKelvin) {
+                    case HAR_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", true));
+                    case HAR_IKKE_AAP -> subQueryKelvin.should(termQuery("aap_kelvin", false));
+                }
+            });
+
+            if (filtervalg.harYtelseAapArenaFilter()) {
+                combinedSubQuery.should(subQueryArena);
+            }
+            if (filtervalg.harYtelseAapKelvinFilter()) {
+                combinedSubQuery.should(subQueryKelvin);
+            }
+
+            queryBuilder.must(combinedSubQuery);
         }
+
+
+        if (filtervalg.harYtelseTiltakspengerFilter() || filtervalg.harYtelseTiltakspengerArenaFilter()) {
+            BoolQueryBuilder subQueryTiltakspenger = boolQuery();
+            BoolQueryBuilder subQueryTiltakspengerArena = boolQuery();
+            BoolQueryBuilder combinedSubQuery = boolQuery();
+
+            filtervalg.ytelseTiltakspenger.forEach(ytelseTiltakspenger -> {
+                switch (ytelseTiltakspenger) {
+                    case HAR_TILTAKSPENGER -> subQueryTiltakspenger.should(termQuery("tiltakspenger", true));
+                    case HAR_IKKE_TILTAKSPENGER -> subQueryTiltakspenger.should(termQuery("tiltakspenger", false));
+                }
+            });
+
+            filtervalg.ytelseTiltakspengerArena.forEach(ytelseTiltakspenger -> {
+                switch (ytelseTiltakspenger) {
+                    case HAR_TILTAKSPENGER -> subQueryTiltakspengerArena.should(matchQuery("ytelse", YtelseMapping.TILTAKSPENGER));
+                }
+            });
+
+            if (filtervalg.harYtelseTiltakspengerFilter()) {
+                combinedSubQuery.should(subQueryTiltakspenger);
+            }
+            if (filtervalg.harYtelseTiltakspengerArenaFilter()) {
+                combinedSubQuery.should(subQueryTiltakspengerArena);
+            }
+
+            queryBuilder.must(combinedSubQuery);
+        }
+
 
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(matchQuery("kjonn", filtervalg.kjonn.name()));
@@ -469,9 +514,9 @@ public class OpensearchQueryBuilder {
      * <p>
      * Merk: {@link Sorteringsfelt} er en enum som representerer lovlige sorteringsfelter slik frontend har definert dem.
      * Disse mappes til felter i OpenSearch, dvs. for enkelte verdier av {@link Sorteringsfelt} kan det være at feltet
-     * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link OppfolgingsBruker} er "fasiten" for hvilke felter
+     * det faktisk sorteres på heter noe annet i OpenSearch. Siden {@link PortefoljebrukerOpensearchModell} er "fasiten" for hvilke felter
      * som er lov å sortere på i OpenSearch er det viktig at vi ikke legger til nye sorteringsfelter i {@link Sorteringsfelt}
-     * uten å sørge for at disse også er tilgjengelige i {@link OppfolgingsBruker}.
+     * uten å sørge for at disse også er tilgjengelige i {@link PortefoljebrukerOpensearchModell}.
      */
     static SearchSourceBuilder sorterQueryParametere(
             Sorteringsrekkefolge sorteringsrekkefolge,
@@ -642,7 +687,14 @@ public class OpensearchQueryBuilder {
                 sorterTildeltTidspunkt(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
                 yield searchSourceBuilder;
             }
-
+            case TILTAKSPENGER_VEDTAKSDATO_TOM -> {
+                sorterTiltakspengerVedtaksdatoTom(searchSourceBuilder, sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
+            case TILTAKSPENGER_RETTIGHET -> {
+                searchSourceBuilder.sort("tiltakspenger_rettighet", sorteringsrekkefolgeOpenSearch);
+                yield searchSourceBuilder;
+            }
             // Vi har eksplisitt latt være å definere en "default" case i switch-en for å tvinge oss selv til å håndtere
             // alle sorteringsfeltene (exhaustivness check som gjøres av kompilatoren). Så i praksis er dette default-tilfellet.
             case ETTERNAVN, CV_SVARFRIST, AAP_MAXTID_UKE, AAP_UNNTAK_UKER_IGJEN, VENTER_PA_SVAR_FRA_NAV,
@@ -742,7 +794,7 @@ public class OpensearchQueryBuilder {
 
     static void sorterAapVurderingsfrist(SearchSourceBuilder builder, SortOrder order, Filtervalg filtervalg) {
         String expression = "";
-        if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP)) {
+        if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.size() == 2 ) {
             expression = """
                     if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -758,7 +810,7 @@ public class OpensearchQueryBuilder {
                        return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_MAXTID)) {
+        } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_ORDINAR)) {
             expression = """
                     if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
                         return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
@@ -771,7 +823,7 @@ public class OpensearchQueryBuilder {
                         return 0;
                     }
                     """;
-        } else if (filtervalg.harYtelsefilterArena() && filtervalg.ytelse.equals(YtelseFilterArena.AAP_UNNTAK)) {
+        } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_UNNTAK)) {
             expression = """
                     if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
                         return doc['utlopsdato'].value.toInstant().toEpochMilli();
@@ -899,6 +951,23 @@ public class OpensearchQueryBuilder {
         builder.sort(scriptBuilder);
     }
 
+    private static void sorterTiltakspengerVedtaksdatoTom(SearchSourceBuilder builder, SortOrder order) {
+        String expression;
+
+        expression = """
+                if (doc.containsKey('tiltakspenger_vedtaksdato_tom') && !doc['tiltakspenger_vedtaksdato_tom'].empty) {
+                    return doc['tiltakspenger_vedtaksdato_tom'].value.toInstant().toEpochMilli();
+                } else {
+                    return 33064243200001.0;
+                }
+                """;
+
+        Script script = new Script(expression);
+        ScriptSortBuilder scriptBuilder = new ScriptSortBuilder(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+        scriptBuilder.order(order);
+        builder.sort(scriptBuilder);
+    }
+
     private static void sorterTildeltTidspunkt(SearchSourceBuilder builder, SortOrder order) {
         String expression;
 
@@ -945,10 +1014,6 @@ public class OpensearchQueryBuilder {
                 break;
             case UTLOPTE_AKTIVITETER:
                 queryBuilder = existsQuery("nyesteutlopteaktivitet");
-                break;
-            case MIN_ARBEIDSLISTE:
-                // Ikkje filtrer på arbeidslister fram til vi får fjerna MIN_ARBEIDSLISTE frå lagra filter i veilarbfilter
-                queryBuilder = matchAllQuery(); // Returnerer alle resultat, som om ein ikkje hadde filtrert på arbeidsliste
                 break;
             case MINE_HUSKELAPPER:
                 queryBuilder = existsQuery("huskelapp");
@@ -1044,16 +1109,6 @@ public class OpensearchQueryBuilder {
                             .gt(format("now-%sy-1d", tilAlder + 1))
             );
         }
-    }
-
-    static SearchSourceBuilder byggArbeidslisteQuery(String enhetId, String veilederId) {
-        return new SearchSourceBuilder().query(
-                boolQuery()
-                        .must(termQuery("oppfolging", true))
-                        .must(termQuery("enhet_id", enhetId))
-                        .must(termQuery("veileder_id", veilederId))
-                        .must(termQuery("arbeidsliste_aktiv", true))
-        );
     }
 
     static SearchSourceBuilder byggPortefoljestorrelserQuery(String enhetId) {

@@ -13,8 +13,10 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregiste
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +59,29 @@ public class ClientConfig {
         return new AapClient(
                 environmentProperties.getAapUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getAapScope())
+        );
+    }
+
+    @Bean
+    public TiltakspengerClient tiltakspengerClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new TiltakspengerClient(
+                environmentProperties.getTiltakspengerUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getTiltakspengerScope())
+        );
+    }
+
+    @Bean
+    public OppfolgingClient oppfolgingClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties,
+            AktorClient aktorClient) {
+        return new OppfolgingClient(
+                aktorClient,
+                environmentProperties.getVeilarboppfolgingUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getVeilarboppfolgingScope())
         );
     }
 

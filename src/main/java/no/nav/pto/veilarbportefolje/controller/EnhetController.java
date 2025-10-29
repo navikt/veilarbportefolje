@@ -6,12 +6,21 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
+import no.nav.pto.veilarbportefolje.controller.dto.EnhetPortefoljeStatustallRespons;
+import no.nav.pto.veilarbportefolje.controller.dto.Portefolje;
 import no.nav.pto.veilarbportefolje.domene.*;
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.persononinfo.bosted.BostedService;
+import no.nav.pto.veilarbportefolje.persononinfo.bosted.GeografiskBosted;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Foedeland;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
+import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.TolkSpraak;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +76,7 @@ public class EnhetController {
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.empty(), validertSorteringsrekkefolge, validertSorteringsfelt, filtervalg, fra, antall);
-        List<Bruker> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
+        List<PortefoljebrukerFrontendModell> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
                 sensurerteBrukereSublist,

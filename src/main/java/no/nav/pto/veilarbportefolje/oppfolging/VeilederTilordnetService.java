@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,11 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService<VeilederTilordnetDTO> {
-    private final OppfolgingService oppfolgingService;
+    private final OppfolgingClient oppfolgingClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final PdlIdentRepository pdlIdentRepository;
 
     @Override
@@ -43,7 +44,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
         oppfolgingRepositoryV2.settTildeltTidspunkt(aktoerId, tildeltTidspunkt);
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId);
-        opensearchIndexerV2.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt);
+        opensearchIndexerPaDatafelt.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt);
         secureLog.info("Oppdatert bruker: {}, til veileder med id: {}", aktoerId, veilederId);
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -63,7 +64,7 @@ public class VeilederTilordnetService extends KafkaCommonNonKeyedConsumerService
         if (hentVeileder(aktorId).equals(veilederId)) {
             return;
         }
-        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingService.hentUnderOppfolging(aktorId);
+        boolean erUnderOppfolgingIVeilarboppfolging = oppfolgingClient.hentUnderOppfolging(aktorId);
         if (erUnderOppfolgingIVeilarboppfolging) {
             throw new IllegalStateException("Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje");
         }

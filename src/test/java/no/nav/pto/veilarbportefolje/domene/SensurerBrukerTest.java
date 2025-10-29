@@ -7,6 +7,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,28 +47,28 @@ public class SensurerBrukerTest {
     @Test
     public void skalIkkeSeKode6Bruker() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Bruker() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeEgenAnsatt() {
         when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode6Bruker() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode6");
@@ -76,7 +77,7 @@ public class SensurerBrukerTest {
     @Test
     public void skalSeKode7Bruker() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode7");
@@ -85,7 +86,7 @@ public class SensurerBrukerTest {
     @Test
     public void skalSeEgenAnsatt() {
         when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvEgenAnsatt");
@@ -93,7 +94,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalSeIkkeKonfidensiellBruker() {
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker());
         assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
         assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
         assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
@@ -102,14 +103,14 @@ public class SensurerBrukerTest {
     @Test
     public void skalIkkeSeKode6Barn() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
         sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
     }
 
     @Test
     public void skalIkkeSeKode7Barn() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn());
         sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere);
     }
 
@@ -117,28 +118,28 @@ public class SensurerBrukerTest {
     public void skalFjerneKode7BarnMenIkkeKode6() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
         when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn());
+        PortefoljebrukerFrontendModell filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn());
         sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
         sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
-        assertEquals(2, filtrertBruker.barnUnder18AarData.size());
+        assertEquals(2, filtrertBruker.getBarnUnder18AarData().size());
     }
 
     @Test
     public void skalIkkeSeKode19Barn() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
         sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere);
     }
 
     @Test
     public void skalSeKode19Barn() {
         when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        Bruker filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
+        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
         sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere);
     }
 
 
-    private void sjekkAtKonfidensiellDataErVasket(Bruker bruker) {
+    private void sjekkAtKonfidensiellDataErVasket(PortefoljebrukerFrontendModell bruker) {
         assertThat(bruker.getFnr()).isEqualTo("");
         assertThat(bruker.getEtternavn()).isEqualTo("");
         assertThat(bruker.getFornavn()).isEqualTo("");
@@ -152,38 +153,38 @@ public class SensurerBrukerTest {
         assertThat(bruker.isHarUtelandsAddresse()).isEqualTo(false);
     }
 
-    private void sjekkAtBarnMedKode6ErFjernet(Bruker bruker) {
+    private void sjekkAtBarnMedKode6ErFjernet(PortefoljebrukerFrontendModell bruker) {
         assertTrue(bruker.getBarnUnder18AarData().stream().noneMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("6")));
     }
 
-    private void sjekkAtBarnMedKode7ErFjernet(Bruker bruker) {
+    private void sjekkAtBarnMedKode7ErFjernet(PortefoljebrukerFrontendModell bruker) {
         assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("7")));
     }
 
-    private void sjekkAtBarnMedKode6IkkeErFjernet(Bruker bruker) {
+    private void sjekkAtBarnMedKode6IkkeErFjernet(PortefoljebrukerFrontendModell bruker) {
         assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("6")));
     }
 
-    private void sjekkAtBarnMedKode19ErFjernet(Bruker bruker) {
+    private void sjekkAtBarnMedKode19ErFjernet(PortefoljebrukerFrontendModell bruker) {
         assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("19")));
     }
 
-    private void sjekkAtBarnMedKode19ErIkkeFjernet(Bruker bruker) {
+    private void sjekkAtBarnMedKode19ErIkkeFjernet(PortefoljebrukerFrontendModell bruker) {
         assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
                 barnUnder18AarData ->
                         barnUnder18AarData.getDiskresjonskode().equals("19")));
     }
 
-    private Bruker kode6Bruker() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell kode6Bruker() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode6")
                 .setFornavn("fornavnKode6")
@@ -191,8 +192,8 @@ public class SensurerBrukerTest {
                 .setBarnUnder18AarData(emptyList());
     }
 
-    private Bruker kode7Bruker() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell kode7Bruker() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvKode7")
                 .setFornavn("fornavnKode7")
@@ -200,23 +201,23 @@ public class SensurerBrukerTest {
                 .setBarnUnder18AarData(emptyList());
     }
 
-    private Bruker egenAnsatt() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell egenAnsatt() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvEgenAnsatt")
                 .setFornavn("fornavnKodeEgenAnsatt")
                 .setEgenAnsatt(true);
     }
 
-    private Bruker ikkeKonfidensiellBruker() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell ikkeKonfidensiellBruker() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setEtternavn("etternanvIkkeKonfidensiellBruker")
                 .setFornavn("fornavnIkkeKonfidensiellBruker");
     }
 
-    private Bruker brukerMedKode6Barn() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell brukerMedKode6Barn() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
                         new BarnUnder18AarData(15, "6"),
@@ -224,16 +225,16 @@ public class SensurerBrukerTest {
                 ));
     }
 
-    private Bruker brukerMedKode7Barn() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell brukerMedKode7Barn() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
                         1, "7"
                 )));
     }
 
-    private Bruker brukerMedKode19Barn() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell brukerMedKode19Barn() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
                         new BarnUnder18AarData(15, "19"),
@@ -243,8 +244,8 @@ public class SensurerBrukerTest {
     }
 
 
-    private Bruker brukerMedKode6og7Barn() {
-        return new Bruker()
+    private PortefoljebrukerFrontendModell brukerMedKode6og7Barn() {
+        return new PortefoljebrukerFrontendModell()
                 .setFnr("11111111111")
                 .setBarnUnder18AarData(List.of(
                         new BarnUnder18AarData(11, "6"),

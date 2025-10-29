@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -113,14 +113,6 @@ public class OppfolgingRepositoryV2 {
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
         db.setFetchSize(10_000);
         List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging", AktorId.class);
-        db.setFetchSize(-1);
-
-        return alleIder;
-    }
-
-    public List<AktorId> hentAlleBrukerUnderOppfolgingMedTildeltVeileder() {
-        db.setFetchSize(10_000);
-        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging AND veilederid IS NOT NULL AND tildelt_tidspunkt is NULL", AktorId.class);
         db.setFetchSize(-1);
 
         return alleIder;

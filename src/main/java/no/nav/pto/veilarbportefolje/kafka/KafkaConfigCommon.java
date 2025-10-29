@@ -17,10 +17,15 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.aap.YtelserKafkaService;
-import no.nav.pto.veilarbportefolje.aap.domene.YtelserKafkaDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
@@ -36,22 +41,23 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
+import no.nav.pto.veilarbportefolje.kafka.deserializers.KotlinJsonDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
@@ -111,17 +117,17 @@ public class KafkaConfigCommon {
 
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
-        TILTAK_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        TILTAK_ARENA_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        UTDANNINGS_AKTIVITET_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        UTDANNINGS_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        GRUPPE_AKTIVITET_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
+        GRUPPE_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
-        AAP_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
+        AAP_ARENA_TOPIC("teamarenanais.aapen-arena-aapvedtakendret-v1-" + requireKafkaTopicPostfix()),
 
-        DAGPENGE_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+        DAGPENGER_ARENA_TOPIC("teamarenanais.aapen-arena-dagpengevedtakendret-v1-" + requireKafkaTopicPostfix()),
 
-        TILTAKSPENGER_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
+        TILTAKSPENGER_ARENA_TOPIC("teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-" + requireKafkaTopicPostfix()),
 
         NOM_SKJERMING_STATUS("nom.skjermede-personer-status-v1"),
 
@@ -182,7 +188,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.UTDANNINGS_AKTIVITET_TOPIC.topicName,
+                                        Topic.UTDANNINGS_AKTIVITET_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(UtdanningsAktivitetDTO.class),
                                         utdanningsAktivitetService::behandleKafkaRecord
@@ -192,7 +198,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.GRUPPE_AKTIVITET_TOPIC.topicName,
+                                        Topic.GRUPPE_AKTIVITET_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
                                         gruppeAktivitetService::behandleKafkaRecord
@@ -202,7 +208,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.TILTAK_TOPIC.topicName,
+                                        Topic.TILTAK_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakService::behandleKafkaRecord
@@ -242,7 +248,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.AAP_TOPIC.topicName,
+                                        Topic.AAP_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
@@ -254,7 +260,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.DAGPENGE_TOPIC.topicName,
+                                        Topic.DAGPENGER_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
@@ -266,7 +272,7 @@ public class KafkaConfigCommon {
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.TILTAKSPENGER_TOPIC.topicName,
+                                        Topic.TILTAKSPENGER_ARENA_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(YtelsesDTO.class),
                                         (melding -> {
@@ -383,14 +389,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(SkjermingDTO.class),
                                         skjermingService::behandleSkjermedePersoner
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Dialogdata>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, DialogdataDto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.DIALOG_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(Dialogdata.class),
+                                        Deserializers.jsonDeserializer(DialogdataDto.class),
                                         dialogService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()
@@ -440,7 +446,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<YtelserKafkaDTO>().getDeserializer(),
+                                        new KotlinJsonDeserializer<>(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 )
                 );

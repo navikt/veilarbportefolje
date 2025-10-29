@@ -6,8 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesInnhold;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.Brukerdata;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -206,7 +205,7 @@ public class YtelsesService {
     }
 
     private void oppdaterAktivYtelse(AktorId aktorId, YtelseDAO ytelse) {
-        Brukerdata ytelsesTilstand = new Brukerdata()
+        ArenaYtelserBrukerdata ytelsesTilstand = new ArenaYtelserBrukerdata()
                 .setAktoerid(aktorId.get());
         if (ytelse == null) {
             ytelsesStatusRepositoryV2.slettYtelseStatus(aktorId);
