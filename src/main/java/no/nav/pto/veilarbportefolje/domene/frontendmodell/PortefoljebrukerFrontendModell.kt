@@ -37,12 +37,12 @@ data class PortefoljebrukerFrontendModell(
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
     val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
-    val oppfolgingStartdato: LocalDateTime? = null,
+    val oppfolgingStartdato: LocalDate? = null,
     val utkast14a: Utkast14a? = null,
     val veilederId: String? = null,
     val nyForVeileder: Boolean? = null,
     val nyForEnhet: Boolean? = null,
-    val tildeltTidspunkt: LocalDateTime? = null,
+    val tildeltTidspunkt: LocalDate? = null,
 
     val trengerOppfolgingsvedtak: Boolean? = null,
     val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
@@ -55,10 +55,10 @@ data class PortefoljebrukerFrontendModell(
     val erSykmeldtMedArbeidsgiver: Boolean? = null,
 
     // AktiviterData
-    val nyesteUtlopteAktivitet: LocalDateTime? = null,
-    val aktivitetStart: LocalDateTime? = null,
-    val nesteAktivitetStart: LocalDateTime? = null,
-    val forrigeAktivitetStart: LocalDateTime? = null,
+    val nyesteUtlopteAktivitet: LocalDate? = null,
+    val aktivitetStart: LocalDate? = null,
+    val nesteAktivitetStart: LocalDate? = null,
+    val forrigeAktivitetStart: LocalDate? = null,
 
     val moteStartTid: LocalDateTime? = null,
     val alleMoterStartTid: LocalDateTime? = null,
@@ -84,12 +84,12 @@ data class PortefoljebrukerFrontendModell(
 
 
     // DialogData
-    val venterPaSvarFraNAV: LocalDateTime? = null,
-    val venterPaSvarFraBruker: LocalDateTime? = null,
+    val venterPaSvarFraNAV: LocalDate? = null,
+    val venterPaSvarFraBruker: LocalDate? = null,
 
     // NavAnasattData
     var egenAnsatt: Boolean? = null,
-    var skjermetTil: LocalDateTime? = null,
+    var skjermetTil: LocalDate? = null,
 
     // CvData
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,

@@ -203,7 +203,7 @@ public class BrukerRepositoryV2 {
                 .setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING))
                 .setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT))
                 .setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT))
-                .setUtdanning_og_situasjon_sist_endret(toLocalDate(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)))
+                .setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)))
                 .setHar_delt_cv(rs.getBoolean(BRUKER_CV_HAR_DELT_CV))
                 .setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER))
                 .setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING))
@@ -278,10 +278,10 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void setHuskelapp(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        LocalDate frist = toLocalDate(rs.getTimestamp(HUSKELAPP_FRIST));
+        LocalDate frist = toLocalDateOrNull(rs.getTimestamp(HUSKELAPP_FRIST));
         String kommentar = rs.getString(HUSKELAPP_KOMMENTAR);
         String huskelappId = rs.getString(HUSKELAPP_HUSKELAPP_ID);
-        LocalDate endretDato = toLocalDate(rs.getTimestamp(HUSKELAPP_ENDRET_DATO));
+        LocalDate endretDato = toLocalDateOrNull(rs.getTimestamp(HUSKELAPP_ENDRET_DATO));
         VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HUSKELAPP_ENDRET_AV_VEILEDER));
         String enhetId = rs.getString(HUSKELAPP_ENHET_ID);
         if (frist != null || kommentar != null) {
@@ -292,8 +292,8 @@ public class BrukerRepositoryV2 {
     @SneakyThrows
     private void setBrukersSituasjon(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
         boolean harOppdatertBrukersSituasjon = rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) != null && rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET) != null;
-        LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDate(rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET));
-        LocalDate brukesSituasjonOpprettetDato = toLocalDate(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
+        LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDateOrNull(rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET));
+        LocalDate brukesSituasjonOpprettetDato = toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
         boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) : rs.getString(BRUKER_REGISTRERING_BRUKERS_SITUASJON);
         LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;

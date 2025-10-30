@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
 import static no.nav.pto.veilarbportefolje.fargekategori.FargekategoriControllerTestConfig.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -516,7 +516,7 @@ public class FargekategoriControllerTest {
                 UUID.fromString(resultSet.getString(ID)),
                 Fnr.of(resultSet.getString(FNR)),
                 FargekategoriVerdi.valueOf(resultSet.getString(VERDI)),
-                toLocalDate(resultSet.getTimestamp(SIST_ENDRET)),
+                toLocalDateOrNull(resultSet.getTimestamp(SIST_ENDRET)),
                 NavIdent.of(resultSet.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
                 EnhetId.of(resultSet.getString(ENHET_ID))
         );
