@@ -5,8 +5,8 @@ import lombok.experimental.Accessors
 
 @Data
 @Accessors(chain = true)
-class Endring {
-    var aktivtetId: String? = null
-    var tidspunkt: String? = null
+data class Endring(
+    var aktivtetId: String? = null,
+    var tidspunkt: String? = null,
     var erSett: String? = null
-}
+)
