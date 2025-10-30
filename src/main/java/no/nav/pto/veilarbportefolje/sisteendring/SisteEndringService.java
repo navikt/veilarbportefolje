@@ -32,7 +32,7 @@ public class SisteEndringService {
         LocalDateTime veilederharsett = time.toLocalDateTime();
         Map<String, Endring> sisteEndringer = sisteEndringRepositoryV2.getSisteEndringer(aktorId);
         sisteEndringer.forEach((kategori, endring) -> {
-            if (endring.getEr_sett().equals("J")) {
+            if (endring.getErSett().equals("J")) {
                 return;
             }
             if (veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))) {

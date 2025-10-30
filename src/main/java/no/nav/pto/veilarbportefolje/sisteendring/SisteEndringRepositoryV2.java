@@ -120,12 +120,12 @@ public class SisteEndringRepositoryV2 {
 
     @SneakyThrows
     private Map<String, Endring> addSisteEndringer(Map<String, Endring> sisteEndringHashMap, ResultSet rs) {
-        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
-                new Endring()
-                        .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                        .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
-                        .setAktivtetId(rs.getString(AKTIVITETID)));
+        Endring endring = new Endring();
+        endring.setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+        endring.setErSett(boolToJaNei(rs.getBoolean(ER_SETT)));
+        endring.setAktivtetId(rs.getString(AKTIVITETID));
 
+        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI), endring);
         return sisteEndringHashMap;
     }
 }
