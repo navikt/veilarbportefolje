@@ -14,9 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,7 +102,7 @@ public class SensurerBrukerTest {
 
     @Test
     public void skalIkkeSeKode6Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("",""));
+        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
         PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
         sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
     }
@@ -184,74 +184,81 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell kode6Bruker() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setEtternavn("etternanvKode6")
-                .setFornavn("fornavnKode6")
-                .setDiskresjonskode("6")
-                .setBarnUnder18AarData(emptyList());
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setFornavn("fornavnKode6");
+        bruker.setEtternavn("etternanvKode6");
+        bruker.setDiskresjonskode("6");
+        bruker.setBarnUnder18AarData(Collections.emptyList());
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell kode7Bruker() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setEtternavn("etternanvKode7")
-                .setFornavn("fornavnKode7")
-                .setDiskresjonskode("7")
-                .setBarnUnder18AarData(emptyList());
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setFornavn("fornavnKode7");
+        bruker.setEtternavn("etternanvKode7");
+        bruker.setDiskresjonskode("7");
+        bruker.setBarnUnder18AarData(Collections.emptyList());
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell egenAnsatt() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setEtternavn("etternanvEgenAnsatt")
-                .setFornavn("fornavnKodeEgenAnsatt")
-                .setEgenAnsatt(true);
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setFornavn("fornavnKodeEgenAnsatt");
+        bruker.setEtternavn("etternanvEgenAnsatt");
+        bruker.setEgenAnsatt(true);
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell ikkeKonfidensiellBruker() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setEtternavn("etternanvIkkeKonfidensiellBruker")
-                .setFornavn("fornavnIkkeKonfidensiellBruker");
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setFornavn("fornavnIkkeKonfidensiellBruker");
+        bruker.setEtternavn("etternanvIkkeKonfidensiellBruker");
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode6Barn() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(15, "6"),
-                        new BarnUnder18AarData(12, "6")
-                ));
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setBarnUnder18AarData(List.of(
+                new BarnUnder18AarData(15, "6"),
+                new BarnUnder18AarData(12, "6")
+        ));
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode7Barn() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setBarnUnder18AarData(List.of(new BarnUnder18AarData(
-                        1, "7"
-                )));
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setBarnUnder18AarData(List.of(
+                new BarnUnder18AarData(1, "7")
+        ));
+        return bruker;
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode19Barn() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(15, "19"),
-                        new BarnUnder18AarData(12, null),
-                        new BarnUnder18AarData(3, null)
-                ));
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setBarnUnder18AarData(List.of(
+                new BarnUnder18AarData(15, "19"),
+                new BarnUnder18AarData(12, null),
+                new BarnUnder18AarData(3, null)
+        ));
+        return bruker;
     }
 
-
     private PortefoljebrukerFrontendModell brukerMedKode6og7Barn() {
-        return new PortefoljebrukerFrontendModell()
-                .setFnr("11111111111")
-                .setBarnUnder18AarData(List.of(
-                        new BarnUnder18AarData(11, "6"),
-                        new BarnUnder18AarData(15, "7"),
-                        new BarnUnder18AarData(3, null)
-                ));
+        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        bruker.setFnr("11111111111");
+        bruker.setBarnUnder18AarData(List.of(
+                new BarnUnder18AarData(11, "6"),
+                new BarnUnder18AarData(15, "7"),
+                new BarnUnder18AarData(3, null)
+        ));
+        return bruker;
     }
 
 

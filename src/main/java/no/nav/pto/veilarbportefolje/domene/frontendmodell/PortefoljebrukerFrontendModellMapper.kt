@@ -5,7 +5,9 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
+import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDateTime
@@ -15,60 +17,63 @@ object PortefoljebrukerFrontendModellMapper {
     fun toPortefoljebrukerFrontendModell(
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
-        filtervalg: Filtervalg
+        filtervalg: Filtervalg?
     ): PortefoljebrukerFrontendModell {
 
         val kvalifiseringsgruppekode = opensearchBruker.kvalifiseringsgruppekode
-        val sikkerhetstiltak = opensearchBruker.sikkerhetstiltak
         val profileringResultat = opensearchBruker.profilering_resultat
-        val diskresjonskode = opensearchBruker.diskresjonskode
-        val oppfolgingStartdato: LocalDateTime? = toLocalDateTimeOrNull(opensearchBruker.oppfolging_startdato)
 
-        val vurderingsBehov = if (opensearchBruker.isTrenger_vurdering)
+        val vurderingsBehov = if (opensearchBruker.trenger_vurdering)
             vurderingsBehov(kvalifiseringsgruppekode, profileringResultat)
         else null
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
+        val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
+            opensearchBruker.kvalifiseringsgruppekode else null
+        val diskresjonskodeFortrolig = if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+            || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+        ) opensearchBruker.diskresjonskode else null
+
 
         var frontendbruker = PortefoljebrukerFrontendModell(
             fnr = opensearchBruker.fnr,
             aktoerid = opensearchBruker.aktoer_id,
             fornavn = opensearchBruker.fornavn,
             etternavn = opensearchBruker.etternavn,
-            erDoed = opensearchBruker.isEr_doed,
+            erDoed = opensearchBruker.er_doed,
             barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-            sikkerhetstiltak = listOf(sikkerhetstiltak), //todo endre til string og ikke liste
-            diskresjonskode = diskresjonskode,
+            sikkerhetstiltak = listOf(opensearchBruker.sikkerhetstiltak), //todo endre til string og ikke liste
+            diskresjonskode = diskresjonskodeFortrolig,
             tolkebehov = Tolkebehov.of(
                 opensearchBruker.talespraaktolk,
                 opensearchBruker.tegnspraaktolk,
                 opensearchBruker.tolkBehovSistOppdatert
             ),
-            foedeland = opensearchBruker.foedeland,
+            foedeland = opensearchBruker.foedelandFulltNavn,
             hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap,
             bostedKommune = opensearchBruker.kommunenummer,
             bostedBydel = opensearchBruker.bydelsnummer,
             bostedSistOppdatert = opensearchBruker.bostedSistOppdatert,
             harUtelandsAddresse = harUtenlandskAdresse,
-            harUkjentBosted = opensearchBruker.isHarUkjentBosted,
+            harUkjentBosted = opensearchBruker.harUkjentBosted,
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
-            oppfolgingStartdato = oppfolgingStartdato,
+            oppfolgingStartdato = toLocalDateTimeOrNull(opensearchBruker.oppfolging_startdato),
             utkast14a = Utkast14a(
                 opensearchBruker.utkast_14a_status,
                 toLocalDateTimeOrNull(opensearchBruker.utkast_14a_status_endret),
-                opensearchBruker.utkast_14a_status_endret
+                opensearchBruker.utkast_14a_ansvarlig_veileder
             ),
             veilederId = opensearchBruker.veileder_id,
-            nyForVeileder = opensearchBruker.isNy_for_veileder,
+            nyForVeileder = opensearchBruker.ny_for_veileder,
             nyForEnhet = ufordelt,
             tildeltTidspunkt = opensearchBruker.tildelt_tidspunkt,
             trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
             vurderingsBehov = vurderingsBehov,
             profileringResultat = opensearchBruker.profilering_resultat,
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
-            erSykmeldtMedArbeidsgiver = opensearchBruker.isEr_sykmeldt_med_arbeidsgiver,
+            erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
             nyesteUtlopteAktivitet = toLocalDateTimeOrNull(opensearchBruker.nyesteutlopteaktivitet),
             aktivitetStart = toLocalDateTimeOrNull(opensearchBruker.aktivitet_start),
             nesteAktivitetStart = toLocalDateTimeOrNull(opensearchBruker.neste_aktivitet_start),
@@ -101,17 +106,17 @@ object PortefoljebrukerFrontendModellMapper {
             ensligeForsorgereOvergangsstonad = EnsligeForsorgereOvergangsstonadFrontend.of(
                 opensearchBruker.enslige_forsorgere_overgangsstonad
             ),
-            venterPaSvalFraNAV = toLocalDateTimeOrNull(opensearchBruker.venterpasvarfranav),
-            venterPaSvalFraBruker = toLocalDateTimeOrNull(opensearchBruker.venterpasvarfrabruker),
-            egenAnsatt = opensearchBruker.isEgen_ansatt,
+            venterPaSvarFraNAV = toLocalDateTimeOrNull(opensearchBruker.venterpasvarfranav),
+            venterPaSvarFraBruker = toLocalDateTimeOrNull(opensearchBruker.venterpasvarfrabruker),
+            egenAnsatt = opensearchBruker.egen_ansatt,
             skjermetTil = opensearchBruker.skjermet_til,
-            nesteSvalfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
+            nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
             tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            utgattvalsel = opensearchBruker.utgatt_varsel,
-            innsatsgruppe = (opensearchBruker.kvalifiseringsgruppekode), //fiks
+            utgattVarsel = opensearchBruker.utgatt_varsel,
+            innsatsgruppe = innsatsgruppe
 
         ).apply {
             listOf(
@@ -131,7 +136,9 @@ object PortefoljebrukerFrontendModellMapper {
                     dateToTimestamp(dato)
                 )
             }
-            mapFelterBasertPåFiltervalg(this, opensearchBruker, filtervalg)
+            if (filtervalg != null) {
+                mapFelterBasertPåFiltervalg(this, opensearchBruker, filtervalg)
+            }
 
         }
 
@@ -185,9 +192,9 @@ object PortefoljebrukerFrontendModellMapper {
 
     private fun kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(
         frontendbruker: PortefoljebrukerFrontendModell,
-        aktiviteterAvansert: Map<String, AktivitetFiltervalg>?
+        aktiviteterAvansert: Map<String, AktivitetFiltervalg>
     ) {
-        aktiviteterAvansert?.forEach { (navn, valg) ->
+        aktiviteterAvansert.forEach { (navn, valg) ->
             if (valg == AktivitetFiltervalg.JA) {
                 frontendbruker.nesteUtlopsdatoAktivitet = nesteUtlopsdatoAktivitet(
                     frontendbruker.aktiviteter[navn.lowercase()],
@@ -205,7 +212,7 @@ object PortefoljebrukerFrontendModellMapper {
         if (sisteEndringer == null) return
 
         kategorier.forEach { kategori ->
-            if (erNyesteKategori(sisteEndringer, kategori, frontendbruker.sisteEndringTidspunkt )) {
+            if (erNyesteKategori(sisteEndringer, kategori, frontendbruker.sisteEndringTidspunkt)) {
                 val endring = sisteEndringer[kategori]
                 frontendbruker.sisteEndringKategori = kategori
                 frontendbruker.sisteEndringTidspunkt = toLocalDateTimeOrNull(endring?.tidspunkt)

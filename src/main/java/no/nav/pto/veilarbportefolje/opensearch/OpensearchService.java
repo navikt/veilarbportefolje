@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper;
@@ -136,7 +135,7 @@ public class OpensearchService {
         BrukerinnsynTilganger brukerInnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
 
         if ((brukerInnsynTilganger.harAlle() && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType) ||
-            (!FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash) && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType)) {
+                (!FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash) && BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ == brukerinnsynTilgangFilterType)) {
             return new Statustall();
         }
 
@@ -207,8 +206,16 @@ public class OpensearchService {
         return JsonUtils.fromJson(response.toString(), clazz);
     }
 
-    private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(PortefoljebrukerOpensearchModell brukerOpensearchModell, List<String> aktiveVeilederePaEnhet, Filtervalg filtervalg) {
-        return PortefoljebrukerFrontendModellMapper.INSTANCE.toPortefoljebrukerFrontendModell(brukerOpensearchModell, erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet), filtervalg);
+    private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(
+            PortefoljebrukerOpensearchModell brukerOpensearchModell,
+            List<String> aktiveVeilederePaEnhet,
+            Filtervalg filtervalg
+    ) {
+        return PortefoljebrukerFrontendModellMapper.INSTANCE.toPortefoljebrukerFrontendModell(
+                brukerOpensearchModell,
+                erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet),
+                filtervalg
+        );
     }
 
 

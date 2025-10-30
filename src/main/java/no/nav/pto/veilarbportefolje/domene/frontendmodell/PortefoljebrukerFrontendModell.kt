@@ -15,95 +15,95 @@ import java.time.LocalDateTime
 
 data class PortefoljebrukerFrontendModell(
     // personaliaData
-    var fnr: String?,
-    var aktoerid: String?,
-    var fornavn: String?,
-    var etternavn: String?,
-    var erDoed: Boolean?,
-    var barnUnder18AarData: List<BarnUnder18AarData>?,
-    var sikkerhetstiltak: List<String>?, //todo, endre til string og ikke liste
-    var diskresjonskode: String?,
-    var tolkebehov: Tolkebehov?,
+    var fnr: String? = null,
+    var aktoerid: String? = null,
+    var fornavn: String? = null,
+    var etternavn: String? = null,
+    var erDoed: Boolean? = null,
+    var barnUnder18AarData: List<BarnUnder18AarData>? = null,
+    var sikkerhetstiltak: List<String>? = null, //todo, endre til string og ikke liste
+    var diskresjonskode: String? = null,
+    var tolkebehov: Tolkebehov? = null,
 
-    var foedeland: String?,
-    var hovedStatsborgerskap: Statsborgerskap?,
+    var foedeland: String? = null,
+    var hovedStatsborgerskap: Statsborgerskap? = null,
 
-    var bostedKommune: String?,
-    var bostedBydel: String?,
-    var bostedSistOppdatert: LocalDate?,
-    var harUtelandsAddresse: Boolean?,
-    var harUkjentBosted: Boolean?,
+    var bostedKommune: String? = null,
+    var bostedBydel: String? = null,
+    var bostedSistOppdatert: LocalDate? = null,
+    var harUtelandsAddresse: Boolean? = null,
+    var harUkjentBosted: Boolean? = null,
 
     // 0ppfolgingsdata
-    val avvik14aVedtak: Avvik14aVedtak?,
-    val gjeldendeVedtak14a: GjeldendeVedtak14a?,
-    val oppfolgingStartdato: LocalDateTime?,
-    val utkast14a: Utkast14a?,
-    val veilederId: String?,
-    val nyForVeileder: Boolean?,
-    val nyForEnhet: Boolean?,
-    val tildeltTidspunkt: LocalDateTime?,
+    val avvik14aVedtak: Avvik14aVedtak? = null,
+    val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
+    val oppfolgingStartdato: LocalDateTime? = null,
+    val utkast14a: Utkast14a? = null,
+    val veilederId: String? = null,
+    val nyForVeileder: Boolean? = null,
+    val nyForEnhet: Boolean? = null,
+    val tildeltTidspunkt: LocalDateTime? = null,
 
-    val trengerOppfolgingsvedtak: Boolean?,
-    val vurderingsBehov: VurderingsBehov?, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
+    val trengerOppfolgingsvedtak: Boolean? = null,
+    val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
 
     // Arbeidssokerdata
-    val profileringResultat: Profileringsresultat?,
-    val utdanningOgSituasjonSistEndret: LocalDate?,
+    val profileringResultat: Profileringsresultat? = null,
+    val utdanningOgSituasjonSistEndret: LocalDate? = null,
 
     // ArbeidsforholdData
-    val erSykmeldtMedArbeidsgiver: Boolean?,
+    val erSykmeldtMedArbeidsgiver: Boolean? = null,
 
     // AktiviterData
-    val nyesteUtlopteAktivitet: LocalDateTime?,
-    val aktivitetStart: LocalDateTime?,
-    val nesteAktivitetStart: LocalDateTime?,
-    val forrigeAktivitetStart: LocalDateTime?,
+    val nyesteUtlopteAktivitet: LocalDateTime? = null,
+    val aktivitetStart: LocalDateTime? = null,
+    val nesteAktivitetStart: LocalDateTime? = null,
+    val forrigeAktivitetStart: LocalDateTime? = null,
 
-    val moteStartTid: LocalDateTime?,
-    val alleMoterStartTid: LocalDateTime?,
-    val alleMoterSluttTid: LocalDateTime?,
+    val moteStartTid: LocalDateTime? = null,
+    val alleMoterStartTid: LocalDateTime? = null,
+    val alleMoterSluttTid: LocalDateTime? = null,
 
     var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
-    var nesteUtlopsdatoAktivitet: LocalDateTime?,
-    var sisteEndringKategori: String?,
-    var sisteEndringTidspunkt: LocalDateTime?,
-    var sisteEndringAktivitetId: String?,
+    var nesteUtlopsdatoAktivitet: LocalDateTime? = null,
+    var sisteEndringKategori: String? = null,
+    var sisteEndringTidspunkt: LocalDateTime? = null,
+    var sisteEndringAktivitetId: String? = null,
 
     // YtelseData
-    val ytelse: YtelseMapping?, // denne kan slettes når dagpenger blir dratt ut i eget arena filter
-    val utlopsdato: LocalDateTime?,
-    val dagputlopUke: Int?,
-    val permutlopUke: Int?,
-    val aapmaxtidUke: Int?,
-    val aapUnntakUkerIgjen: Int?,
-    val aapordinerutlopsdato: LocalDate?,
-    val aapKelvin: AapKelvinForBruker?,
-    val tiltakspenger: TiltakspengerForBruker?,
-    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend?,
+    val ytelse: YtelseMapping? = null, // denne kan slettes når dagpenger blir dratt ut i eget arena filter
+    val utlopsdato: LocalDateTime? = null,
+    val dagputlopUke: Int? = null,
+    val permutlopUke: Int? = null,
+    val aapmaxtidUke: Int? = null,
+    val aapUnntakUkerIgjen: Int? = null,
+    val aapordinerutlopsdato: LocalDate? = null,
+    val aapKelvin: AapKelvinForBruker? = null,
+    val tiltakspenger: TiltakspengerForBruker? = null,
+    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend? = null,
 
 
     // DialogData
-    val venterPaSvalFraNAV: LocalDateTime?, //todo fikse typo og endre NAV til Nav
-    val venterPaSvalFraBruker: LocalDateTime?, //todo fikse typo
+    val venterPaSvarFraNAV: LocalDateTime? = null,
+    val venterPaSvarFraBruker: LocalDateTime? = null,
 
     // NavAnasattData
-    val egenAnsatt: Boolean?,
-    var skjermetTil: LocalDateTime?,
+    var egenAnsatt: Boolean? = null,
+    var skjermetTil: LocalDateTime? = null,
 
     // CvData
-    val nesteSvalfristCvStillingFraNav: LocalDate?, // todo fikse typo
+    val nesteSvarfristCvStillingFraNav: LocalDate? = null,
 
 
     // AnnetData
-    var huskelapp: HuskelappForBruker?,
-    var fargekategori: String?,
-    val fargekategoriEnhetId: String?,
-    val tiltakshendelse: TiltakshendelseForBruker?,
-    val utgattvalsel: Hendelse.HendelseInnhold?, // todo lag egen frontendtype her
+    var huskelapp: HuskelappForBruker? = null,
+    var fargekategori: String? = null,
+    val fargekategoriEnhetId: String? = null,
+    val tiltakshendelse: TiltakshendelseForBruker? = null,
+    val utgattVarsel: Hendelse.HendelseInnhold? = null, // todo lag egen frontendtype her
 
-    val innsatsgruppe: String?,
+    val innsatsgruppe: String? = null,
 
-)
+    )
 
 
