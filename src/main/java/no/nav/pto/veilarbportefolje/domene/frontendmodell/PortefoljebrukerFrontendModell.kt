@@ -34,7 +34,7 @@ data class PortefoljebrukerFrontendModell(
     var harUtelandsAddresse: Boolean? = null,
     var harUkjentBosted: Boolean? = null,
 
-    // 0ppfolgingsdata
+    // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
     val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
     val oppfolgingStartdato: LocalDateTime? = null,
@@ -71,7 +71,7 @@ data class PortefoljebrukerFrontendModell(
     var sisteEndringAktivitetId: String? = null,
 
     // YtelseData
-    val ytelse: YtelseMapping? = null, // denne kan slettes når dagpenger blir dratt ut i eget arena filter
+    val ytelse: YtelseMapping? = null,
     val utlopsdato: LocalDateTime? = null,
     val dagputlopUke: Int? = null,
     val permutlopUke: Int? = null,
