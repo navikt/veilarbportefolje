@@ -8,8 +8,9 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
@@ -35,7 +36,6 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -170,11 +173,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
 
-        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
+        var sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
-                sisteOppfolgingsperiodeV1.getStartDato().plusDays(1),
+                sisteOppfolgingsperiodeV1.getStartTidspunkt().plusDays(1),
                 true
         );
         when(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(Optional.of(siste14aVedtakApiDto));
@@ -310,7 +313,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
 
-        oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId);
+        oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId, new NavKontor("0101"));
 
         Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityFørAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityFørAvsluttet).isPresent();
@@ -360,7 +363,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
-        SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(sluttDato));
+        var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(sluttDato));
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(periode);
 
@@ -385,12 +388,12 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
 
-        SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
+        var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(periode);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(
-                genererSluttdatoForOppfolgingsperiode(periode, tilfeldigSenereDato(periode.getStartDato()))
+                genererSluttdatoForOppfolgingsperiode(periode, tilfeldigSenereDato(periode.getStartTidspunkt()))
         );
 
         Optional<BrukerOppdatertInformasjon> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
@@ -492,6 +495,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 Hovedmaal.BEHOLDEA.name(),
                 endret_dato
         );
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker, new NavKontor(oppfolgingsbruker.nav_kontor()));
     }
 }
