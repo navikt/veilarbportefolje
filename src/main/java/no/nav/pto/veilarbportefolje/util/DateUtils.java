@@ -200,6 +200,13 @@ public class DateUtils {
         return instant.atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
+    public static LocalDate fromLocalDateTimeToLocalDateOrNull(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        return localDateTime.toLocalDate();
+    }
+
     public static LocalDate toLocalDateOrNull(String date) {
         if (date == null) {
             return null;
