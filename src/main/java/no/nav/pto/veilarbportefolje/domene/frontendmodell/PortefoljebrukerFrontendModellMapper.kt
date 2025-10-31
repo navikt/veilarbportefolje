@@ -34,6 +34,7 @@ object PortefoljebrukerFrontendModellMapper {
         val diskresjonskodeFortrolig = if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
             || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
         ) opensearchBruker.diskresjonskode else null
+        val sikkerhetstiltak = if (opensearchBruker.sikkerhetstiltak == null) emptyList() else listOf(opensearchBruker.sikkerhetstiltak)
 
 
         var frontendbruker = PortefoljebrukerFrontendModell(
@@ -43,7 +44,7 @@ object PortefoljebrukerFrontendModellMapper {
             etternavn = opensearchBruker.etternavn,
             erDoed = opensearchBruker.er_doed,
             barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-            sikkerhetstiltak = listOf(opensearchBruker.sikkerhetstiltak), //todo endre til string og ikke liste
+            sikkerhetstiltak = sikkerhetstiltak, //todo endre til string og ikke liste
             diskresjonskode = diskresjonskodeFortrolig,
             tolkebehov = Tolkebehov.of(
                 opensearchBruker.talespraaktolk,
