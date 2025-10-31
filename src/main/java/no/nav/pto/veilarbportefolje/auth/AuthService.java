@@ -92,7 +92,7 @@ public class AuthService {
 
         String diskresjonskode = bruker.getDiskresjonskode();
 
-        boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || Boolean.TRUE.equals(bruker.getEgenAnsatt());
+        boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || bruker.getEgenAnsatt();
         if (!erKonfidensiell) {
             return bruker;
         }
@@ -103,7 +103,7 @@ public class AuthService {
         if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if (Boolean.TRUE.equals(bruker.getEgenAnsatt()) && !harVeilederTilgangTilEgenAnsatt()) {
+        if (bruker.getEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         return bruker;

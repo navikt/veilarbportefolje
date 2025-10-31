@@ -19,7 +19,7 @@ data class PortefoljebrukerFrontendModell(
     var aktoerid: String? = null,
     var fornavn: String? = null,
     var etternavn: String? = null,
-    var erDoed: Boolean? = null,
+    var erDoed: Boolean = false,
     var barnUnder18AarData: List<BarnUnder18AarData>? = null,
     var sikkerhetstiltak: List<String>? = null, //todo, endre til string og ikke liste
     var diskresjonskode: String? = null,
@@ -31,8 +31,8 @@ data class PortefoljebrukerFrontendModell(
     var bostedKommune: String? = null,
     var bostedBydel: String? = null,
     var bostedSistOppdatert: LocalDate? = null,
-    var harUtelandsAddresse: Boolean? = null,
-    var harUkjentBosted: Boolean? = null,
+    var harUtelandsAddresse: Boolean = false,
+    var harUkjentBosted: Boolean = false,
 
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
@@ -40,19 +40,19 @@ data class PortefoljebrukerFrontendModell(
     val oppfolgingStartdato: LocalDate? = null,
     val utkast14a: Utkast14a? = null,
     val veilederId: String? = null,
-    val nyForVeileder: Boolean? = null,
-    val nyForEnhet: Boolean? = null,
+    val nyForVeileder: Boolean = false,
+    val nyForEnhet: Boolean = false,
     val tildeltTidspunkt: LocalDate? = null,
-
-    val trengerOppfolgingsvedtak: Boolean? = null,
+    val trengerOppfolgingsvedtak: Boolean = false,
     val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
+    val innsatsgruppe: String? = null,
 
     // Arbeidssokerdata
     val profileringResultat: Profileringsresultat? = null,
     val utdanningOgSituasjonSistEndret: LocalDate? = null,
 
     // ArbeidsforholdData
-    val erSykmeldtMedArbeidsgiver: Boolean? = null,
+    val erSykmeldtMedArbeidsgiver: Boolean = false,
 
     // AktiviterData
     val nyesteUtlopteAktivitet: LocalDate? = null,
@@ -82,18 +82,16 @@ data class PortefoljebrukerFrontendModell(
     val tiltakspenger: TiltakspengerForBruker? = null,
     val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend? = null,
 
-
     // DialogData
     val venterPaSvarFraNAV: LocalDate? = null,
     val venterPaSvarFraBruker: LocalDate? = null,
 
     // NavAnasattData
-    var egenAnsatt: Boolean? = null,
+    var egenAnsatt: Boolean = false,
     var skjermetTil: LocalDate? = null,
 
     // CvData
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,
-
 
     // AnnetData
     var huskelapp: HuskelappForBruker? = null,
@@ -102,8 +100,6 @@ data class PortefoljebrukerFrontendModell(
     val tiltakshendelse: TiltakshendelseForBruker? = null,
     val utgattVarsel: Hendelse.HendelseInnhold? = null, // todo lag egen frontendtype her
 
-    val innsatsgruppe: String? = null,
-
-    )
+)
 
 
