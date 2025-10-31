@@ -124,10 +124,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
                 brukerMedVedtakUtenAnsvarligVeileder.fnr
             )
 
-        Assertions.assertThat(response.brukere[0].utkast14a.ansvarligVeileder).isEqualTo("AVeileder")
-        Assertions.assertThat(response.brukere[1].utkast14a.ansvarligVeileder).isEqualTo("BVeileder")
-        Assertions.assertThat(response.brukere[2].utkast14a.ansvarligVeileder).isEqualTo("CVeileder")
-        Assertions.assertThat(response.brukere[3].utkast14a.ansvarligVeileder).isNull()
+        Assertions.assertThat(response.brukere[0].utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
+        Assertions.assertThat(response.brukere[1].utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
+        Assertions.assertThat(response.brukere[2].utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
+        Assertions.assertThat(response.brukere[3].utkast14a?.ansvarligVeileder).isNull()
     }
 
 
@@ -378,9 +378,9 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerMedSiste14aVedtakAktorId.get())
         val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNotNull()
-        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a.innsatsgruppe).isEqualTo(innsatsgruppe)
-        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a.hovedmal).isEqualTo(hovedmal)
-        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a.fattetDato)
+        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.innsatsgruppe).isEqualTo(innsatsgruppe)
+        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.hovedmal).isEqualTo(hovedmal)
+        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.fattetDato)
             .isEqualTo(fattetDato.toOffsetDateTime().toZonedDateTime())
     }
 

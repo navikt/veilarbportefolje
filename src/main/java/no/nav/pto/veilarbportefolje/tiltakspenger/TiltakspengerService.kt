@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
@@ -138,7 +138,7 @@ class TiltakspengerService(
             .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
 
         if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return toLocalDate(oppfolgingsdata.startDato)
+            return toLocalDateOrNull(oppfolgingsdata.startDato)
         }
 
         secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
