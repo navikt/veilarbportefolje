@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
@@ -36,21 +38,23 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_som_rettighetsgruppefilter() {
-        val brukerMedAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
+        val brukerMedAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            rettighetsgruppekode = Rettighetsgruppe.AAP.name,
+        )
 
-        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name)
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            rettighetsgruppekode = Rettighetsgruppe.DAGP.name,
+        )
 
 
         val liste = listOf(brukerMedAAP, brukerUtenAAP)
@@ -79,29 +83,32 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_behandlet_i_arena() {
-        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_UNNTAK")
+        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "AAP_UNNTAK",
+        )
 
-        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_MAXTID")
+        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "AAP_MAXTID",
+        )
 
-        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("ORDINARE_DAGPENGER")
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "ORDINARE_DAGPENGER",
+        )
 
 
         val liste = listOf(brukerMedAAPOrdinar, brukerUtenAAP, brukerMedAAPUnntak)
@@ -131,37 +138,41 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun antall_brukere_med_arbeidsavklaringspenger_skal_vere_like_for_ytelsesfilter_og_aapArenafilter() {
-        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_UNNTAK")
+        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "AAP_UNNTAK",
+        )
 
-        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_MAXTID")
+        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "AAP_MAXTID",
+        )
 
-        val brukerMedAAPUnntak2 = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_UNNTAK")
+        val brukerMedAAPUnntak2 = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "AAP_UNNTAK",
+        )
 
-        val brukerUtenAap = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("TILTAKSPENGER")
+        val brukerUtenAap = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "TILTAKSPENGER",
+        )
 
 
         val liste = listOf(brukerMedAAPOrdinar, brukerMedAAPUnntak, brukerMedAAPUnntak2, brukerUtenAap)
@@ -221,21 +232,23 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_behandlet_i_kelvin() {
-        val brukerMedAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setAap_kelvin(true)
+        val brukerMedAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            aap_kelvin = true,
+        )
 
-        val brukerUtenAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setAap_kelvin(false)
+        val brukerUtenAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            aap_kelvin = false,
+        )
 
 
         val liste = listOf(brukerMedAAP, brukerUtenAAP)
@@ -264,21 +277,23 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_tiltakspenger_behandlet_i_tpsak() {
-        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setTiltakspenger(true)
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            tiltakspenger = true,
+        )
 
-        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setTiltakspenger(false)
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            tiltakspenger = false,
+        )
 
 
         val liste = listOf(brukerMedTiltakspenger, brukerUtenTiltakspenger)
@@ -308,21 +323,23 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_tiltakspenger_behandlet_i_arena() {
-        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("TILTAKSPENGER")
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "TILTAKSPENGER",
+        )
 
-        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("ORDINARE_DAGPENGER")
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "ORDINARE_DAGPENGER",
+        )
 
 
         val liste = listOf(brukerMedTiltakspenger, brukerUtenTiltakspenger)
@@ -353,21 +370,23 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun antall_brukere_med_tiltakspenger_skal_vere_like_for_ytelsesfilter_og_tiltakspengerArenafilter() {
-        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("TILTAKSPENGER")
+        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "TILTAKSPENGER",
+        )
 
-        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("DAGPENGER")
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ytelse = "DAGPENGER",
+        )
 
 
         val liste = listOf(brukerMedTiltakspenger, brukerUtenTiltakspenger)
@@ -416,42 +435,46 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_filtrert_paa_dagpenger_som_ytelse() {
-        val brukerMedDagpengerMedPermittering = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name)
+        val brukerMedDagpengerMedPermittering = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            rettighetsgruppekode = Rettighetsgruppe.AAP.name,
+            ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING.name,
+        )
 
 
-        val brukerMedPermitteringFiskeindustri = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
+        val brukerMedPermitteringFiskeindustri = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            rettighetsgruppekode = Rettighetsgruppe.AAP.name,
+            ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name,
+        )
 
-        val brukerMedAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name)
-            .setYtelse(YtelseMapping.AAP_MAXTID.name)
+        val brukerMedAAP = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            rettighetsgruppekode = Rettighetsgruppe.DAGP.name,
+            ytelse = YtelseMapping.AAP_MAXTID.name,
+        )
 
-        val brukerMedAnnenVeileder = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
+        val brukerMedAnnenVeileder = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = LITE_PRIVILEGERT_VEILEDER,
+            rettighetsgruppekode = Rettighetsgruppe.AAP.name,
+            ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name,
+        )
 
         val liste = listOf(
             brukerMedDagpengerMedPermittering,
@@ -486,62 +509,68 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun test_sortering_AAP() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setYtelse("AAP_UNNTAK")
-            .setUtlopsdato("2023-06-30T21:59:59Z")
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            ytelse = "AAP_UNNTAK",
+            utlopsdato = "2023-06-30T21:59:59Z",
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setYtelse("AAP_MAXTID")
-            .setAapmaxtiduke(43)
-            .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-20"))
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            ytelse = "AAP_MAXTID",
+            aapmaxtiduke = 43,
+            aapordinerutlopsdato = DateUtils.toLocalDateOrNull("2023-04-20"),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setYtelse("AAP_UNNTAK")
-            .setEnhet_id(TEST_ENHET)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            ytelse = "AAP_UNNTAK",
+            enhet_id = TEST_ENHET,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setYtelse("AAP_MAXTID")
-            .setEnhet_id(TEST_ENHET)
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            ytelse = "AAP_MAXTID",
+            enhet_id = TEST_ENHET,
+        )
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setYtelse("AAP_UNNTAK")
-            .setUtlopsdato("2023-08-30T21:59:59Z")
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            ytelse = "AAP_UNNTAK",
+            utlopsdato = "2023-08-30T21:59:59Z",
+        )
 
-        val bruker6 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setYtelse("AAP_MAXTID")
-            .setAapmaxtiduke(12)
-            .setAapordinerutlopsdato(DateUtils.toLocalDateOrNull("2023-04-12"))
+        val bruker6 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            ytelse = "AAP_MAXTID",
+            aapmaxtiduke = 12,
+            aapordinerutlopsdato = DateUtils.toLocalDateOrNull("2023-04-12"),
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6)
 
@@ -595,36 +624,40 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
 
-        val tidligstTomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_tom_vedtaksdato(tidspunkt1)
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_tom_vedtaksdato = tidspunkt1,
+        )
 
-        val midtImellomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_tom_vedtaksdato(tidspunkt2)
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_tom_vedtaksdato = tidspunkt2,
+        )
 
-        val senestTomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_tom_vedtaksdato(tidspunkt3)
+        val senestTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_tom_vedtaksdato = tidspunkt3,
+        )
 
-        val nullBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(false)
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = false,
+        )
 
 
         val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker)
@@ -674,36 +707,40 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
 
-        val tidligstTomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(true)
-            .setTiltakspenger_vedtaksdato_tom(tidspunkt1)
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = true,
+            tiltakspenger_vedtaksdato_tom = tidspunkt1,
+        )
 
-        val midtImellomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(true)
-            .setTiltakspenger_vedtaksdato_tom(tidspunkt2)
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = true,
+            tiltakspenger_vedtaksdato_tom = tidspunkt2,
+        )
 
-        val senestTomBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(true)
-            .setTiltakspenger_vedtaksdato_tom(tidspunkt3)
+        val senestTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = true,
+            tiltakspenger_vedtaksdato_tom = tidspunkt3,
+        )
 
-        val nullBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(false)
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = false,
+        )
 
 
         val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker)
@@ -753,36 +790,40 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_sortere_brukere_pa_aap_rettighetstype() {
-        val bistandsbehovBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_rettighetstype(AapRettighetstype.BISTANDSBEHOV)
+        val bistandsbehovBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_rettighetstype = AapRettighetstype.BISTANDSBEHOV,
+        )
 
-        val studentBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_rettighetstype(AapRettighetstype.STUDENT)
+        val studentBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_rettighetstype = AapRettighetstype.STUDENT,
+        )
 
-        val sykepengeerstatningBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(true)
-            .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
+        val sykepengeerstatningBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING,
+        )
 
-        val nullBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setAap_kelvin(false)
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = false,
+        )
 
 
         val liste = listOf(sykepengeerstatningBruker, bistandsbehovBruker, studentBruker, nullBruker)
@@ -829,28 +870,31 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
     @Test
     fun skal_sortere_brukere_pa_tiltakspenger_rettighet() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(true)
-            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = true,
+            tiltakspenger_rettighet = TiltakspengerRettighet.TILTAKSPENGER,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(true)
-            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = true,
+            tiltakspenger_rettighet = TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG,
+        )
 
-        val nullBruker = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakspenger(false)
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            tiltakspenger = false,
+        )
 
 
         val liste = listOf(bruker1, bruker2, nullBruker)
