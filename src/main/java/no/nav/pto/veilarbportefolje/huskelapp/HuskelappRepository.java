@@ -22,7 +22,7 @@ import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @RequiredArgsConstructor
@@ -119,8 +119,8 @@ public class HuskelappRepository {
                 Fnr.of((String) rs.get(FNR)),
                 EnhetId.of((String) rs.get(ENHET_ID)),
                 VeilederId.of((String) rs.get(ENDRET_AV_VEILEDER)),
-                toLocalDate((Timestamp) rs.get(ENDRET_DATO)),
-                toLocalDate((Timestamp) rs.get(FRIST)),
+                toLocalDateOrNull((Timestamp) rs.get(ENDRET_DATO)),
+                toLocalDateOrNull((Timestamp) rs.get(FRIST)),
                 (String) rs.get(KOMMENTAR),
                 huskelappStatusMapper((String) rs.get(STATUS))
         );

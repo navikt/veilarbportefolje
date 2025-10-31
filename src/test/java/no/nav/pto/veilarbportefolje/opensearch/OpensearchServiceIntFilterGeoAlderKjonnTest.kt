@@ -192,11 +192,11 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.talespraaktolk == tolkesprakJapansk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.talespraaktolk == tolkesprakSvensk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakSvensk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegnspråktolk */
@@ -215,11 +215,11 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.tegnspraaktolk == tolkesprakSvensk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakSvensk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.tegnspraaktolk == tolkesprakNorsk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakNorsk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegn- eller talespråktolk */
@@ -240,13 +240,13 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         Assertions.assertThat(response.antall).isEqualTo(3)
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream()
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream()
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream()
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk */
@@ -266,8 +266,8 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.talespraaktolk == tolkesprakJapansk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
@@ -287,8 +287,8 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov.talespraaktolk == tolkesprakJapansk }
-                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
     }
 
     @Test
@@ -574,15 +574,15 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         Assertions.assertThat(response.antall).isEqualTo(6)
         org.junit.jupiter.api.Assertions.assertEquals(
             "Botswana",
-            response.brukere[0].hovedStatsborgerskap.getStatsborgerskap()
+            response.brukere[0].hovedStatsborgerskap?.getStatsborgerskap()
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Estland",
-            response.brukere[1].hovedStatsborgerskap.getStatsborgerskap()
+            response.brukere[1].hovedStatsborgerskap?.getStatsborgerskap()
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Norge",
-            response.brukere[2].hovedStatsborgerskap.getStatsborgerskap()
+            response.brukere[2].hovedStatsborgerskap?.getStatsborgerskap()
         )
     }
 

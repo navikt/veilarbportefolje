@@ -62,8 +62,8 @@ public class SisteEndringRepositoryV2Test {
         assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getAktivtetId()).isEqualTo(dto_1.getAktivtetId());
         assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getTidspunkt()).isEqualTo(toIsoUTC(ZonedDateTime.parse(tidspunkt_2)));
         assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getAktivtetId()).isEqualTo(dto_2.getAktivtetId());
-        assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getEr_sett()).isEqualTo("J");
-        assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getEr_sett()).isEqualTo("N");
+        assertThat(bruker.getSiste_endringer().get(NY_IJOBB.name()).getErSett()).isEqualTo("J");
+        assertThat(bruker.getSiste_endringer().get(AVBRUTT_EGEN.name()).getErSett()).isEqualTo("N");
     }
 
 

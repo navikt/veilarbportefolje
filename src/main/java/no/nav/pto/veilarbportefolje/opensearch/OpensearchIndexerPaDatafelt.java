@@ -56,7 +56,7 @@ public class OpensearchIndexerPaDatafelt {
                 .field("utdanning", mapTilUtdanning(opplysningerOmArbeidssoeker.getUtdanningNusKode()))
                 .field("utdanning_bestatt", opplysningerOmArbeidssoeker.getUtdanningBestatt())
                 .field("utdanning_godkjent", opplysningerOmArbeidssoeker.getUtdanningGodkjent())
-                .field("utdanning_og_situasjon_sist_endret", toLocalDate(opplysningerOmArbeidssoeker.getSendtInnTidspunkt()))
+                .field("utdanning_og_situasjon_sist_endret", toLocalDateOrNull(opplysningerOmArbeidssoeker.getSendtInnTidspunkt()))
                 .endObject();
 
         update(aktoerId, content, "Oppdater opplysninger om arbeidssøker");

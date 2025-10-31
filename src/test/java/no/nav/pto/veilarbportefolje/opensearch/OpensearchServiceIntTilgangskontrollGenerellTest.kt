@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
@@ -55,6 +56,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         TEST_VEILEDER_1 = randomVeilederId().value
         TEST_VEILEDER_2 = randomVeilederId().value
         TEST_VEILEDER_3 = randomVeilederId().value
+
 
 
         veilederePaEnhet = listOf(
@@ -409,36 +411,36 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(12)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode6Bruker0, true),
-            PortefoljebrukerFrontendModell.of(kode6Bruker1, true),
-            PortefoljebrukerFrontendModell.of(kode6Bruker2, true),
-            PortefoljebrukerFrontendModell.of(kode6Bruker3, true)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker2, true,null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker3, true, null)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker3, true)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker2, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker3, true, null)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker2, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker3, true, null)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode7Bruker0, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker1, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker2, true),
-            PortefoljebrukerFrontendModell.of(kode7Bruker3, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker0, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker1, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker2, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattBruker3, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker0, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker1, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker2, true),
-            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7Bruker3, true)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker2, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker3, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker2, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker3, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker0, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker1, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker2, true, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker3, true, null)
         )
     }
 
@@ -519,18 +521,18 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(3)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode6BrukerMedVeileder0Tilordnet, false)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6BrukerMedVeileder0Tilordnet, false, null)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder1Tilordnet, false)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7BrukerMedVeileder1Tilordnet, false, null)
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder2Tilordnet, false)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBrukerMedVeileder2Tilordnet, false, null)
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModell.of(kode7BrukerMedVeileder3Tilordnet, false),
-            PortefoljebrukerFrontendModell.of(egenAnsattBrukerMedVeileder3Tilordnet, false),
-            PortefoljebrukerFrontendModell.of(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7BrukerMedVeileder3Tilordnet, false, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBrukerMedVeileder3Tilordnet, false, null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false, null)
         )
     }
 
