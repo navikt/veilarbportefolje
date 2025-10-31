@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 import no.nav.common.rest.client.RestClient.baseClient
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRequest
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerRequest
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request

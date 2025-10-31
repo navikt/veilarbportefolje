@@ -5,9 +5,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.Aktivitet;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -103,7 +106,7 @@ public class AktiviteterRepositoryV2 {
                 });
     }
 
-    public List<AktivitetDTO> getPasserteAktiveUtdanningsAktiviter() {
+    public List<Aktivitet> getPasserteAktiveUtdanningsAktiviter() {
         final String sql = """
                 SELECT * FROM aktiviteter
                 WHERE aktivitettype = 'utdanningaktivitet'
@@ -189,10 +192,10 @@ public class AktiviteterRepositoryV2 {
     }
 
     @SneakyThrows
-    private List<AktivitetDTO> mapToAktivitetDTOList(ResultSet rs) {
-        List<AktivitetDTO> aktiviteter = new ArrayList<>();
+    private List<Aktivitet> mapToAktivitetDTOList(ResultSet rs) {
+        List<Aktivitet> aktiviteter = new ArrayList<>();
         while (rs.next()) {
-            aktiviteter.add(new AktivitetDTO()
+            aktiviteter.add(new Aktivitet()
                     .setAktivitetID(rs.getString(AKTIVITETID))
                     .setAktivitetType(rs.getString(AKTIVITETTYPE))
                     .setStatus(rs.getString(STATUS))

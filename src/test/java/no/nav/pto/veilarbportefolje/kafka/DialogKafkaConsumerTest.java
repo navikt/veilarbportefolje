@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.kafka;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class DialogKafkaConsumerTest extends EndToEndTest {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
-        final Dialogdata melding = new Dialogdata().setAktorId(aktoerId.toString())
+        final DialogdataDto melding = new DialogdataDto().setAktorId(aktoerId.toString())
                 .setSisteEndring(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))
                 .setTidspunktEldsteVentende(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))
                 .setTidspunktEldsteUbehandlede(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"));

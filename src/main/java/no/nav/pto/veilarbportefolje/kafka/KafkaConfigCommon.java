@@ -26,7 +26,7 @@ import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
@@ -42,7 +42,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.dialog.Dialogdata;
+import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
@@ -391,14 +391,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(SkjermingDTO.class),
                                         skjermingService::behandleSkjermedePersoner
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Dialogdata>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, DialogdataDto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.DIALOG_CONSUMER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(Dialogdata.class),
+                                        Deserializers.jsonDeserializer(DialogdataDto.class),
                                         dialogService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, SistLestKafkaMelding>()

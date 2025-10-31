@@ -6,7 +6,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto;
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.AktorClient;

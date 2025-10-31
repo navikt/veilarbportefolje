@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
-import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetStatusData;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.*;
-import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetsType.*;
+import static no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType.*;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.closestToTodayComparator;
 
 public class PostgresAktivitetMapper {
