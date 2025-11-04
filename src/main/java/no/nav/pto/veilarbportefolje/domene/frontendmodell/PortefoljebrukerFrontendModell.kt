@@ -24,8 +24,8 @@ data class PortefoljebrukerFrontendModell(
     var diskresjonskode: String? = null, // kun tag
     val profileringResultat: Profileringsresultat? = null, // kun tags når trengerOppfolgingsvedtak er true
     val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
-    // kun tag med sjekk på undergruppen ARBEIDSEVNE_VURDERING
-
+    // vurderingsBehov er kun tag med sjekk på undergruppen ARBEIDSEVNE_VURDERING
+    var sikkerhetstiltak: List<String>? = null, //endre til bool og ikke liste, er kun tag
 
     // personaliaData
     var fnr: String? = null,
@@ -33,12 +33,11 @@ data class PortefoljebrukerFrontendModell(
     var fornavn: String? = null,
     var etternavn: String? = null,
     var barnUnder18AarData: List<BarnUnder18AarData>? = null, //kolonne
-    var sikkerhetstiltak: List<String>? = null, //todo, endre til bool og ikke liste, er kun tag
 
-    var tolkebehov: Tolkebehov? = null, // kolonne, maaange nullsjekker osv i frontend
+    var tolkebehov: Tolkebehov? = null, // maaange nullsjekker i frontend
 
-    var foedeland: String? = null, // kolonne
-    var hovedStatsborgerskap: Statsborgerskap? = null, // kolonne, gyldig til brukes ikke
+    var foedeland: String? = null,
+    var hovedStatsborgerskap: Statsborgerskap? = null, // gyldig til brukes ikke
 
         // Geografisk bosted
     var bostedKommune: String? = null,
@@ -48,39 +47,37 @@ data class PortefoljebrukerFrontendModell(
     var harUkjentBosted: Boolean = false, // brukes kun til å sette "ukjent" på kommune
 
     // Oppfolgingsdata
-    val avvik14aVedtak: Avvik14aVedtak? = null, // kolonne
-    val gjeldendeVedtak14a: GjeldendeVedtak14a? = null, // kolonne
-    val oppfolgingStartdato: LocalDate? = null, // kolonne
-    val utkast14a: Utkast14a? = null, // kolonne
-    val veilederId: String? = null, // kolonne
-
-    val tildeltTidspunkt: LocalDate? = null, // kolonne
+    val avvik14aVedtak: Avvik14aVedtak? = null,
+    val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
+    val oppfolgingStartdato: LocalDate? = null,
+    val utkast14a: Utkast14a? = null,
+    val veilederId: String? = null,
+    val tildeltTidspunkt: LocalDate? = null,
 
     // Arbeidssokerdata
-    val utdanningOgSituasjonSistEndret: LocalDate? = null, // kolonne
+    val utdanningOgSituasjonSistEndret: LocalDate? = null,
 
     // AktiviterData
-    val nyesteUtlopteAktivitet: LocalDate? = null, // kolonne
-    val aktivitetStart: LocalDate? = null, // kolonne
-    val nesteAktivitetStart: LocalDate? = null, // kolonne
-    val forrigeAktivitetStart: LocalDate? = null, // kolonne
+    val nyesteUtlopteAktivitet: LocalDate? = null,
+    val aktivitetStart: LocalDate? = null,
+    val nesteAktivitetStart: LocalDate? = null,
+    val forrigeAktivitetStart: LocalDate? = null,
 
     // filtrert på "møter med nav i dag"
     val moteStartTid: LocalDateTime? = null, // gjør en sjekk på om dato er i dag, og setter "avtalt med nav" hvis true. Er kun for avtalte møter
     val alleMoterStartTid: LocalDateTime? = null, // Førstkommende møte. bruker klokkeslett og regner ut varighet med alleMoterSluttTid. Inkluderer både pliktige og upliktige aktiviteter
     val alleMoterSluttTid: LocalDateTime? = null, // kun for å regne ut varighet på møtet.
 
-
     var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
-    var nesteUtlopsdatoAktivitet: LocalDateTime? = null, // kolonne
+    var nesteUtlopsdatoAktivitet: LocalDateTime? = null,
 
-    val nesteSvarfristCvStillingFraNav: LocalDate? = null, // kolonne aktivitet
+    val nesteSvarfristCvStillingFraNav: LocalDate? = null,
     val tiltakshendelse: TiltakshendelseForBruker? = null,
     val utgattVarsel: Hendelse.HendelseInnhold? = null, // todo lag egen frontendtype her
 
     // siste endringer hendelser
-    var sisteEndringKategori: String? = null, // kolonne
-    var sisteEndringTidspunkt: LocalDateTime? = null, // kolonne
+    var sisteEndringKategori: String? = null,
+    var sisteEndringTidspunkt: LocalDateTime? = null,
     var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
 
     // YtelseData
