@@ -7,6 +7,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter;
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import org.junit.Before;
@@ -184,7 +185,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell kode6Bruker() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setFornavn("fornavnKode6");
         bruker.setEtternavn("etternanvKode6");
@@ -194,7 +195,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell kode7Bruker() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setFornavn("fornavnKode7");
         bruker.setEtternavn("etternanvKode7");
@@ -204,7 +205,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell egenAnsatt() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setFornavn("fornavnKodeEgenAnsatt");
         bruker.setEtternavn("etternanvEgenAnsatt");
@@ -213,7 +214,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell ikkeKonfidensiellBruker() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setFornavn("fornavnIkkeKonfidensiellBruker");
         bruker.setEtternavn("etternanvIkkeKonfidensiellBruker");
@@ -221,7 +222,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode6Barn() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setBarnUnder18AarData(List.of(
                 new BarnUnder18AarData(15, "6"),
@@ -231,7 +232,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode7Barn() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setBarnUnder18AarData(List.of(
                 new BarnUnder18AarData(1, "7")
@@ -240,7 +241,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode19Barn() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setBarnUnder18AarData(List.of(
                 new BarnUnder18AarData(15, "19"),
@@ -251,7 +252,7 @@ public class SensurerBrukerTest {
     }
 
     private PortefoljebrukerFrontendModell brukerMedKode6og7Barn() {
-        PortefoljebrukerFrontendModell bruker = new PortefoljebrukerFrontendModell();
+        PortefoljebrukerFrontendModell bruker = frontendbruker;
         bruker.setFnr("11111111111");
         bruker.setBarnUnder18AarData(List.of(
                 new BarnUnder18AarData(11, "6"),
@@ -261,5 +262,70 @@ public class SensurerBrukerTest {
         return bruker;
     }
 
+    PortefoljebrukerFrontendModell frontendbruker = new PortefoljebrukerFrontendModell(
+            new Etiketter(),
+            false,
+            false,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Collections.emptyMap(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            null,
+            null,
+            null,
+            null
+    );
 
 }
