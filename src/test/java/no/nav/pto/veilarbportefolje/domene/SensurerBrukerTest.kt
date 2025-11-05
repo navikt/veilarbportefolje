@@ -6,6 +6,7 @@ import no.nav.poao_tilgang.client.Decision.Deny
 import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import org.assertj.core.api.Assertions.assertThat
@@ -178,7 +179,7 @@ class SensurerBrukerTest {
             fnr = "11111111111",
             fornavn = "fornavnKode6",
             etternavn = "etternanvKode6",
-            diskresjonskode = "6",
+            etiketter = frontendbrukerDefaults.etiketter.copy(diskresjonskodeFortrolig = "6"),
             barnUnder18AarData = emptyList()
         )
     }
@@ -188,7 +189,7 @@ class SensurerBrukerTest {
             fnr = "11111111111",
             fornavn = "fornavnKode7",
             etternavn = "etternanvKode7",
-            diskresjonskode = "7",
+            etiketter = frontendbrukerDefaults.etiketter.copy(diskresjonskodeFortrolig = "7"),
             barnUnder18AarData = emptyList()
         )
 

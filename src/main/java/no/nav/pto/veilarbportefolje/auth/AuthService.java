@@ -90,7 +90,7 @@ public class AuthService {
             );
         }
 
-        String diskresjonskode = bruker.getDiskresjonskode();
+        String diskresjonskode = bruker.getEtiketter().getDiskresjonskodeFortrolig();
 
         boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || bruker.getEgenAnsatt();
         if (!erKonfidensiell) {
