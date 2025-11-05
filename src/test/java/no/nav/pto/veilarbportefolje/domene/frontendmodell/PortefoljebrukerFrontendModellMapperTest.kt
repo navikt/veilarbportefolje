@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearch
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
+import java.time.LocalDate
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -126,6 +127,29 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         Assertions.assertEquals(true, etiketterMedBehov.harBehovForArbeidsevneVurdering)
         Assertions.assertEquals(false, etiketterUtenBehov.harBehovForArbeidsevneVurdering)
+    }
+
+    @Test
+    fun `geografiskBosted skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        opensearchBruker.setKommunenummer("0301")
+        opensearchBruker.setBydelsnummer("1234")
+        opensearchBruker.setBostedSistOppdatert(LocalDate.of(2025,1,1))
+        opensearchBruker.setHarUkjentBosted(true)
+        opensearchBruker.setUtenlandskAdresse(null)
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val bosted = frontendBruker.geografiskBosted
+
+        Assertions.assertEquals("1234", bosted.bostedBydel)
+        Assertions.assertEquals("Ukjent", bosted.bostedKommuneUkjentEllerUtland)
+        Assertions.assertEquals("0301", bosted.bostedKommune)
+        Assertions.assertEquals(LocalDate.of(2025,1,1), bosted.bostedSistOppdatert)
     }
 
 
