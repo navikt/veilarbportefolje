@@ -37,6 +37,14 @@ object PortefoljebrukerFrontendModellMapper {
                 || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
             ) opensearchBruker.diskresjonskode else null
 
+        val bostedKommuneUkjentEllerUtland = if (harUtenlandskAdresse) {
+            "Utland"
+        } else if (opensearchBruker.harUkjentBosted) {
+            "Ukjent"
+        } else {
+            "-"
+        }
+
 
         var frontendbruker = PortefoljebrukerFrontendModell(
             etiketter = Etiketter(
@@ -63,11 +71,20 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             foedeland = opensearchBruker.foedelandFulltNavn,
             hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap,
+
+            geografiskBosted = GeografiskBostedForBruker(
+                bostedKommune = opensearchBruker.kommunenummer,
+                bostedBydel = opensearchBruker.bydelsnummer,
+                bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
+                bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
+            ),
             bostedKommune = opensearchBruker.kommunenummer,
             bostedBydel = opensearchBruker.bydelsnummer,
             bostedSistOppdatert = opensearchBruker.bostedSistOppdatert,
             harUtelandsAddresse = harUtenlandskAdresse,
             harUkjentBosted = opensearchBruker.harUkjentBosted,
+
+
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),

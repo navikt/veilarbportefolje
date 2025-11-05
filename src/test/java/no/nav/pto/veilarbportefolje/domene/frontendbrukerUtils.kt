@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene
 
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.GeografiskBostedForBruker
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 
 var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFrontendModell(
@@ -26,6 +27,12 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     foedeland = null,
     hovedStatsborgerskap = null,
 
+    geografiskBosted = GeografiskBostedForBruker(
+        bostedKommune = null,
+        bostedKommuneUkjentEllerUtland = "Utland",
+        bostedBydel = null,
+        bostedSistOppdatert = null
+    ),
     bostedKommune = null,
     bostedBydel = null,
     bostedSistOppdatert = null,

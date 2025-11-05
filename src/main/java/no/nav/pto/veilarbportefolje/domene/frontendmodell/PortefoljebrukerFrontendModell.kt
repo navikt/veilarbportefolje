@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
+import no.nav.pto.veilarbportefolje.persononinfo.bosted.GeografiskBosted
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,12 +29,14 @@ data class PortefoljebrukerFrontendModell(
     var foedeland: String? = null,
     var hovedStatsborgerskap: Statsborgerskap? = null, // gyldig til brukes ikke
 
-        // Geografisk bosted
+    // Geografisk bosted
+    var geografiskBosted: GeografiskBostedForBruker,
     var bostedKommune: String? = null,
     var bostedBydel: String? = null,
     var bostedSistOppdatert: LocalDate? = null,
     var harUtelandsAddresse: Boolean = false, // brukes kun til å sette "utland" på kommune
     var harUkjentBosted: Boolean = false, // brukes kun til å sette "ukjent" på kommune
+
 
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
