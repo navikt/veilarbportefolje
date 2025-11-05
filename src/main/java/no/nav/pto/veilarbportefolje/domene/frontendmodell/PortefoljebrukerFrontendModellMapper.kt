@@ -26,6 +26,7 @@ object PortefoljebrukerFrontendModellMapper {
         val vurderingsBehov = if (opensearchBruker.trenger_vurdering)
             vurderingsBehov(kvalifiseringsgruppekode, profileringResultat)
         else null
+        val harBehovForArbeidsevneVurdering = vurderingsBehov == VurderingsBehov.ARBEIDSEVNE_VURDERING
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
@@ -38,6 +39,18 @@ object PortefoljebrukerFrontendModellMapper {
 
 
         var frontendbruker = PortefoljebrukerFrontendModell(
+            etiketter = Etiketter(
+                erDoed = opensearchBruker.er_doed,
+                erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
+                trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
+                nyForVeileder = opensearchBruker.ny_for_veileder,
+                nyForEnhet = ufordelt,
+                harBehovForArbeidsevneVurdering = harBehovForArbeidsevneVurdering,
+                harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
+                diskresjonskodeFortrolig = diskresjonskodeFortrolig,
+                profileringResultat = profileringResultat
+            ),
+
             fnr = opensearchBruker.fnr,
             aktoerid = opensearchBruker.aktoer_id,
             fornavn = opensearchBruker.fornavn,
