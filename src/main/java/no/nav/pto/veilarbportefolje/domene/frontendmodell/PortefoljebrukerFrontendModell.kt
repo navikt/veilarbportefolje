@@ -14,18 +14,7 @@ import java.time.LocalDateTime
 
 
 data class PortefoljebrukerFrontendModell(
-    // tags
     var etiketter: Etiketter,
-    var erDoed: Boolean = false, // kun tag
-    val erSykmeldtMedArbeidsgiver: Boolean = false, // kun tag
-    val trengerOppfolgingsvedtak: Boolean = false, // kun tag
-    val nyForVeileder: Boolean = false, // kun tag
-    val nyForEnhet: Boolean = false, //  kun tag
-    var diskresjonskode: String? = null, // kun tag
-    val profileringResultat: Profileringsresultat? = null, // kun tags når trengerOppfolgingsvedtak er true
-    val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
-    // vurderingsBehov er kun tag med sjekk på undergruppen ARBEIDSEVNE_VURDERING
-    var sikkerhetstiltak: List<String>? = null, //endre til bool og ikke liste, er kun tag
 
     // personaliaData
     var fnr: String? = null,
@@ -73,7 +62,7 @@ data class PortefoljebrukerFrontendModell(
 
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,
     val tiltakshendelse: TiltakshendelseForBruker? = null,
-    val utgattVarsel: Hendelse.HendelseInnhold? = null, // todo lag egen frontendtype her
+    val utgattVarsel: UtgattVarselForHendelse? = null,
 
     // siste endringer hendelser
     var sisteEndringKategori: String? = null,

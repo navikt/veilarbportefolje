@@ -192,6 +192,13 @@ public class DateUtils {
         return date.toLocalDate();
     }
 
+    public static LocalDate fromZonedDateTimeToLocalDateOrNull(ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) {
+            return null;
+        }
+        return zonedDateTime.toLocalDate();
+    }
+
     public static LocalDate fromIsoUtcToLocalDateOrNull(String isoUtcString) {
         if (isoUtcString == null) {
             return null;
