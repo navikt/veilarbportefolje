@@ -64,7 +64,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons).isNotNull
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(hendelse.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(hendelse.hendelse.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(hendelse.hendelse.lenke)
     }
 
@@ -127,7 +126,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(hendelseRecordValue, hendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
@@ -173,7 +171,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(oppdatertHendelseRecordValue, hendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
@@ -260,7 +257,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(eldreHendelseRecordValue, eldreHendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
@@ -312,7 +308,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
@@ -395,7 +390,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
@@ -452,7 +446,6 @@ class HendelseIntegrationTest(
         assertThat(brukerFraRespons.utgattVarsel).isNotNull
         val forventetHendelseInnhold = toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
         assertThat(brukerFraRespons.utgattVarsel!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.utgattVarsel!!.detaljer).isEqualTo(forventetHendelseInnhold.detaljer)
         assertThat(brukerFraRespons.utgattVarsel!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 }

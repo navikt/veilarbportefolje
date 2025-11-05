@@ -15,16 +15,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         diskresjonskodeFortrolig = null,
         profileringResultat = null
     ),
-    erDoed = false,
-    erSykmeldtMedArbeidsgiver = false,
-    trengerOppfolgingsvedtak = false,
-    nyForVeileder = false,
-    nyForEnhet = false,
-    diskresjonskode = null,
-    profileringResultat = null,
-    vurderingsBehov = null,
-    sikkerhetstiltak = null,
-
     fnr = null,
     aktoerid = null,
     fornavn = null,
