@@ -78,13 +78,6 @@ object PortefoljebrukerFrontendModellMapper {
                 bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
-            bostedKommune = opensearchBruker.kommunenummer,
-            bostedBydel = opensearchBruker.bydelsnummer,
-            bostedSistOppdatert = opensearchBruker.bostedSistOppdatert,
-            harUtelandsAddresse = harUtenlandskAdresse,
-            harUkjentBosted = opensearchBruker.harUkjentBosted,
-
-
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),

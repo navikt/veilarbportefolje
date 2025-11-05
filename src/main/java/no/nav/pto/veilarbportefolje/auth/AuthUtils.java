@@ -29,10 +29,10 @@ public class AuthUtils {
         bruker.setFoedeland(null);
         bruker.setTolkebehov(Tolkebehov.of("", "", null));
         bruker.setHovedStatsborgerskap(null);
-        bruker.setBostedBydel(null);
-        bruker.setBostedKommune(null);
-        bruker.setHarUtelandsAddresse(false);
-        bruker.setBostedSistOppdatert(null);
+        bruker.getGeografiskBosted().setBostedBydel(null);
+        bruker.getGeografiskBosted().setBostedKommune(null);
+        bruker.getGeografiskBosted().setBostedKommuneUkjentEllerUtland("-");
+        bruker.getGeografiskBosted().setBostedSistOppdatert(null);
         bruker.setFargekategori(null);
         bruker.setHuskelapp(null);
 

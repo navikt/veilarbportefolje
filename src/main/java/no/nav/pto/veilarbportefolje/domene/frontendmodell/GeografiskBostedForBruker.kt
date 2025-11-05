@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class GeografiskBostedForBruker(
     var bostedKommune: String?,
-    val bostedKommuneUkjentEllerUtland: String,
+    var bostedKommuneUkjentEllerUtland: String,
     var bostedBydel: String?,
     var bostedSistOppdatert: LocalDate?
 )
