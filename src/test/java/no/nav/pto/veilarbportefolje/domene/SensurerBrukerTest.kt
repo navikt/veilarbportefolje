@@ -1,331 +1,246 @@
-package no.nav.pto.veilarbportefolje.domene;
+package no.nav.pto.veilarbportefolje.domene
+
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
+import no.nav.poao_tilgang.client.Decision.Deny
+import no.nav.poao_tilgang.client.Decision.Permit
+import no.nav.pto.veilarbportefolje.auth.AuthService
+import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 
-import io.getunleash.DefaultUnleash;
-import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.poao_tilgang.client.Decision;
-import no.nav.pto.veilarbportefolje.auth.AuthService;
-import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-@RunWith(MockitoJUnitRunner.class)
-public class SensurerBrukerTest {
-
-    private AuthService authService;
-    private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
-    private AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient;
-
-    private PoaoTilgangWrapper poaoTilgangWrapper;
+class SensurerBrukerTest {
+    private lateinit var authService: AuthService
+    private val azureAdOnBehalfOfTokenClient: AzureAdOnBehalfOfTokenClient = mock()
+    private val azureAdMachineToMachineTokenClient: AzureAdMachineToMachineTokenClient = mock()
+    private val poaoTilgangWrapper: PoaoTilgangWrapper = mock()
 
     @Before
-    public void setUp() {
-        DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
-
-        poaoTilgangWrapper = mock(PoaoTilgangWrapper.class);
-        authService = new AuthService(
-                azureAdOnBehalfOfTokenClient,
-                azureAdMachineToMachineTokenClient,
-                poaoTilgangWrapper
-        );
+    fun setUp() {
+        authService = AuthService(
+            azureAdOnBehalfOfTokenClient,
+            azureAdMachineToMachineTokenClient,
+            poaoTilgangWrapper
+        )
     }
 
     @Test
-    public void skalIkkeSeKode6Bruker() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
+    fun skalIkkeSeKode6Bruker() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker())
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
-    public void skalIkkeSeKode7Bruker() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
+    fun skalIkkeSeKode7Bruker() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker())
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
-    public void skalIkkeSeEgenAnsatt() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
-        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere);
+    fun skalIkkeSeEgenAnsatt() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt())
+        sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
-    public void skalSeKode6Bruker() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker());
-        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode6");
-        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode6");
+    fun skalSeKode6Bruker() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker())
+        assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
+        assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKode6")
+        assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvKode6")
     }
 
     @Test
-    public void skalSeKode7Bruker() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Decision.Permit.INSTANCE);
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker());
-        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKode7");
-        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvKode7");
+    fun skalSeKode7Bruker() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker())
+        assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
+        assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKode7")
+        assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvKode7")
     }
 
     @Test
-    public void skalSeEgenAnsatt() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Decision.Permit.INSTANCE);
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt());
-        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnKodeEgenAnsatt");
-        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvEgenAnsatt");
+    fun skalSeEgenAnsatt() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Permit)
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt())
+        assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
+        assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKodeEgenAnsatt")
+        assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvEgenAnsatt")
     }
 
     @Test
-    public void skalSeIkkeKonfidensiellBruker() {
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker());
-        assertThat(filtrerteBrukere.getFnr()).isEqualTo("11111111111");
-        assertThat(filtrerteBrukere.getFornavn()).isEqualTo("fornavnIkkeKonfidensiellBruker");
-        assertThat(filtrerteBrukere.getEtternavn()).isEqualTo("etternanvIkkeKonfidensiellBruker");
+    fun skalSeIkkeKonfidensiellBruker() {
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker())
+        assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
+        assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnIkkeKonfidensiellBruker")
+        assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvIkkeKonfidensiellBruker")
     }
 
     @Test
-    public void skalIkkeSeKode6Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn());
-        sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere);
+    fun skalIkkeSeKode6Barn() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn())
+        sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere)
     }
 
     @Test
-    public void skalIkkeSeKode7Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn());
-        sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere);
+    fun skalIkkeSeKode7Barn() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn())
+        sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere)
     }
 
     @Test
-    public void skalFjerneKode7BarnMenIkkeKode6() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn());
-        sjekkAtBarnMedKode7ErFjernet(filtrertBruker);
-        sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker);
-        assertEquals(2, filtrertBruker.getBarnUnder18AarData().size());
+    fun skalFjerneKode7BarnMenIkkeKode6() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
+        val filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn())
+        sjekkAtBarnMedKode7ErFjernet(filtrertBruker)
+        sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker)
+        assertThat(filtrertBruker.barnUnder18AarData).hasSize(2)
     }
 
     @Test
-    public void skalIkkeSeKode19Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(new Decision.Deny("", ""));
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
-        sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere);
+    fun skalIkkeSeKode19Barn() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn())
+        sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere)
     }
 
     @Test
-    public void skalSeKode19Barn() {
-        when(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Permit.INSTANCE);
-        PortefoljebrukerFrontendModell filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn());
-        sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere);
+    fun skalSeKode19Barn() {
+        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn())
+        sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere)
     }
 
 
-    private void sjekkAtKonfidensiellDataErVasket(PortefoljebrukerFrontendModell bruker) {
-        assertThat(bruker.getFnr()).isEqualTo("");
-        assertThat(bruker.getEtternavn()).isEqualTo("");
-        assertThat(bruker.getFornavn()).isEqualTo("");
-        assertThat(bruker.getSkjermetTil()).isNull();
-        assertThat(bruker.getFoedeland()).isNull();
-        assertThat(bruker.getTolkebehov().talespraaktolk()).isEqualTo("");
-        assertThat(bruker.getTolkebehov().tegnspraaktolk()).isEqualTo("");
-        assertThat(bruker.getHovedStatsborgerskap()).isNull();
-        assertThat(bruker.getBostedBydel()).isNull();
-        assertThat(bruker.getBostedKommune()).isNull();
-        assertThat(bruker.getHarUtelandsAddresse()).isEqualTo(false);
+    private fun sjekkAtKonfidensiellDataErVasket(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.fnr).isEqualTo("")
+        assertThat(bruker.etternavn).isEqualTo("")
+        assertThat(bruker.fornavn).isEqualTo("")
+        assertThat(bruker.skjermetTil).isNull()
+        assertThat(bruker.foedeland).isNull()
+        assertThat(bruker.tolkebehov?.talespraaktolk).isEqualTo("")
+        assertThat(bruker.tolkebehov?.tegnspraaktolk).isEqualTo("")
+        assertThat(bruker.hovedStatsborgerskap).isNull()
+        assertThat(bruker.bostedBydel).isNull()
+        assertThat(bruker.bostedKommune).isNull()
+        assertThat(bruker.harUtelandsAddresse).isEqualTo(false)
     }
 
-    private void sjekkAtBarnMedKode6ErFjernet(PortefoljebrukerFrontendModell bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().noneMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("6")));
+    private fun sjekkAtBarnMedKode6ErFjernet(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.barnUnder18AarData)
+            .allSatisfy { barn ->
+                assertThat(barn.diskresjonskode).isNotEqualTo("6")
+            }
     }
 
-    private void sjekkAtBarnMedKode7ErFjernet(PortefoljebrukerFrontendModell bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("7")));
+    private fun sjekkAtBarnMedKode7ErFjernet(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.barnUnder18AarData)
+            .allSatisfy { barn ->
+                assertThat(barn.diskresjonskode).isNotEqualTo("7")
+            }
     }
 
-    private void sjekkAtBarnMedKode6IkkeErFjernet(PortefoljebrukerFrontendModell bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("6")));
+    private fun sjekkAtBarnMedKode6IkkeErFjernet(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.barnUnder18AarData).anySatisfy { barn ->
+            if (barn.diskresjonskode != null) {
+                assertThat(barn.diskresjonskode).isEqualTo("6")
+            }
+        }
     }
 
-    private void sjekkAtBarnMedKode19ErFjernet(PortefoljebrukerFrontendModell bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).noneMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("19")));
+    private fun sjekkAtBarnMedKode19ErFjernet(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.barnUnder18AarData).allSatisfy { barn ->
+            assertThat(barn.diskresjonskode).isNotEqualTo("19")
+        }
     }
 
-    private void sjekkAtBarnMedKode19ErIkkeFjernet(PortefoljebrukerFrontendModell bruker) {
-        assertTrue(bruker.getBarnUnder18AarData().stream().filter(x -> x.getDiskresjonskode() != null).anyMatch(
-                barnUnder18AarData ->
-                        barnUnder18AarData.getDiskresjonskode().equals("19")));
+    private fun sjekkAtBarnMedKode19ErIkkeFjernet(bruker: PortefoljebrukerFrontendModell) {
+        assertThat(bruker.barnUnder18AarData).anySatisfy { barn ->
+            assertThat(barn.diskresjonskode).isEqualTo("19")
+        }
     }
 
-    private PortefoljebrukerFrontendModell kode6Bruker() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setFornavn("fornavnKode6");
-        bruker.setEtternavn("etternanvKode6");
-        bruker.setDiskresjonskode("6");
-        bruker.setBarnUnder18AarData(Collections.emptyList());
-        return bruker;
+    private fun kode6Bruker(): PortefoljebrukerFrontendModell {
+        return frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            fornavn = "fornavnKode6",
+            etternavn = "etternanvKode6",
+            diskresjonskode = "6",
+            barnUnder18AarData = emptyList()
+        )
     }
 
-    private PortefoljebrukerFrontendModell kode7Bruker() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setFornavn("fornavnKode7");
-        bruker.setEtternavn("etternanvKode7");
-        bruker.setDiskresjonskode("7");
-        bruker.setBarnUnder18AarData(Collections.emptyList());
-        return bruker;
-    }
+    private fun kode7Bruker(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            fornavn = "fornavnKode7",
+            etternavn = "etternanvKode7",
+            diskresjonskode = "7",
+            barnUnder18AarData = emptyList()
+        )
 
-    private PortefoljebrukerFrontendModell egenAnsatt() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setFornavn("fornavnKodeEgenAnsatt");
-        bruker.setEtternavn("etternanvEgenAnsatt");
-        bruker.setEgenAnsatt(true);
-        return bruker;
-    }
+    private fun egenAnsatt(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            fornavn = "fornavnKodeEgenAnsatt",
+            etternavn = "etternanvEgenAnsatt",
+            egenAnsatt = true
+        )
 
-    private PortefoljebrukerFrontendModell ikkeKonfidensiellBruker() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setFornavn("fornavnIkkeKonfidensiellBruker");
-        bruker.setEtternavn("etternanvIkkeKonfidensiellBruker");
-        return bruker;
-    }
+    private fun ikkeKonfidensiellBruker(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            fornavn = "fornavnIkkeKonfidensiellBruker",
+            etternavn = "etternanvIkkeKonfidensiellBruker"
+        )
 
-    private PortefoljebrukerFrontendModell brukerMedKode6Barn() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setBarnUnder18AarData(List.of(
-                new BarnUnder18AarData(15, "6"),
-                new BarnUnder18AarData(12, "6")
-        ));
-        return bruker;
-    }
+    private fun brukerMedKode6Barn(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            barnUnder18AarData = listOf(
+                BarnUnder18AarData(15, "6"),
+                BarnUnder18AarData(12, "6")
+            )
+        )
 
-    private PortefoljebrukerFrontendModell brukerMedKode7Barn() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setBarnUnder18AarData(List.of(
-                new BarnUnder18AarData(1, "7")
-        ));
-        return bruker;
-    }
+    private fun brukerMedKode7Barn(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            barnUnder18AarData = listOf(
+                BarnUnder18AarData(1, "7")
+            )
+        )
 
-    private PortefoljebrukerFrontendModell brukerMedKode19Barn() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setBarnUnder18AarData(List.of(
-                new BarnUnder18AarData(15, "19"),
-                new BarnUnder18AarData(12, null),
-                new BarnUnder18AarData(3, null)
-        ));
-        return bruker;
-    }
+    private fun brukerMedKode19Barn(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            barnUnder18AarData = listOf(
+                BarnUnder18AarData(15, "19"),
+                BarnUnder18AarData(12, null),
+                BarnUnder18AarData(3, null)
+            )
+        )
 
-    private PortefoljebrukerFrontendModell brukerMedKode6og7Barn() {
-        PortefoljebrukerFrontendModell bruker = frontendbruker;
-        bruker.setFnr("11111111111");
-        bruker.setBarnUnder18AarData(List.of(
-                new BarnUnder18AarData(11, "6"),
-                new BarnUnder18AarData(15, "7"),
-                new BarnUnder18AarData(3, null)
-        ));
-        return bruker;
-    }
-
-    PortefoljebrukerFrontendModell frontendbruker = new PortefoljebrukerFrontendModell(
-            new Etiketter(),
-            false,
-            false,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            false,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            Collections.emptyMap(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            null,
-            null,
-            null,
-            null
-    );
-
+    private fun brukerMedKode6og7Barn(): PortefoljebrukerFrontendModell =
+        frontendbrukerDefaults.copy(
+            fnr = "11111111111",
+            barnUnder18AarData = listOf(
+                BarnUnder18AarData(11, "6"),
+                BarnUnder18AarData(15, "7"),
+                BarnUnder18AarData(3, null)
+            )
+        )
 }
