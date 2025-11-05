@@ -33,11 +33,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         bostedBydel = null,
         bostedSistOppdatert = null
     ),
-    bostedKommune = null,
-    bostedBydel = null,
-    bostedSistOppdatert = null,
-    harUtelandsAddresse = false,
-    harUkjentBosted = false,
 
     avvik14aVedtak = null,
     gjeldendeVedtak14a = null,

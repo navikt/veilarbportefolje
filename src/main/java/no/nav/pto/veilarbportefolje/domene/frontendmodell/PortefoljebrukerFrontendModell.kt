@@ -31,12 +31,6 @@ data class PortefoljebrukerFrontendModell(
 
     // Geografisk bosted
     var geografiskBosted: GeografiskBostedForBruker,
-    var bostedKommune: String? = null,
-    var bostedBydel: String? = null,
-    var bostedSistOppdatert: LocalDate? = null,
-    var harUtelandsAddresse: Boolean = false, // brukes kun til å sette "utland" på kommune
-    var harUkjentBosted: Boolean = false, // brukes kun til å sette "ukjent" på kommune
-
 
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,

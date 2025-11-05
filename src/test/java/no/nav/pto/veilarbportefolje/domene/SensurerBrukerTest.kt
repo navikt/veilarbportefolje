@@ -135,9 +135,9 @@ class SensurerBrukerTest {
         assertThat(bruker.tolkebehov?.talespraaktolk).isEqualTo("")
         assertThat(bruker.tolkebehov?.tegnspraaktolk).isEqualTo("")
         assertThat(bruker.hovedStatsborgerskap).isNull()
-        assertThat(bruker.bostedBydel).isNull()
-        assertThat(bruker.bostedKommune).isNull()
-        assertThat(bruker.harUtelandsAddresse).isEqualTo(false)
+        assertThat(bruker.geografiskBosted.bostedBydel).isNull()
+        assertThat(bruker.geografiskBosted.bostedKommune).isNull()
+        assertThat(bruker.geografiskBosted.bostedKommuneUkjentEllerUtland).isEqualTo("-")
     }
 
     private fun sjekkAtBarnMedKode6ErFjernet(bruker: PortefoljebrukerFrontendModell) {
