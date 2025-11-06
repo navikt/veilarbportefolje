@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
@@ -21,13 +21,13 @@ import org.opensearch.search.aggregations.AggregationBuilders
 import org.opensearch.search.aggregations.BucketOrder
 import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator
 import org.opensearch.search.builder.SearchSourceBuilder
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 
 @Service
 class OpensearchFilterQueryBuilder {
@@ -252,7 +252,10 @@ class OpensearchFilterQueryBuilder {
                     YtelseAapArena.HAR_AAP_UNNTAK -> subQueryArena.should(
                         QueryBuilders.matchQuery(
                             "ytelse",
-                            YtelseMapping.AAP_UNNTAK))
+                            YtelseMapping.AAP_UNNTAK
+                        )
+                    )
+
                     else -> {
                         throw IllegalStateException("ytelseArena har ugyldig verdi")
                     }
@@ -328,6 +331,48 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(combinedSubQuery)
         }
 
+
+        if (filtervalg.harYtelseDagpengerArenaFilter()) {
+            val subQueryArena = QueryBuilders.boolQuery()
+
+            filtervalg.ytelseDagpengerArena.forEach(Consumer { ytelseArena: YtelseDagpengerArena? ->
+                when (ytelseArena) {
+                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER -> subQueryArena.should(
+                        QueryBuilders.matchQuery(
+                            "ytelse",
+                            YtelseMapping.ORDINARE_DAGPENGER
+                        )
+                    )
+
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING -> subQueryArena.should(
+                        QueryBuilders.matchQuery(
+                            "ytelse",
+                            YtelseMapping.DAGPENGER_MED_PERMITTERING
+                        )
+                    )
+
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> subQueryArena.should(
+                        QueryBuilders.matchQuery(
+                            "ytelse",
+                            YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI
+                        )
+                    )
+
+                    YtelseDagpengerArena.HAR_DAGPENGER_OVRIGE -> subQueryArena.should(
+                        QueryBuilders.matchQuery(
+                            "ytelse",
+                            YtelseMapping.DAGPENGER_OVRIGE
+                        )
+                    )
+
+                    else -> {
+                        throw IllegalStateException("ytelseArena har ugyldig verdi")
+                    }
+                }
+            })
+
+            queryBuilder.must(subQueryArena)
+        }
 
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn.name))
