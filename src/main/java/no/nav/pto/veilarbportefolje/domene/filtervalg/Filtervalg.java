@@ -60,6 +60,7 @@ public class Filtervalg {
     public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
     public List<YtelseTiltakspenger> ytelseTiltakspenger = new ArrayList<>();
     public List<YtelseTiltakspengerArena> ytelseTiltakspengerArena = new ArrayList<>();
+    public List<YtelseDagpengerArena> ytelseDagpengerArena = new ArrayList<>();
 
 
     public boolean harAktiveFilter() {
@@ -102,7 +103,8 @@ public class Filtervalg {
                 harYtelseAapArenaFilter() ||
                 harYtelseAapKelvinFilter() ||
                 harYtelseTiltakspengerFilter() ||
-                harYtelseTiltakspengerArenaFilter();
+                harYtelseTiltakspengerArenaFilter() ||
+                harYtelseDagpengerArenaFilter();
     }
 
     public boolean harGjeldendeVedtak14aFilter() {
@@ -147,6 +149,10 @@ public class Filtervalg {
 
     public boolean harYtelseTiltakspengerArenaFilter() {
         return ytelseTiltakspengerArena != null && !ytelseTiltakspengerArena.isEmpty();
+    }
+
+    public boolean harYtelseDagpengerArenaFilter() {
+        return ytelseDagpengerArena != null && !ytelseDagpengerArena.isEmpty();
     }
 
     public boolean harKjonnfilter() {
