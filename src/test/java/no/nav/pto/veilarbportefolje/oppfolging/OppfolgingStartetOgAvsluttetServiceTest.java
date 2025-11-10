@@ -6,11 +6,11 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakResponseDto;
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakApiDto;
@@ -283,40 +283,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertNotNull(profilering);
     }
 
-    @Test
-    void når_oppfølging_avsluttes_skal_arbeidsliste_registrering_og_oppfølgingsdata_slettes() {
-        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
-        when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
-
-        testDataClient.setupBrukerMedArbeidsliste(
-                aktorId,
-                randomNavKontor(),
-                randomVeilederId(),
-                ZonedDateTime.parse("2020-12-01T00:00:00+02:00")
-        );
-
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
-
-        List<String> arbeidsliste =
-                jdbcTemplate.queryForList(
-                        "SELECT aktoerid from arbeidsliste where aktoerid = ?",
-                        String.class,
-                        aktorId.get()
-                );
-
-        List<String> registrering =
-                jdbcTemplate.query(
-                        "select * from bruker_registrering where aktoerid = ?",
-                        (r, i) -> r.getString("aktoerid"),
-                        aktorId.get()
-                );
-
-        assertThat(arbeidsliste.isEmpty()).isTrue();
-        assertThat(registrering.size()).isEqualTo(0);
-        assertThat(testDataClient.hentUnderOppfolgingOgAktivIdent(aktorId)).isFalse();
-        Map<String, Object> source = opensearchTestClient.fetchDocument(aktorId).getSourceAsMap();
-        assertThat(source).isNull();
-    }
 
     @Test
     void når_oppfølging_avsluttes_skal_siste_14a_vedtak_slettes() {

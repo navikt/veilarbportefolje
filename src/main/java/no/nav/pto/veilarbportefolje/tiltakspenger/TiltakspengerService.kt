@@ -2,14 +2,14 @@ package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
@@ -32,7 +32,7 @@ class TiltakspengerService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
-    val opensearchIndexerV2: OpensearchIndexerV2
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
 
@@ -79,7 +79,7 @@ class TiltakspengerService(
                 && sisteTiltakspengerVedtak.tom.isAfter(LocalDate.now().minusDays(1))
 
         upsertTiltakspengerForAktivIdentForBruker(personIdent, sisteTiltakspengerVedtak)
-        opensearchIndexerV2.oppdaterTiltakspenger(
+        opensearchIndexerPaDatafelt.oppdaterTiltakspenger(
             aktorId,
             harAktivYtelse,
             sisteTiltakspengerVedtak.tom,
@@ -138,7 +138,7 @@ class TiltakspengerService(
             .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
 
         if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return toLocalDate(oppfolgingsdata.startDato)
+            return toLocalDateOrNull(oppfolgingsdata.startDato)
         }
 
         secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)

@@ -3,12 +3,13 @@ package no.nav.pto.veilarbportefolje.aap
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.*
-import no.nav.pto.veilarbportefolje.domene.AktorClient
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDate
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
@@ -35,7 +36,7 @@ class AapService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aapRepository: AapRepository,
-    val opensearchIndexerV2: OpensearchIndexerV2
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
     private val logger: Logger = LoggerFactory.getLogger(AapService::class.java)
 
@@ -70,7 +71,7 @@ class AapService(
                 secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
                         "sletter eventuell eksisterende AAP-periode i databasen", personIdent)
                 slettAapForAlleIdenterForBruker(personIdent)
-                opensearchIndexerV2.slettAapKelvin(aktorId)
+                opensearchIndexerPaDatafelt.slettAapKelvin(aktorId)
                 return
             } else {
                 secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, ignorerer aap-ytelse melding.", personIdent)
@@ -82,7 +83,7 @@ class AapService(
         )
 
         upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
-        opensearchIndexerV2.oppdaterAapKelvin(
+        opensearchIndexerPaDatafelt.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
             sisteAapPeriode.periode.tilOgMedDato,
@@ -144,7 +145,7 @@ class AapService(
             .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
 
         if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return toLocalDate(oppfolgingsdata.startDato)
+            return toLocalDateOrNull(oppfolgingsdata.startDato)
         }
 
         secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)

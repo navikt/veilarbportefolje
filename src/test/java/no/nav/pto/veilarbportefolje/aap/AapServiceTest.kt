@@ -2,11 +2,16 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
+import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.domene.VeilederId
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
@@ -40,7 +45,7 @@ class AapServiceTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
     @Autowired private val aapRepository: AapRepository,
     @Autowired private val opensearchService: OpensearchService,
-    @Autowired private val opensearchIndexerV2: OpensearchIndexerV2,
+    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
     @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
 ) : EndToEndTest() {
@@ -66,7 +71,7 @@ class AapServiceTest(
             oppfolgingRepositoryV2,
             pdlIdentRepository,
             aapRepository,
-            opensearchIndexerV2
+            opensearchIndexerPaDatafelt
         )
     }
 

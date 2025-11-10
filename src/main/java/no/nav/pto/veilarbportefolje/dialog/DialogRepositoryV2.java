@@ -24,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 public class DialogRepositoryV2 {
     private final JdbcTemplate db;
 
-    public void oppdaterDialogInfoForBruker(Dialogdata dialog) {
+    public void oppdaterDialogInfoForBruker(DialogdataDto dialog) {
         db.update("""
                         INSERT INTO dialog (AKTOERID, VENTER_PA_BRUKER, VENTER_PA_NAV)
                         VALUES (?, ?, ?) ON CONFLICT (AKTOERID)
@@ -36,7 +36,7 @@ public class DialogRepositoryV2 {
 
     }
 
-    public Optional<Dialogdata> retrieveDialogData(AktorId aktoerId) {
+    public Optional<DialogdataDto> retrieveDialogData(AktorId aktoerId) {
         String sql = String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID);
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapToDialogData, aktoerId.get()))
@@ -44,8 +44,8 @@ public class DialogRepositoryV2 {
     }
 
     @SneakyThrows
-    private Dialogdata mapToDialogData(ResultSet rs, int i) {
-        return new Dialogdata()
+    private DialogdataDto mapToDialogData(ResultSet rs, int i) {
+        return new DialogdataDto()
                 .setAktorId(rs.getString(AKTOERID))
                 .setTidspunktEldsteUbehandlede(toZonedDateTime(rs.getTimestamp(VENTER_PA_NAV)))
                 .setTidspunktEldsteVentende(toZonedDateTime(rs.getTimestamp(VENTER_PA_BRUKER)));

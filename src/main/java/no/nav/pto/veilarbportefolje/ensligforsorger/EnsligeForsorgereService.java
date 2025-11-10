@@ -4,18 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadBarn;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadPeriode;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadResponseDto;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Stønadstype;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,7 +24,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @RequiredArgsConstructor
 public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService<VedtakOvergangsstønadArbeidsoppfølging> {
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final EnsligeForsorgereRepository ensligeForsorgereRepository;
     private final AktorClient aktorClient;
     private final EnsligForsorgerClient ensligForsorgerClient;
@@ -109,19 +105,25 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(personIdent));
 
         if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {
-            opensearchIndexerV2.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
+            opensearchIndexerPaDatafelt.updateOvergangsstonad(aktorId, ensligeForsorgerOvergangsstønadTiltakDto.get());
         } else {
-            opensearchIndexerV2.deleteOvergansstonad(aktorId);
+            opensearchIndexerPaDatafelt.deleteOvergansstonad(aktorId);
         }
+    }
+
+    public void hentOgLagreEnsligForsorgerDataVedAdminjobb(AktorId aktorId) {
+        Fnr fnr = aktorClient.hentFnr(aktorId);
+        hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+        oppdaterOvergangsstonadIOpenSearch(fnr.get());
     }
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
         Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
-        if(fnr != null && overgangsstønadResponseDto.isPresent()) {
+        if (fnr != null && overgangsstønadResponseDto.isPresent()) {
             List<OvergangsstønadPeriode> ensligForsorgerPerioder = overgangsstønadResponseDto.get().getData().getPerioder();
 
-            for(OvergangsstønadPeriode periode: ensligForsorgerPerioder) {
+            for (OvergangsstønadPeriode periode : ensligForsorgerPerioder) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
                 secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, periode);
@@ -138,10 +140,10 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 ensligForsorgerPeriode.getPeriodeType(),
                 ensligForsorgerPeriode.getAktivitet());
 
-        List<OvergangsstønadBarn> ensligForsorgersBarn =  ensligForsorgerPeriode.getBarn();
+        List<OvergangsstønadBarn> ensligForsorgersBarn = ensligForsorgerPeriode.getBarn();
         List<Barn> barnListe = new ArrayList<>();
 
-        for(OvergangsstønadBarn barn: ensligForsorgersBarn) {
+        for (OvergangsstønadBarn barn : ensligForsorgersBarn) {
             barnListe.add(new Barn(
                     barn.getPersonIdent(),
                     barn.getFødselTermindato()

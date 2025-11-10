@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

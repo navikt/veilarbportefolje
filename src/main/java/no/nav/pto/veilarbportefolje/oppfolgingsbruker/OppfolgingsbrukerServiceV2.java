@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
@@ -40,7 +39,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
-    private final ArbeidslisteService arbeidslisteService;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -58,7 +56,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
 
         Fnr fnr = Fnr.of(fodselsnummer);
         EnhetId enhetForBruker = EnhetId.of(kafkaMelding.getOppfolgingsenhet());
-        oppdaterEnhetVedKontorbytteHuskelappFargekategoriArbeidsliste(fnr, enhetForBruker);
+        oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, enhetForBruker);
 
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
                 fodselsnummer,
@@ -80,7 +78,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 });
     }
 
-    private void oppdaterEnhetVedKontorbytteHuskelappFargekategoriArbeidsliste(Fnr fnr, EnhetId enhetForBruker) {
+    private void oppdaterEnhetVedKontorbytteHuskelappFargekategori(Fnr fnr, EnhetId enhetForBruker) {
         try {
             Optional<AktorId> aktorIdForBruker = brukerServiceV2.hentAktorId(fnr);
             aktorIdForBruker.ifPresent(aktorId -> {
@@ -92,13 +90,12 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                         if (brukerBlirAutomatiskTilordnetVeileder) {
                             fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, enhetForBruker, veilederForBruker);
                             huskelappService.oppdaterEnhetPaaHuskelapp(fnr, enhetForBruker, veilederForBruker);
-                            arbeidslisteService.oppdaterEnhetPaaArbeidsliste(fnr, enhetForBruker, veilederForBruker);
                         }
                     });
                 }
             });
         } catch (Exception e) {
-            secureLog.error("Kunne ikke oppdatere enhet på huskelapp, fargekategori eller arbeidsliste ved kontrobytte for bruker: " + fnr, e);
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontrobytte for bruker: " + fnr, e);
         }
     }
 

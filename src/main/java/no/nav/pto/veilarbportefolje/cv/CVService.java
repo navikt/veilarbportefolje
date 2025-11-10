@@ -7,7 +7,7 @@ import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Service
 @Slf4j
 public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final CVRepositoryV2 cvRepositoryV2;
 
     @Override
@@ -29,7 +29,7 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
 
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
-        opensearchIndexerV2.updateCvEksistere(aktoerId, cvEksisterer);
+        opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
@@ -55,7 +55,7 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         secureLog.info("Oppdaterte bruker: {}. Har delt cv: {}", aktoerId, harDeltCv);
         cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
 
-        opensearchIndexerV2.updateHarDeltCv(aktoerId, harDeltCv);
+        opensearchIndexerPaDatafelt.updateHarDeltCv(aktoerId, harDeltCv);
     }
 
     private boolean cvEksistere(Melding melding) {

@@ -12,9 +12,9 @@ import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor
-import no.nav.pto.veilarbportefolje.domene.value.PersonId
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId
+import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId
+import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1

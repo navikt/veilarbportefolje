@@ -15,9 +15,7 @@ import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidsliste.ArbeidslisteService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v1.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -30,7 +28,7 @@ import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.domene.AktorClient;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
@@ -46,7 +44,7 @@ import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
@@ -119,14 +117,13 @@ import static org.mockito.Mockito.when;
 @Import({
         Siste14aVedtakRepository.class,
         Siste14aVedtakService.class,
-        ArbeidslisteService.class,
         BrukerServiceV2.class,
         BrukerRepositoryV2.class,
         AktivitetService.class,
         OppfolgingAvsluttetService.class,
         OpensearchService.class,
         OpensearchIndexer.class,
-        OpensearchIndexerV2.class,
+        OpensearchIndexerPaDatafelt.class,
         OpensearchAdminService.class,
         HovedIndekserer.class,
         AktiviteterRepositoryV2.class,
@@ -146,7 +143,6 @@ import static org.mockito.Mockito.when;
         SisteEndringRepositoryV2.class,
         SistLestService.class,
         MalService.class,
-        ArbeidslisteRepositoryV2.class,
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
         GruppeAktivitetRepositoryV2.class,
@@ -208,13 +204,12 @@ public class ApplicationConfigTest {
     @Bean
     public TestDataClient dbTestClient(JdbcTemplate jdbcTemplatePostgres,
                                        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,
-                                       ArbeidslisteRepositoryV2 arbeidslisteRepositoryV2,
                                        OpensearchTestClient opensearchTestClient,
                                        OppfolgingRepositoryV2 oppfolgingRepositoryV2, PdlIdentRepository pdlIdentRepository,
-                                       PdlPersonRepository pdlPersonRepository, HuskelappRepository huskelappRepository) {
+                                       PdlPersonRepository pdlPersonRepository) {
         return new TestDataClient(jdbcTemplatePostgres, oppfolgingsbrukerRepository,
-                arbeidslisteRepositoryV2, opensearchTestClient, oppfolgingRepositoryV2,
-                pdlIdentRepository, pdlPersonRepository, huskelappRepository);
+                opensearchTestClient, oppfolgingRepositoryV2,
+                pdlIdentRepository, pdlPersonRepository);
     }
 
     @Bean
@@ -391,5 +386,15 @@ public class ApplicationConfigTest {
     @Bean
     public OppfolgingClient oppfolgingClient() {
         return mock(OppfolgingClient.class);
+    }
+
+    @Bean
+    public OpensearchFilterQueryBuilder opensearchFilterQueryBuilder() {
+        return new OpensearchFilterQueryBuilder();
+    }
+
+    @Bean
+    public OpensearchSortQueryBuilder opensearchSortQueryBuilder() {
+        return new OpensearchSortQueryBuilder();
     }
 }

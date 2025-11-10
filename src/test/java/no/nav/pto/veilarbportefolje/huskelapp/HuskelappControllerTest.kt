@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.auth.AuthUtils
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor
+import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.huskelapp.controller.HuskelappController
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository

@@ -5,12 +5,12 @@ import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
-import no.nav.pto.veilarbportefolje.domene.value.NavKontor;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
@@ -73,10 +73,10 @@ public abstract class EndToEndTest {
     }
 
     public void populateOpensearch(NavKontor enhetId, VeilederId veilederId, String... aktoerIder) {
-        List<OppfolgingsBruker> brukere = new ArrayList<>();
+        List<PortefoljebrukerOpensearchModell> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
 
-            brukere.add(new OppfolgingsBruker()
+            brukere.add(new PortefoljebrukerOpensearchModell()
                     .setAktoer_id(aktoerId)
                     .setOppfolging(true)
                     .setEnhet_id(enhetId.getValue())

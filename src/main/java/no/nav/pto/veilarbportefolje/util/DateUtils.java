@@ -178,7 +178,7 @@ public class DateUtils {
         return date.toLocalDateTime();
     }
 
-    public static LocalDate toLocalDate(Timestamp date) {
+    public static LocalDate toLocalDateOrNull(Timestamp date) {
         if (date == null) {
             return null;
         }
@@ -190,6 +190,28 @@ public class DateUtils {
             return null;
         }
         return date.toLocalDate();
+    }
+
+    public static LocalDate fromZonedDateTimeToLocalDateOrNull(ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) {
+            return null;
+        }
+        return zonedDateTime.toLocalDate();
+    }
+
+    public static LocalDate fromIsoUtcToLocalDateOrNull(String isoUtcString) {
+        if (isoUtcString == null) {
+            return null;
+        }
+        Instant instant = Instant.parse(isoUtcString);
+        return instant.atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    public static LocalDate fromLocalDateTimeToLocalDateOrNull(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        return localDateTime.toLocalDate();
     }
 
     public static LocalDate toLocalDateOrNull(String date) {
@@ -219,7 +241,7 @@ public class DateUtils {
 
         WeekFields weekFields = WeekFields.ISO;
         TemporalField dayOfWeek = weekFields.dayOfWeek();
-        return (DateUtils.toLocalDate(initialDay).plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber);
+        return (DateUtils.toLocalDateOrNull(initialDay).plusWeeks(weeksNumber)).with(dayOfWeek, 1).plusDays(dayNumber);
     }
 
     public static Comparator<LocalDate> closestToTodayComparator() {

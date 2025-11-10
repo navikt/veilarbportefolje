@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -68,18 +68,18 @@ public class SisteEndringRepositoryV2 {
         db.update("delete from siste_endring where aktoerid = ?", aktoerId.get());
     }
 
-    public void setAlleSisteEndringTidspunkter(List<OppfolgingsBruker> oppfolgingsBrukere) {
-        if (oppfolgingsBrukere == null || oppfolgingsBrukere.isEmpty()) {
+    public void setAlleSisteEndringTidspunkter(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
+        if (brukerOpensearchModellList == null || brukerOpensearchModellList.isEmpty()) {
             throw new IllegalArgumentException("Trenger oppfolgingsBrukere for å hente ut siste_endringer");
         }
-        for (OppfolgingsBruker bruker : oppfolgingsBrukere) {
+        for (PortefoljebrukerOpensearchModell bruker : brukerOpensearchModellList) {
             mapDbTilOppfolgingsBruker(bruker);
         }
     }
 
     @SneakyThrows
-    private void mapDbTilOppfolgingsBruker(OppfolgingsBruker oppfolgingsBrukere) {
-        oppfolgingsBrukere.setSiste_endringer(getSisteEndringer(AktorId.of(oppfolgingsBrukere.getAktoer_id())));
+    private void mapDbTilOppfolgingsBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
+        brukerOpensearchModell.setSiste_endringer(getSisteEndringer(AktorId.of(brukerOpensearchModell.getAktoer_id())));
     }
 
     public Map<String, Endring> getSisteEndringer(AktorId aktoerId) {
@@ -120,12 +120,12 @@ public class SisteEndringRepositoryV2 {
 
     @SneakyThrows
     private Map<String, Endring> addSisteEndringer(Map<String, Endring> sisteEndringHashMap, ResultSet rs) {
-        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI),
-                new Endring()
-                        .setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)))
-                        .setEr_sett(boolToJaNei(rs.getBoolean(ER_SETT)))
-                        .setAktivtetId(rs.getString(AKTIVITETID)));
+        Endring endring = new Endring();
+        endring.setTidspunkt(toIsoUTC(rs.getTimestamp(SISTE_ENDRING_TIDSPUNKT)));
+        endring.setErSett(boolToJaNei(rs.getBoolean(ER_SETT)));
+        endring.setAktivtetId(rs.getString(AKTIVITETID));
 
+        sisteEndringHashMap.put(rs.getString(SISTE_ENDRING_KATEGORI), endring);
         return sisteEndringHashMap;
     }
 }

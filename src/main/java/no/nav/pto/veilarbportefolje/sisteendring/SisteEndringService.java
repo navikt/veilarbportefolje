@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.sisteendring;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aktiviteter.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.stereotype.Service;
@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -25,19 +26,19 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @Transactional
 @RequiredArgsConstructor
 public class SisteEndringService {
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final SisteEndringRepositoryV2 sisteEndringRepositoryV2;
 
     public void veilederHarSett(AktorId aktorId, ZonedDateTime time) {
         LocalDateTime veilederharsett = time.toLocalDateTime();
         Map<String, Endring> sisteEndringer = sisteEndringRepositoryV2.getSisteEndringer(aktorId);
         sisteEndringer.forEach((kategori, endring) -> {
-            if (endring.getEr_sett().equals("J")) {
+            if (Objects.equals(endring.getErSett(), "J")) {
                 return;
             }
             if (veilederharsett.isAfter(DateUtils.toLocalDateTimeOrNull(endring.getTidspunkt()))) {
                 sisteEndringRepositoryV2.oppdaterHarSett(aktorId, SisteEndringsKategori.valueOf(kategori), true);
-                opensearchIndexerV2.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
+                opensearchIndexerPaDatafelt.updateSisteEndring(aktorId, SisteEndringsKategori.valueOf(kategori));
             }
         });
     }
@@ -50,7 +51,7 @@ public class SisteEndringService {
         if (hendelseErNyereEnnIPostgres(sisteEndringDTO)) {
             try {
                 sisteEndringRepositoryV2.upsert(sisteEndringDTO);
-                opensearchIndexerV2.updateSisteEndring(sisteEndringDTO);
+                opensearchIndexerPaDatafelt.updateSisteEndring(sisteEndringDTO);
             } catch (Exception e) {
                 String message = String.format("Kunne ikke lagre eller indexere siste endring for aktoer id: %s", melding.getAktorId());
                 secureLog.error(message, e);

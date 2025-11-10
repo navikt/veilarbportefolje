@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import no.nav.pto.veilarbportefolje.opensearch.domene.OppfolgingsBruker;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import org.junit.Test;
 
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
@@ -10,7 +10,7 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void skal_vaere_under_oppfolging() {
-        var bruker = new OppfolgingsBruker()
+        var bruker = new PortefoljebrukerOpensearchModell()
                 .setFnr("00000000000")
                 .setFormidlingsgruppekode("foo")
                 .setKvalifiseringsgruppekode("bar")
@@ -22,7 +22,7 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void skal_ikke_vaere_under_oppfolging() {
-        var bruker = new OppfolgingsBruker()
+        var bruker = new PortefoljebrukerOpensearchModell()
                 .setFnr("00000000000")
                 .setFormidlingsgruppekode("foo")
                 .setKvalifiseringsgruppekode("bar")

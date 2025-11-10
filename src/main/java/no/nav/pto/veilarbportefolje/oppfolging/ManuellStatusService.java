@@ -3,11 +3,10 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerV2;
-import no.nav.pto.veilarbportefolje.oppfolging.client.OppfolgingClient;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<ManuellStatusDTO> {
     private final OppfolgingClient oppfolgingClient;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-    private final OpensearchIndexerV2 opensearchIndexerV2;
+    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     public void behandleKafkaMeldingLogikk(ManuellStatusDTO dto) {
         final AktorId aktorId = AktorId.of(dto.getAktorId());
@@ -29,7 +28,7 @@ public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<Man
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktorId, dto);
 
         String manuellStatus = dto.isErManuell() ? ManuellBrukerStatus.MANUELL.name() : null;
-        opensearchIndexerV2.settManuellStatus(aktorId, manuellStatus);
+        opensearchIndexerPaDatafelt.settManuellStatus(aktorId, manuellStatus);
         secureLog.info("Oppdatert manuellstatus for bruker {}, ny status: {}", aktorId, manuellStatus);
     }
 

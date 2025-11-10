@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 data class OvergangsstønadBarn @JsonCreator constructor(
         @JsonProperty("personIdent")
-        val personIdent: String,
+        val personIdent: String?,
         @JsonProperty("fødselTermindato")
         val fødselTermindato: LocalDate?
 )

@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.PortefoljeMapper;
 import no.nav.pto.veilarbportefolje.domene.ArenaHovedmal;
 import no.nav.pto.veilarbportefolje.domene.ArenaInnsatsgruppe;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
-import no.nav.pto.veilarbportefolje.domene.Vedtak14aInfo;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtak;

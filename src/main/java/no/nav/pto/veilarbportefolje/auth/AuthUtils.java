@@ -4,9 +4,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.Tolkebehov;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tolkebehov;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,19 +21,22 @@ import static java.util.Optional.ofNullable;
 
 public class AuthUtils {
 
-    static Bruker fjernKonfidensiellInfo(Bruker bruker) {
-        return bruker.setFnr("")
-                .setEtternavn("").setFornavn("")
-                .setSkjermetTil(null)
-                .setFoedeland(null)
-                .setTolkebehov(Tolkebehov.of("", "", null))
-                .setHovedStatsborgerskap(null)
-                .setBostedBydel(null)
-                .setBostedKommune(null)
-                .setHarUtelandsAddresse(false)
-                .setBostedSistOppdatert(null)
-                .setFargekategori(null)
-                .setHuskelapp(null);
+    static PortefoljebrukerFrontendModell fjernKonfidensiellInfo(PortefoljebrukerFrontendModell bruker) {
+        bruker.setFnr("");
+        bruker.setEtternavn("");
+        bruker.setFornavn("");
+        bruker.setSkjermetTil(null);
+        bruker.setFoedeland(null);
+        bruker.setTolkebehov(Tolkebehov.of("", "", null));
+        bruker.setHovedStatsborgerskap(null);
+        bruker.getGeografiskBosted().setBostedBydel(null);
+        bruker.getGeografiskBosted().setBostedKommune(null);
+        bruker.getGeografiskBosted().setBostedKommuneUkjentEllerUtland("-");
+        bruker.getGeografiskBosted().setBostedSistOppdatert(null);
+        bruker.setFargekategori(null);
+        bruker.setHuskelapp(null);
+
+        return bruker;
     }
 
     static void test(String navn, Object data, boolean matches) {

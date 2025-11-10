@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.AapKelvinForBruker
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.LocalDate

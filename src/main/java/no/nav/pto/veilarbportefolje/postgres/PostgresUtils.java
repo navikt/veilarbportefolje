@@ -13,10 +13,4 @@ public class PostgresUtils {
         }
     }
 
-    public static boolean safeBool(Boolean bool) {
-        if (bool == null) {
-            return false;
-        }
-        return bool;
-    }
 }

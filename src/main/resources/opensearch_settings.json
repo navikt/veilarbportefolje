@@ -59,20 +59,11 @@
       "etternavn": {
         "type": "keyword"
       },
-      "arbeidsliste_kategori": {
-        "type": "keyword"
-      },
       "utkast_14a_status": {
         "type": "keyword"
       },
       "utkast_14a_ansvarlig_veileder": {
         "type": "keyword"
-      },
-      "arbeidsliste_tittel_sortering": {
-        "type": "keyword"
-      },
-      "arbeidsliste_tittel_lengde": {
-        "type": "byte"
       },
       "fullt_navn": {
         "type": "text",

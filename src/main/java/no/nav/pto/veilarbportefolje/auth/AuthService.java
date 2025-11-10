@@ -11,10 +11,11 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.pto.veilarbportefolje.domene.Bruker;
-import no.nav.pto.veilarbportefolje.domene.value.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
+import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,13 +75,13 @@ public class AuthService {
         AuthUtils.test("tilgangTilBruker", fnr, response);
     }
 
-    public List<Bruker> sensurerBrukere(List<Bruker> brukere) {
+    public List<PortefoljebrukerFrontendModell> sensurerBrukere(List<PortefoljebrukerFrontendModell> brukere) {
         return brukere.stream()
                 .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
                 .collect(toList());
     }
 
-    public Bruker fjernKonfidensiellInfoDersomIkkeTilgang(Bruker bruker) {
+    public PortefoljebrukerFrontendModell fjernKonfidensiellInfoDersomIkkeTilgang(PortefoljebrukerFrontendModell bruker) {
         if (bruker.getBarnUnder18AarData() != null) {
             bruker.setBarnUnder18AarData(
                     bruker.getBarnUnder18AarData().stream().filter(
@@ -89,11 +90,12 @@ public class AuthService {
             );
         }
 
-        if (!bruker.erKonfidensiell()) {
+        String diskresjonskode = bruker.getEtiketter().getDiskresjonskodeFortrolig();
+
+        boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || bruker.getEgenAnsatt();
+        if (!erKonfidensiell) {
             return bruker;
         }
-
-        String diskresjonskode = bruker.getDiskresjonskode();
 
         if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
@@ -101,7 +103,7 @@ public class AuthService {
         if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
-        if (bruker.isEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
+        if (bruker.getEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
             return AuthUtils.fjernKonfidensiellInfo(bruker);
         }
         return bruker;
