@@ -365,6 +365,13 @@ class OpensearchFilterQueryBuilder {
                         )
                     )
 
+                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryArena.should(
+                        QueryBuilders.matchQuery(
+                            "ytelse",
+                            YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER
+                        )
+                    )
+
                     else -> {
                         throw IllegalStateException("ytelseArena har ugyldig verdi")
                     }
