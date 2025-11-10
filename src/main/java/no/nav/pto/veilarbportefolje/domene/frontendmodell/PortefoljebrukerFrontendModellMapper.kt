@@ -26,26 +26,44 @@ object PortefoljebrukerFrontendModellMapper {
         val vurderingsBehov = if (opensearchBruker.trenger_vurdering)
             vurderingsBehov(kvalifiseringsgruppekode, profileringResultat)
         else null
+        val harBehovForArbeidsevneVurdering = vurderingsBehov == VurderingsBehov.ARBEIDSEVNE_VURDERING
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
         val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
             opensearchBruker.kvalifiseringsgruppekode else null
-        val diskresjonskodeFortrolig = if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-            || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-        ) opensearchBruker.diskresjonskode else null
-        val sikkerhetstiltak = if (opensearchBruker.sikkerhetstiltak == null) emptyList() else listOf(opensearchBruker.sikkerhetstiltak)
+        val diskresjonskodeFortrolig =
+            if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+                || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+            ) opensearchBruker.diskresjonskode else null
+
+        val bostedKommuneUkjentEllerUtland = if (harUtenlandskAdresse) {
+            "Utland"
+        } else if (opensearchBruker.harUkjentBosted) {
+            "Ukjent"
+        } else {
+            "-"
+        }
 
 
         var frontendbruker = PortefoljebrukerFrontendModell(
+            etiketter = Etiketter(
+                erDoed = opensearchBruker.er_doed,
+                erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
+                trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
+                nyForVeileder = opensearchBruker.ny_for_veileder,
+                nyForEnhet = ufordelt,
+                harBehovForArbeidsevneVurdering = harBehovForArbeidsevneVurdering,
+                harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
+                diskresjonskodeFortrolig = diskresjonskodeFortrolig,
+                profileringResultat = profileringResultat
+            ),
+
             fnr = opensearchBruker.fnr,
             aktoerid = opensearchBruker.aktoer_id,
             fornavn = opensearchBruker.fornavn,
             etternavn = opensearchBruker.etternavn,
-            erDoed = opensearchBruker.er_doed,
             barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-            sikkerhetstiltak = sikkerhetstiltak, //todo endre til string og ikke liste
-            diskresjonskode = diskresjonskodeFortrolig,
             tolkebehov = Tolkebehov.of(
                 opensearchBruker.talespraaktolk,
                 opensearchBruker.tegnspraaktolk,
@@ -53,11 +71,13 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             foedeland = opensearchBruker.foedelandFulltNavn,
             hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap,
-            bostedKommune = opensearchBruker.kommunenummer,
-            bostedBydel = opensearchBruker.bydelsnummer,
-            bostedSistOppdatert = opensearchBruker.bostedSistOppdatert,
-            harUtelandsAddresse = harUtenlandskAdresse,
-            harUkjentBosted = opensearchBruker.harUkjentBosted,
+
+            geografiskBosted = GeografiskBostedForBruker(
+                bostedKommune = opensearchBruker.kommunenummer,
+                bostedBydel = opensearchBruker.bydelsnummer,
+                bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
+                bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
+            ),
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
@@ -67,14 +87,8 @@ object PortefoljebrukerFrontendModellMapper {
                 opensearchBruker.utkast_14a_ansvarlig_veileder
             ),
             veilederId = opensearchBruker.veileder_id,
-            nyForVeileder = opensearchBruker.ny_for_veileder,
-            nyForEnhet = ufordelt,
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
-            trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
-            vurderingsBehov = vurderingsBehov,
-            profileringResultat = opensearchBruker.profilering_resultat,
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
-            erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
             nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
             aktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.aktivitet_start),
             nesteAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.neste_aktivitet_start),
@@ -116,7 +130,13 @@ object PortefoljebrukerFrontendModellMapper {
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
             tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            utgattVarsel = opensearchBruker.utgatt_varsel,
+            utgattVarsel = if (opensearchBruker.utgatt_varsel != null) {
+                UtgattVarselForHendelse(
+                    beskrivelse = opensearchBruker.utgatt_varsel.beskrivelse,
+                    dato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.utgatt_varsel.dato),
+                    lenke = opensearchBruker.utgatt_varsel.lenke,
+                )
+            } else null,
             innsatsgruppe = innsatsgruppe
 
         ).apply {

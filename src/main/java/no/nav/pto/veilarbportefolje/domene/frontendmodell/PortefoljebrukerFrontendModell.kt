@@ -8,31 +8,29 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
+import no.nav.pto.veilarbportefolje.persononinfo.bosted.GeografiskBosted
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 
 data class PortefoljebrukerFrontendModell(
+    var etiketter: Etiketter,
+
     // personaliaData
     var fnr: String? = null,
     var aktoerid: String? = null,
     var fornavn: String? = null,
     var etternavn: String? = null,
-    var erDoed: Boolean = false,
-    var barnUnder18AarData: List<BarnUnder18AarData>? = null,
-    var sikkerhetstiltak: List<String>? = null, //todo, endre til string og ikke liste
-    var diskresjonskode: String? = null,
-    var tolkebehov: Tolkebehov? = null,
+    var barnUnder18AarData: List<BarnUnder18AarData>? = null, //kolonne
+
+    var tolkebehov: Tolkebehov? = null, // maaange nullsjekker i frontend
 
     var foedeland: String? = null,
-    var hovedStatsborgerskap: Statsborgerskap? = null,
+    var hovedStatsborgerskap: Statsborgerskap? = null, // gyldig til brukes ikke
 
-    var bostedKommune: String? = null,
-    var bostedBydel: String? = null,
-    var bostedSistOppdatert: LocalDate? = null,
-    var harUtelandsAddresse: Boolean = false,
-    var harUkjentBosted: Boolean = false,
+    // Geografisk bosted
+    var geografiskBosted: GeografiskBostedForBruker,
 
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
@@ -40,19 +38,10 @@ data class PortefoljebrukerFrontendModell(
     val oppfolgingStartdato: LocalDate? = null,
     val utkast14a: Utkast14a? = null,
     val veilederId: String? = null,
-    val nyForVeileder: Boolean = false,
-    val nyForEnhet: Boolean = false,
     val tildeltTidspunkt: LocalDate? = null,
-    val trengerOppfolgingsvedtak: Boolean = false,
-    val vurderingsBehov: VurderingsBehov? = null, // todo brukes denne? står kommentar at den kan slettes etter vedtakssotte er på lufta
-    val innsatsgruppe: String? = null,
 
     // Arbeidssokerdata
-    val profileringResultat: Profileringsresultat? = null,
     val utdanningOgSituasjonSistEndret: LocalDate? = null,
-
-    // ArbeidsforholdData
-    val erSykmeldtMedArbeidsgiver: Boolean = false,
 
     // AktiviterData
     val nyesteUtlopteAktivitet: LocalDate? = null,
@@ -60,19 +49,27 @@ data class PortefoljebrukerFrontendModell(
     val nesteAktivitetStart: LocalDate? = null,
     val forrigeAktivitetStart: LocalDate? = null,
 
-    val moteStartTid: LocalDateTime? = null,
-    val alleMoterStartTid: LocalDateTime? = null,
-    val alleMoterSluttTid: LocalDateTime? = null,
+    // filtrert på "møter med nav i dag"
+    val moteStartTid: LocalDateTime? = null, // gjør en sjekk på om dato er i dag, og setter "avtalt med nav" hvis true. Er kun for avtalte møter
+    val alleMoterStartTid: LocalDateTime? = null, // Førstkommende møte. bruker klokkeslett og regner ut varighet med alleMoterSluttTid. Inkluderer både pliktige og upliktige aktiviteter
+    val alleMoterSluttTid: LocalDateTime? = null, // kun for å regne ut varighet på møtet.
 
     var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
     var nesteUtlopsdatoAktivitet: LocalDateTime? = null,
+
+    val nesteSvarfristCvStillingFraNav: LocalDate? = null,
+    val tiltakshendelse: TiltakshendelseForBruker? = null,
+    val utgattVarsel: UtgattVarselForHendelse? = null,
+
+    // siste endringer hendelser
     var sisteEndringKategori: String? = null,
     var sisteEndringTidspunkt: LocalDateTime? = null,
-    var sisteEndringAktivitetId: String? = null,
+    var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
 
     // YtelseData
+    val innsatsgruppe: String? = null, // aap arena, sjekker på gruppe BATT
     val ytelse: YtelseMapping? = null,
-    val utlopsdato: LocalDateTime? = null,
+    val utlopsdato: LocalDateTime? = null, // for aap og tp arena, brukes for uker igjen til utløpsdato
     val dagputlopUke: Int? = null,
     val permutlopUke: Int? = null,
     val aapmaxtidUke: Int? = null,
@@ -86,19 +83,15 @@ data class PortefoljebrukerFrontendModell(
     val venterPaSvarFraNAV: LocalDate? = null,
     val venterPaSvarFraBruker: LocalDate? = null,
 
-    // NavAnasattData
+    // NavAnasattData - skjermet info
     var egenAnsatt: Boolean = false,
     var skjermetTil: LocalDate? = null,
-
-    // CvData
-    val nesteSvarfristCvStillingFraNav: LocalDate? = null,
 
     // AnnetData
     var huskelapp: HuskelappForBruker? = null,
     var fargekategori: String? = null,
     val fargekategoriEnhetId: String? = null,
-    val tiltakshendelse: TiltakshendelseForBruker? = null,
-    val utgattVarsel: Hendelse.HendelseInnhold? = null, // todo lag egen frontendtype her
+
 
 )
 

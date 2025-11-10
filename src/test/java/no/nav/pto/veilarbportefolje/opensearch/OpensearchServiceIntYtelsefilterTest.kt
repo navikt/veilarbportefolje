@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
@@ -483,6 +485,90 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .contains(brukerMedPermitteringFiskeindustri.fnr)
     }
+
+    @Test
+    fun skal_hente_ut_brukere_som_gaar_paa_dagpenger_behandlet_i_arena() {
+        val brukerMedDagpenger = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.ORDINARE_DAGPENGER.name)
+
+        val brukerMedDagpengerPerm = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name)
+
+        val brukerMedDagpengerFiske = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
+
+        val brukerMedDagpengerOvrig = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.DAGPENGER_OVRIGE.name)
+
+        val brukerUtenDagpenger = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse("TILTAKSPENGER")
+
+
+        val liste = listOf(
+            brukerMedDagpenger,
+            brukerUtenDagpenger,
+            brukerMedDagpengerPerm,
+            brukerMedDagpengerFiske,
+            brukerMedDagpengerOvrig
+        )
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filterValg = Filtervalg()
+            .setFerdigfilterListe(emptyList())
+            .setYtelseDagpengerArena(
+                listOf(
+                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING,
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
+                    YtelseDagpengerArena.HAR_DAGPENGER_OVRIGE
+                )
+            )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.of(TEST_VEILEDER_0),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filterValg,
+            null,
+            null
+        )
+
+        Assertions.assertThat(response.antall).isEqualTo(4)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpenger.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerPerm.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerFiske.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerOvrig.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenDagpenger.fnr)
+    }
+
 
     @Test
     fun test_sortering_AAP() {
