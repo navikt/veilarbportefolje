@@ -330,6 +330,7 @@ class AapServiceTest(
 
         pdlIdentRepository.upsertIdenter(identerBrukerMedNyIdent)
         populateOpensearch(navKontor, veilederId, aktorId.get())
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
         //indeksering skal fortsatt være på aktørid
         val filtervalg = Filtervalg()
