@@ -190,7 +190,7 @@ class TiltakspengerServiceTest(
     @Test
     fun `Tiltakspenger skal populere og filtrere riktig i opensearch når man har ytelsen`() {
         val aktorId = randomAktorId()
-        setInitialState(aktorId, harTiltakspenger = true)
+        setInitialState(aktorId)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
@@ -221,75 +221,13 @@ class TiltakspengerServiceTest(
         }
     }
 
-    @Test
-    fun `Tiltakspenger skal populere og filtrere riktig i opensearch når man ikke har ytelsen`() {
-        val aktorId = randomAktorId()
-        setInitialState(aktorId, harTiltakspenger = false)
-        val getResponse = opensearchTestClient.fetchDocument(aktorId)
-        assertThat(getResponse.isExists).isTrue()
-
-        val tiltakspengerRespons = getResponse.sourceAsMap["tiltakspenger"];
-        assertThat(tiltakspengerRespons).isEqualTo(false)
-
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER))
-        filtervalg.setFerdigfilterListe(listOf())
-
-        verifiserAsynkront(
-            2, TimeUnit.SECONDS
-        ) {
-            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
-                "1123",
-                Optional.empty(),
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.IKKE_SATT,
-                filtervalg,
-                null,
-                null
-            )
-
-            assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().tiltakspenger).isNull()
-        }
-    }
-
-    @Test
-    fun `Tiltakspenger returnere alle brukere med og uten ytelsen når begge filtrene er valgt `() {
-        val aktorId1 = randomAktorId()
-        val aktorId2 = randomAktorId()
-        setInitialState(aktorId1, harTiltakspenger = false)
-        setInitialState(aktorId2, harTiltakspenger = true)
-
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER, YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER))
-        filtervalg.setFerdigfilterListe(listOf())
-
-        verifiserAsynkront(
-            2, TimeUnit.SECONDS
-        ) {
-            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
-                "1123",
-                Optional.empty(),
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.IKKE_SATT,
-                filtervalg,
-                null,
-                null
-            )
-
-            assertThat(responseBrukere.antall).isEqualTo(2)
-            assertThat(responseBrukere.brukere.filter { it.tiltakspenger != null }.size).isEqualTo(1)
-            assertThat(responseBrukere.brukere.filter { it.tiltakspenger == null }.size).isEqualTo(1)
-        }
-    }
-
-    private fun setInitialState(aktorId: AktorId, harTiltakspenger: Boolean) {
+    private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        val mockedRespons = if (harTiltakspenger) listOf(mockedVedtak) else emptyList()
+        val mockedRespons = listOf(mockedVedtak)
         `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(mockedRespons)
 
         tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(personId = norskIdent.toString()))

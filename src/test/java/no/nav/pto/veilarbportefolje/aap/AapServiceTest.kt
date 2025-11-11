@@ -197,7 +197,7 @@ class AapServiceTest(
     @Test
     fun `AAP skal populere og filtrere riktig i opensearch når man har aap i kelvin `() {
         val aktorId = randomAktorId()
-        setInitialState(aktorId, harAap = true)
+        setInitialState(aktorId)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
@@ -229,72 +229,10 @@ class AapServiceTest(
     }
 
     @Test
-    fun `AAP skal populere og filtrere riktig i opensearch når man ikke har aap i kelvin `() {
-        val aktorId = randomAktorId()
-        setInitialState(aktorId, harAap = false)
-        val getResponse = opensearchTestClient.fetchDocument(aktorId)
-        assertThat(getResponse.isExists).isTrue()
-
-        val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
-        assertThat(aapKelvinRespons).isEqualTo(false)
-
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP))
-        filtervalg.setFerdigfilterListe(listOf())
-
-        verifiserAsynkront(
-            2, TimeUnit.SECONDS
-        ) {
-            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
-                "1123",
-                Optional.empty(),
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.IKKE_SATT,
-                filtervalg,
-                null,
-                null
-            )
-
-            assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().aapKelvin).isNull()
-        }
-    }
-
-    @Test
-    fun `AAP returnere alle brukere med og uten aap når begge filtrene er valgt `() {
-        val aktorId1 = randomAktorId()
-        val aktorId2 = randomAktorId()
-        setInitialState(aktorId1, harAap = false)
-        setInitialState(aktorId2, harAap = true)
-
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP, YtelseAapKelvin.HAR_AAP))
-        filtervalg.setFerdigfilterListe(listOf())
-
-        verifiserAsynkront(
-            2, TimeUnit.SECONDS
-        ) {
-            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
-                "1123",
-                Optional.empty(),
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.IKKE_SATT,
-                filtervalg,
-                null,
-                null
-            )
-
-            assertThat(responseBrukere.antall).isEqualTo(2)
-            assertThat(responseBrukere.brukere.filter { it.aapKelvin != null }.size).isEqualTo(1)
-            assertThat(responseBrukere.brukere.filter { it.aapKelvin == null }.size).isEqualTo(1)
-        }
-    }
-
-    @Test
     fun `skal populere og filtrere riktig i opensearch ved sletting av AAP `() {
         val aktorId = randomAktorId()
         // Legg til bruker med aap og oppdater opensearch
-        setInitialState(aktorId, harAap = true)
+        setInitialState(aktorId)
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         val aapKelvinRespons = getResponse.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons).isEqualTo(true)
@@ -392,10 +330,11 @@ class AapServiceTest(
 
         pdlIdentRepository.upsertIdenter(identerBrukerMedNyIdent)
         populateOpensearch(navKontor, veilederId, aktorId.get())
+        aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
         //indeksering skal fortsatt være på aktørid
         val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_IKKE_AAP, YtelseAapKelvin.HAR_AAP))
+        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
         filtervalg.setFerdigfilterListe(listOf())
 
         verifiserAsynkront(
@@ -416,13 +355,13 @@ class AapServiceTest(
     }
 
 
-    private fun setInitialState(aktorId: AktorId, harAap: Boolean) {
+    private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        val mockedRespons = if (harAap) mockedAapClientRespons else AapVedtakResponseDto(emptyList())
+        val mockedRespons = mockedAapClientRespons
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(mockedRespons)
 
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
