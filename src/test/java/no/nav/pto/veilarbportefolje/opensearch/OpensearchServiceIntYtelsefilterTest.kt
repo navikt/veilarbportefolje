@@ -720,7 +720,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP))
+            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -744,13 +744,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
 
-        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(nullBruker.fnr)
-        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
 
@@ -801,8 +799,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setFerdigfilterListe(emptyList())
             .setYtelseTiltakspenger(
                 listOf(
-                    YtelseTiltakspenger.HAR_TILTAKSPENGER,
-                    YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER
+                    YtelseTiltakspenger.HAR_TILTAKSPENGER
                 )
             )
 
@@ -828,13 +825,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
 
-        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(nullBruker.fnr)
-        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
     @Test
@@ -878,7 +873,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP))
+            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -902,15 +897,12 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(bistandsbehovBruker.fnr)
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(studentBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
-
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(sykepengeerstatningBruker.fnr)
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(bistandsbehovBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(nullBruker.fnr)
     }
 
     @Test
@@ -946,12 +938,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspenger(
-                listOf(
-                    YtelseTiltakspenger.HAR_TILTAKSPENGER,
-                    YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER
-                )
-            )
+            .setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -975,13 +962,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(2)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(bruker1.fnr)
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(bruker2.fnr)
-        Assertions.assertThat(brukereStigende[2].fnr).isEqualTo(nullBruker.fnr)
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(bruker2.fnr)
-        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(nullBruker.fnr)
     }
 
 

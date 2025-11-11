@@ -265,7 +265,6 @@ class OpensearchFilterQueryBuilder {
             filtervalg.ytelseAapKelvin.forEach(Consumer { ytelseKelvin: YtelseAapKelvin? ->
                 when (ytelseKelvin) {
                     YtelseAapKelvin.HAR_AAP -> subQueryKelvin.should(QueryBuilders.termQuery("aap_kelvin", true))
-                    YtelseAapKelvin.HAR_IKKE_AAP -> subQueryKelvin.should(QueryBuilders.termQuery("aap_kelvin", false))
                     else -> {
                         throw IllegalStateException("ytelseKelvin har ugyldig verdi")
                     }
@@ -294,13 +293,6 @@ class OpensearchFilterQueryBuilder {
                         QueryBuilders.termQuery(
                             "tiltakspenger",
                             true
-                        )
-                    )
-
-                    YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER -> subQueryTiltakspenger.should(
-                        QueryBuilders.termQuery(
-                            "tiltakspenger",
-                            false
                         )
                     )
 
