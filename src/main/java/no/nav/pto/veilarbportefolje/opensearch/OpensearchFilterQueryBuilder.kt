@@ -358,13 +358,6 @@ class OpensearchFilterQueryBuilder {
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_OVRIGE -> subQueryArena.should(
-                        QueryBuilders.matchQuery(
-                            "ytelse",
-                            YtelseMapping.DAGPENGER_OVRIGE
-                        )
-                    )
-
                     YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryArena.should(
                         QueryBuilders.matchQuery(
                             "ytelse",

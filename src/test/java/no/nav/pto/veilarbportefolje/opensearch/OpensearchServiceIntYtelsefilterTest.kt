@@ -512,13 +512,13 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
 
-        val brukerMedDagpengerOvrig = PortefoljebrukerOpensearchModell()
+        val brukerMedDagpengerLønn = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse(YtelseMapping.DAGPENGER_OVRIGE.name)
+            .setYtelse(YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER.name)
 
         val brukerUtenDagpenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
@@ -534,7 +534,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             brukerUtenDagpenger,
             brukerMedDagpengerPerm,
             brukerMedDagpengerFiske,
-            brukerMedDagpengerOvrig
+            brukerMedDagpengerLønn
         )
         skrivBrukereTilTestindeks(liste)
 
@@ -547,7 +547,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                     YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
                     YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING,
                     YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
-                    YtelseDagpengerArena.HAR_DAGPENGER_OVRIGE
+                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER
                 )
             )
 
@@ -565,7 +565,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpenger.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerPerm.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerFiske.fnr)
-        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerOvrig.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerLønn.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenDagpenger.fnr)
     }
 
