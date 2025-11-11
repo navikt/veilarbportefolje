@@ -261,8 +261,7 @@ class ArbeidssoekerService(
     fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
         if (maybeFnr.isEmpty) {
             secureLog.warn(
-                "Kunne ikke slette oppfolgingsbruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
-                aktorId.get()
+                "Kunne ikke slette oppfolgingsbruker med Aktør-ID ${aktorId.get()}. Årsak fødselsnummer-parameter var tom."
             )
             return
         }
