@@ -19,7 +19,6 @@ import static java.lang.Integer.parseInt;
 @Accessors(chain = true)
 public class Filtervalg {
     public List<Brukerstatus> ferdigfilterListe;
-    public YtelseFilterArena ytelse;
     public List<String> alder = new ArrayList<>();
     public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
@@ -65,7 +64,6 @@ public class Filtervalg {
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
-                harYtelsefilterArena() ||
                 !alder.isEmpty() ||
                 harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
@@ -129,10 +127,6 @@ public class Filtervalg {
 
     public boolean harFerdigFilter() {
         return ferdigfilterListe != null && !ferdigfilterListe.isEmpty();
-    }
-
-    public boolean harYtelsefilterArena() {
-        return ytelse != null;
     }
 
     public boolean harYtelseAapKelvinFilter() {

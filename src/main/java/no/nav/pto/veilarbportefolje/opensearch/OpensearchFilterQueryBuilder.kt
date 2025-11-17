@@ -219,22 +219,6 @@ class OpensearchFilterQueryBuilder {
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe")
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal")
 
-        if (filtervalg.harYtelsefilterArena()) {
-            val subQuery = QueryBuilders.boolQuery()
-            filtervalg.ytelse.underytelser.forEach(
-                Consumer { ytelse: YtelseMapping ->
-                    queryBuilder.must(
-                        subQuery.should(
-                            QueryBuilders.matchQuery(
-                                "ytelse",
-                                ytelse.name
-                            )
-                        )
-                    )
-                }
-            )
-        }
-
         if (filtervalg.harYtelseAapArenaFilter() || filtervalg.harYtelseAapKelvinFilter()) {
             val subQueryKelvin = QueryBuilders.boolQuery()
             val subQueryArena = QueryBuilders.boolQuery()
