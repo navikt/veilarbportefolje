@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 
 @Slf4j
 public enum Innsatsgruppe {

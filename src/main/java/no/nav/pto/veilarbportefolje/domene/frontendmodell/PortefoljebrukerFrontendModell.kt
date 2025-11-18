@@ -91,8 +91,6 @@ data class PortefoljebrukerFrontendModell(
     var huskelapp: HuskelappForBruker? = null,
     var fargekategori: String? = null,
     val fargekategoriEnhetId: String? = null,
-
-
 )
 
 
