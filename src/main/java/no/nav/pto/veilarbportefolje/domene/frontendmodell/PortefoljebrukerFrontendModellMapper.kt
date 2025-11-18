@@ -137,6 +137,7 @@ object PortefoljebrukerFrontendModellMapper {
                     lenke = opensearchBruker.utgatt_varsel.lenke,
                 )
             } else null,
+            hendelser = opensearchBruker.hendelser,
             innsatsgruppe = innsatsgruppe
 
         ).apply {
