@@ -206,8 +206,6 @@ class OpensearchFilterQueryBuilder {
             filtervalg.fodselsdagIMnd.stream().map { s: String -> s.toInt() }.collect(Collectors.toList())
 
         byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd")
-        byggManuellFilter(filtervalg.innsatsgruppe, queryBuilder, "kvalifiseringsgruppekode")
-        byggManuellFilter(filtervalg.hovedmal, queryBuilder, "hovedmaalkode")
         byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode")
         byggManuellFilter(filtervalg.servicegruppe, queryBuilder, "kvalifiseringsgruppekode")
         byggManuellFilter(filtervalg.veiledere, queryBuilder, "veileder_id")

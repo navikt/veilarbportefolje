@@ -37,7 +37,6 @@ public class PortefoljebrukerOpensearchModell {
     public String iserv_fra_dato;
     public String kvalifiseringsgruppekode;
     public String rettighetsgruppekode;
-    public String hovedmaalkode;
     public String sikkerhetstiltak;
     public String sikkerhetstiltak_gyldig_fra;
     public String sikkerhetstiltak_gyldig_til;

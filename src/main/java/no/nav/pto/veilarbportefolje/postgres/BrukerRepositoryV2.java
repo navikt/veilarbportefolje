@@ -316,7 +316,6 @@ public class BrukerRepositoryV2 {
                 .setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR))
                 .setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)))
                 .setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE))
-                .setHovedmaalkode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE))
                 .setFormidlingsgruppekode(formidlingsgruppekode)
                 .setKvalifiseringsgruppekode(kvalifiseringsgruppekode)
                 .setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode))

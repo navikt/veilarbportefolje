@@ -22,8 +22,6 @@ public class Filtervalg {
     public List<String> alder = new ArrayList<>();
     public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
-    public List<ArenaInnsatsgruppe> innsatsgruppe = new ArrayList<>();
-    public List<ArenaHovedmal> hovedmal = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
@@ -67,14 +65,12 @@ public class Filtervalg {
                 !alder.isEmpty() ||
                 harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
-                !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
                 !servicegruppe.isEmpty() ||
                 !rettighetsgruppe.isEmpty() ||
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
-                !hovedmal.isEmpty() ||
                 !registreringstype.isEmpty() ||
                 !utdanning.isEmpty() ||
                 !utdanningBestatt.isEmpty() ||
