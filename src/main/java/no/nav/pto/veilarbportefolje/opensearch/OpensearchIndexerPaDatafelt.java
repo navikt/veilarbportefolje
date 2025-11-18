@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO;
@@ -35,7 +36,8 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.mapTilUtdanning;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static org.opensearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -330,28 +332,32 @@ public class OpensearchIndexerPaDatafelt {
     }
 
     @SneakyThrows
-    public void oppdaterUtgattVarsel(Hendelse hendelse, AktorId aktorId) {
+    public void oppdaterHendelse(Hendelse hendelse, AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .startObject("utgatt_varsel")
+                .startObject("hendelser")
+                .startObject(hendelse.getKategori().name())
                 .field("beskrivelse", hendelse.getHendelse().getBeskrivelse())
                 .field("dato", hendelse.getHendelse().getDato())
                 .field("lenke", hendelse.getHendelse().getLenke().toString())
                 .field("detaljer", hendelse.getHendelse().getDetaljer())
                 .endObject()
+                .endObject()
                 .endObject();
 
-        update(aktorId, content, format("Oppdaterte utgått varsel for aktorId: %s", aktorId.get()));
+        update(aktorId, content, format("Oppdaterte hendelse med kategori %s for aktorId: %s", hendelse.getKategori().name(), aktorId.get()));
     }
 
     @SneakyThrows
-    public void slettUtgattVarsel(AktorId aktorId) {
+    public void slettHendelse(Kategori kategori, AktorId aktorId) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
-                .nullField("utgatt_varsel")
+                .startObject("hendelser")
+                .nullField(kategori.name())
+                .endObject()
                 .endObject();
 
-        update(aktorId, content, format("Slettet utgått varsel for aktorId: %s", aktorId.get()));
+        update(aktorId, content, format("Slettet hendelse med kategori %s for aktorId: %s", kategori.name(), aktorId.get()));
     }
 
 
