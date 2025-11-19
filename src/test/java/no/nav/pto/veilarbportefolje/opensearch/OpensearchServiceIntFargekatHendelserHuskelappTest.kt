@@ -648,7 +648,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker1)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1))
 
         val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -657,7 +657,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker2)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
 
         val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -666,7 +666,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker3)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
@@ -714,7 +714,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker1)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1))
 
         val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -723,7 +723,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker2)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
 
         val bruker3 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -732,7 +732,8 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker3)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
+
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
