@@ -871,6 +871,7 @@ class OpensearchFilterQueryBuilder {
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "hendelser.UTGATT_VARSEL"),
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key, "hendelser.UDELT_SAMTALEREFERAT")
         )
 
         return SearchSourceBuilder()
