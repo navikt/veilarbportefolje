@@ -896,7 +896,7 @@ class OpensearchFilterQueryBuilder {
         val orQuery = QueryBuilders.boolQuery()
         relvanteKategorier!!.forEach(Consumer { kategori: String ->
             orQuery.should(
-                QueryBuilders.matchQuery("siste_endringer.$kategori.er_sett", "N")
+                QueryBuilders.matchQuery("siste_endringer.$kategori.erSett", "N")
             )
         })
         queryBuilder.must(orQuery)

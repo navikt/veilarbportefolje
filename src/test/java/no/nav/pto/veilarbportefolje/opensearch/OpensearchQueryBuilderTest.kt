@@ -159,7 +159,7 @@ class OpensearchQueryBuilderTest {
         method.invoke(filterQueryBuilder, categories, boolQuery)
 
         val queryString = boolQuery.toString()
-        assertThat(queryString).contains("siste_endringer.AKTIVITET.er_sett")
+        assertThat(queryString).contains("siste_endringer.AKTIVITET.erSett")
     }
 
     companion object {
