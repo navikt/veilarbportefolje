@@ -134,7 +134,7 @@ public class OpensearchIndexerPaDatafelt {
                 .startObject(kategori)
                 .field("tidspunkt", tidspunkt)
                 .field("aktivtetId", dto.getAktivtetId())
-                .field("er_sett", "N")
+                .field("erSett", "N")
                 .endObject()
                 .endObject()
                 .endObject();
@@ -148,7 +148,7 @@ public class OpensearchIndexerPaDatafelt {
                 .startObject()
                 .startObject("siste_endringer")
                 .startObject(kategori.name())
-                .field("er_sett", "J")
+                .field("erSett", "J")
                 .endObject()
                 .endObject()
                 .endObject();
