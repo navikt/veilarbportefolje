@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
@@ -127,96 +129,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedAAPUnntak.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedAAPOrdinar.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenAAP.fnr)
-    }
-
-    @Test
-    fun antall_brukere_med_arbeidsavklaringspenger_skal_vere_like_for_ytelsesfilter_og_aapArenafilter() {
-        val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_UNNTAK")
-
-        val brukerMedAAPOrdinar = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_MAXTID")
-
-        val brukerMedAAPUnntak2 = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("AAP_UNNTAK")
-
-        val brukerUtenAap = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("TILTAKSPENGER")
-
-
-        val liste = listOf(brukerMedAAPOrdinar, brukerMedAAPUnntak, brukerMedAAPUnntak2, brukerUtenAap)
-        skrivBrukereTilTestindeks(liste)
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValgAapArenaFilter = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseAapArena(listOf(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK))
-
-        val filterValgYtelseFilter = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelse(YtelseFilterArena.AAP)
-
-        val responseAapArenaFilter = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            filterValgAapArenaFilter,
-            null,
-            null
-        )
-
-        val responseYtelseFilter = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            filterValgYtelseFilter,
-            null,
-            null
-        )
-        Assertions.assertThat(responseAapArenaFilter.antall).isEqualTo(3)
-        Assertions.assertThat(responseYtelseFilter.antall).isEqualTo(3)
-        Assertions.assertThat(responseAapArenaFilter.brukere).extracting<String> { it.fnr }
-            .containsExactlyInAnyOrder(
-                brukerMedAAPUnntak.fnr,
-                brukerMedAAPUnntak2.fnr,
-                brukerMedAAPOrdinar.fnr
-            )
-        Assertions.assertThat(responseYtelseFilter.brukere).extracting<String> { it.fnr }
-            .containsExactlyInAnyOrder(
-                brukerMedAAPUnntak.fnr,
-                brukerMedAAPUnntak2.fnr,
-                brukerMedAAPOrdinar.fnr
-            )
-        Assertions.assertThat(responseAapArenaFilter.brukere).extracting<String> { it.fnr }
-            .doesNotContain(
-                brukerUtenAap.fnr
-            )
-        Assertions.assertThat(responseYtelseFilter.brukere).extracting<String> { it.fnr }
-            .doesNotContain(
-                brukerUtenAap.fnr
-            )
     }
 
     @Test
@@ -352,8 +264,40 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     }
 
     @Test
-    fun antall_brukere_med_tiltakspenger_skal_vere_like_for_ytelsesfilter_og_tiltakspengerArenafilter() {
-        val brukerMedTiltakspenger = PortefoljebrukerOpensearchModell()
+    fun skal_hente_ut_brukere_som_gaar_paa_dagpenger_behandlet_i_arena() {
+        val brukerMedDagpenger = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.ORDINARE_DAGPENGER.name)
+
+        val brukerMedDagpengerPerm = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name)
+
+        val brukerMedDagpengerFiske = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
+
+        val brukerMedDagpengerLønn = PortefoljebrukerOpensearchModell()
+            .setAktoer_id(randomAktorId().get())
+            .setFnr(randomFnr().toString())
+            .setOppfolging(true)
+            .setEnhet_id(TEST_ENHET)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setYtelse(YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER.name)
+
+        val brukerUtenDagpenger = PortefoljebrukerOpensearchModell()
             .setAktoer_id(randomAktorId().get())
             .setFnr(randomFnr().toString())
             .setOppfolging(true)
@@ -361,103 +305,13 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setYtelse("TILTAKSPENGER")
 
-        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setYtelse("DAGPENGER")
-
-
-        val liste = listOf(brukerMedTiltakspenger, brukerUtenTiltakspenger)
-        skrivBrukereTilTestindeks(liste)
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValgTpArenaFilter = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspengerArena(listOf(YtelseTiltakspengerArena.HAR_TILTAKSPENGER))
-
-        val filterValgYtelseFilter = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelse(YtelseFilterArena.TILTAKSPENGER)
-
-        val responseTpArenaFilter = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            filterValgTpArenaFilter,
-            null,
-            null
-        )
-
-        val responseYtelseFilter = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            filterValgYtelseFilter,
-            null,
-            null
-        )
-        Assertions.assertThat(responseTpArenaFilter.antall).isEqualTo(1)
-        Assertions.assertThat(responseYtelseFilter.antall).isEqualTo(1)
-        Assertions.assertThat(responseTpArenaFilter.brukere).extracting<String> { it.fnr }
-            .contains(brukerMedTiltakspenger.fnr)
-        Assertions.assertThat(responseYtelseFilter.brukere).extracting<String> { it.fnr }
-            .contains(brukerMedTiltakspenger.fnr)
-        Assertions.assertThat(responseTpArenaFilter.brukere).extracting<String> { it.fnr }
-            .doesNotContain(brukerUtenTiltakspenger.fnr)
-        Assertions.assertThat(responseYtelseFilter.brukere).extracting<String> { it.fnr }
-            .doesNotContain(brukerUtenTiltakspenger.fnr)
-    }
-
-
-    @Test
-    fun skal_hente_ut_brukere_filtrert_paa_dagpenger_som_ytelse() {
-        val brukerMedDagpengerMedPermittering = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING.name)
-
-
-        val brukerMedPermitteringFiskeindustri = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
-
-        val brukerMedAAP = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setRettighetsgruppekode(Rettighetsgruppe.DAGP.name)
-            .setYtelse(YtelseMapping.AAP_MAXTID.name)
-
-        val brukerMedAnnenVeileder = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(LITE_PRIVILEGERT_VEILEDER)
-            .setRettighetsgruppekode(Rettighetsgruppe.AAP.name)
-            .setYtelse(YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name)
 
         val liste = listOf(
-            brukerMedDagpengerMedPermittering,
-            brukerMedPermitteringFiskeindustri,
-            brukerMedAAP,
-            brukerMedAnnenVeileder
+            brukerMedDagpenger,
+            brukerUtenDagpenger,
+            brukerMedDagpengerPerm,
+            brukerMedDagpengerFiske,
+            brukerMedDagpengerLønn
         )
         skrivBrukereTilTestindeks(liste)
 
@@ -465,7 +319,14 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filterValg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelse(YtelseFilterArena.DAGPENGER)
+            .setYtelseDagpengerArena(
+                listOf(
+                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING,
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
+                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER
+                )
+            )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -477,12 +338,14 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(2)
-        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
-            .contains(brukerMedDagpengerMedPermittering.fnr)
-        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
-            .contains(brukerMedPermitteringFiskeindustri.fnr)
+        Assertions.assertThat(response.antall).isEqualTo(4)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpenger.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerPerm.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerFiske.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerLønn.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenDagpenger.fnr)
     }
+
 
     @Test
     fun test_sortering_AAP() {
@@ -634,7 +497,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP))
+            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -658,13 +521,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
 
-        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(nullBruker.fnr)
-        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
 
@@ -715,8 +576,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setFerdigfilterListe(emptyList())
             .setYtelseTiltakspenger(
                 listOf(
-                    YtelseTiltakspenger.HAR_TILTAKSPENGER,
-                    YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER
+                    YtelseTiltakspenger.HAR_TILTAKSPENGER
                 )
             )
 
@@ -742,13 +602,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
 
-        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(nullBruker.fnr)
-        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
     @Test
@@ -792,7 +650,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP, YtelseAapKelvin.HAR_IKKE_AAP))
+            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -816,15 +674,12 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(bistandsbehovBruker.fnr)
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(studentBruker.fnr)
-        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(nullBruker.fnr)
-
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(sykepengeerstatningBruker.fnr)
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(bistandsbehovBruker.fnr)
-        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(nullBruker.fnr)
     }
 
     @Test
@@ -860,12 +715,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = Filtervalg()
             .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspenger(
-                listOf(
-                    YtelseTiltakspenger.HAR_TILTAKSPENGER,
-                    YtelseTiltakspenger.HAR_IKKE_TILTAKSPENGER
-                )
-            )
+            .setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -889,13 +739,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(2)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(bruker1.fnr)
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(bruker2.fnr)
-        Assertions.assertThat(brukereStigende[2].fnr).isEqualTo(nullBruker.fnr)
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(bruker2.fnr)
-        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(nullBruker.fnr)
     }
 
 

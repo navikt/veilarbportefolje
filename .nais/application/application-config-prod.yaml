@@ -18,6 +18,9 @@ spec:
   webproxy: true
   leaderElection: true
   observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
     logging:
       destinations:
         - id: elastic
@@ -99,6 +102,8 @@ spec:
           namespace: aap
         - application: tiltakspenger-datadeling
           namespace: tpts
+        - application: logging
+          namespace: nais-system
       external:
         - host: team-obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io

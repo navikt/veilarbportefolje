@@ -153,7 +153,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             .filter { b: PortefoljebrukerFrontendModell -> TEST_VEILEDER_1 == b.veilederId }
             .toList().first()
 
-        Assertions.assertThat(ufordeltBruker.nyForEnhet).isTrue()
+        Assertions.assertThat(ufordeltBruker.etiketter.nyForEnhet).isTrue()
     }
 
     @Test
@@ -1179,7 +1179,6 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         Assertions.assertThat(respons.antall).isEqualTo(1)
         Assertions.assertThat(utgattVarsel).isNotNull()
         Assertions.assertThat(utgattVarsel?.beskrivelse).isEqualTo(oppfolgingsBruker.utgatt_varsel.beskrivelse)
-        Assertions.assertThat(utgattVarsel?.detaljer).isEqualTo(oppfolgingsBruker.utgatt_varsel.detaljer)
         Assertions.assertThat(utgattVarsel?.lenke).isEqualTo(oppfolgingsBruker.utgatt_varsel.lenke)
     }
 

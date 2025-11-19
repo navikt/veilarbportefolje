@@ -658,7 +658,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.bostedKommune == "10" })
+            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune == "10" })
 
 
         filterValg = Filtervalg()
@@ -676,7 +676,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.bostedBydel == "1233" })
+            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel == "1233" })
 
 
         filterValg = Filtervalg()
@@ -694,11 +694,11 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
         Assertions.assertThat(response.antall).isEqualTo(3)
         Assertions.assertThat(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.bostedKommune.equals("10", ignoreCase = true) }.count()
+            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune.equals("10", ignoreCase = true) }.count()
         )
             .isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.bostedBydel.equals("1233", ignoreCase = true) })
+            response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel.equals("1233", ignoreCase = true) })
     }
 
     @Test
@@ -771,11 +771,11 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
 
         Assertions.assertThat(response.antall).isEqualTo(5)
-        org.junit.jupiter.api.Assertions.assertEquals("10", response.brukere[0].bostedKommune)
-        org.junit.jupiter.api.Assertions.assertEquals("10", response.brukere[1].bostedKommune)
-        org.junit.jupiter.api.Assertions.assertEquals("12", response.brukere[2].bostedKommune)
-        org.junit.jupiter.api.Assertions.assertEquals("12", response.brukere[3].bostedKommune)
-        org.junit.jupiter.api.Assertions.assertNull(response.brukere[4].bostedKommune)
+        org.junit.jupiter.api.Assertions.assertEquals("10", response.brukere[0].geografiskBosted.bostedKommune)
+        org.junit.jupiter.api.Assertions.assertEquals("10", response.brukere[1].geografiskBosted.bostedKommune)
+        org.junit.jupiter.api.Assertions.assertEquals("12", response.brukere[2].geografiskBosted.bostedKommune)
+        org.junit.jupiter.api.Assertions.assertEquals("12", response.brukere[3].geografiskBosted.bostedKommune)
+        org.junit.jupiter.api.Assertions.assertNull(response.brukere[4].geografiskBosted.bostedKommune)
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -788,11 +788,11 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         )
 
         Assertions.assertThat(response.antall).isEqualTo(5)
-        org.junit.jupiter.api.Assertions.assertEquals("1234", response.brukere[0].bostedBydel)
-        org.junit.jupiter.api.Assertions.assertEquals("1233", response.brukere[1].bostedBydel)
-        org.junit.jupiter.api.Assertions.assertEquals("1010", response.brukere[2].bostedBydel)
-        org.junit.jupiter.api.Assertions.assertNull(response.brukere[3].bostedBydel)
-        org.junit.jupiter.api.Assertions.assertNull(response.brukere[4].bostedBydel)
+        org.junit.jupiter.api.Assertions.assertEquals("1234", response.brukere[0].geografiskBosted.bostedBydel)
+        org.junit.jupiter.api.Assertions.assertEquals("1233", response.brukere[1].geografiskBosted.bostedBydel)
+        org.junit.jupiter.api.Assertions.assertEquals("1010", response.brukere[2].geografiskBosted.bostedBydel)
+        org.junit.jupiter.api.Assertions.assertNull(response.brukere[3].geografiskBosted.bostedBydel)
+        org.junit.jupiter.api.Assertions.assertNull(response.brukere[4].geografiskBosted.bostedBydel)
     }
 
     private fun genererRandomBruker(

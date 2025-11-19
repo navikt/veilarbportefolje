@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
 class TiltakshendelseRepository(private val db: JdbcTemplate) {
@@ -60,8 +60,8 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
                 tiltakshendelse.avsender.name
             )
         } catch (e: Exception) {
-            secureLog.error(e.message, e)
-            throw RuntimeException("Kunne ikke lagre tiltakshendelse for hendelsesid: " + tiltakshendelse.id)
+            secureLog.error("Kunne ikke lagre tiltakshendelse for hendelsesid: ${tiltakshendelse.id}", e)
+            throw RuntimeException("Kunne ikke lagre tiltakshendelse for hendelsesid: ${tiltakshendelse.id}")
         }
     }
 
@@ -74,7 +74,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         } catch (e: KunneIkkeHenteEldsteTiltakhendelseException) {
             throw e
         } catch (e: Exception) {
-            secureLog.error(e.message, e)
+            secureLog.error("Kunne ikke slette tiltakshendelse med id: $tiltakshendelseId", e)
             throw RuntimeException("Kunne ikke slette tiltakshendelse med id: $tiltakshendelseId")
         }
     }
@@ -87,7 +87,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
                 .map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
                 .toList()
         } catch (e: Exception) {
-            secureLog.error(e.message, e)
+            secureLog.error("Kunne ikke hente alle tiltakshendelser.", e)
             throw RuntimeException("Kunne ikke hente alle tiltakshendelser.")
         }
     }
@@ -109,7 +109,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         } catch (e: EmptyResultDataAccessException) {
             null
         } catch (e: Error) {
-            secureLog.error(e.message, e)
+            secureLog.error("Kunne ikke hente eldste tiltakshendelse for bruker.", e)
             throw KunneIkkeHenteEldsteTiltakhendelseException("Kunne ikke hente eldste tiltakshendelse for bruker.")
         }
     }

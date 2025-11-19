@@ -19,12 +19,9 @@ import static java.lang.Integer.parseInt;
 @Accessors(chain = true)
 public class Filtervalg {
     public List<Brukerstatus> ferdigfilterListe;
-    public YtelseFilterArena ytelse;
     public List<String> alder = new ArrayList<>();
     public Kjonn kjonn;
     public List<String> fodselsdagIMnd = new ArrayList<>();
-    public List<ArenaInnsatsgruppe> innsatsgruppe = new ArrayList<>();
-    public List<ArenaHovedmal> hovedmal = new ArrayList<>();
     public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
     public List<Servicegruppe> servicegruppe = new ArrayList<>();
     public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
@@ -60,22 +57,20 @@ public class Filtervalg {
     public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
     public List<YtelseTiltakspenger> ytelseTiltakspenger = new ArrayList<>();
     public List<YtelseTiltakspengerArena> ytelseTiltakspengerArena = new ArrayList<>();
+    public List<YtelseDagpengerArena> ytelseDagpengerArena = new ArrayList<>();
 
 
     public boolean harAktiveFilter() {
         return harFerdigFilter() ||
-                harYtelsefilterArena() ||
                 !alder.isEmpty() ||
                 harKjonnfilter() ||
                 !fodselsdagIMnd.isEmpty() ||
-                !innsatsgruppe.isEmpty() ||
                 !formidlingsgruppe.isEmpty() ||
                 !servicegruppe.isEmpty() ||
                 !rettighetsgruppe.isEmpty() ||
                 !veiledere.isEmpty() ||
                 !aktiviteter.isEmpty() ||
                 !tiltakstyper.isEmpty() ||
-                !hovedmal.isEmpty() ||
                 !registreringstype.isEmpty() ||
                 !utdanning.isEmpty() ||
                 !utdanningBestatt.isEmpty() ||
@@ -102,7 +97,8 @@ public class Filtervalg {
                 harYtelseAapArenaFilter() ||
                 harYtelseAapKelvinFilter() ||
                 harYtelseTiltakspengerFilter() ||
-                harYtelseTiltakspengerArenaFilter();
+                harYtelseTiltakspengerArenaFilter() ||
+                harYtelseDagpengerArenaFilter();
     }
 
     public boolean harGjeldendeVedtak14aFilter() {
@@ -129,10 +125,6 @@ public class Filtervalg {
         return ferdigfilterListe != null && !ferdigfilterListe.isEmpty();
     }
 
-    public boolean harYtelsefilterArena() {
-        return ytelse != null;
-    }
-
     public boolean harYtelseAapKelvinFilter() {
         return ytelseAapKelvin != null && !ytelseAapKelvin.isEmpty();
     }
@@ -147,6 +139,10 @@ public class Filtervalg {
 
     public boolean harYtelseTiltakspengerArenaFilter() {
         return ytelseTiltakspengerArena != null && !ytelseTiltakspengerArena.isEmpty();
+    }
+
+    public boolean harYtelseDagpengerArenaFilter() {
+        return ytelseDagpengerArena != null && !ytelseDagpengerArena.isEmpty();
     }
 
     public boolean harKjonnfilter() {

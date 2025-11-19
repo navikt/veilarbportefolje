@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.aap.domene.*
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
@@ -119,8 +119,7 @@ class AapService(
     fun slettAapData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
         if (maybeFnr.isEmpty) {
             secureLog.warn(
-                "Kunne ikke slette AAP bruker med Aktør-ID {}. Årsak fødselsnummer-parameter var tom.",
-                aktorId.get()
+                "Kunne ikke slette AAP bruker med Aktør-ID ${aktorId.get()}. Årsak fødselsnummer-parameter var tom."
             )
             return
         }
