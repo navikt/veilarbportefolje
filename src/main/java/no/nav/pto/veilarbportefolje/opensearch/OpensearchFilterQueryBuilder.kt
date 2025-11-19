@@ -684,7 +684,8 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER -> byggErSykmeldtMedArbeidsgiverFilter()
             Brukerstatus.UNDER_VURDERING -> QueryBuilders.existsQuery("utkast_14a_status")
             Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery("tiltakshendelse")
-            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("utgatt_varsel")
+            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("hendelser.UTGATT_VARSEL")
+            Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("hendelser.UDELT_SAMTALEREFERAT")
 
         }
         return queryBuilder
@@ -869,7 +870,7 @@ class OpensearchFilterQueryBuilder {
             ),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "utgatt_varsel")
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "hendelser.UTGATT_VARSEL"),
         )
 
         return SearchSourceBuilder()

@@ -26,6 +26,8 @@ import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.core.rest.RestStatus;
 import org.opensearch.core.xcontent.XContentBuilder;
+import org.opensearch.script.Script;
+import org.opensearch.script.ScriptType;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 import static no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerMapperKt.mapTilUtdanning;
@@ -350,16 +353,16 @@ public class OpensearchIndexerPaDatafelt {
 
     @SneakyThrows
     public void slettHendelse(Kategori kategori, AktorId aktorId) {
-        final XContentBuilder content = jsonBuilder()
-                .startObject()
-                .startObject("hendelser")
-                .nullField(kategori.name())
-                .endObject()
-                .endObject();
+        Map<String, Object> params = Map.of("kategori", kategori.name());
 
-        update(aktorId, content, format("Slettet hendelse med kategori %s for aktorId: %s", kategori.name(), aktorId.get()));
+        Script updateScript = new Script(
+                ScriptType.INLINE,
+                "painless",
+                "ctx._source.hendelser.remove(params.kategori)",
+                params);
+
+        updateWithScript(aktorId, updateScript, format("Slettet hendelse med kategori %s for aktorId: %s", kategori.name(), aktorId.get()));
     }
-
 
     @SneakyThrows
     public void oppdaterAapKelvin(AktorId aktorId, boolean harAapKelvin, LocalDate tomVedtaksdato, AapRettighetstype rettighetstype) {
@@ -399,16 +402,26 @@ public class OpensearchIndexerPaDatafelt {
 
     }
 
-    private void update(AktorId aktoerId, XContentBuilder content, String logInfo) throws IOException {
+    public void updateWithScript(AktorId aktoerId, Script script, String logInfo) throws IOException {
+        UpdateRequest request = new UpdateRequest().script(script);
+        executeUpdate(aktoerId, request, logInfo);
+    }
+
+    public void update(AktorId aktoerId, XContentBuilder docContent, String logInfo) throws IOException {
+        UpdateRequest request = new UpdateRequest().doc(docContent);
+        executeUpdate(aktoerId, request, logInfo);
+    }
+
+    private void executeUpdate(AktorId aktoerId, UpdateRequest updateRequest, String logInfo) throws IOException {
         if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(aktoerId)) {
             secureLog.info("Oppdaterte ikke OS for brukere som ikke er under oppfolging, heller ikke for historiske identer: {}, med info {}", aktoerId, logInfo);
             return;
         }
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(indexName.getValue());
-        updateRequest.id(aktoerId.get());
-        updateRequest.doc(content);
-        updateRequest.retryOnConflict(6);
+
+        updateRequest
+                .index(indexName.getValue())
+                .id(aktoerId.get())
+                .retryOnConflict(6);
 
         try {
             restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);

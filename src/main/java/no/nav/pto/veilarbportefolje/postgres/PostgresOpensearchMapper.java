@@ -255,7 +255,7 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnEldsteUtgattVarselPerHendelseKategori(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
+    public void flettInnEldsteHendelsePerKategori(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
         brukerOpensearchModellList.forEach(bruker -> {
             Map<Kategori, Hendelse.HendelseInnhold> eldsteHendelserPerKategori = new HashMap<>();
             for (Kategori kategori : Kategori.getEntries()) {

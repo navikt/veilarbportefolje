@@ -130,14 +130,14 @@ object PortefoljebrukerFrontendModellMapper {
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
             tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            utgattVarsel = if (opensearchBruker.utgatt_varsel != null) {
-                UtgattVarselForHendelse(
-                    beskrivelse = opensearchBruker.utgatt_varsel.beskrivelse,
-                    dato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.utgatt_varsel.dato),
-                    lenke = opensearchBruker.utgatt_varsel.lenke,
-                )
-            } else null,
-            hendelser = opensearchBruker.hendelser,
+            hendelser = opensearchBruker.hendelser
+                ?.mapValues { (_, v) ->
+                    HendelseInnhold(
+                        v.beskrivelse,
+                        fromZonedDateTimeToLocalDateOrNull(v.dato),
+                        v.lenke
+                    )
+                }?.toMutableMap(),
             innsatsgruppe = innsatsgruppe
 
         ).apply {

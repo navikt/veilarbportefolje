@@ -337,7 +337,7 @@ class OpensearchSortQueryBuilder {
     }
 
     fun sorterUtgattVarselHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("utgatt_varsel.dato", order)
+        searchSourceBuilder.sort("hendelser.UTGATT_VARSEL.dato", order)
     }
 
     fun sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {

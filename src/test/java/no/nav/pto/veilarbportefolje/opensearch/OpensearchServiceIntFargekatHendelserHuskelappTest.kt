@@ -2,12 +2,15 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -560,7 +563,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setOppfolging(true)
             .setVeileder_id(TEST_VEILEDER_0)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(null)
+            .setHendelser(mutableMapOf())
 
 
         val oppfolgingsBruker2Fnr = Fnr.of("02020222222")
@@ -573,7 +576,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker2)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
 
 
         val oppfolgingsBruker3Fnr = Fnr.of("03030333333")
@@ -586,7 +589,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             .setVeileder_id(TEST_VEILEDER_0)
             .setNy_for_veileder(false)
             .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(utgattVarselBruker3)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
 
 
         val brukere = listOf(oppfolgingsBruker1, oppfolgingsBruker2, bruker3)

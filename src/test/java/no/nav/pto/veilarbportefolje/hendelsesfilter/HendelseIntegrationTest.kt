@@ -64,7 +64,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty()
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         assertThat(brukerFraRespons.hendelser!!.size).isEqualTo(2)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(hendelseUtgåttVarsel.hendelse.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(hendelseUtgåttVarsel.hendelse.lenke)
@@ -136,7 +136,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty()
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnholdUtgåttVarsel = toHendelse(hendelseRecordValueUtgattVarsel, hendelseIdUtgåttVarsel).hendelse
         val forventetHendelseInnholdUdeltSamtalereferat = toHendelse(hendelseRecordValueUdeltSamtalereferat, hendelseIdUdeltSamtalereferat).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnholdUtgåttVarsel.beskrivelse)
@@ -184,7 +184,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnhold = toHendelse(oppdatertHendelseRecordValue, hendelseId).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
@@ -233,6 +233,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.hendelser?.size).isEqualTo(1)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]).isNull()
         assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]).isNotNull
     }
@@ -278,7 +279,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnhold = toHendelse(eldreHendelseRecordValue, eldreHendelseId).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
@@ -329,7 +330,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
@@ -377,7 +378,7 @@ class HendelseIntegrationTest(
             null
         ).brukere.first()
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
@@ -433,7 +434,7 @@ class HendelseIntegrationTest(
         ).brukere.first()
 
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotEmpty
         val forventetHendelseInnhold = toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
         assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)

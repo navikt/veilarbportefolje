@@ -274,6 +274,7 @@
           }
         }
       },
+
       "utgatt_varsel": {
         "properties": {
           "beskrivelse": {
@@ -284,6 +285,19 @@
           }
         }
       },
+      "hendelser": {
+        "type": "object",
+        "dynamic": true,
+        "properties": {
+          "beskrivelse": {
+            "type": "keyword"
+          },
+          "dato": {
+            "type": "date"
+          }
+        }
+      },
+
       "aap_kelvin": {
         "type": "boolean"
       },
