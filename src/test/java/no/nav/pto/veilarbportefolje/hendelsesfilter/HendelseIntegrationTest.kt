@@ -2,10 +2,13 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.Kjonn
+import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil
@@ -37,14 +40,16 @@ class HendelseIntegrationTest(
     }
 
     @Test
-    fun `skal oppdatere data om hendelser på bruker i OpenSearch ved indeksering når vi har hendelse-data for bruker`() {
+    fun `skal oppdatere data om hendelse for utgått varsel på bruker i OpenSearch ved indeksering når vi har hendelse-data for bruker`() {
         // Given
         val brukerAktorId = randomAktorId()
         val brukerFnr = randomFnr()
         val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
         val brukerOppfolgingsEnhet = randomNavKontor()
-        val hendelseUtgåttVarsel = genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
-        val hendelseUdeltSamtalereferat = genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+        val hendelseUtgåttVarsel =
+            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+        val hendelseUdeltSamtalereferat =
+            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
         testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
         hendelseRepository.insert(hendelseUtgåttVarsel)
         hendelseRepository.insert(hendelseUdeltSamtalereferat)
@@ -53,23 +58,21 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
 
         // Then
-        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1}
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
-        assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
-        assertThat(brukerFraRespons.hendelser!!.size).isEqualTo(2)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(hendelseUtgåttVarsel.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(hendelseUtgåttVarsel.hendelse.lenke)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]!!.beskrivelse).isEqualTo(hendelseUdeltSamtalereferat.hendelse.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]!!.lenke).isEqualTo(hendelseUdeltSamtalereferat.hendelse.lenke)
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraResponsUtgåttVarsel = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+        val brukerFraResponsUdeltSamtalereferat =
+            hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
+
+        assertThat(brukerFraResponsUtgåttVarsel).isNotNull
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser).isNotNull
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.beskrivelse).isEqualTo(hendelseUtgåttVarsel.hendelse.beskrivelse)
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.lenke).isEqualTo(hendelseUtgåttVarsel.hendelse.lenke)
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.beskrivelse).isEqualTo(
+            hendelseUdeltSamtalereferat.hendelse.beskrivelse
+        )
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.lenke).isEqualTo(
+            hendelseUdeltSamtalereferat.hendelse.lenke
+        )
 
     }
 
@@ -86,17 +89,9 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
+        val brukerFraRespons: PortefoljebrukerFrontendModell = hentHendelseBruker(null, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNullOrEmpty()
+        assertThat(brukerFraRespons.hendelser).isNull()
     }
 
     @Test
@@ -112,37 +107,58 @@ class HendelseIntegrationTest(
         // When
         val hendelseIdUtgåttVarsel = UUID.randomUUID().toString()
         val hendelseRecordValueUtgattVarsel =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val hendelseConsumerRecordUtgåttVarsel =
-            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValueUtgattVarsel, key = hendelseIdUtgåttVarsel)
+            genererRandomHendelseConsumerRecord(
+                recordValue = hendelseRecordValueUtgattVarsel,
+                key = hendelseIdUtgåttVarsel
+            )
         hendelseService.behandleKafkaRecord(hendelseConsumerRecordUtgåttVarsel)
 
         val hendelseIdUdeltSamtalereferat = UUID.randomUUID().toString()
         val hendelseRecordValueUdeltSamtalereferat =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UDELT_SAMTALEREFERAT
+            )
         val hendelseConsumerRecordUdeltSamtalereferat =
-            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValueUdeltSamtalereferat, key = hendelseIdUdeltSamtalereferat)
+            genererRandomHendelseConsumerRecord(
+                recordValue = hendelseRecordValueUdeltSamtalereferat,
+                key = hendelseIdUdeltSamtalereferat
+            )
         hendelseService.behandleKafkaRecord(hendelseConsumerRecordUdeltSamtalereferat)
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
-        assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
-        val forventetHendelseInnholdUtgåttVarsel = toHendelse(hendelseRecordValueUtgattVarsel, hendelseIdUtgåttVarsel).hendelse
-        val forventetHendelseInnholdUdeltSamtalereferat = toHendelse(hendelseRecordValueUdeltSamtalereferat, hendelseIdUdeltSamtalereferat).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnholdUtgåttVarsel.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnholdUtgåttVarsel.lenke)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]!!.beskrivelse).isEqualTo(forventetHendelseInnholdUdeltSamtalereferat.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]!!.lenke).isEqualTo(forventetHendelseInnholdUdeltSamtalereferat.lenke)
+        val brukerFraResponsUtgåttVarsel = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+        val brukerFraResponsUdeltSamtalereferat =
+            hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
+
+        assertThat(brukerFraResponsUtgåttVarsel).isNotNull
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser).isNotNull
+
+        val forventetHendelseInnholdUtgåttVarsel =
+            toHendelse(hendelseRecordValueUtgattVarsel, hendelseIdUtgåttVarsel).hendelse
+        val forventetHendelseInnholdUdeltSamtalereferat =
+            toHendelse(hendelseRecordValueUdeltSamtalereferat, hendelseIdUdeltSamtalereferat).hendelse
+
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnholdUtgåttVarsel.beskrivelse
+        )
+        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.lenke).isEqualTo(
+            forventetHendelseInnholdUtgåttVarsel.lenke
+        )
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnholdUdeltSamtalereferat.beskrivelse
+        )
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.lenke).isEqualTo(
+            forventetHendelseInnholdUdeltSamtalereferat.lenke
+        )
     }
 
     @Test
@@ -156,7 +172,11 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
@@ -174,20 +194,14 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
+        assertThat(brukerFraRespons.hendelser).isNotNull
         val forventetHendelseInnhold = toHendelse(oppdatertHendelseRecordValue, hendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnhold.beskrivelse
+        )
+        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -201,16 +215,27 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val hendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = hendelseId)
         hendelseService.behandleKafkaRecord(hendelseConsumerRecord)
 
         val hendelseIdUdeltSamtalereferat = UUID.randomUUID().toString()
         val hendelseRecordValueUdeltSamtalereferat =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UDELT_SAMTALEREFERAT
+            )
         val hendelseConsumerRecordUdeltSamtalereferat =
-            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValueUdeltSamtalereferat, key = hendelseIdUdeltSamtalereferat)
+            genererRandomHendelseConsumerRecord(
+                recordValue = hendelseRecordValueUdeltSamtalereferat,
+                key = hendelseIdUdeltSamtalereferat
+            )
         hendelseService.behandleKafkaRecord(hendelseConsumerRecordUdeltSamtalereferat)
 
         // When
@@ -223,19 +248,20 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
+        val brukereMedUtgåttVarsel  = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
+            Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL)),
             null,
             null
-        ).brukere.first()
-        assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser?.size).isEqualTo(1)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]).isNull()
-        assertThat(brukerFraRespons.hendelser!![Kategori.UDELT_SAMTALEREFERAT]).isNotNull
+        ).brukere
+        val brukerFraResponsUdeltSamtalereferat =
+            hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
+
+        assertThat(brukereMedUtgåttVarsel.size).isEqualTo(0)
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser).isNotNull
     }
 
     @Test
@@ -249,7 +275,11 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -269,20 +299,14 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
+        assertThat(brukerFraRespons.hendelser).isNotNull
         val forventetHendelseInnhold = toHendelse(eldreHendelseRecordValue, eldreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnhold.beskrivelse
+        )
+        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -296,7 +320,11 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -320,20 +348,15 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
+        val brukerFraRespons: PortefoljebrukerFrontendModell =
+            hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
+        assertThat(brukerFraRespons.hendelser).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnhold.beskrivelse
+        )
+        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
 
@@ -348,7 +371,11 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL
+            )
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
@@ -368,20 +395,15 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        ).brukere.first()
+        val brukerFraRespons: PortefoljebrukerFrontendModell =
+            hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
+        assertThat(brukerFraRespons.hendelser).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnhold.beskrivelse
+        )
+        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -395,16 +417,29 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL, hendelseBeskrivelse = "Yngste hendelse, kategori Utgått varsel")
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UTGATT_VARSEL,
+                hendelseBeskrivelse = "Yngste hendelse, kategori Utgått varsel"
+            )
         val yngreHendelseConsumerRecord =
             genererRandomHendelseConsumerRecord(recordValue = yngreHendelseRecordValue, key = yngreHendelseId)
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
 
         val eldsteAvAlleKategorierHendelseId = "7d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val eldsteAvAlleKategorierHendelseRecordValue =
-            genererRandomHendelseRecordValue(operasjon = Operasjon.START, personID = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT, hendelseBeskrivelse = "Eldste hendelse, kategori Udelt samtalereferat")
+            genererRandomHendelseRecordValue(
+                operasjon = Operasjon.START,
+                personID = brukerNorskIdent,
+                kategori = Kategori.UDELT_SAMTALEREFERAT,
+                hendelseBeskrivelse = "Eldste hendelse, kategori Udelt samtalereferat"
+            )
         val eldsteHendelseConsumerRecord =
-            genererRandomHendelseConsumerRecord(recordValue = eldsteAvAlleKategorierHendelseRecordValue, key = eldsteAvAlleKategorierHendelseId)
+            genererRandomHendelseConsumerRecord(
+                recordValue = eldsteAvAlleKategorierHendelseRecordValue,
+                key = eldsteAvAlleKategorierHendelseId
+            )
         hendelseService.behandleKafkaRecord(eldsteHendelseConsumerRecord)
 
         // When
@@ -418,25 +453,44 @@ class HendelseIntegrationTest(
                 hendelseBeskrivelse = "Midterste hendelse, kategori Utgått varsel"
             )
         val eldsteUtgattVarselHendelseConsumerRecord =
-            genererRandomHendelseConsumerRecord(recordValue = eldsteUtgattVarselHendelseRecordValue, key = eldsteUtgattVarselHendelseId)
+            genererRandomHendelseConsumerRecord(
+                recordValue = eldsteUtgattVarselHendelseRecordValue,
+                key = eldsteUtgattVarselHendelseId
+            )
         hendelseService.behandleKafkaRecord(eldsteUtgattVarselHendelseConsumerRecord)
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukerFraRespons: PortefoljebrukerFrontendModell = opensearchService.hentBrukere(
-            brukerOppfolgingsEnhet.value,
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+
+        assertThat(brukerFraRespons).isNotNull
+        assertThat(brukerFraRespons.hendelser).isNotNull
+        val forventetHendelseInnhold =
+            toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
+        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+            forventetHendelseInnhold.beskrivelse
+        )
+        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+    }
+
+    private fun hentHendelseBruker(
+        hendelsesfilter: Brukerstatus? = null,
+        enhet: NavKontor
+    ): PortefoljebrukerFrontendModell {
+        val filter = if (hendelsesfilter != null) {
+            listOf(hendelsesfilter)
+        } else {
+            emptyList()
+        }
+        return opensearchService.hentBrukere(
+            enhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
+            Filtervalg().setFerdigfilterListe(filter),
             null,
             null
         ).brukere.first()
-
-        assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotEmpty
-        val forventetHendelseInnhold = toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.beskrivelse).isEqualTo(forventetHendelseInnhold.beskrivelse)
-        assertThat(brukerFraRespons.hendelser!![Kategori.UTGATT_VARSEL]!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
+
 }

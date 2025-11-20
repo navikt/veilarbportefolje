@@ -2,12 +2,14 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
-import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDateTime
@@ -30,8 +32,6 @@ object PortefoljebrukerFrontendModellMapper {
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
-        val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
-            opensearchBruker.kvalifiseringsgruppekode else null
         val diskresjonskodeFortrolig =
             if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
                 || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
@@ -130,17 +130,9 @@ object PortefoljebrukerFrontendModellMapper {
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
             tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            hendelser = opensearchBruker.hendelser
-                ?.mapValues { (_, v) ->
-                    HendelseInnhold(
-                        v.beskrivelse,
-                        fromZonedDateTimeToLocalDateOrNull(v.dato),
-                        v.lenke
-                    )
-                }?.toMutableMap(),
-            innsatsgruppe = innsatsgruppe
+            hendelser = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
 
-        ).apply {
+            ).apply {
             listOf(
                 "tiltak" to opensearchBruker.aktivitet_tiltak_utlopsdato,
                 "behandling" to opensearchBruker.aktivitet_behandling_utlopsdato,
@@ -165,6 +157,33 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
         return frontendbruker
+    }
+
+    // Vi sender kun én hendelse til frontend så logikken der blir enklere, og fordi vi kun kan ha ett av hendelsesfilterne valgt av gangen
+    private fun mapHendelserBasertPåFiltervalg(
+        opensearchBruker: PortefoljebrukerOpensearchModell,
+        filtervalg: Filtervalg?
+    ): HendelseInnhold? {
+        if (filtervalg?.ferdigfilterListe == null) return null
+        if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
+            val innhold = opensearchBruker.hendelser[Kategori.UTGATT_VARSEL]
+            return mapHendelseTilFrontendModell(innhold)
+        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
+            val innhold = opensearchBruker.hendelser[Kategori.UDELT_SAMTALEREFERAT]
+            return mapHendelseTilFrontendModell(innhold)
+        } else {
+            return null
+        }
+    }
+
+    private fun mapHendelseTilFrontendModell(
+        hendelseOpensearch: Hendelse.HendelseInnhold?
+    ): HendelseInnhold {
+        return HendelseInnhold(
+            beskrivelse = hendelseOpensearch?.beskrivelse,
+            dato = fromZonedDateTimeToLocalDateOrNull(hendelseOpensearch?.dato),
+            lenke = hendelseOpensearch?.lenke
+        )
     }
 
     private fun mapFelterBasertPåFiltervalg(

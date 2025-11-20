@@ -57,7 +57,7 @@ data class PortefoljebrukerFrontendModell(
 
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,
     val tiltakshendelse: TiltakshendelseForBruker? = null,
-    val hendelser: MutableMap<Kategori, HendelseInnhold>? = mutableMapOf(),
+    var hendelser: HendelseInnhold? = null,
 
     // siste endringer hendelser
     var sisteEndringKategori: String? = null,
