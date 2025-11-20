@@ -23,6 +23,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -368,7 +369,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.SISTE_OPPFOLGINGS_PERIODE_V2.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV2Dto.class),
+                                        SerialiseringOgDeserialiseringUtilsKt.jsonDeserializer(SisteOppfolgingsperiodeV2Dto.class),
                                         oppfolgingPeriodeService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
