@@ -186,7 +186,7 @@ class AdminController(
             try {
                 ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
             } catch (e: Exception) {
-                secureLog.error("Feil under innlasting av ensligforsørger-data for aktorId {}", aktorId)
+                secureLog.error("Feil under innlasting av ensligforsørger-data for aktorId $aktorId")
             }
         }
 

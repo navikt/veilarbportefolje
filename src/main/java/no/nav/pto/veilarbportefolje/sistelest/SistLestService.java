@@ -21,6 +21,7 @@ public class SistLestService extends KafkaCommonNonKeyedConsumerService<SistLest
 
     public void behandleKafkaMeldingLogikk(SistLestKafkaMelding melding) {
         secureLog.info("Aktivitetsplanen for {} ble lest av {}, lest: {}", melding.getAktorId(), melding.getVeilederId(), melding.getHarLestTidspunkt());
+
         Optional<VeilederId> veilederId = brukerService.hentVeilederForBruker(melding.getAktorId());
         if (veilederId.isEmpty()) {
             return;
