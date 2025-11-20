@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.ZonedDateTime
@@ -11,7 +12,7 @@ import java.util.UUID
     JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
     JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV2::class, name = "OPPFOLGING_AVSLUTTET")
 )
-abstract class SisteOppfolgingsperiodeV2Dto(
+abstract class SisteOppfolgingsperiodeV2Dto @JsonCreator constructor(
     val oppfolgingsperiodeUuid: UUID,
     val startTidspunkt: ZonedDateTime,
     val sisteEndringsType: SisteEndringsType,
