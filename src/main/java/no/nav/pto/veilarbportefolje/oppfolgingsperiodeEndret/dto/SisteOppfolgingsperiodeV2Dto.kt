@@ -22,7 +22,7 @@ abstract class SisteOppfolgingsperiodeV2Dto constructor(
                     val jsonTree = objectMapper.readTree(data)
                     val sisteEndringsType = jsonTree.get("sisteEndringsType").asText().let { SisteEndringsType.valueOf(it) }
                     return when (sisteEndringsType) {
-                        SisteEndringsType.OPPFOLGING_STARTET, SisteEndringsType.ARBEIDSOPPFOLGINGSKONTOR_ENDRET -> objectMapper.treeToValue<SisteOppfolgingsperiodeV2Dto>(jsonTree)
+                        SisteEndringsType.OPPFOLGING_STARTET, SisteEndringsType.ARBEIDSOPPFOLGINGSKONTOR_ENDRET -> objectMapper.treeToValue<GjeldendeOppfolgingsperiodeV2Dto>(jsonTree)
                         SisteEndringsType.OPPFOLGING_AVSLUTTET -> objectMapper.treeToValue<AvsluttetOppfolgingsperiodeV2>(jsonTree)
                     }
                 }
