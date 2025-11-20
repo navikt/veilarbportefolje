@@ -17,13 +17,6 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
-import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
-import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
@@ -52,19 +45,29 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -107,7 +110,8 @@ public class KafkaConfigCommon {
 
         CV_TOPIC("teampam.samtykke-status-1"),
 
-        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+//        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+        SISTE_OPPFOLGINGS_PERIODE_V2("poao.siste-oppfolgingsperiode-v2"),
 
         // Arbeidssøkerregisteret
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
@@ -359,14 +363,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV1>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV2Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.OPPFOLGING_PERIODE.topicName,
+                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V2.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
+                                        SisteOppfolgingsperiodeV2Dto.Companion.jsonDeserializer(),
                                         oppfolgingPeriodeService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
