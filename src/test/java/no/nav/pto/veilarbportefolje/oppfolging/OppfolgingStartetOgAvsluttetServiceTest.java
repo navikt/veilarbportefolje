@@ -142,6 +142,26 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
+    void når_ny_melding_om_oppfølging_start_kommer_skal_oppdatert_kontor_lagres() {
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
+        mockHentTiltakspengerResponse(fnr);
+        var startDato = ZonedDateTime.now().minusDays(1);
+        var oppfølgingsperiodeId = UUID.randomUUID();
+        var førsteKontor = "1234";
+        var andreKontor = "4321";
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, førsteKontor));
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, andreKontor));
+
+        var oppfølgingsbruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr).get();
+        assertThat(oppfølgingsbruker.nav_kontor()).isEqualTo(andreKontor);
+    }
+
+    @Test
     void når_oppfolging_startes_skal_brukeridenter_hentes_og_lagres() {
         mockPdlIdenterRespons(aktorId, fnr);
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);

@@ -85,11 +85,12 @@ object TestDataUtils {
         aktorId: AktorId,
         startDato: ZonedDateTime? = tilfeldigDatoTilbakeITid(),
         oppfolgingsperiodeUuid: UUID = UUID.randomUUID(),
+        kontorId: String = "2020"
     ): GjeldendeOppfolgingsperiodeV2Dto {
         return GjeldendeOppfolgingsperiodeV2Dto(
             oppfolgingsperiodeUuid,
             startDato!!,
-            "2020",
+            kontorId,
             "Nav Obo",
             aktorId.get(),
             randomFnr().get(),
