@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class GjeldendeOppfolgingsperiodeV2Dto(
-    oppfolgingsperiodeId: UUID,
+    oppfolgingsperiodeUuid: UUID,
     startTidspunkt: ZonedDateTime,
     val kontorId: String,
     val kontorNavn: String,
@@ -13,5 +13,5 @@ class GjeldendeOppfolgingsperiodeV2Dto(
     sisteEndringsType: SisteEndringsType,
     producerTimestamp: ZonedDateTime,
 ) : SisteOppfolgingsperiodeV2Dto(
-    oppfolgingsperiodeId, startTidspunkt, sisteEndringsType, aktorId, ident, producerTimestamp,
+    oppfolgingsperiodeUuid, startTidspunkt, sisteEndringsType, aktorId, ident, producerTimestamp,
 )

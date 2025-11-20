@@ -84,10 +84,10 @@ object TestDataUtils {
     fun genererStartetOppfolgingsperiode(
         aktorId: AktorId,
         startDato: ZonedDateTime? = tilfeldigDatoTilbakeITid(),
-        oppfolgingsperiodeId: UUID = UUID.randomUUID(),
+        oppfolgingsperiodeUuid: UUID = UUID.randomUUID(),
     ): GjeldendeOppfolgingsperiodeV2Dto {
         return GjeldendeOppfolgingsperiodeV2Dto(
-            oppfolgingsperiodeId,
+            oppfolgingsperiodeUuid,
             startDato!!,
             "2020",
             "Nav Obo",
@@ -107,7 +107,7 @@ object TestDataUtils {
         aktorId: AktorId,
         oppfolgingsperiodeId: UUID = UUID.randomUUID(),
     ): AvsluttetOppfolgingsperiodeV2 {
-        val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeId = oppfolgingsperiodeId)
+        val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeUuid = oppfolgingsperiodeId)
         return AvsluttetOppfolgingsperiodeV2(
             oppfolgingsperiodeId,
             periode.startTidspunkt,
