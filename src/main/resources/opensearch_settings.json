@@ -274,19 +274,7 @@
           }
         }
       },
-
-      "utgatt_varsel": {
-        "properties": {
-          "beskrivelse": {
-            "type": "keyword"
-          },
-          "dato": {
-            "type": "date"
-          }
-        }
-      },
       "hendelse": {
-        "type": "object",
         "properties": {
           "beskrivelse": {
             "type": "keyword"

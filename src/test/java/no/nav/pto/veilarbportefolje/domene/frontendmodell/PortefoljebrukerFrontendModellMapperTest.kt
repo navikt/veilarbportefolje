@@ -188,12 +188,12 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
         Assertions.assertEquals(utgattVarselHendelse.lenke, resultUtgåttVarsel.lenke)
-        Assertions.assertEquals( utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
+        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
 
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
-        Assertions.assertEquals( udeltSamtalereferatHendelse.dato.dayOfMonth, resultUdeltSamtalereferat.dato!!.dayOfMonth)
+        Assertions.assertEquals(udeltSamtalereferatHendelse.dato.dayOfMonth, resultUdeltSamtalereferat.dato!!.dayOfMonth)
 
     }
 

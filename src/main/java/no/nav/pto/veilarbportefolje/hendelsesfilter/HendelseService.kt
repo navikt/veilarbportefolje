@@ -144,18 +144,16 @@ class HendelseService(
         }
 
         if (resultatAvGetEldsteHendelseIKategorien is IngenHendelseForPersonException) {
-            // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
+            // All good - det var ingen flere hendelser for personen i kategorien etter at vi slettet den som kom inn som argument
             slettHendelseForBrukerIOpenSearch(hendelse)
-            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB og fjernet for person i OpenSearch.")
             return
         }
 
         if (resultatAvGetEldsteHendelseIKategorien is Hendelse) {
             oppdaterHendelseForBrukerIOpenSearch(resultatAvGetEldsteHendelseIKategorien)
-            logger.info("Hendelse med id ${hendelse.id}  og kategori ${hendelse.kategori} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteHendelseIKategorien.id}")
+            logger.info("Hendelse med id ${hendelse.id}  og kategori ${hendelse.kategori} ble slettet i DB og OpenSearch ble oppdatert med ny eldste hendelse i kategorien for person, med id ${resultatAvGetEldsteHendelseIKategorien.id}")
         }
-
-
     }
 
     private fun oppdaterHendelseForBrukerIOpenSearch(hendelse: Hendelse) {

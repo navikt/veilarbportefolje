@@ -39,7 +39,7 @@ class HendelseIntegrationTest(
     }
 
     @Test
-    fun `skal oppdatere data om hendelse for utgått varsel på bruker i OpenSearch ved indeksering når vi har hendelse-data for bruker`() {
+    fun `skal oppdatere data om hendelser på bruker i OpenSearch ved indeksering når vi har hendelse-data for bruker`() {
         // Given
         val brukerAktorId = randomAktorId()
         val brukerFnr = randomFnr()
