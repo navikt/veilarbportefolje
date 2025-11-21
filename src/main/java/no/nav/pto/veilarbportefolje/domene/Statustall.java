@@ -30,6 +30,7 @@ public class Statustall {
     private long fargekategoriIngenKategori;
     private long tiltakshendelser;
     private long utgatteVarsel;
+    private long udelteSamtalereferat;
 
     public Statustall() {
         this.totalt = 0;
@@ -55,6 +56,7 @@ public class Statustall {
         this.fargekategoriIngenKategori = 0;
         this.tiltakshendelser = 0;
         this.utgatteVarsel = 0;
+        this.udelteSamtalereferat = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets) {
@@ -81,5 +83,6 @@ public class Statustall {
         this.fargekategoriIngenKategori = buckets.getFargekategoriIngenKategori().getDoc_count();
         this.tiltakshendelser = buckets.getTiltakshendelser().getDoc_count();
         this.utgatteVarsel = buckets.getUtgatteVarsel().getDoc_count();
+        this.udelteSamtalereferat = buckets.getUdelteSamtalereferat().getDoc_count();
     }
 }

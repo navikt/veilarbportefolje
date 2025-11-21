@@ -238,8 +238,12 @@ class OpensearchSortQueryBuilder {
                 searchSourceBuilder
             }
 
-            Sorteringsfelt.UTGATT_VARSEL_DATO -> {
-                sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+            Sorteringsfelt.FILTERHENDELSE_DATO -> {
+                if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
+                    sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
+                    sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                }
                 searchSourceBuilder
             }
 
@@ -337,7 +341,11 @@ class OpensearchSortQueryBuilder {
     }
 
     fun sorterUtgattVarselHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("utgatt_varsel.dato", order)
+        searchSourceBuilder.sort("hendelser.UTGATT_VARSEL.dato", order)
+    }
+
+    fun sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
+        searchSourceBuilder.sort("hendelser.UDELT_SAMTALEREFERAT.dato", order)
     }
 
     fun sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {

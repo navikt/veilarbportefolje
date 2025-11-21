@@ -42,6 +42,7 @@ public class StatustallResponse {
                 Bucket fargekategoriIngenKategori;
                 Bucket tiltakshendelser;
                 Bucket utgatteVarsel;
+                Bucket udelteSamtalereferat;
             }
         }
     }
@@ -83,7 +84,8 @@ public class StatustallResponse {
         FARGEKATEGORI_F("fargekategoriF"),
         FARGEKATEGORI_INGEN_KATEGORI("fargekategoriIngenKategori"),
         TILTAKSHENDELSER("tiltakshendelser"),
-        UTGATTE_VARSEL("utgatteVarsel");
+        UTGATTE_VARSEL("utgatteVarsel"),
+        UDELTE_SAMTALEREFERAT("udelteSamtalereferat");
 
         public final String key;
 

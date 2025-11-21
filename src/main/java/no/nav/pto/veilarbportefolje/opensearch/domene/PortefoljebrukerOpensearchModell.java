@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
@@ -134,4 +135,5 @@ public class PortefoljebrukerOpensearchModell {
 
     public GjeldendeVedtak14a gjeldendeVedtak14a;
     public Hendelse.HendelseInnhold utgatt_varsel;
+    public Map<Kategori, Hendelse.HendelseInnhold> hendelser;
 }

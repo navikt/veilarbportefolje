@@ -255,14 +255,18 @@ public class PostgresOpensearchMapper {
         });
     }
 
-    public void flettInnEldsteUtgattVarsel(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
+    public void flettInnEldsteHendelsePerKategori(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
         brukerOpensearchModellList.forEach(bruker -> {
-            try {
-                Hendelse eldsteHendelsePaPerson = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), Kategori.UTGATT_VARSEL);
-                bruker.setUtgatt_varsel(eldsteHendelsePaPerson.getHendelse());
-            } catch (IngenHendelseForPersonException ex) {
-                // Ingen hendelse funnet for personen, men unødvendig med logging
+            Map<Kategori, Hendelse.HendelseInnhold> eldsteHendelserPerKategori = new HashMap<>();
+            for (Kategori kategori : Kategori.getEntries()) {
+                try {
+                    Hendelse eldsteHendelse = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), kategori);
+                    eldsteHendelserPerKategori.put(kategori, eldsteHendelse.getHendelse());
+                } catch (IngenHendelseForPersonException ex) {
+                    // Ingen hendelse funnet for personen, men unødvendig med logging
+                }
             }
+            bruker.setHendelser(eldsteHendelserPerKategori);
         });
     }
 }
