@@ -182,8 +182,8 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
         )
 
-        val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelser
-        val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelser
+        val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
+        val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)

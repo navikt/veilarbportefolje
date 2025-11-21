@@ -57,7 +57,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
 
     nesteSvarfristCvStillingFraNav = null,
     tiltakshendelse = null,
-    hendelser = null,
+    hendelse = null,
 
     sisteEndringKategori = null,
     sisteEndringTidspunkt = null,

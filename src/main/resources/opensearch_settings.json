@@ -285,9 +285,8 @@
           }
         }
       },
-      "hendelser": {
+      "hendelse": {
         "type": "object",
-        "dynamic": true,
         "properties": {
           "beskrivelse": {
             "type": "keyword"
@@ -297,7 +296,6 @@
           }
         }
       },
-
       "aap_kelvin": {
         "type": "boolean"
       },

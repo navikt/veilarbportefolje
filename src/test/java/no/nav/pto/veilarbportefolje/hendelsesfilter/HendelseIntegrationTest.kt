@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
-import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
@@ -64,13 +63,13 @@ class HendelseIntegrationTest(
             hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
 
         assertThat(brukerFraResponsUtgåttVarsel).isNotNull
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser).isNotNull
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.beskrivelse).isEqualTo(hendelseUtgåttVarsel.hendelse.beskrivelse)
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.lenke).isEqualTo(hendelseUtgåttVarsel.hendelse.lenke)
-        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse).isNotNull
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse!!.beskrivelse).isEqualTo(hendelseUtgåttVarsel.hendelse.beskrivelse)
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse!!.lenke).isEqualTo(hendelseUtgåttVarsel.hendelse.lenke)
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelse!!.beskrivelse).isEqualTo(
             hendelseUdeltSamtalereferat.hendelse.beskrivelse
         )
-        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.lenke).isEqualTo(
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelse!!.lenke).isEqualTo(
             hendelseUdeltSamtalereferat.hendelse.lenke
         )
 
@@ -91,7 +90,7 @@ class HendelseIntegrationTest(
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
         val brukerFraRespons: PortefoljebrukerFrontendModell = hentHendelseBruker(null, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNull()
+        assertThat(brukerFraRespons.hendelse).isNull()
     }
 
     @Test
@@ -140,23 +139,23 @@ class HendelseIntegrationTest(
             hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
 
         assertThat(brukerFraResponsUtgåttVarsel).isNotNull
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser).isNotNull
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse).isNotNull
 
         val forventetHendelseInnholdUtgåttVarsel =
             toHendelse(hendelseRecordValueUtgattVarsel, hendelseIdUtgåttVarsel).hendelse
         val forventetHendelseInnholdUdeltSamtalereferat =
             toHendelse(hendelseRecordValueUdeltSamtalereferat, hendelseIdUdeltSamtalereferat).hendelse
 
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnholdUtgåttVarsel.beskrivelse
         )
-        assertThat(brukerFraResponsUtgåttVarsel.hendelser!!.lenke).isEqualTo(
+        assertThat(brukerFraResponsUtgåttVarsel.hendelse!!.lenke).isEqualTo(
             forventetHendelseInnholdUtgåttVarsel.lenke
         )
-        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnholdUdeltSamtalereferat.beskrivelse
         )
-        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser!!.lenke).isEqualTo(
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelse!!.lenke).isEqualTo(
             forventetHendelseInnholdUdeltSamtalereferat.lenke
         )
     }
@@ -196,12 +195,12 @@ class HendelseIntegrationTest(
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
         val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelse).isNotNull
         val forventetHendelseInnhold = toHendelse(oppdatertHendelseRecordValue, hendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnhold.beskrivelse
         )
-        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -261,7 +260,7 @@ class HendelseIntegrationTest(
             hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
 
         assertThat(brukereMedUtgåttVarsel.size).isEqualTo(0)
-        assertThat(brukerFraResponsUdeltSamtalereferat.hendelser).isNotNull
+        assertThat(brukerFraResponsUdeltSamtalereferat.hendelse).isNotNull
     }
 
     @Test
@@ -301,12 +300,12 @@ class HendelseIntegrationTest(
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
         val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelse).isNotNull
         val forventetHendelseInnhold = toHendelse(eldreHendelseRecordValue, eldreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnhold.beskrivelse
         )
-        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -351,12 +350,12 @@ class HendelseIntegrationTest(
         val brukerFraRespons: PortefoljebrukerFrontendModell =
             hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelse).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnhold.beskrivelse
         )
-        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
 
@@ -398,12 +397,12 @@ class HendelseIntegrationTest(
         val brukerFraRespons: PortefoljebrukerFrontendModell =
             hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelse).isNotNull
         val forventetHendelseInnhold = toHendelse(yngreHendelseRecordValue, yngreHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnhold.beskrivelse
         )
-        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     @Test
@@ -464,13 +463,13 @@ class HendelseIntegrationTest(
         val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
 
         assertThat(brukerFraRespons).isNotNull
-        assertThat(brukerFraRespons.hendelser).isNotNull
+        assertThat(brukerFraRespons.hendelse).isNotNull
         val forventetHendelseInnhold =
             toHendelse(eldsteUtgattVarselHendelseRecordValue, eldsteUtgattVarselHendelseId).hendelse
-        assertThat(brukerFraRespons.hendelser!!.beskrivelse).isEqualTo(
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(
             forventetHendelseInnhold.beskrivelse
         )
-        assertThat(brukerFraRespons.hendelser!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
     }
 
     private fun hentHendelseBruker(

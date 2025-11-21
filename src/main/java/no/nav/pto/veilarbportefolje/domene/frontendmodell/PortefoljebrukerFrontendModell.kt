@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
@@ -57,7 +56,7 @@ data class PortefoljebrukerFrontendModell(
 
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,
     val tiltakshendelse: TiltakshendelseForBruker? = null,
-    var hendelser: HendelseInnhold? = null,
+    var hendelse: HendelseInnhold? = null,
 
     // siste endringer hendelser
     var sisteEndringKategori: String? = null,

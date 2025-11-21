@@ -130,7 +130,7 @@ object PortefoljebrukerFrontendModellMapper {
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
             tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            hendelser = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
+            hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
 
             ).apply {
             listOf(
