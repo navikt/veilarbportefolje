@@ -756,9 +756,92 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         // Then
         Assertions.assertThat(response.antall).isEqualTo(3)
-        org.junit.jupiter.api.Assertions.assertEquals(bruker3.aktoer_id, response.brukere[0].aktoerid)
-        org.junit.jupiter.api.Assertions.assertEquals(bruker1.aktoer_id, response.brukere[1].aktoerid)
-        org.junit.jupiter.api.Assertions.assertEquals(bruker2.aktoer_id, response.brukere[2].aktoerid)
+        Assertions.assertThat(bruker3.aktoer_id).isEqualTo(response.brukere[0].aktoerid)
+        Assertions.assertThat(bruker1.aktoer_id).isEqualTo(response.brukere[1].aktoerid)
+        Assertions.assertThat(bruker2.aktoer_id).isEqualTo(response.brukere[2].aktoerid)
+    }
+
+    @Test
+    fun skal_kunne_sortere_pa_hendelsesdato_pa_kun_valgt_kategori_av_hendelse() {
+        // Given
+        val aktoridBruker1 = AktorId.of("1111111111111")
+        val aktoridBruker2 = AktorId.of("2222222222222")
+        val aktoridBruker3 = AktorId.of("3333333333333")
+        val aktoridBruker4 = AktorId.of("4444444444444")
+        val hendelsedatoBruker1 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val hendelsedatoBruker2 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val hendelsedatoBruker3 = ZonedDateTime.of(2023, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val hendelsedatoBruker4 = ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+
+        val udeltSamtalereferatBruker1 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker1).hendelse
+        val udeltSamtalereferatBruker2 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker2).hendelse
+        val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
+        val udeltSamtalereferatBruker4 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4 ).hendelse
+
+
+        val bruker1 = PortefoljebrukerOpensearchModell()
+            .setFnr(randomFnr().toString())
+            .setAktoer_id(aktoridBruker1.toString())
+            .setOppfolging(true)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setEnhet_id(TEST_ENHET)
+            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1))
+
+        val bruker2 = PortefoljebrukerOpensearchModell()
+            .setFnr(randomFnr().toString())
+            .setAktoer_id(aktoridBruker2.toString())
+            .setOppfolging(true)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setNy_for_veileder(false)
+            .setEnhet_id(TEST_ENHET)
+            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2))
+
+        val bruker3 = PortefoljebrukerOpensearchModell()
+            .setFnr(randomFnr().toString())
+            .setAktoer_id(aktoridBruker3.toString())
+            .setOppfolging(true)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setNy_for_veileder(false)
+            .setEnhet_id(TEST_ENHET)
+            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
+
+        val bruker4 = PortefoljebrukerOpensearchModell()
+            .setFnr(randomFnr().toString())
+            .setAktoer_id(aktoridBruker4.toString())
+            .setOppfolging(true)
+            .setVeileder_id(TEST_VEILEDER_0)
+            .setNy_for_veileder(false)
+            .setEnhet_id(TEST_ENHET)
+            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4))
+
+
+        val brukere = listOf(bruker1, bruker2, bruker3, bruker4)
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+        // When
+        val filtervalg = Filtervalg()
+            .setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.FILTERHENDELSE_DATO,
+            filtervalg,
+            null,
+            null
+        )
+
+
+        // Then
+        Assertions.assertThat(response.antall).isEqualTo(3)
+
+        Assertions.assertThat(bruker1.aktoer_id).isEqualTo(response.brukere[0].aktoerid)
+        Assertions.assertThat(bruker2.aktoer_id).isEqualTo(response.brukere[1].aktoerid)
+        Assertions.assertThat(bruker4.aktoer_id).isEqualTo(response.brukere[2].aktoerid)
+        Assertions.assertThat(bruker3.aktoer_id).isNotIn(response.brukere)
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
