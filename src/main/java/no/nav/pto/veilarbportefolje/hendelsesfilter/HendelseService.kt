@@ -157,13 +157,11 @@ class HendelseService(
     }
 
     private fun oppdaterHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
-        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
         opensearchIndexerPaDatafelt.oppdaterHendelse(hendelse, aktorId)
     }
 
     private fun slettHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
-        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
         opensearchIndexerPaDatafelt.slettHendelse(hendelse.kategori, aktorId)
     }
