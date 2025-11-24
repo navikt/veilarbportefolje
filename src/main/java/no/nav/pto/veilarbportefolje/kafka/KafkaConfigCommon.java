@@ -17,13 +17,6 @@ import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
-import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
-import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
-import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
@@ -52,7 +45,13 @@ import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.MetricsReporter;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
+import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
@@ -60,10 +59,14 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
+import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
@@ -77,7 +80,6 @@ import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfig
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -152,7 +154,6 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
-    private final KafkaConsumerClient consumerClientAivenPortefoljeHendelsesFilter; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -448,6 +449,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         new KotlinJsonDeserializer<>(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(HendelseRecordValue.class),
+                                        hendelseService::behandleKafkaRecord
                                 )
                 );
 
@@ -477,34 +488,15 @@ public class KafkaConfigCommon {
                                 siste14aVedtakService::behandleKafkaRecord
                         );
 
-        KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue> portefoljeHendelsesFilterTopicConfig =
-                new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()
-                        .withLogging()
-                        .withMetrics(prometheusMeterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
-                                Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(HendelseRecordValue.class),
-                                hendelseService::behandleKafkaRecord
-                        );
-
         consumerClientAivenSiste14a = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(siste14aTopicConfig)
                 .withToggle(() -> defaultUnleash.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
-        consumerClientAivenPortefoljeHendelsesFilter = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
-                .withTopicConfig(portefoljeHendelsesFilterTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(STOPP_KONSUMERING_FRA_PORTEFOLJE_HENDELSESFILTER_TOPIC, true) || kafkaAivenUnleash.get())
-                .build();
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
         allTopicConfigs.add(siste14aTopicConfig);
-        allTopicConfigs.add(portefoljeHendelsesFilterTopicConfig);
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -521,7 +513,6 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
-        consumerClientAivenPortefoljeHendelsesFilter.start();
     }
 
 
