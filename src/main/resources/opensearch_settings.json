@@ -274,7 +274,7 @@
           }
         }
       },
-      "utgatt_varsel": {
+      "hendelse": {
         "properties": {
           "beskrivelse": {
             "type": "keyword"
