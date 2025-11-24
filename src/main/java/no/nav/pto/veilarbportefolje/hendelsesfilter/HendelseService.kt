@@ -4,7 +4,10 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import no.nav.pto.veilarbportefolje.util.DateUtils.fromZonedDateTimeToLocalDateOrNull
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,7 +30,8 @@ import java.util.*
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
+    @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -56,6 +60,29 @@ class HendelseService(
             Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
             Operasjon.STOPP -> stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
         }
+    }
+
+    fun slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging() {
+        val brukereMedUtgattVarsel = hendelseRepository.getUtgattVarselForAlle()
+        brukereMedUtgattVarsel.forEach { hendelse ->
+            val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
+            if (!isUnderArbeidsrettetOppfolging) {
+                logger.info("Har tidligere lagret melding med hendelse ID ${hendelse.id} for bruker som ikke er under oppfølging. Sletter melding fra databasen.")
+                stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
+                return
+            }
+
+            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+            val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
+            val startdatoOppfolging = toLocalDateOrNull(oppfolgingsdata.get().startDato)
+            val hendelsesDato = fromZonedDateTimeToLocalDateOrNull(hendelse.hendelse.dato)
+
+            if (startdatoOppfolging != null && hendelsesDato != null && hendelsesDato.isBefore(startdatoOppfolging)) {
+                logger.info("Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
+                stoppHendelse(hendelse, false)
+            }
+        }
+
     }
 
     @TestOnly
