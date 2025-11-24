@@ -1149,39 +1149,6 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTildeltBruker.fnr)
     }
 
-    @Test
-    @SneakyThrows
-    fun skal_indeksere_hendelse_data_riktig_for_utgatt_varsel() {
-        val hendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL)
-        val oppfolgingsBruker = PortefoljebrukerOpensearchModell()
-            .setFnr("11111199999")
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setUtgatt_varsel(hendelse.hendelse)
-        skrivBrukereTilTestindeks(listOf(oppfolgingsBruker))
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-
-        val respons = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
-            null,
-            null
-        )
-        val bruker: PortefoljebrukerFrontendModell = respons.brukere.first()
-        val utgattVarsel = bruker.utgattVarsel
-
-        Assertions.assertThat(respons.antall).isEqualTo(1)
-        Assertions.assertThat(utgattVarsel).isNotNull()
-        Assertions.assertThat(utgattVarsel?.beskrivelse).isEqualTo(oppfolgingsBruker.utgatt_varsel.beskrivelse)
-        Assertions.assertThat(utgattVarsel?.lenke).isEqualTo(oppfolgingsBruker.utgatt_varsel.lenke)
-    }
-
     private fun veilederExistsInResponse(veilederId: String, brukere: BrukereMedAntall): Boolean {
         return brukere.brukere.stream().anyMatch { bruker: PortefoljebrukerFrontendModell -> veilederId == bruker.veilederId }
     }

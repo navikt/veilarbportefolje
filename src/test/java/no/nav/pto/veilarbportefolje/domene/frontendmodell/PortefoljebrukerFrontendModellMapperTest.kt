@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
+import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import org.junit.Test
@@ -135,7 +139,7 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         opensearchBruker.setKommunenummer("0301")
         opensearchBruker.setBydelsnummer("1234")
-        opensearchBruker.setBostedSistOppdatert(LocalDate.of(2025,1,1))
+        opensearchBruker.setBostedSistOppdatert(LocalDate.of(2025, 1, 1))
         opensearchBruker.setHarUkjentBosted(true)
         opensearchBruker.setUtenlandskAdresse(null)
 
@@ -149,8 +153,48 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("1234", bosted.bostedBydel)
         Assertions.assertEquals("Ukjent", bosted.bostedKommuneUkjentEllerUtland)
         Assertions.assertEquals("0301", bosted.bostedKommune)
-        Assertions.assertEquals(LocalDate.of(2025,1,1), bosted.bostedSistOppdatert)
+        Assertions.assertEquals(LocalDate.of(2025, 1, 1), bosted.bostedSistOppdatert)
     }
 
+    @Test
+    fun `hendelser skal velge riktig hendelseskategori for mapping basert på filtervalg`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
+        val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
+
+        opensearchBruker
+            .setHendelser(
+                mapOf(
+                    Kategori.UTGATT_VARSEL to utgattVarselHendelse,
+                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
+                )
+            )
+
+        val frontendBrukerUtgåttVarselFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        )
+        val frontendBrukerUdeltSamtalereferatFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+        )
+
+        val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
+        val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
+
+        Assertions.assertNotNull(resultUtgåttVarsel)
+        Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
+        Assertions.assertEquals(utgattVarselHendelse.lenke, resultUtgåttVarsel.lenke)
+        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
+
+        Assertions.assertNotNull(resultUdeltSamtalereferat)
+        Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
+        Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
+        Assertions.assertEquals(udeltSamtalereferatHendelse.dato.dayOfMonth, resultUdeltSamtalereferat.dato!!.dayOfMonth)
+
+    }
 
 }

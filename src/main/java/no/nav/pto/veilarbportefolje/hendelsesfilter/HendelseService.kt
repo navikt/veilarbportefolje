@@ -79,26 +79,15 @@ class HendelseService(
             return
         }
 
-        when (hendelse.kategori) {
-            Kategori.UTGATT_VARSEL -> {
-                val eldsteUtgattVarselHendelse =
-                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
+        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
 
-                if (eldsteUtgattVarselHendelse.id == hendelse.id) {
-                    oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
-                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
-                } else {
-                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble lagret i DB")
-                }
-            }
-
-            Kategori.UDELT_SAMTALEREFERAT -> {
-                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
-                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
-                 */
-                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB")
-            }
+        if (eldsteHendelseIKategorien.id == hendelse.id) {
+            oppdaterHendelseForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble lagret i DB")
         }
+
     }
 
     private fun oppdaterHendelse(hendelse: Hendelse) {
@@ -117,26 +106,16 @@ class HendelseService(
             return
         }
 
-        when (hendelse.kategori) {
-            Kategori.UTGATT_VARSEL -> {
-                val eldsteUtgattVarselHendelse =
-                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
+        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
 
-                if (eldsteUtgattVarselHendelse.id == hendelse.id) {
-                    oppdaterUtgattVarselForBrukerIOpenSearch(hendelse)
-                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
-                } else {
-                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble oppdatert i DB")
-                }
-            }
-
-            Kategori.UDELT_SAMTALEREFERAT -> {
-                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
-                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
-                 */
-                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
-            }
+        if (eldsteHendelseIKategorien.id == hendelse.id) {
+            oppdaterHendelseForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person.")
+        } else {
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble oppdatert i DB")
         }
+
+
     }
 
     private fun stoppHendelse(hendelse: Hendelse, isUnderArbeidsrettetOppfolging: Boolean = true) {
@@ -158,45 +137,32 @@ class HendelseService(
             logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} for innbygger som ikke er i arbeidsrettet oppfølging, ble slettet")
         }
 
-        when (hendelse.kategori) {
-            Kategori.UTGATT_VARSEL -> {
-                val resultatAvGetEldsteUtgattVarselHendelse = try {
-                    hendelseRepository.getEldste(hendelse.personIdent, Kategori.UTGATT_VARSEL)
-                } catch (ex: IngenHendelseForPersonException) {
-                    ex
-                }
+        val resultatAvGetEldsteHendelseIKategorien = try {
+            hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
+        } catch (ex: IngenHendelseForPersonException) {
+            ex
+        }
 
-                if (resultatAvGetEldsteUtgattVarselHendelse is IngenHendelseForPersonException) {
-                    // All good - det var ingen flere hendelser for personen etter at vi slettet den som kom inn som argument
-                    slettUgattVarselForBrukerIOpenSearch(hendelse)
-                    logger.info("Hendelse med id ${hendelse.id} og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og utgått varsel ble fjernet for person i OpenSearch siden personen ikke hadde andre hendelser.")
-                    return
-                }
+        if (resultatAvGetEldsteHendelseIKategorien is IngenHendelseForPersonException) {
+            // All good - det var ingen flere hendelser for personen i kategorien etter at vi slettet den som kom inn som argument
+            slettHendelseForBrukerIOpenSearch(hendelse)
+            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB og fjernet for person i OpenSearch.")
+            return
+        }
 
-                if (resultatAvGetEldsteUtgattVarselHendelse is Hendelse) {
-                    oppdaterUtgattVarselForBrukerIOpenSearch(resultatAvGetEldsteUtgattVarselHendelse)
-                    logger.info("Hendelse med id ${hendelse.id}  og kategori ${Kategori.UTGATT_VARSEL} ble slettet i DB og OpenSearch ble oppdatert med ny eldste utgåtte varsel for person, med id ${resultatAvGetEldsteUtgattVarselHendelse.id}")
-                }
-            }
-
-            Kategori.UDELT_SAMTALEREFERAT -> {
-                /** Vi har et trellokort for å implementere hendelsesfilter udelt samtalereferat men vi venter på noen tekniske avklaringer
-                 * https://trello.com/c/wntTp8oG/1099-hendelsesfilter-for-udelte-samtalereferat?filter=udelte
-                 */
-                logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB.")
-            }
+        if (resultatAvGetEldsteHendelseIKategorien is Hendelse) {
+            oppdaterHendelseForBrukerIOpenSearch(resultatAvGetEldsteHendelseIKategorien)
+            logger.info("Hendelse med id ${hendelse.id}  og kategori ${hendelse.kategori} ble slettet i DB og OpenSearch ble oppdatert med ny eldste hendelse i kategorien for person, med id ${resultatAvGetEldsteHendelseIKategorien.id}")
         }
     }
 
-    private fun oppdaterUtgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
-        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+    private fun oppdaterHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-        opensearchIndexerPaDatafelt.oppdaterUtgattVarsel(hendelse, aktorId)
+        opensearchIndexerPaDatafelt.oppdaterHendelse(hendelse, aktorId)
     }
 
-    private fun slettUgattVarselForBrukerIOpenSearch(hendelse: Hendelse) {
-        // TODO: 2024-11-29, Sondre - Her konverterer vi bare ukritisk til Fnr, selv om NorskIdent også kan være f.eks. D-nummer
+    private fun slettHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-        opensearchIndexerPaDatafelt.slettUtgattVarsel(aktorId)
+        opensearchIndexerPaDatafelt.slettHendelse(hendelse.kategori, aktorId)
     }
 }
