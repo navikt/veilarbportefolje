@@ -30,8 +30,7 @@ import java.util.*
 class HendelseService(
     @Autowired private val hendelseRepository: HendelseRepository,
     @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
-    @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2
+    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -60,42 +59,6 @@ class HendelseService(
             Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
             Operasjon.STOPP -> stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
         }
-    }
-
-    fun slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging() {
-        val brukereMedUtgattVarsel = hendelseRepository.getUtgattVarselForAlle()
-        for (hendelse in brukereMedUtgattVarsel) {
-            val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
-            if (!isUnderArbeidsrettetOppfolging) {
-                logger.info("Hendelse - utgått varsel: Ikke under oppfølging. Har tidligere lagret melding med hendelse ID ${hendelse.id} for bruker som ikke er under oppfølging. Sletter melding fra databasen.")
-
-                try {
-                    stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
-                    continue
-                } catch (ex: Exception) {
-                    logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
-                    continue
-                }
-
-            }
-
-            val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
-            val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
-            val startdatoOppfolging = toLocalDateOrNull(oppfolgingsdata.get().startDato)
-            val hendelsesDato = fromZonedDateTimeToLocalDateOrNull(hendelse.hendelse.dato)
-
-            if (startdatoOppfolging != null && hendelsesDato != null && hendelsesDato.isBefore(startdatoOppfolging)) {
-                logger.info("Hendelse - utgått varsel er fra tidligere periode. Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
-                try {
-                    stoppHendelse(hendelse, false)
-                    continue
-                } catch (ex: Exception) {
-                    logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
-                    continue
-                }
-            }
-        }
-
     }
 
     @TestOnly
