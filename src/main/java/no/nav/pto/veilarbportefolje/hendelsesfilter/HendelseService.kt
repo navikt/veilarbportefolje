@@ -68,8 +68,14 @@ class HendelseService(
             val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
             if (!isUnderArbeidsrettetOppfolging) {
                 logger.info("Hendelse - utgått varsel: Ikke under oppfølging. Har tidligere lagret melding med hendelse ID ${hendelse.id} for bruker som ikke er under oppfølging. Sletter melding fra databasen.")
-                stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
-                continue
+
+                try {
+                    stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
+                } catch (ex: Exception) {
+                    logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
+                    continue
+                }
+
             }
 
             val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
@@ -79,7 +85,12 @@ class HendelseService(
 
             if (startdatoOppfolging != null && hendelsesDato != null && hendelsesDato.isBefore(startdatoOppfolging)) {
                 logger.info("Hendelse - utgått varsel er fra tidligere periode. Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
-                stoppHendelse(hendelse, false)
+                try {
+                    stoppHendelse(hendelse, false)
+                } catch (ex: Exception) {
+                    logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
+                    continue
+                }
             }
         }
 
