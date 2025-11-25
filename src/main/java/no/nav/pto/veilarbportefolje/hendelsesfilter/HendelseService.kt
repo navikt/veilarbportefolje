@@ -67,8 +67,8 @@ class HendelseService(
         brukereMedUtgattVarsel.forEach { hendelse ->
             val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
             if (!isUnderArbeidsrettetOppfolging) {
-                logger.info("Har tidligere lagret melding med hendelse ID ${hendelse.id} for bruker som ikke er under oppfølging. Sletter melding fra databasen.")
-                stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
+                logger.info("LOGGTEST: Har tidligere lagret melding med hendelse ID ${hendelse.id} for bruker som ikke er under oppfølging. Sletter melding fra databasen.")
+                //stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
                 return
             }
 
@@ -78,8 +78,8 @@ class HendelseService(
             val hendelsesDato = fromZonedDateTimeToLocalDateOrNull(hendelse.hendelse.dato)
 
             if (startdatoOppfolging != null && hendelsesDato != null && hendelsesDato.isBefore(startdatoOppfolging)) {
-                logger.info("Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
-                stoppHendelse(hendelse, false)
+                logger.info("LOGGTEST: Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
+                //stoppHendelse(hendelse, false)
             }
         }
 
