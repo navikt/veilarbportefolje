@@ -71,6 +71,7 @@ class HendelseService(
 
                 try {
                     stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
+                    continue
                 } catch (ex: Exception) {
                     logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
                     continue
@@ -87,6 +88,7 @@ class HendelseService(
                 logger.info("Hendelse - utgått varsel er fra tidligere periode. Har lagret melding med hendelse ID ${hendelse.id} med hendelsesdato $hendelsesDato som er før oppfølgingsstartdato $startdatoOppfolging for bruker. Sletter melding fra databasen.")
                 try {
                     stoppHendelse(hendelse, false)
+                    continue
                 } catch (ex: Exception) {
                     logger.error("Hendelse - utgått varsel: Feil under stopp hendelse for batchjobb ${hendelse.id}", ex)
                     continue
