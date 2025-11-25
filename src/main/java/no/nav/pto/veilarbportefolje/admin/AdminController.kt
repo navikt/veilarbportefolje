@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
-import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
@@ -43,8 +42,7 @@ class AdminController(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val opensearchAdminService: OpensearchAdminService,
     private val pdlService: PdlService,
-    private val ensligForsorgerService: EnsligeForsorgereService,
-    private val hendelseService: HendelseService
+    private val ensligForsorgerService: EnsligeForsorgereService
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -194,18 +192,6 @@ class AdminController(
 
         log.info("Ferdig: Innlasting av ensligforsørger brukerdata")
         return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført")
-    }
-
-
-    @PostMapping("/slettUtgatteVarsler")
-    @Operation(
-        summary = "Slett utgåtte varsler",
-        description = "Sletter alle utgåtte varsler fra databasen utenfor oppfølgingsperioden."
-    )
-    fun slettUtgatteVarsler(): ResponseEntity<String> {
-        sjekkTilgangTilAdmin()
-        val antallSlettet = hendelseService.slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging()
-        return ResponseEntity.ok("Slettet $antallSlettet utgåtte varsler")
     }
 
     @GetMapping("hentData/hentDataForBruker/muligeValg")

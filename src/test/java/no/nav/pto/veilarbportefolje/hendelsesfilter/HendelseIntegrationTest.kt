@@ -9,8 +9,6 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -21,9 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.ZonedDateTime
 import java.util.*
-import java.util.List
 
 class HendelseIntegrationTest(
     @Autowired private val opensearchService: OpensearchService,
@@ -40,111 +36,6 @@ class HendelseIntegrationTest(
         jdbcTemplate.update("TRUNCATE oppfolging_data")
         jdbcTemplate.update("TRUNCATE nom_skjerming")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
-    }
-
-    @Test
-    fun `skal slette data for utgåtte varsler utenfor aktiv oppfølgingsperiode`() {
-        val brukerAktorId = randomAktorId()
-        val brukerFnr = randomFnr()
-        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
-        val identerBruker = List.of<PDLIdent>(
-            PDLIdent(brukerAktorId.get(), false, Gruppe.AKTORID),
-            PDLIdent(brukerNorskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
-        )
-        pdlIdentRepository.upsertIdenter(identerBruker)
-
-        val hendelsesDato = ZonedDateTime.of(2025, 6, 1, 12, 0, 0, 0, ZonedDateTime.now().zone)
-        val oppfølgingsStartDato = ZonedDateTime.of(2025, 7, 1, 12, 0, 0, 0, ZonedDateTime.now().zone)
-
-        val hendelseUtgåttVarselBase =
-            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
-        val hendelseUtgåttVarsel = hendelseUtgåttVarselBase.copy(
-            hendelse = hendelseUtgåttVarselBase.hendelse.copy(dato = hendelsesDato)
-        )
-
-        testDataClient.lagreBrukerUnderOppfolging(
-            aktoerId = brukerAktorId,
-            fnr = brukerFnr,
-            startDato = oppfølgingsStartDato,
-        )
-
-        hendelseRepository.insert(hendelseUtgåttVarsel)
-
-        val hendelseIder = hendelseRepository.getUtgattVarselForAlle()
-        assertThat(hendelseIder).hasSize(1)
-
-        hendelseService.slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging()
-        val hendelseIderEtterSletting = hendelseRepository.getUtgattVarselForAlle()
-
-        assertThat(hendelseIderEtterSletting).hasSize(0)
-    }
-
-    @Test
-    fun `skal ikke slette data for utgåtte varsler innenfor aktiv oppfølgingsperiode`() {
-        val brukerAktorId = randomAktorId()
-        val brukerFnr = randomFnr()
-        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
-        val identerBruker = List.of<PDLIdent>(
-            PDLIdent(brukerAktorId.get(), false, Gruppe.AKTORID),
-            PDLIdent(brukerNorskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
-        )
-        pdlIdentRepository.upsertIdenter(identerBruker)
-
-        val hendelsesDato = ZonedDateTime.of(2025, 8, 1, 12, 0, 0, 0, ZonedDateTime.now().zone)
-        val oppfølgingsStartDato = ZonedDateTime.of(2025, 7, 1, 12, 0, 0, 0, ZonedDateTime.now().zone)
-
-        val hendelseUtgåttVarselBase =
-            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
-        val hendelseUtgåttVarsel = hendelseUtgåttVarselBase.copy(
-            hendelse = hendelseUtgåttVarselBase.hendelse.copy(dato = hendelsesDato)
-        )
-
-        testDataClient.lagreBrukerUnderOppfolging(
-            aktoerId = brukerAktorId,
-            fnr = brukerFnr,
-            startDato = oppfølgingsStartDato,
-        )
-
-        hendelseRepository.insert(hendelseUtgåttVarsel)
-
-        val hendelseIder = hendelseRepository.getUtgattVarselForAlle()
-        assertThat(hendelseIder).hasSize(1)
-
-        hendelseService.slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging()
-        val hendelseIderEtterSletting = hendelseRepository.getUtgattVarselForAlle()
-
-        assertThat(hendelseIderEtterSletting).hasSize(1)
-    }
-
-
-    @Test
-    fun `skal slette data for utgåtte varsler når bruker ikke er under oppføging`() {
-        val brukerAktorId = randomAktorId()
-        val brukerFnr = randomFnr()
-        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
-        val identerBruker = List.of<PDLIdent>(
-            PDLIdent(brukerAktorId.get(), false, Gruppe.AKTORID),
-            PDLIdent(brukerNorskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
-        )
-        pdlIdentRepository.upsertIdenter(identerBruker)
-
-        val hendelsesDato = ZonedDateTime.of(2025, 6, 1, 12, 0, 0, 0, ZonedDateTime.now().zone)
-
-        val hendelseUtgåttVarselBase =
-            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
-        val hendelseUtgåttVarsel = hendelseUtgåttVarselBase.copy(
-            hendelse = hendelseUtgåttVarselBase.hendelse.copy(dato = hendelsesDato)
-        )
-
-        hendelseRepository.insert(hendelseUtgåttVarsel)
-
-        val hendelseIder = hendelseRepository.getUtgattVarselForAlle()
-        assertThat(hendelseIder).hasSize(1)
-
-        hendelseService.slettUtgåtteVarslerForBrukereSomIkkeErUnderOppfølging()
-        val hendelseIderEtterSletting = hendelseRepository.getUtgattVarselForAlle()
-
-        assertThat(hendelseIderEtterSletting).hasSize(0)
     }
 
     @Test

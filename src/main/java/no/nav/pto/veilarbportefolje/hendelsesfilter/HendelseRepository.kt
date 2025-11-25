@@ -60,15 +60,6 @@ class HendelseRepository(
             ?: throw RuntimeException("Ukjent feil ved henting av hendelse for person. Forventet å få en instans av ${Hendelse::class.simpleName} men fikk null.")
     }
 
-    fun getUtgattVarselForAlle(): List<Hendelse> {
-        val sql = """
-            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.KATEGORI} = ?
-           
-            """.trimIndent()
-
-        return jdbcTemplate.query(sql, ::toHendelse, Kategori.UTGATT_VARSEL.name)
-    }
-
     /**
      * Lagre en hendelse:
      *
