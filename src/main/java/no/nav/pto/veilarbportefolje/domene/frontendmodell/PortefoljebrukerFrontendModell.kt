@@ -65,7 +65,9 @@ data class PortefoljebrukerFrontendModell(
     var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
 
     // YtelseData
-    val innsatsgruppe: String? = null, // aap arena, sjekker på gruppe BATT
+    val ytelser: YtelserForBruker,
+
+    val innsatsgruppe: String?, // aap arena, sjekker på gruppe BATT
     val ytelse: YtelseMapping? = null,
     val utlopsdato: LocalDateTime? = null, // for aap og tp arena, brukes for uker igjen til utløpsdato
     val dagputlopUke: Int? = null,
