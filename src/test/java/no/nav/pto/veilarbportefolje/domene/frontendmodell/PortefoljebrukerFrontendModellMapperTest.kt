@@ -14,10 +14,13 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -274,7 +277,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val ytelser = frontendBruker.ytelser
         Assertions.assertEquals(YtelseMapping.ORDINARE_DAGPENGER, ytelser.ytelse)
-        Assertions.assertEquals(LocalDateTime.of(2023, 6, 30, 23, 59, 59), ytelser.utlopsdato)
+        Assertions.assertEquals(toLocalDateTimeOrNull("2023-06-30T21:59:59Z"), ytelser.utlopsdato)
         Assertions.assertEquals(2, ytelser.dagputlopUke)
         Assertions.assertEquals(4, ytelser.permutlopUke)
         Assertions.assertEquals(10, ytelser.aapmaxtidUke)
