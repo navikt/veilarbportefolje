@@ -64,6 +64,20 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     sisteEndringTidspunkt = null,
     sisteEndringAktivitetId = null,
 
+
+    ytelser = YtelserForBruker(
+        innsatsgruppe = null,
+        ytelse = null,
+        utlopsdato = null,
+        dagputlopUke = null,
+        permutlopUke = null,
+        aapmaxtidUke = null,
+        aapUnntakUkerIgjen = null,
+        aapordinerutlopsdato = null,
+        aapKelvin = null,
+        tiltakspenger = null,
+        ensligeForsorgereOvergangsstonad = null,
+    ),
     innsatsgruppe = null,
     ytelse = null,
     utlopsdato = null,

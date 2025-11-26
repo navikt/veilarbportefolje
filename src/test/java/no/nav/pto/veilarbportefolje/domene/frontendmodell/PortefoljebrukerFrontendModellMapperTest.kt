@@ -240,4 +240,21 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
     }
 
+    @Test
+    fun `skal mappe alle ytelser til ytelserForBruker`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        opensearchBruker.setYtelse("DAGPENGER")
+        opensearchBruker.setYtelse("DAGPENGER")
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val ytelser = frontendBruker.ytelser
+
+        Assertions.assertEquals("NOR", statsborgerskap.statsborgerskap)
+        Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
+    }
+
 }

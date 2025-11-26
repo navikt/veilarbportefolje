@@ -24,7 +24,7 @@ data class PortefoljebrukerFrontendModell(
     var tolkebehov: Tolkebehov? = null, // maaange nullsjekker i frontend
 
     var foedeland: String? = null,
-    var hovedStatsborgerskap: StatsborgerskapForBruker,
+    var hovedStatsborgerskap: StatsborgerskapForBruker?,
 
     // Geografisk bosted
     var geografiskBosted: GeografiskBostedForBruker,
