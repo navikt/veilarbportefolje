@@ -1,13 +1,17 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
 import org.junit.Test
@@ -226,8 +230,8 @@ class PortefoljebrukerFrontendModellMapperTest {
     @Test
     fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        val gyldigFraDato =LocalDate.of(2000, 5, 20)
-        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap( "NOR", gyldigFraDato, null))
+        val gyldigFraDato = LocalDate.of(2000, 5, 20)
+        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap("NOR", gyldigFraDato, null))
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -241,9 +245,27 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
-    fun `skal mappe alle ytelser til ytelserForBruker`() {
+    fun `skal mappe alle ytelser til ytelserForBruker når det finnes data`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
         opensearchBruker.setYtelse("ORDINARE_DAGPENGER")
+        opensearchBruker.setUtlopsdato("2023-06-30T21:59:59Z")
+        opensearchBruker.setDagputlopuke(2)
+        opensearchBruker.setPermutlopuke(4)
+        opensearchBruker.setAapmaxtiduke(10)
+        opensearchBruker.setAapunntakukerigjen(5)
+        opensearchBruker.setAapordinerutlopsdato(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
+        opensearchBruker.setAap_kelvin_tom_vedtaksdato(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setTiltakspenger_rettighet(TILTAKSPENGER)
+        opensearchBruker.setTiltakspenger_vedtaksdato_tom(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setEnslige_forsorgere_overgangsstonad(
+            EnsligeForsorgereOvergangsstonad(
+                "Utvidelse",
+                false,
+                LocalDate.now().plusMonths(1),
+                LocalDate.now().minusMonths(3)
+            )
+        );
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -251,8 +273,46 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = null
         )
         val ytelser = frontendBruker.ytelser
+        Assertions.assertEquals(YtelseMapping.ORDINARE_DAGPENGER, ytelser.ytelse)
+        Assertions.assertEquals(LocalDateTime.of(2023, 6, 30, 23, 59, 59), ytelser.utlopsdato)
+        Assertions.assertEquals(2, ytelser.dagputlopUke)
+        Assertions.assertEquals(4, ytelser.permutlopUke)
+        Assertions.assertEquals(10, ytelser.aapmaxtidUke)
+        Assertions.assertEquals(5, ytelser.aapUnntakUkerIgjen)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aapordinerutlopsdato)
+        Assertions.assertEquals(
+            AapRettighetstype.Companion.tilFrontendtekst(AapRettighetstype.SYKEPENGEERSTATNING),
+            ytelser.aapKelvin!!.rettighetstype
+        )
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aapKelvin!!.vedtaksdatoTilOgMed)
+        Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger!!.vedtaksdatoTilOgMed)
+        Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
+    }
 
+    @Test
+    fun `skal sette null på ytelsesfelt når det ikke finnes data`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
 
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val ytelser = frontendBruker.ytelser
+        Assertions.assertNotNull(ytelser)
+        Assertions.assertEquals(null, ytelser.ytelse)
+        Assertions.assertEquals(null, ytelser.utlopsdato)
+        Assertions.assertEquals(null, ytelser.dagputlopUke)
+        Assertions.assertEquals(null, ytelser.permutlopUke)
+        Assertions.assertEquals(null, ytelser.aapmaxtidUke)
+        Assertions.assertEquals(null, ytelser.aapUnntakUkerIgjen)
+        Assertions.assertEquals(null, ytelser.aapordinerutlopsdato)
+        Assertions.assertEquals(null, ytelser.aapKelvin)
+        Assertions.assertEquals(null, ytelser.aapKelvin?.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(null, ytelser.tiltakspenger)
+        Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
     }
 
 }
