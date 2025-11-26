@@ -24,7 +24,7 @@ data class PortefoljebrukerFrontendModell(
     var tolkebehov: Tolkebehov? = null, // maaange nullsjekker i frontend
 
     var foedeland: String? = null,
-    var hovedStatsborgerskap: Statsborgerskap? = null, // gyldig til brukes ikke
+    var hovedStatsborgerskap: StatsborgerskapForBruker,
 
     // Geografisk bosted
     var geografiskBosted: GeografiskBostedForBruker,
@@ -32,8 +32,9 @@ data class PortefoljebrukerFrontendModell(
     // Oppfolgingsdata
     val avvik14aVedtak: Avvik14aVedtak? = null,
     val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
-    val oppfolgingStartdato: LocalDate? = null,
     val utkast14a: Utkast14a? = null,
+
+    val oppfolgingStartdato: LocalDate? = null,
     val veilederId: String? = null,
     val tildeltTidspunkt: LocalDate? = null,
 
@@ -77,8 +78,10 @@ data class PortefoljebrukerFrontendModell(
     val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend? = null,
 
     // DialogData
-    val venterPaSvarFraNAV: LocalDate? = null,
-    val venterPaSvarFraBruker: LocalDate? = null,
+    val venterPaSvarFraNAV: LocalDate? = null,  // slettes etter frontend har bytta til dialogdata
+    val venterPaSvarFraBruker: LocalDate? = null,// slettes etter frontend har bytta til dialogdata
+    val dialogdata: DialogdataForBruker,
+
 
     // NavAnasattData - skjermet info
     var egenAnsatt: Boolean = false,

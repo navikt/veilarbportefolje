@@ -1,8 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene
 
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.GeografiskBostedForBruker
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.*
 
 var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFrontendModell(
     etiketter = Etiketter(
@@ -25,7 +23,10 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     tolkebehov = null,
 
     foedeland = null,
-    hovedStatsborgerskap = null,
+    hovedStatsborgerskap = StatsborgerskapForBruker(
+        statsborgerskap = null,
+        gyldigFra = null
+    ),
 
     geografiskBosted = GeografiskBostedForBruker(
         bostedKommune = null,
@@ -75,6 +76,10 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     tiltakspenger = null,
     ensligeForsorgereOvergangsstonad = null,
 
+    dialogdata = DialogdataForBruker(
+        venterPaSvarFraNavDato = null,
+        venterPaSvarFraBrukerDato = null
+    ),
     venterPaSvarFraNAV = null,
     venterPaSvarFraBruker = null,
 

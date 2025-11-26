@@ -70,8 +70,10 @@ object PortefoljebrukerFrontendModellMapper {
                 opensearchBruker.tolkBehovSistOppdatert
             ),
             foedeland = opensearchBruker.foedelandFulltNavn,
-            hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap,
-
+            hovedStatsborgerskap = StatsborgerskapForBruker(
+                statsborgerskap = opensearchBruker.hovedStatsborgerskap?.statsborgerskap,
+                gyldigFra = opensearchBruker.hovedStatsborgerskap?.gyldigFra
+            ),
             geografiskBosted = GeografiskBostedForBruker(
                 bostedKommune = opensearchBruker.kommunenummer,
                 bostedBydel = opensearchBruker.bydelsnummer,
@@ -123,6 +125,10 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             venterPaSvarFraNAV = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
             venterPaSvarFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            dialogdata = DialogdataForBruker(
+                venterPaSvarFraNavDato = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                venterPaSvarFraBrukerDato = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            ),
             egenAnsatt = opensearchBruker.egen_ansatt,
             skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,

@@ -1,15 +1,19 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -176,11 +180,12 @@ class PortefoljebrukerFrontendModellMapperTest {
             ufordelt = true,
             filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
         )
-        val frontendBrukerUdeltSamtalereferatFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
-        )
+        val frontendBrukerUdeltSamtalereferatFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+            )
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
@@ -193,8 +198,46 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
-        Assertions.assertEquals(udeltSamtalereferatHendelse.dato.dayOfMonth, resultUdeltSamtalereferat.dato!!.dayOfMonth)
+        Assertions.assertEquals(
+            udeltSamtalereferatHendelse.dato.dayOfMonth,
+            resultUdeltSamtalereferat.dato!!.dayOfMonth
+        )
+    }
 
+    @Test
+    fun `dialogdata skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val svarFraNavDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        val svarFraBrukerDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        opensearchBruker.setVenterpasvarfranav(svarFraNavDato)
+        opensearchBruker.setVenterpasvarfrabruker(svarFraBrukerDato)
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val dialogdata = frontendBruker.dialogdata
+
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.venterPaSvarFraNavDato)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.venterPaSvarFraBrukerDato)
+
+    }
+
+    @Test
+    fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val gyldigFraDato =LocalDate.of(2000, 5, 20)
+        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap( "NOR", gyldigFraDato, null))
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val statsborgerskap = frontendBruker.hovedStatsborgerskap
+
+        Assertions.assertEquals("NOR", statsborgerskap.statsborgerskap)
+        Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
     }
 
 }
