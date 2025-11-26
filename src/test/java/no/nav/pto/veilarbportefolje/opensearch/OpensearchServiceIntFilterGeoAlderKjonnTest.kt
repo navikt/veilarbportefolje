@@ -574,15 +574,15 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         Assertions.assertThat(response.antall).isEqualTo(6)
         org.junit.jupiter.api.Assertions.assertEquals(
             "Botswana",
-            response.brukere[0].hovedStatsborgerskap.statsborgerskap
+            response.brukere[0].hovedStatsborgerskap!!.statsborgerskap
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Estland",
-            response.brukere[1].hovedStatsborgerskap.statsborgerskap
+            response.brukere[1].hovedStatsborgerskap!!.statsborgerskap
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Norge",
-            response.brukere[2].hovedStatsborgerskap.statsborgerskap
+            response.brukere[2].hovedStatsborgerskap!!.statsborgerskap
         )
     }
 
