@@ -19,8 +19,6 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -223,10 +221,10 @@ class PortefoljebrukerFrontendModellMapperTest {
             ufordelt = true,
             filtervalg = null
         )
-        val dialogdata = frontendBruker.dialogdata
+        val dialogdata = frontendBruker.meldingerVenterPaSvar
 
-        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.venterPaSvarFraNavDato)
-        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.venterPaSvarFraBrukerDato)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.datoMeldingFraNav)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.datoMeldingFraBruker)
 
     }
 
@@ -276,18 +274,18 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = null
         )
         val ytelser = frontendBruker.ytelser
-        Assertions.assertEquals(YtelseMapping.ORDINARE_DAGPENGER, ytelser.ytelse)
-        Assertions.assertEquals(toLocalDateTimeOrNull("2023-06-30T21:59:59Z"), ytelser.utlopsdato)
-        Assertions.assertEquals(2, ytelser.dagputlopUke)
-        Assertions.assertEquals(4, ytelser.permutlopUke)
-        Assertions.assertEquals(10, ytelser.aapmaxtidUke)
-        Assertions.assertEquals(5, ytelser.aapUnntakUkerIgjen)
-        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aapordinerutlopsdato)
+        Assertions.assertEquals(YtelseMapping.ORDINARE_DAGPENGER, ytelser.ytelserArena.ytelse)
+        Assertions.assertEquals(toLocalDateTimeOrNull("2023-06-30T21:59:59Z"), ytelser.ytelserArena.utlopsdato)
+        Assertions.assertEquals(2, ytelser.ytelserArena.dagputlopUke)
+        Assertions.assertEquals(4, ytelser.ytelserArena.permutlopUke)
+        Assertions.assertEquals(10, ytelser.ytelserArena.aapmaxtidUke)
+        Assertions.assertEquals(5, ytelser.ytelserArena.aapUnntakUkerIgjen)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ytelserArena.aapordinerutlopsdato)
         Assertions.assertEquals(
             AapRettighetstype.Companion.tilFrontendtekst(AapRettighetstype.SYKEPENGEERSTATNING),
-            ytelser.aapKelvin!!.rettighetstype
+            ytelser.aap!!.rettighetstype
         )
-        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aapKelvin!!.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap!!.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger!!.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
@@ -304,15 +302,16 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val ytelser = frontendBruker.ytelser
         Assertions.assertNotNull(ytelser)
-        Assertions.assertEquals(null, ytelser.ytelse)
-        Assertions.assertEquals(null, ytelser.utlopsdato)
-        Assertions.assertEquals(null, ytelser.dagputlopUke)
-        Assertions.assertEquals(null, ytelser.permutlopUke)
-        Assertions.assertEquals(null, ytelser.aapmaxtidUke)
-        Assertions.assertEquals(null, ytelser.aapUnntakUkerIgjen)
-        Assertions.assertEquals(null, ytelser.aapordinerutlopsdato)
-        Assertions.assertEquals(null, ytelser.aapKelvin)
-        Assertions.assertEquals(null, ytelser.aapKelvin?.vedtaksdatoTilOgMed)
+        Assertions.assertNotNull(ytelser.ytelserArena)
+        Assertions.assertEquals(null, ytelser.ytelserArena.ytelse)
+        Assertions.assertEquals(null, ytelser.ytelserArena.utlopsdato)
+        Assertions.assertEquals(null, ytelser.ytelserArena.dagputlopUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.permutlopUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapmaxtidUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapUnntakUkerIgjen)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapordinerutlopsdato)
+        Assertions.assertEquals(null, ytelser.aap)
+        Assertions.assertEquals(null, ytelser.aap?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.tiltakspenger)
         Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)

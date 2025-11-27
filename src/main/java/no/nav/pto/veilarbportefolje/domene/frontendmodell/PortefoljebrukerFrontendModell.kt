@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -82,8 +81,7 @@ data class PortefoljebrukerFrontendModell(
     // DialogData
     val venterPaSvarFraNAV: LocalDate? = null,  // slettes etter frontend har bytta til dialogdata
     val venterPaSvarFraBruker: LocalDate? = null,// slettes etter frontend har bytta til dialogdata
-    val dialogdata: DialogdataForBruker,
-
+    val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
     // NavAnasattData - skjermet info
     var egenAnsatt: Boolean = false,

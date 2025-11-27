@@ -6,6 +6,14 @@ import java.time.LocalDateTime
 
 
 data class YtelserForBruker(
+    val ytelserArena : YtelserArena,
+    val aap: AapKelvinForBruker?,
+    val tiltakspenger: TiltakspengerForBruker?,
+    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend?,
+)
+
+
+data class YtelserArena(
     val innsatsgruppe: String?, // aap arena, sjekker på gruppe BATT
     val ytelse: YtelseMapping?,
     val utlopsdato: LocalDateTime?,
@@ -14,7 +22,4 @@ data class YtelserForBruker(
     val aapmaxtidUke: Int?,
     val aapUnntakUkerIgjen: Int?,
     val aapordinerutlopsdato: LocalDate?,
-    val aapKelvin: AapKelvinForBruker?,
-    val tiltakspenger: TiltakspengerForBruker?,
-    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend?,
 )

@@ -66,15 +66,17 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
 
 
     ytelser = YtelserForBruker(
-        innsatsgruppe = null,
-        ytelse = null,
-        utlopsdato = null,
-        dagputlopUke = null,
-        permutlopUke = null,
-        aapmaxtidUke = null,
-        aapUnntakUkerIgjen = null,
-        aapordinerutlopsdato = null,
-        aapKelvin = null,
+        ytelserArena = YtelserArena(
+            innsatsgruppe = null,
+            ytelse = null,
+            utlopsdato = null,
+            dagputlopUke = null,
+            permutlopUke = null,
+            aapmaxtidUke = null,
+            aapUnntakUkerIgjen = null,
+            aapordinerutlopsdato = null
+        ),
+        aap = null,
         tiltakspenger = null,
         ensligeForsorgereOvergangsstonad = null,
     ),
@@ -90,9 +92,9 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     tiltakspenger = null,
     ensligeForsorgereOvergangsstonad = null,
 
-    dialogdata = DialogdataForBruker(
-        venterPaSvarFraNavDato = null,
-        venterPaSvarFraBrukerDato = null
+    meldingerVenterPaSvar = MeldingerVenterPaSvar(
+        datoMeldingFraNav = null,
+        datoMeldingFraBruker = null
     ),
     venterPaSvarFraNAV = null,
     venterPaSvarFraBruker = null,

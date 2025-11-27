@@ -110,15 +110,17 @@ object PortefoljebrukerFrontendModellMapper {
             sisteEndringAktivitetId = null,
 
             ytelser = YtelserForBruker(
-                innsatsgruppe = innsatsgruppe,
-                ytelse = YtelseMapping.of(opensearchBruker.ytelse),
-                utlopsdato = toLocalDateTimeOrNull(opensearchBruker.utlopsdato),
-                dagputlopUke = opensearchBruker.dagputlopuke,
-                permutlopUke = opensearchBruker.permutlopuke,
-                aapmaxtidUke = opensearchBruker.aapmaxtiduke,
-                aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
-                aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato,
-                aapKelvin = AapKelvinForBruker.of(
+                ytelserArena = YtelserArena(
+                    innsatsgruppe = innsatsgruppe,
+                    ytelse = YtelseMapping.of(opensearchBruker.ytelse),
+                    utlopsdato = toLocalDateTimeOrNull(opensearchBruker.utlopsdato),
+                    dagputlopUke = opensearchBruker.dagputlopuke,
+                    permutlopUke = opensearchBruker.permutlopuke,
+                    aapmaxtidUke = opensearchBruker.aapmaxtiduke,
+                    aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
+                    aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato
+                ),
+                aap = AapKelvinForBruker.of(
                     opensearchBruker.aap_kelvin_tom_vedtaksdato,
                     opensearchBruker.aap_kelvin_rettighetstype
                 ),
@@ -152,9 +154,9 @@ object PortefoljebrukerFrontendModellMapper {
 
             venterPaSvarFraNAV = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
             venterPaSvarFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
-            dialogdata = DialogdataForBruker(
-                venterPaSvarFraNavDato = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
-                venterPaSvarFraBrukerDato = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            meldingerVenterPaSvar = MeldingerVenterPaSvar(
+                datoMeldingFraNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                datoMeldingFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             ),
 
             egenAnsatt = opensearchBruker.egen_ansatt,
