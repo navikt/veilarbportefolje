@@ -132,28 +132,6 @@ object PortefoljebrukerFrontendModellMapper {
                     opensearchBruker.enslige_forsorgere_overgangsstonad
                 ),
             ),
-            innsatsgruppe = innsatsgruppe,
-            ytelse = YtelseMapping.of(opensearchBruker.ytelse),
-            utlopsdato = toLocalDateTimeOrNull(opensearchBruker.utlopsdato),
-            dagputlopUke = opensearchBruker.dagputlopuke,
-            permutlopUke = opensearchBruker.permutlopuke,
-            aapmaxtidUke = opensearchBruker.aapmaxtiduke,
-            aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
-            aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato,
-            aapKelvin = AapKelvinForBruker.of(
-                opensearchBruker.aap_kelvin_tom_vedtaksdato,
-                opensearchBruker.aap_kelvin_rettighetstype
-            ),
-            tiltakspenger = TiltakspengerForBruker.of(
-                opensearchBruker.tiltakspenger_vedtaksdato_tom,
-                opensearchBruker.tiltakspenger_rettighet
-            ),
-            ensligeForsorgereOvergangsstonad = EnsligeForsorgereOvergangsstonadFrontend.of(
-                opensearchBruker.enslige_forsorgere_overgangsstonad
-            ),
-
-            venterPaSvarFraNAV = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
-            venterPaSvarFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             meldingerVenterPaSvar = MeldingerVenterPaSvar(
                 datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
                 datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),

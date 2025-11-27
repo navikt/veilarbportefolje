@@ -217,7 +217,7 @@ class TiltakspengerServiceTest(
             )
 
             assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().tiltakspenger).isNotNull()
+            assertThat(responseBrukere.brukere.first().ytelser.tiltakspenger).isNotNull()
         }
     }
 
