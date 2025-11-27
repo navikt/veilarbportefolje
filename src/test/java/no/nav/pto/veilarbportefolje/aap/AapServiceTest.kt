@@ -224,7 +224,7 @@ class AapServiceTest(
             )
 
             assertThat(responseBrukere.antall).isEqualTo(1)
-            assertThat(responseBrukere.brukere.first().aapKelvin).isNotNull()
+            assertThat(responseBrukere.brukere.first().ytelser.aap).isNotNull()
         }
     }
 

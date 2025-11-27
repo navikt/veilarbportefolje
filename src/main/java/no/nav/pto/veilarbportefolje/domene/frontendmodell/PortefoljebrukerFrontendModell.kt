@@ -63,24 +63,7 @@ data class PortefoljebrukerFrontendModell(
     var sisteEndringTidspunkt: LocalDateTime? = null,
     var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
 
-    // YtelseData
     val ytelser: YtelserForBruker,
-
-    val innsatsgruppe: String?, // aap arena, sjekker på gruppe BATT
-    val ytelse: YtelseMapping? = null,
-    val utlopsdato: LocalDateTime? = null, // for aap og tp arena, brukes for uker igjen til utløpsdato
-    val dagputlopUke: Int? = null,
-    val permutlopUke: Int? = null,
-    val aapmaxtidUke: Int? = null,
-    val aapUnntakUkerIgjen: Int? = null,
-    val aapordinerutlopsdato: LocalDate? = null,
-    val aapKelvin: AapKelvinForBruker? = null,
-    val tiltakspenger: TiltakspengerForBruker? = null,
-    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend? = null,
-
-    // DialogData
-    val venterPaSvarFraNAV: LocalDate? = null,  // slettes etter frontend har bytta til dialogdata
-    val venterPaSvarFraBruker: LocalDate? = null,// slettes etter frontend har bytta til dialogdata
     val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
     // NavAnasattData - skjermet info
