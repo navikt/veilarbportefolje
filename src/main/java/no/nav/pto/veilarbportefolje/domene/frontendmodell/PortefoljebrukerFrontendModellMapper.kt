@@ -155,8 +155,8 @@ object PortefoljebrukerFrontendModellMapper {
             venterPaSvarFraNAV = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
             venterPaSvarFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             meldingerVenterPaSvar = MeldingerVenterPaSvar(
-                datoMeldingFraNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
-                datoMeldingFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+                datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             ),
 
             egenAnsatt = opensearchBruker.egen_ansatt,

@@ -93,8 +93,8 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     ensligeForsorgereOvergangsstonad = null,
 
     meldingerVenterPaSvar = MeldingerVenterPaSvar(
-        datoMeldingFraNav = null,
-        datoMeldingFraBruker = null
+        datoMeldingVenterPaNav = null,
+        datoMeldingVenterPaBruker = null
     ),
     venterPaSvarFraNAV = null,
     venterPaSvarFraBruker = null,

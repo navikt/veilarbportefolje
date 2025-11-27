@@ -223,8 +223,8 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val dialogdata = frontendBruker.meldingerVenterPaSvar
 
-        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.datoMeldingFraNav)
-        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.datoMeldingFraBruker)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.datoMeldingVenterPaNav)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.datoMeldingVenterPaBruker)
 
     }
 
