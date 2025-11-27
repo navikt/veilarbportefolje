@@ -1,15 +1,24 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
+import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -176,11 +185,12 @@ class PortefoljebrukerFrontendModellMapperTest {
             ufordelt = true,
             filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
         )
-        val frontendBrukerUdeltSamtalereferatFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
-        )
+        val frontendBrukerUdeltSamtalereferatFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+            )
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
@@ -193,8 +203,118 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
-        Assertions.assertEquals(udeltSamtalereferatHendelse.dato.dayOfMonth, resultUdeltSamtalereferat.dato!!.dayOfMonth)
+        Assertions.assertEquals(
+            udeltSamtalereferatHendelse.dato.dayOfMonth,
+            resultUdeltSamtalereferat.dato!!.dayOfMonth
+        )
+    }
 
+    @Test
+    fun `dialogdata skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val svarFraNavDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        val svarFraBrukerDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        opensearchBruker.setVenterpasvarfranav(svarFraNavDato)
+        opensearchBruker.setVenterpasvarfrabruker(svarFraBrukerDato)
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val dialogdata = frontendBruker.meldingerVenterPaSvar
+
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraNavDato), dialogdata.datoMeldingFraNav)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(svarFraBrukerDato), dialogdata.datoMeldingFraBruker)
+
+    }
+
+    @Test
+    fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val gyldigFraDato = LocalDate.of(2000, 5, 20)
+        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap("NOR", gyldigFraDato, null))
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val statsborgerskap = frontendBruker.hovedStatsborgerskap
+
+        Assertions.assertEquals("NOR", statsborgerskap!!.statsborgerskap)
+        Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
+    }
+
+    @Test
+    fun `skal mappe alle ytelser til ytelserForBruker når det finnes data`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        opensearchBruker.setYtelse("ORDINARE_DAGPENGER")
+        opensearchBruker.setUtlopsdato("2023-06-30T21:59:59Z")
+        opensearchBruker.setDagputlopuke(2)
+        opensearchBruker.setPermutlopuke(4)
+        opensearchBruker.setAapmaxtiduke(10)
+        opensearchBruker.setAapunntakukerigjen(5)
+        opensearchBruker.setAapordinerutlopsdato(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
+        opensearchBruker.setAap_kelvin_tom_vedtaksdato(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setTiltakspenger_rettighet(TILTAKSPENGER)
+        opensearchBruker.setTiltakspenger_vedtaksdato_tom(LocalDate.of(2026, 1, 1))
+        opensearchBruker.setEnslige_forsorgere_overgangsstonad(
+            EnsligeForsorgereOvergangsstonad(
+                "Utvidelse",
+                false,
+                LocalDate.now().plusMonths(1),
+                LocalDate.now().minusMonths(3)
+            )
+        );
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val ytelser = frontendBruker.ytelser
+        Assertions.assertEquals(YtelseMapping.ORDINARE_DAGPENGER, ytelser.ytelserArena.ytelse)
+        Assertions.assertEquals(toLocalDateTimeOrNull("2023-06-30T21:59:59Z"), ytelser.ytelserArena.utlopsdato)
+        Assertions.assertEquals(2, ytelser.ytelserArena.dagputlopUke)
+        Assertions.assertEquals(4, ytelser.ytelserArena.permutlopUke)
+        Assertions.assertEquals(10, ytelser.ytelserArena.aapmaxtidUke)
+        Assertions.assertEquals(5, ytelser.ytelserArena.aapUnntakUkerIgjen)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ytelserArena.aapordinerutlopsdato)
+        Assertions.assertEquals(
+            AapRettighetstype.Companion.tilFrontendtekst(AapRettighetstype.SYKEPENGEERSTATNING),
+            ytelser.aap!!.rettighetstype
+        )
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap!!.vedtaksdatoTilOgMed)
+        Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger!!.vedtaksdatoTilOgMed)
+        Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
+    }
+
+    @Test
+    fun `skal sette null på ytelsesfelt når det ikke finnes data`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val ytelser = frontendBruker.ytelser
+        Assertions.assertNotNull(ytelser)
+        Assertions.assertNotNull(ytelser.ytelserArena)
+        Assertions.assertEquals(null, ytelser.ytelserArena.ytelse)
+        Assertions.assertEquals(null, ytelser.ytelserArena.utlopsdato)
+        Assertions.assertEquals(null, ytelser.ytelserArena.dagputlopUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.permutlopUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapmaxtidUke)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapUnntakUkerIgjen)
+        Assertions.assertEquals(null, ytelser.ytelserArena.aapordinerutlopsdato)
+        Assertions.assertEquals(null, ytelser.aap)
+        Assertions.assertEquals(null, ytelser.aap?.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(null, ytelser.tiltakspenger)
+        Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
     }
 
 }

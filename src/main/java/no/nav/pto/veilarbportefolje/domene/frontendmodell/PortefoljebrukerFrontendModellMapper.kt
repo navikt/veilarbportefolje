@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
+import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDateTime
@@ -24,7 +25,8 @@ object PortefoljebrukerFrontendModellMapper {
 
         val kvalifiseringsgruppekode = opensearchBruker.kvalifiseringsgruppekode
         val profileringResultat = opensearchBruker.profilering_resultat
-
+        val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
+            opensearchBruker.kvalifiseringsgruppekode else null
         val vurderingsBehov = if (opensearchBruker.trenger_vurdering)
             vurderingsBehov(kvalifiseringsgruppekode, profileringResultat)
         else null
@@ -70,8 +72,12 @@ object PortefoljebrukerFrontendModellMapper {
                 opensearchBruker.tolkBehovSistOppdatert
             ),
             foedeland = opensearchBruker.foedelandFulltNavn,
-            hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap,
-
+            hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap?.let {
+                StatsborgerskapForBruker(
+                    statsborgerskap = it.statsborgerskap,
+                    gyldigFra = it.gyldigFra
+                )
+            },
             geografiskBosted = GeografiskBostedForBruker(
                 bostedKommune = opensearchBruker.kommunenummer,
                 bostedBydel = opensearchBruker.bydelsnummer,
@@ -103,6 +109,30 @@ object PortefoljebrukerFrontendModellMapper {
             sisteEndringTidspunkt = null,
             sisteEndringAktivitetId = null,
 
+            ytelser = YtelserForBruker(
+                ytelserArena = YtelserArena(
+                    innsatsgruppe = innsatsgruppe,
+                    ytelse = YtelseMapping.of(opensearchBruker.ytelse),
+                    utlopsdato = toLocalDateTimeOrNull(opensearchBruker.utlopsdato),
+                    dagputlopUke = opensearchBruker.dagputlopuke,
+                    permutlopUke = opensearchBruker.permutlopuke,
+                    aapmaxtidUke = opensearchBruker.aapmaxtiduke,
+                    aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
+                    aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato
+                ),
+                aap = AapKelvinForBruker.of(
+                    opensearchBruker.aap_kelvin_tom_vedtaksdato,
+                    opensearchBruker.aap_kelvin_rettighetstype
+                ),
+                tiltakspenger = TiltakspengerForBruker.of(
+                    opensearchBruker.tiltakspenger_vedtaksdato_tom,
+                    opensearchBruker.tiltakspenger_rettighet
+                ),
+                ensligeForsorgereOvergangsstonad = EnsligeForsorgereOvergangsstonadFrontend.of(
+                    opensearchBruker.enslige_forsorgere_overgangsstonad
+                ),
+            ),
+            innsatsgruppe = innsatsgruppe,
             ytelse = YtelseMapping.of(opensearchBruker.ytelse),
             utlopsdato = toLocalDateTimeOrNull(opensearchBruker.utlopsdato),
             dagputlopUke = opensearchBruker.dagputlopuke,
@@ -121,8 +151,14 @@ object PortefoljebrukerFrontendModellMapper {
             ensligeForsorgereOvergangsstonad = EnsligeForsorgereOvergangsstonadFrontend.of(
                 opensearchBruker.enslige_forsorgere_overgangsstonad
             ),
+
             venterPaSvarFraNAV = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
             venterPaSvarFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            meldingerVenterPaSvar = MeldingerVenterPaSvar(
+                datoMeldingFraNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                datoMeldingFraBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            ),
+
             egenAnsatt = opensearchBruker.egen_ansatt,
             skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
