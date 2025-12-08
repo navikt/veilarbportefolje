@@ -85,13 +85,28 @@ object PortefoljebrukerFrontendModellMapper {
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
+
+            vedtak14a = Vedtak14aForBruker(
+                gjeldendeVedtak14a = Vedtak14aForBruker.GjeldendeVedtak14a(
+                    innsatsgruppe = opensearchBruker.gjeldendeVedtak14a?.innsatsgruppe,
+                    hovedmal = opensearchBruker.gjeldendeVedtak14a?.hovedmal,
+                    fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a?.fattetDato)
+                ),
+                utkast14a = Vedtak14aForBruker.Utkast14a(
+                    status = opensearchBruker.utkast_14a_status,
+                    statusEndret = fromIsoUtcToLocalDateOrNull(opensearchBruker.utkast_14a_status_endret),
+                    ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
+                )
+            ),
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
-            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             utkast14a = Utkast14a(
                 opensearchBruker.utkast_14a_status,
                 toLocalDateTimeOrNull(opensearchBruker.utkast_14a_status_endret),
                 opensearchBruker.utkast_14a_ansvarlig_veileder
             ),
+
+            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
+
             veilederId = opensearchBruker.veileder_id,
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,

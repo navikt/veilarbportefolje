@@ -24,15 +24,17 @@ data class PortefoljebrukerFrontendModell(
 
     var foedeland: String? = null,
     var hovedStatsborgerskap: StatsborgerskapForBruker?,
-
-    // Geografisk bosted
     var geografiskBosted: GeografiskBostedForBruker,
 
-    // Oppfolgingsdata
-    val avvik14aVedtak: Avvik14aVedtak? = null,
+
+    // 14 data
+    val vedtak14a: Vedtak14aForBruker,
     val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
     val utkast14a: Utkast14a? = null,
 
+    val avvik14aVedtak: Avvik14aVedtak? = null, // skal fjernes
+
+    // Oppfolgingsdata
     val oppfolgingStartdato: LocalDate? = null,
     val veilederId: String? = null,
     val tildeltTidspunkt: LocalDate? = null,
