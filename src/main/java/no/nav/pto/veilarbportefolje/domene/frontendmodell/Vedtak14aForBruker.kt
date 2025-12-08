@@ -16,7 +16,7 @@ data class Vedtak14aForBruker(
 
     data class Utkast14a(
         val status : String?,
-        val statusEndret: LocalDate?,
+        val dagerSidenStatusEndretSeg: String?,
         val ansvarligVeileder: String?
     )
 }

@@ -20,10 +20,8 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.*
+import java.time.format.DateTimeFormatter
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -324,7 +322,12 @@ class PortefoljebrukerFrontendModellMapperTest {
 
     @Test
     fun `skal mappe vedtak 14a til riktig object når det finnes data `() {
-        val utcDateTimeStatus = "2025-02-17T14:23:11Z"
+        val dagensDato = LocalDate.now()
+        val utcDateTimeStatus = dagensDato
+            .minusDays(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .withZoneSameInstant(ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_INSTANT)
         val zonedDateTimeFattetDato = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
         val opensearchBruker = PortefoljebrukerOpensearchModell()
@@ -345,13 +348,12 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val vedtak14a = frontendBruker.vedtak14a
 
-        Assertions.assertEquals(Innsatsgruppe.STANDARD_INNSATS , vedtak14a.gjeldendeVedtak14a.innsatsgruppe)
-        Assertions.assertEquals(Hovedmal.SKAFFE_ARBEID , vedtak14a.gjeldendeVedtak14a.hovedmal)
-        Assertions.assertEquals(zonedDateTimeFattetDato.toLocalDate() , vedtak14a.gjeldendeVedtak14a.fattetDato)
-        Assertions.assertEquals("Utkast" , vedtak14a.utkast14a.status)
-        Assertions.assertEquals(DateUtils.fromIsoUtcToLocalDateOrNull(utcDateTimeStatus) , vedtak14a.utkast14a.statusEndret)
-        Assertions.assertEquals("Veileder Navn" , vedtak14a.utkast14a.ansvarligVeileder)
-
+        Assertions.assertEquals(Innsatsgruppe.STANDARD_INNSATS, vedtak14a.gjeldendeVedtak14a.innsatsgruppe)
+        Assertions.assertEquals(Hovedmal.SKAFFE_ARBEID, vedtak14a.gjeldendeVedtak14a.hovedmal)
+        Assertions.assertEquals(zonedDateTimeFattetDato.toLocalDate(), vedtak14a.gjeldendeVedtak14a.fattetDato)
+        Assertions.assertEquals("Utkast", vedtak14a.utkast14a.status)
+        Assertions.assertEquals("1 dag siden", vedtak14a.utkast14a.dagerSidenStatusEndretSeg)
+        Assertions.assertEquals("Veileder Navn", vedtak14a.utkast14a.ansvarligVeileder)
     }
 
     @Test
@@ -370,11 +372,12 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         Assertions.assertNull(vedtak14a.utkast14a.ansvarligVeileder)
         Assertions.assertNull(vedtak14a.utkast14a.status)
-        Assertions.assertNull(vedtak14a.utkast14a.statusEndret)
+        Assertions.assertNull(vedtak14a.utkast14a.dagerSidenStatusEndretSeg)
         Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.fattetDato)
         Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.hovedmal)
         Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.innsatsgruppe)
 
     }
+
 
 }

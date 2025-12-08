@@ -13,7 +13,9 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
 
@@ -94,7 +96,7 @@ object PortefoljebrukerFrontendModellMapper {
                 ),
                 utkast14a = Vedtak14aForBruker.Utkast14a(
                     status = opensearchBruker.utkast_14a_status,
-                    statusEndret = fromIsoUtcToLocalDateOrNull(opensearchBruker.utkast_14a_status_endret),
+                    dagerSidenStatusEndretSeg = dagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
                     ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
                 )
             ),
@@ -186,6 +188,19 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
         return frontendbruker
+    }
+
+    private fun dagerSidenTekst(utcDato: String?): String? {
+        if (utcDato.isNullOrBlank()) return null
+
+        val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
+        val dager = ChronoUnit.DAYS.between(parsed, LocalDate.now())
+
+        return when (dager) {
+            0L -> "I dag"
+            1L -> "1 dag siden"
+            else -> "$dager dager siden"
+        }
     }
 
     // Vi sender kun én hendelse til frontend så logikken der blir enklere, og fordi vi kun kan ha ett av hendelsesfilterne valgt av gangen
