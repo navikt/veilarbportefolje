@@ -96,7 +96,7 @@ object PortefoljebrukerFrontendModellMapper {
                 ),
                 utkast14a = Vedtak14aForBruker.Utkast14a(
                     status = opensearchBruker.utkast_14a_status,
-                    dagerSidenStatusEndretSeg = dagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
+                    dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
                     ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
                 )
             ),
@@ -190,7 +190,7 @@ object PortefoljebrukerFrontendModellMapper {
         return frontendbruker
     }
 
-    private fun dagerSidenTekst(utcDato: String?): String? {
+    private fun lagDagerSidenTekst(utcDato: String?): String? {
         if (utcDato.isNullOrBlank()) return null
 
         val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
