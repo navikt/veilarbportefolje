@@ -35,10 +35,15 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         bostedSistOppdatert = null
     ),
 
-    avvik14aVedtak = null,
+    vedtak14a = Vedtak14aForBruker(
+        gjeldendeVedtak14a = null,
+        utkast14a = null
+    ),
     gjeldendeVedtak14a = null,
-    oppfolgingStartdato = null,
     utkast14a = null,
+    avvik14aVedtak = null,
+
+    oppfolgingStartdato = null,
     veilederId = null,
     tildeltTidspunkt = null,
 

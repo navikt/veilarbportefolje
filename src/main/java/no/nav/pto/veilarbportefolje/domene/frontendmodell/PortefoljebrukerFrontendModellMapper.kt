@@ -13,7 +13,9 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
 
@@ -85,13 +87,17 @@ object PortefoljebrukerFrontendModellMapper {
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
+
+            vedtak14a = mapVedtak14a(opensearchBruker),
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
-            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             utkast14a = Utkast14a(
                 opensearchBruker.utkast_14a_status,
                 toLocalDateTimeOrNull(opensearchBruker.utkast_14a_status_endret),
                 opensearchBruker.utkast_14a_ansvarlig_veileder
             ),
+
+            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
+
             veilederId = opensearchBruker.veileder_id,
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
@@ -171,6 +177,49 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
         return frontendbruker
+    }
+
+    private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
+        val vedtak14a = opensearchBruker.gjeldendeVedtak14a
+
+        val gjeldendeVedtak14a = buildIfAnyNotNull(vedtak14a?.innsatsgruppe, vedtak14a?.fattetDato) {
+            Vedtak14aForBruker.GjeldendeVedtak14a(
+                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a.innsatsgruppe,
+                hovedmal = opensearchBruker.gjeldendeVedtak14a.hovedmal,
+                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a.fattetDato)
+            )
+        }
+
+        val utkast14a = buildIfAnyNotNull(
+            opensearchBruker.utkast_14a_status,
+            opensearchBruker.utkast_14a_status_endret,
+            opensearchBruker.utkast_14a_ansvarlig_veileder
+        ) {
+            Vedtak14aForBruker.Utkast14a(
+                status = opensearchBruker.utkast_14a_status,
+                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
+                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
+            )
+        }
+
+        return Vedtak14aForBruker(
+            gjeldendeVedtak14a = gjeldendeVedtak14a,
+            utkast14a = utkast14a
+        )
+    }
+
+    inline fun <T> buildIfAnyNotNull(vararg fields: Any?, builder: () -> T): T? =
+        if (fields.any { it != null }) builder() else null
+
+    private fun lagDagerSidenTekst(utcDato: String): String {
+        val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
+        val dager = ChronoUnit.DAYS.between(parsed, LocalDate.now())
+
+        return when (dager) {
+            0L -> "I dag"
+            1L -> "1 dag siden"
+            else -> "$dager dager siden"
+        }
     }
 
     // Vi sender kun én hendelse til frontend så logikken der blir enklere, og fordi vi kun kan ha ett av hendelsesfilterne valgt av gangen
