@@ -88,18 +88,7 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
 
-            vedtak14a = Vedtak14aForBruker(
-                gjeldendeVedtak14a = Vedtak14aForBruker.GjeldendeVedtak14a(
-                    innsatsgruppe = opensearchBruker.gjeldendeVedtak14a?.innsatsgruppe,
-                    hovedmal = opensearchBruker.gjeldendeVedtak14a?.hovedmal,
-                    fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a?.fattetDato)
-                ),
-                utkast14a = Vedtak14aForBruker.Utkast14a(
-                    status = opensearchBruker.utkast_14a_status,
-                    dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
-                    ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
-                )
-            ),
+            vedtak14a = mapVedtak14a(opensearchBruker),
             gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
             utkast14a = Utkast14a(
                 opensearchBruker.utkast_14a_status,
@@ -190,9 +179,39 @@ object PortefoljebrukerFrontendModellMapper {
         return frontendbruker
     }
 
-    private fun lagDagerSidenTekst(utcDato: String?): String? {
-        if (utcDato.isNullOrBlank()) return null
+    private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
+        val vedtak14a = opensearchBruker.gjeldendeVedtak14a
 
+        val gjeldendeVedtak14a = buildIfAnyNotNull(vedtak14a?.innsatsgruppe, vedtak14a?.fattetDato) {
+            Vedtak14aForBruker.GjeldendeVedtak14a(
+                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a.innsatsgruppe,
+                hovedmal = opensearchBruker.gjeldendeVedtak14a.hovedmal,
+                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a.fattetDato)
+            )
+        }
+
+        val utkast14a = buildIfAnyNotNull(
+            opensearchBruker.utkast_14a_status,
+            opensearchBruker.utkast_14a_status_endret,
+            opensearchBruker.utkast_14a_ansvarlig_veileder
+        ) {
+            Vedtak14aForBruker.Utkast14a(
+                status = opensearchBruker.utkast_14a_status,
+                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
+                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
+            )
+        }
+
+        return Vedtak14aForBruker(
+            gjeldendeVedtak14a = gjeldendeVedtak14a,
+            utkast14a = utkast14a
+        )
+    }
+
+    inline fun <T> buildIfAnyNotNull(vararg fields: Any?, builder: () -> T): T? =
+        if (fields.any { it != null }) builder() else null
+
+    private fun lagDagerSidenTekst(utcDato: String): String {
         val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
         val dager = ChronoUnit.DAYS.between(parsed, LocalDate.now())
 

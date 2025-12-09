@@ -348,12 +348,14 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val vedtak14a = frontendBruker.vedtak14a
 
-        Assertions.assertEquals(Innsatsgruppe.STANDARD_INNSATS, vedtak14a.gjeldendeVedtak14a.innsatsgruppe)
-        Assertions.assertEquals(Hovedmal.SKAFFE_ARBEID, vedtak14a.gjeldendeVedtak14a.hovedmal)
-        Assertions.assertEquals(zonedDateTimeFattetDato.toLocalDate(), vedtak14a.gjeldendeVedtak14a.fattetDato)
-        Assertions.assertEquals("Utkast", vedtak14a.utkast14a.status)
-        Assertions.assertEquals("1 dag siden", vedtak14a.utkast14a.dagerSidenStatusEndretSeg)
-        Assertions.assertEquals("Veileder Navn", vedtak14a.utkast14a.ansvarligVeileder)
+        Assertions.assertNotNull(vedtak14a.gjeldendeVedtak14a)
+        Assertions.assertNotNull(vedtak14a.utkast14a)
+        Assertions.assertEquals(Innsatsgruppe.STANDARD_INNSATS, vedtak14a.gjeldendeVedtak14a!!.innsatsgruppe)
+        Assertions.assertEquals(Hovedmal.SKAFFE_ARBEID, vedtak14a.gjeldendeVedtak14a!!.hovedmal)
+        Assertions.assertEquals(zonedDateTimeFattetDato.toLocalDate(), vedtak14a.gjeldendeVedtak14a!!.fattetDato)
+        Assertions.assertEquals("Utkast", vedtak14a.utkast14a!!.status)
+        Assertions.assertEquals("1 dag siden", vedtak14a.utkast14a!!.dagerSidenStatusEndretSeg)
+        Assertions.assertEquals("Veileder Navn", vedtak14a.utkast14a!!.ansvarligVeileder)
     }
 
     @Test
@@ -367,16 +369,8 @@ class PortefoljebrukerFrontendModellMapperTest {
         val vedtak14a = frontendBruker.vedtak14a
 
         Assertions.assertNotNull(vedtak14a)
-        Assertions.assertNotNull(vedtak14a.gjeldendeVedtak14a)
-        Assertions.assertNotNull(vedtak14a.utkast14a)
-
-        Assertions.assertNull(vedtak14a.utkast14a.ansvarligVeileder)
-        Assertions.assertNull(vedtak14a.utkast14a.status)
-        Assertions.assertNull(vedtak14a.utkast14a.dagerSidenStatusEndretSeg)
-        Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.fattetDato)
-        Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.hovedmal)
-        Assertions.assertNull(vedtak14a.gjeldendeVedtak14a.innsatsgruppe)
-
+        Assertions.assertNull(vedtak14a.gjeldendeVedtak14a)
+        Assertions.assertNull(vedtak14a.utkast14a)
     }
 
 

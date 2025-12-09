@@ -36,8 +36,8 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     ),
 
     vedtak14a = Vedtak14aForBruker(
-        gjeldendeVedtak14a = Vedtak14aForBruker.GjeldendeVedtak14a(null, null, null),
-        utkast14a = Vedtak14aForBruker.Utkast14a(null, null, null)
+        gjeldendeVedtak14a = null,
+        utkast14a = null
     ),
     gjeldendeVedtak14a = null,
     utkast14a = null,
