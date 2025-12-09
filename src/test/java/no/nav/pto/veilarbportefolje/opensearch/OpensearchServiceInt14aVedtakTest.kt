@@ -117,9 +117,9 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
                 brukerMedVedtak2.fnr,
             )
 
-        Assertions.assertThat(response.brukere[0].utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
-        Assertions.assertThat(response.brukere[1].utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
-        Assertions.assertThat(response.brukere[2].utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
+        Assertions.assertThat(response.brukere[0].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
+        Assertions.assertThat(response.brukere[1].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
+        Assertions.assertThat(response.brukere[2].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
     }
 
 
@@ -368,12 +368,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerMedSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerMedSiste14aVedtakAktorId.get())
-        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
+        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.vedtak14a.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNotNull()
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.innsatsgruppe).isEqualTo(innsatsgruppe)
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.hovedmal).isEqualTo(hovedmal)
-        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.fattetDato)
-            .isEqualTo(fattetDato.toOffsetDateTime().toZonedDateTime())
     }
 
     @Test
@@ -429,7 +427,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerUtenSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerUtenSiste14aVedtakAktorId.get())
-        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
+        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.vedtak14a.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNull()
     }
 

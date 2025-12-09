@@ -26,12 +26,7 @@ data class PortefoljebrukerFrontendModell(
     var hovedStatsborgerskap: StatsborgerskapForBruker?,
     var geografiskBosted: GeografiskBostedForBruker,
 
-
-    // 14 data
     val vedtak14a: Vedtak14aForBruker,
-    val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
-    val utkast14a: Utkast14a? = null,
-
     val avvik14aVedtak: Avvik14aVedtak? = null, // skal fjernes
 
     // Oppfolgingsdata

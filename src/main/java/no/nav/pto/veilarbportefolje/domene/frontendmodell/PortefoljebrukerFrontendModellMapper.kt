@@ -89,13 +89,6 @@ object PortefoljebrukerFrontendModellMapper {
             avvik14aVedtak = opensearchBruker.avvik14aVedtak,
 
             vedtak14a = mapVedtak14a(opensearchBruker),
-            gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
-            utkast14a = Utkast14a(
-                opensearchBruker.utkast_14a_status,
-                toLocalDateTimeOrNull(opensearchBruker.utkast_14a_status_endret),
-                opensearchBruker.utkast_14a_ansvarlig_veileder
-            ),
-
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
 
             veilederId = opensearchBruker.veileder_id,
