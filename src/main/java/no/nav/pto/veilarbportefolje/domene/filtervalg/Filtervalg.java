@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
@@ -47,7 +46,6 @@ public class Filtervalg {
     public List<BarnUnder18Aar> barnUnder18Aar = new ArrayList<>();
     public List<String> barnUnder18AarAlder = new ArrayList<>();
     public List<String> geografiskBosted;
-    public List<Avvik14aVedtak> avvik14aVedtak;
     public List<EnsligeForsorgere> ensligeForsorgere;
     public List<String> fargekategorier = new ArrayList<>();
     public List<String> gjeldendeVedtak14a = new ArrayList<>();
@@ -88,7 +86,6 @@ public class Filtervalg {
                 harBarnUnder18AarFilter() ||
                 harLandgruppeFilter() ||
                 harBostedFilter() ||
-                harAvvik14aVedtakFilter() ||
                 harEnsligeForsorgereFilter() ||
                 harFargeKategoriFilter() ||
                 harGjeldendeVedtak14aFilter() ||
@@ -207,10 +204,6 @@ public class Filtervalg {
 
     public boolean harBostedFilter() {
         return geografiskBosted != null && !geografiskBosted.isEmpty();
-    }
-
-    public boolean harAvvik14aVedtakFilter() {
-        return avvik14aVedtak != null && !avvik14aVedtak.isEmpty();
     }
 
     public boolean harDinSituasjonSvar() {

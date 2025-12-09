@@ -86,7 +86,6 @@ object PortefoljebrukerFrontendModellMapper {
                 bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
-            avvik14aVedtak = opensearchBruker.avvik14aVedtak,
 
             vedtak14a = mapVedtak14a(opensearchBruker),
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),

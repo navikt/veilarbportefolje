@@ -1,9 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import java.sql.Timestamp
 import java.time.LocalDate
@@ -27,7 +24,6 @@ data class PortefoljebrukerFrontendModell(
     var geografiskBosted: GeografiskBostedForBruker,
 
     val vedtak14a: Vedtak14aForBruker,
-    val avvik14aVedtak: Avvik14aVedtak? = null, // skal fjernes
 
     // Oppfolgingsdata
     val oppfolgingStartdato: LocalDate? = null,

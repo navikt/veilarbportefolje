@@ -183,9 +183,6 @@
       "bostedSistOppdatert": {
         "type": "date"
       },
-      "avvik14aVedtak": {
-        "type": "keyword"
-      },
       "neste_svarfrist_stilling_fra_nav": {
         "type": "date"
       },
