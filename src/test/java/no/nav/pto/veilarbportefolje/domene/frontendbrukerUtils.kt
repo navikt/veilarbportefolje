@@ -39,8 +39,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         gjeldendeVedtak14a = null,
         utkast14a = null
     ),
-    gjeldendeVedtak14a = null,
-    utkast14a = null,
     avvik14aVedtak = null,
 
     oppfolgingStartdato = null,
