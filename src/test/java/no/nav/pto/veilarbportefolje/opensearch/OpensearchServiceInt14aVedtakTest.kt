@@ -42,6 +42,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_hente_alle_brukere_som_har_vedtak() {
+        val utcDato = "2024-06-01T12:00:00Z"
         val brukerMedVedtak = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
@@ -51,6 +52,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Utkast")
             .setUtkast_14a_ansvarlig_veileder("BVeileder")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerMedVedtak1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -61,6 +63,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Venter på tilbakemelding")
             .setUtkast_14a_ansvarlig_veileder("CVeileder")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerMedVedtak2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -71,15 +74,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Venter på tilbakemelding")
             .setUtkast_14a_ansvarlig_veileder("AVeileder")
-
-        val brukerMedVedtakUtenAnsvarligVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Utkast")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerUtenVedtak = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -94,7 +89,6 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             brukerMedVedtak,
             brukerMedVedtak1,
             brukerMedVedtak2,
-            brukerMedVedtakUtenAnsvarligVeileder,
             brukerUtenVedtak
         )
 
@@ -115,19 +109,17 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(4)
+        Assertions.assertThat(response.antall).isEqualTo(3)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .containsExactlyInAnyOrder(
                 brukerMedVedtak.fnr,
                 brukerMedVedtak1.fnr,
                 brukerMedVedtak2.fnr,
-                brukerMedVedtakUtenAnsvarligVeileder.fnr
             )
 
         Assertions.assertThat(response.brukere[0].utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
         Assertions.assertThat(response.brukere[1].utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
         Assertions.assertThat(response.brukere[2].utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
-        Assertions.assertThat(response.brukere[3].utkast14a?.ansvarligVeileder).isNull()
     }
 
 
