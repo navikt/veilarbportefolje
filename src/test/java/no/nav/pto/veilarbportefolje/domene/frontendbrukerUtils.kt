@@ -63,6 +63,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     tiltakshendelse = null,
     hendelse = null,
 
+    sisteEndringAvBruker = null,
     sisteEndringKategori = null,
     sisteEndringTidspunkt = null,
     sisteEndringAktivitetId = null,
