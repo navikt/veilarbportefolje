@@ -248,7 +248,7 @@ object PortefoljebrukerFrontendModellMapper {
         filtervalg: Filtervalg?
     ): SisteEndringAvBruker? {
         val opensearchSisteEndringer = opensearchBruker.siste_endringer
-        if (filtervalg?.harSisteEndringFilter() == null || opensearchSisteEndringer == null) return null
+        if (filtervalg == null || !filtervalg.harSisteEndringFilter() || opensearchSisteEndringer.isNullOrEmpty()) return null
 
         //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
         val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
@@ -256,8 +256,8 @@ object PortefoljebrukerFrontendModellMapper {
 
         return SisteEndringAvBruker(
             kategori = valgtFilterSisteEndringKategori,
-            tidspunkt = toLocalDateOrNull(endringsdataForValgtFilter?.tidspunkt),
-            aktivitetId = endringsdataForValgtFilter?.aktivtetId
+            tidspunkt = toLocalDateOrNull(endringsdataForValgtFilter.tidspunkt),
+            aktivitetId = endringsdataForValgtFilter.aktivtetId
         )
     }
 
