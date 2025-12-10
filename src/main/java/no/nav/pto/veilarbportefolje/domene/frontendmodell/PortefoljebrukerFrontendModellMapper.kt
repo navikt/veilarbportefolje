@@ -252,7 +252,7 @@ object PortefoljebrukerFrontendModellMapper {
 
         //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
         val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
-        val endringsdataForValgtFilter = opensearchSisteEndringer[valgtFilterSisteEndringKategori]
+        val endringsdataForValgtFilter = opensearchSisteEndringer[valgtFilterSisteEndringKategori] ?: return null
 
         return SisteEndringAvBruker(
             kategori = valgtFilterSisteEndringKategori,

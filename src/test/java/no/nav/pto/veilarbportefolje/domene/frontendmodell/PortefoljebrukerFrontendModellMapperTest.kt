@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
@@ -373,5 +374,99 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertNull(vedtak14a.utkast14a)
     }
 
+    @Test
+    fun `skal mappe siste endring av bruker når det finnes data i samme kategori som valgt filter`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedSammeFilterkategori =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+            )
+
+        val sisteEndringMedSammeFilterkategori = frontendBrukerMedSammeFilterkategori.sisteEndringAvBruker
+        Assertions.assertNotNull(sisteEndringMedSammeFilterkategori)
+        Assertions.assertEquals("11111", sisteEndringMedSammeFilterkategori!!.aktivitetId)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(isoUtc), sisteEndringMedSammeFilterkategori.tidspunkt)
+        Assertions.assertEquals(kategori, sisteEndringMedSammeFilterkategori.kategori)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke finnes data i samme kategori som valgt filter`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedAnnenFilterkategori =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setSisteEndringKategori(listOf("NY_JOBB")),
+            )
+
+        val sisteEndringMedAnnenFilterkategori = frontendBrukerMedAnnenFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndringMedAnnenFilterkategori)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke finnes data i opensearch`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+
+        val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+        )
+
+        val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndring)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke er valgt filter for siste endring`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null,
+        )
+
+        val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndring)
+    }
 
 }
