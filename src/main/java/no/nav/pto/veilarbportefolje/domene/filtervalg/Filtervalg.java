@@ -33,7 +33,7 @@ public class Filtervalg {
     public List<UtdanningSvar> utdanning = new ArrayList<>();
     public List<UtdanningBestattSvar> utdanningBestatt = new ArrayList<>();
     public List<UtdanningGodkjentSvar> utdanningGodkjent = new ArrayList<>();
-    public List<String> sisteEndringKategori = new ArrayList<>();
+    public List<String> sisteEndringKategori = new ArrayList<>(); // trenger dette å være en liste? sender kun en kategori via radioknapper
     public List<String> aktiviteterForenklet = new ArrayList<>();
     public List<String> alleAktiviteter = new ArrayList<>(); // finst ikkje i veilarbportefoljeflatefs
     public String ulesteEndringer;
