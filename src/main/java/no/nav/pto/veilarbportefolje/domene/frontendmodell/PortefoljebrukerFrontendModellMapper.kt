@@ -104,7 +104,7 @@ object PortefoljebrukerFrontendModellMapper {
 
             aktiviteter = mutableMapOf(),
             nesteUtlopsdatoAktivitet = null,
-            sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg!!),
+            sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
             sisteEndringKategori = "",  // slettes etter frontend er skrudd over til sisteEndringAvBruker
             sisteEndringTidspunkt = null, // slettes etter frontend er skrudd over til sisteEndringAvBruker
             sisteEndringAktivitetId = null, // slettes etter frontend er skrudd over til sisteEndringAvBruker
@@ -245,10 +245,10 @@ object PortefoljebrukerFrontendModellMapper {
 
     private fun mapSisteEndringerAvBrukerBasertPåFiltervalg(
         opensearchBruker: PortefoljebrukerOpensearchModell,
-        filtervalg: Filtervalg
+        filtervalg: Filtervalg?
     ): SisteEndringAvBruker? {
         val opensearchSisteEndringer = opensearchBruker.siste_endringer
-        if (!filtervalg.harSisteEndringFilter() || opensearchSisteEndringer == null) return null
+        if (filtervalg?.harSisteEndringFilter() == null || opensearchSisteEndringer == null) return null
 
         //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
         val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
@@ -259,7 +259,6 @@ object PortefoljebrukerFrontendModellMapper {
             tidspunkt = toLocalDateOrNull(endringsdataForValgtFilter?.tidspunkt),
             aktivitetId = endringsdataForValgtFilter?.aktivtetId
         )
-
     }
 
 
