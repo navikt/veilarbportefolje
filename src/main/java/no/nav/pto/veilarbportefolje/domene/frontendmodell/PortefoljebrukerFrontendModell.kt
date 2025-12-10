@@ -56,6 +56,7 @@ data class PortefoljebrukerFrontendModell(
     var hendelse: HendelseInnhold? = null,
 
     // siste endringer hendelser
+    val sisteEndringAvBruker: SisteEndringAvBruker?,
     var sisteEndringKategori: String? = null,
     var sisteEndringTidspunkt: LocalDateTime? = null,
     var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
