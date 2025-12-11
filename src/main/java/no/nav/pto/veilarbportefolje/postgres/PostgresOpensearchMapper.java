@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
-import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
@@ -24,8 +23,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarDa
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
@@ -49,7 +46,6 @@ public class PostgresOpensearchMapper {
     private final PdlService pdlService;
 
     private final KodeverkService kodeverkService;
-    private final Avvik14aVedtakService avvik14aService;
 
     private final BarnUnder18AarService barnUnder18AarService;
     private final EnsligeForsorgereService ensligeForsorgereService;
@@ -161,10 +157,6 @@ public class PostgresOpensearchMapper {
                 statsborgerskap.getGyldigTil());
     }
 
-    public void flettInnAvvik14aVedtak(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        Map<GjeldendeIdenter, Avvik14aVedtak> avvik14aVedtakList = avvik14aService.hentAvvik(brukerOpensearchModellList.stream().map(GjeldendeIdenter::of).collect(Collectors.toSet()));
-        brukerOpensearchModellList.forEach(bruker -> bruker.setAvvik14aVedtak(avvik14aVedtakList.get(GjeldendeIdenter.of(bruker))));
-    }
 
     public void flettInnBarnUnder18Aar(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
         List<Fnr> brukereFnr = brukerOpensearchModellList.stream().map(bruker -> Fnr.of(bruker.getFnr())).toList();
