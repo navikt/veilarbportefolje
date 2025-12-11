@@ -63,10 +63,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     hendelse = null,
 
     sisteEndringAvBruker = null,
-    sisteEndringKategori = null,
-    sisteEndringTidspunkt = null,
-    sisteEndringAktivitetId = null,
-
 
     ytelser = YtelserForBruker(
         ytelserArena = YtelserArena(

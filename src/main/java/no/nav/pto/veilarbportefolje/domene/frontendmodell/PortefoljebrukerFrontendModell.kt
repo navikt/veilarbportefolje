@@ -48,12 +48,7 @@ data class PortefoljebrukerFrontendModell(
     val alleMoterStartTid: LocalDateTime? = null, // Førstkommende møte. bruker klokkeslett og regner ut varighet med alleMoterSluttTid. Inkluderer både pliktige og upliktige aktiviteter
     val alleMoterSluttTid: LocalDateTime? = null, // kun for å regne ut varighet på møtet.
 
-    // siste endringer av bruker
     val sisteEndringAvBruker: SisteEndringAvBruker?,
-    var sisteEndringKategori: String? = null,
-    var sisteEndringTidspunkt: LocalDateTime? = null,
-    var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
-
     val utdanningOgSituasjonSistEndret: LocalDate? = null,
     val nesteSvarfristCvStillingFraNav: LocalDate? = null,
 

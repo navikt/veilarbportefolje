@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
-import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
@@ -104,9 +103,6 @@ object PortefoljebrukerFrontendModellMapper {
             aktiviteter = mutableMapOf(),
             nesteUtlopsdatoAktivitet = null,
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
-            sisteEndringKategori = "",  // slettes etter frontend er skrudd over til sisteEndringAvBruker
-            sisteEndringTidspunkt = null, // slettes etter frontend er skrudd over til sisteEndringAvBruker
-            sisteEndringAktivitetId = null, // slettes etter frontend er skrudd over til sisteEndringAvBruker
 
             ytelser = YtelserForBruker(
                 ytelserArena = YtelserArena(
@@ -164,7 +160,7 @@ object PortefoljebrukerFrontendModellMapper {
                 )
             }
             if (filtervalg != null) {
-                mapFelterBasertPåFiltervalg(this, opensearchBruker, filtervalg)
+                mapFelterBasertPåFiltervalg(this, filtervalg)
             }
 
         }
@@ -263,7 +259,6 @@ object PortefoljebrukerFrontendModellMapper {
 
     private fun mapFelterBasertPåFiltervalg(
         frontendBruker: PortefoljebrukerFrontendModell,
-        opensearchBruker: PortefoljebrukerOpensearchModell,
         filtervalg: Filtervalg
     ) {
         when {
@@ -278,13 +273,6 @@ object PortefoljebrukerFrontendModellMapper {
             kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(frontendBruker, filtervalg.aktiviteter)
         }
 
-        if (filtervalg.harSisteEndringFilter()) {
-            kalkulerSisteEndring(
-                frontendBruker,
-                opensearchBruker.siste_endringer,
-                filtervalg.sisteEndringKategori
-            )
-        }
     }
 
     private fun kalkulerNesteUtlopsdatoAvValgtAktivitetForenklet(
@@ -318,33 +306,6 @@ object PortefoljebrukerFrontendModellMapper {
                 )
             }
         }
-    }
-
-    private fun kalkulerSisteEndring(
-        frontendbruker: PortefoljebrukerFrontendModell,
-        sisteEndringer: Map<String, Endring>?,
-        kategorier: List<String>
-    ) {
-        if (sisteEndringer == null) return
-
-        kategorier.forEach { kategori ->
-            if (erNyesteKategori(sisteEndringer, kategori, frontendbruker.sisteEndringTidspunkt)) {
-                val endring = sisteEndringer[kategori]
-                frontendbruker.sisteEndringKategori = kategori
-                frontendbruker.sisteEndringTidspunkt = toLocalDateTimeOrNull(endring?.tidspunkt)
-                frontendbruker.sisteEndringAktivitetId = endring?.aktivtetId
-            }
-        }
-    }
-
-    private fun erNyesteKategori(
-        sisteEndringer: Map<String, Endring>,
-        kategori: String,
-        sisteEndringTidspunkt: LocalDateTime?
-    ): Boolean {
-        val endring = sisteEndringer[kategori] ?: return false
-        val tidspunkt = toLocalDateTimeOrNull(endring.tidspunkt)
-        return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt))
     }
 
     private fun addAvtaltAktivitetUtlopsdato(
