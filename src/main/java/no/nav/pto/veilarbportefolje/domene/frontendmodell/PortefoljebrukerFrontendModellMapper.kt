@@ -93,7 +93,15 @@ object PortefoljebrukerFrontendModellMapper {
             egenAnsatt = opensearchBruker.egen_ansatt,
             skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
 
-            tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
+            tiltakshendelse = opensearchBruker.tiltakshendelse?.let {
+                TiltakshendelseForBruker(
+                    id = it.id,
+                    tiltakstype = it.tiltakstype,
+                    opprettet = fromLocalDateTimeToLocalDateOrNull(it.opprettet),
+                    tekst = it.tekst,
+                    lenke = it.lenke
+                )
+            },
             hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
             meldingerVenterPaSvar = MeldingerVenterPaSvar(
                 datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),

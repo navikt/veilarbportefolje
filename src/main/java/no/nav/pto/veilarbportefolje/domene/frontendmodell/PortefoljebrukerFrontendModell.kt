@@ -20,7 +20,7 @@ data class PortefoljebrukerFrontendModell(
     var foedeland: String?,
     var geografiskBosted: GeografiskBostedForBruker,
     var tolkebehov: Tolkebehov?, // maaange nullsjekker i frontend
-    var barnUnder18AarData: List<BarnUnder18AarData>?, //kolonne
+    var barnUnder18AarData: List<BarnUnder18AarData>?,
 
     // Oppfolgingsdata
     val oppfolgingStartdato: LocalDate?,
@@ -31,7 +31,7 @@ data class PortefoljebrukerFrontendModell(
     var egenAnsatt: Boolean,
     var skjermetTil: LocalDate?,
 
-    val tiltakshendelse: TiltakshendelseForBruker?, // sjekk felter i frontend
+    val tiltakshendelse: TiltakshendelseForBruker?,
     var hendelse: HendelseInnhold?,
     val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
