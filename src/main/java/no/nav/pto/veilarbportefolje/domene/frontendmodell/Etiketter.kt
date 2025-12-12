@@ -10,6 +10,6 @@ data class Etiketter(
     val nyForEnhet: Boolean,
     val harBehovForArbeidsevneVurdering: Boolean,
     val harSikkerhetstiltak: Boolean,
-    var diskresjonskodeFortrolig: String? = null,
-    val profileringResultat: Profileringsresultat? = null,
+    var diskresjonskodeFortrolig: String?,
+    val profileringResultat: Profileringsresultat?,
 )
