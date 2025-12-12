@@ -49,7 +49,9 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
 
-        var frontendbruker = PortefoljebrukerFrontendModell(
+        val frontendbruker = PortefoljebrukerFrontendModell(
+            aktoerid = opensearchBruker.aktoer_id,
+
             etiketter = Etiketter(
                 erDoed = opensearchBruker.er_doed,
                 erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
@@ -63,47 +65,56 @@ object PortefoljebrukerFrontendModellMapper {
             ),
 
             fnr = opensearchBruker.fnr,
-            aktoerid = opensearchBruker.aktoer_id,
             fornavn = opensearchBruker.fornavn,
             etternavn = opensearchBruker.etternavn,
-            barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-            tolkebehov = Tolkebehov.of(
-                opensearchBruker.talespraaktolk,
-                opensearchBruker.tegnspraaktolk,
-                opensearchBruker.tolkBehovSistOppdatert
-            ),
-            foedeland = opensearchBruker.foedelandFulltNavn,
             hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap?.let {
                 StatsborgerskapForBruker(
                     statsborgerskap = it.statsborgerskap,
                     gyldigFra = it.gyldigFra
                 )
             },
+            foedeland = opensearchBruker.foedelandFulltNavn,
             geografiskBosted = GeografiskBostedForBruker(
                 bostedKommune = opensearchBruker.kommunenummer,
                 bostedBydel = opensearchBruker.bydelsnummer,
                 bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
+            tolkebehov = Tolkebehov.of(
+                opensearchBruker.talespraaktolk,
+                opensearchBruker.tegnspraaktolk,
+                opensearchBruker.tolkBehovSistOppdatert
+            ),
+            barnUnder18AarData = opensearchBruker.barn_under_18_aar,
 
-            vedtak14a = mapVedtak14a(opensearchBruker),
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
-
-            veilederId = opensearchBruker.veileder_id,
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
-            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            veilederId = opensearchBruker.veileder_id,
+            egenAnsatt = opensearchBruker.egen_ansatt,
+            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
+
+            tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
+            hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
+            meldingerVenterPaSvar = MeldingerVenterPaSvar(
+                datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            ),
+
             nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
+            nesteUtlopsdatoAktivitet = null,
+            aktiviteter = mutableMapOf(),
             aktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.aktivitet_start),
             nesteAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.neste_aktivitet_start),
             forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
+
             moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
             alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
             alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
 
-            aktiviteter = mutableMapOf(),
-            nesteUtlopsdatoAktivitet = null,
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
-
+            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
+            vedtak14a = mapVedtak14a(opensearchBruker),
             ytelser = YtelserForBruker(
                 ytelserArena = YtelserArena(
                     innsatsgruppe = innsatsgruppe,
@@ -127,19 +138,10 @@ object PortefoljebrukerFrontendModellMapper {
                     opensearchBruker.enslige_forsorgere_overgangsstonad
                 ),
             ),
-            meldingerVenterPaSvar = MeldingerVenterPaSvar(
-                datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
-                datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
-            ),
 
-            egenAnsatt = opensearchBruker.egen_ansatt,
-            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
-            nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
-            tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
 
             ).apply {
             listOf(
