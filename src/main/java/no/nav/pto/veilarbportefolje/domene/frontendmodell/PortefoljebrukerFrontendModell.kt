@@ -36,9 +36,10 @@ data class PortefoljebrukerFrontendModell(
     val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
     // AktiviterData
+    var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
+    val aktiviteter2: MutableMap<String, Timestamp>? = mutableMapOf(),
     val nyesteUtlopteAktivitet: LocalDate?,
     var nesteUtlopsdatoAktivitet: LocalDateTime?,
-    var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
     val aktivitetStart: LocalDate?,
     val nesteAktivitetStart: LocalDate?,
     val forrigeAktivitetStart: LocalDate?,
