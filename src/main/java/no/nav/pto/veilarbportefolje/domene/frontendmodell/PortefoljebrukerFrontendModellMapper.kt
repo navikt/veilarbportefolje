@@ -108,8 +108,18 @@ object PortefoljebrukerFrontendModellMapper {
                 datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             ),
 
+            aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
+                aktiviteter = mapAktiviteter(opensearchBruker),
+                nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
+                nesteUtlopsdatoAktivitet = mapNesteUtlopsdatoForAktivitetBasertPåFiltervalg(
+                    opensearchBruker,
+                    filtervalg
+                ),
+                aktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.aktivitet_start),
+                nesteAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.neste_aktivitet_start),
+                forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
+            ),
             aktiviteter = mutableMapOf(),
-            aktiviteter2 = mapAktiviteter(opensearchBruker),
             nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
             nesteUtlopsdatoAktivitet = null,
             aktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.aktivitet_start),
@@ -177,29 +187,6 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
         return frontendbruker
-    }
-
-    private fun mapAktiviteter(opensearchBruker: PortefoljebrukerOpensearchModell): MutableMap<String, Timestamp> {
-        val aktiviteter = mutableMapOf<String, Timestamp>()
-        aktiviteter.apply {
-            listOf(
-                "tiltak" to opensearchBruker.aktivitet_tiltak_utlopsdato,
-                "behandling" to opensearchBruker.aktivitet_behandling_utlopsdato,
-                "sokeavtale" to opensearchBruker.aktivitet_sokeavtale_utlopsdato,
-                "stilling" to opensearchBruker.aktivitet_stilling_utlopsdato,
-                "ijobb" to opensearchBruker.aktivitet_ijobb_utlopsdato,
-                "egen" to opensearchBruker.aktivitet_egen_utlopsdato,
-                "gruppeaktivitet" to opensearchBruker.aktivitet_gruppeaktivitet_utlopsdato,
-                "mote" to opensearchBruker.aktivitet_mote_utlopsdato,
-                "utdanningaktivitet" to opensearchBruker.aktivitet_utdanningaktivitet_utlopsdato
-            )
-        }.forEach { (aktivitetstype, dato) ->
-            val utlopsdato = dateToTimestamp(dato)
-            if (utlopsdato != null && !isFarInTheFutureDate(utlopsdato)) {
-                aktiviteter[aktivitetstype] = utlopsdato
-            }
-        }
-        return aktiviteter
     }
 
     private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
@@ -290,7 +277,72 @@ object PortefoljebrukerFrontendModellMapper {
         )
     }
 
+    private fun mapAktiviteter(opensearchBruker: PortefoljebrukerOpensearchModell): MutableMap<String, Timestamp> {
+        val aktiviteter = mutableMapOf<String, Timestamp>()
 
+        listOf(
+            "tiltak" to opensearchBruker.aktivitet_tiltak_utlopsdato,
+            "behandling" to opensearchBruker.aktivitet_behandling_utlopsdato,
+            "sokeavtale" to opensearchBruker.aktivitet_sokeavtale_utlopsdato,
+            "stilling" to opensearchBruker.aktivitet_stilling_utlopsdato,
+            "ijobb" to opensearchBruker.aktivitet_ijobb_utlopsdato,
+            "egen" to opensearchBruker.aktivitet_egen_utlopsdato,
+            "gruppeaktivitet" to opensearchBruker.aktivitet_gruppeaktivitet_utlopsdato,
+            "mote" to opensearchBruker.aktivitet_mote_utlopsdato,
+            "utdanningaktivitet" to opensearchBruker.aktivitet_utdanningaktivitet_utlopsdato
+        ).forEach { (aktivitetstype, dato) ->
+            val utlopsdato = dateToTimestamp(dato)
+            if (utlopsdato != null && !isFarInTheFutureDate(utlopsdato)) {
+                aktiviteter[aktivitetstype] = utlopsdato
+            }
+        }
+        return aktiviteter
+    }
+
+    private fun mapNesteUtlopsdatoForAktivitetBasertPåFiltervalg(
+        opensearchBruker: PortefoljebrukerOpensearchModell,
+        filtervalg: Filtervalg?
+    ): LocalDate? {
+        if (filtervalg == null) return null
+
+        val aktiviteter = mapAktiviteter(opensearchBruker)
+        var nesteUtopsdatoForenkletFilter: LocalDate? = null
+        var nesteUlopsdatoAvansertFilter: LocalDate? = null
+
+        when {
+            filtervalg.harAktiviteterForenklet() -> {
+                val aktivitetDatoerBasertPaFiltervalg =
+                    filtervalg.aktiviteterForenklet?.mapNotNull { navn ->
+                        aktiviteter[navn.lowercase()]
+                    }
+
+                nesteUtopsdatoForenkletFilter = aktivitetDatoerBasertPaFiltervalg?.minOfOrNull { toLocalDateOrNull(it) }
+            }
+
+            filtervalg.tiltakstyper.isNotEmpty() ->
+                nesteUtopsdatoForenkletFilter = toLocalDateOrNull(aktiviteter["tiltak"])
+        }
+
+        if (filtervalg.harAktivitetFilter()) {
+            val aktivitetDatoerBaserPaAvansertFiltervalg =
+                filtervalg.aktiviteter?.mapNotNull { (navn, valg) ->
+                    if (valg == AktivitetFiltervalg.JA) {
+                        aktiviteter[navn.lowercase()]
+                    } else {
+                        null
+                    }
+                }
+
+            nesteUlopsdatoAvansertFilter =
+                aktivitetDatoerBaserPaAvansertFiltervalg?.minOfOrNull { toLocalDateOrNull(it) }
+        }
+
+        val nesteUlopsDato = listOfNotNull(nesteUtopsdatoForenkletFilter, nesteUlopsdatoAvansertFilter).minOrNull()
+        return nesteUlopsDato
+    }
+
+
+    //alt under slettes etter frontenden er oppdatert til å bruke funksjonene over
     private fun mapFelterBasertPåFiltervalg(
         frontendBruker: PortefoljebrukerFrontendModell,
         filtervalg: Filtervalg

@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -15,8 +16,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjel
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.util.DateUtils
-import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull
+import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.junit.Test
@@ -469,4 +469,170 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertNull(sisteEndring)
     }
 
+    @Test
+    fun `aktiviteterAvtaltMedNav - skal mappe aktiviteter med dato til ett objekt som kun har feltene med verdier`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
+        val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
+        val tidspunkt4 = getFarInTheFutureDate()
+        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
+        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
+        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
+        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null,
+        )
+
+        val aktiviteter = frontendBruker.aktiviteterAvtaltMedNav?.aktiviteter
+        Assertions.assertNotNull(aktiviteter)
+        Assertions.assertEquals(3, aktiviteter?.size)
+        Assertions.assertEquals(dateToTimestamp(tidspunkt1), aktiviteter?.get("tiltak"))
+        Assertions.assertEquals(dateToTimestamp(tidspunkt2), aktiviteter?.get("mote"))
+        Assertions.assertEquals(dateToTimestamp(tidspunkt3), aktiviteter?.get("stilling"))
+        Assertions.assertNull(aktiviteter?.get("behandling"))
+    }
+
+    @Test
+    fun `aktiviteterAvtaltMedNav - skal mappe neste utløpsdato basert på forenklet filtervalg og den nyeste datoen`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
+        val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
+        val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
+
+        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
+        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
+        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
+        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+
+        val frontendBrukerUtenFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null,
+        )
+
+        val aktiviteterUtenFilter = frontendBrukerUtenFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        Assertions.assertNull(aktiviteterUtenFilter)
+
+        val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setAktiviteterForenklet(listOf("BEHANDLING", "MOTE")),
+        )
+
+        val aktiviteterMedForenkletfilter =
+            frontendBrukerMedForenkletfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        Assertions.assertNotNull(aktiviteterMedForenkletfilter)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteterMedForenkletfilter)
+
+        val frontendBrukerMedTiltaksfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setTiltakstyper(listOf("BEHANDLING", "MOTE")),
+        )
+
+        val aktiviteterMedTiltaksfilter =
+            frontendBrukerMedTiltaksfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        Assertions.assertNotNull(aktiviteterMedTiltaksfilter)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), aktiviteterMedTiltaksfilter)
+    }
+
+    @Test
+    fun `aktiviteterAvtaltMedNav - skal mappe neste utløpsdato basert på avansert filtervalg og den nyeste datoen`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
+        val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
+        val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
+
+        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
+        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
+        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
+        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+
+        val frontendBrukerMedAvansertfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setAktiviteter(
+                mutableMapOf(
+                    "BEHANDLING" to AktivitetFiltervalg.JA,
+                    "MOTE" to AktivitetFiltervalg.JA,
+                    "STILLING" to AktivitetFiltervalg.NEI,
+                    "TILTAK" to AktivitetFiltervalg.NEI
+                )
+            ),
+        )
+
+        val aktiviteterMedAvansertfilter =
+            frontendBrukerMedAvansertfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        Assertions.assertNotNull(aktiviteterMedAvansertfilter)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteterMedAvansertfilter)
+
+    }
+
+    @Test
+    fun `aktiviteterAvtaltMedNav - skal mappe neste utløpsdato basert på forenklet OG avansert filtervalg og den nyeste datoen`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
+        val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
+        val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
+
+        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
+        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
+        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
+        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+
+        val frontendBrukerMedBeggeFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg()
+                .setAktiviteter(
+                    mutableMapOf(
+                        "BEHANDLING" to AktivitetFiltervalg.JA,
+                        "STILLING" to AktivitetFiltervalg.JA,
+                    )
+                )
+                .setAktiviteterForenklet(
+                    listOf("TILTAK", "MOTE")
+                )
+        )
+
+        val aktiviteterMedBeggefilter =
+            frontendBrukerMedBeggeFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        Assertions.assertNotNull(aktiviteterMedBeggefilter)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), aktiviteterMedBeggefilter)
+    }
+
+
+    @Test
+    fun `aktiviteterAvtaltMedNav - skal mappe resterende felter`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
+        val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
+        val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
+
+        opensearchBruker.setNyesteutlopteaktivitet(tidspunkt1)
+        opensearchBruker.setAktivitet_start(tidspunkt2)
+        opensearchBruker.setNeste_aktivitet_start(tidspunkt3)
+        opensearchBruker.setForrige_aktivitet_start(tidspunkt4)
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        val aktiviteter = frontendBruker.aktiviteterAvtaltMedNav
+        Assertions.assertNotNull(aktiviteter)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), aktiviteter?.nyesteUtlopteAktivitet)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteter?.aktivitetStart)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt3), aktiviteter?.nesteAktivitetStart)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt4), aktiviteter?.forrigeAktivitetStart)
+    }
 }
