@@ -6,14 +6,15 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
-import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
 
@@ -48,7 +49,9 @@ object PortefoljebrukerFrontendModellMapper {
         }
 
 
-        var frontendbruker = PortefoljebrukerFrontendModell(
+        val frontendbruker = PortefoljebrukerFrontendModell(
+            aktoerid = opensearchBruker.aktoer_id,
+
             etiketter = Etiketter(
                 erDoed = opensearchBruker.er_doed,
                 erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
@@ -62,53 +65,64 @@ object PortefoljebrukerFrontendModellMapper {
             ),
 
             fnr = opensearchBruker.fnr,
-            aktoerid = opensearchBruker.aktoer_id,
             fornavn = opensearchBruker.fornavn,
             etternavn = opensearchBruker.etternavn,
-            barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-            tolkebehov = Tolkebehov.of(
-                opensearchBruker.talespraaktolk,
-                opensearchBruker.tegnspraaktolk,
-                opensearchBruker.tolkBehovSistOppdatert
-            ),
-            foedeland = opensearchBruker.foedelandFulltNavn,
             hovedStatsborgerskap = opensearchBruker.hovedStatsborgerskap?.let {
                 StatsborgerskapForBruker(
                     statsborgerskap = it.statsborgerskap,
                     gyldigFra = it.gyldigFra
                 )
             },
+            foedeland = opensearchBruker.foedelandFulltNavn,
             geografiskBosted = GeografiskBostedForBruker(
                 bostedKommune = opensearchBruker.kommunenummer,
                 bostedBydel = opensearchBruker.bydelsnummer,
                 bostedKommuneUkjentEllerUtland = bostedKommuneUkjentEllerUtland,
                 bostedSistOppdatert = opensearchBruker.bostedSistOppdatert
             ),
-            avvik14aVedtak = opensearchBruker.avvik14aVedtak,
-            gjeldendeVedtak14a = opensearchBruker.gjeldendeVedtak14a,
-            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
-            utkast14a = Utkast14a(
-                opensearchBruker.utkast_14a_status,
-                toLocalDateTimeOrNull(opensearchBruker.utkast_14a_status_endret),
-                opensearchBruker.utkast_14a_ansvarlig_veileder
+            tolkebehov = Tolkebehov.of(
+                opensearchBruker.talespraaktolk,
+                opensearchBruker.tegnspraaktolk,
+                opensearchBruker.tolkBehovSistOppdatert
             ),
-            veilederId = opensearchBruker.veileder_id,
+            barnUnder18AarData = opensearchBruker.barn_under_18_aar,
+
+            oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
-            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            veilederId = opensearchBruker.veileder_id,
+            egenAnsatt = opensearchBruker.egen_ansatt,
+            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
+
+            tiltakshendelse = opensearchBruker.tiltakshendelse?.let {
+                TiltakshendelseForBruker(
+                    id = it.id,
+                    tiltakstype = it.tiltakstype,
+                    opprettet = fromLocalDateTimeToLocalDateOrNull(it.opprettet),
+                    tekst = it.tekst,
+                    lenke = it.lenke
+                )
+            },
+            hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
+            meldingerVenterPaSvar = MeldingerVenterPaSvar(
+                datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
+                datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
+            ),
+
             nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
+            nesteUtlopsdatoAktivitet = null,
+            aktiviteter = mutableMapOf(),
             aktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.aktivitet_start),
             nesteAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.neste_aktivitet_start),
             forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
+
             moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
             alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
             alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
 
-            aktiviteter = mutableMapOf(),
-            nesteUtlopsdatoAktivitet = null,
-            sisteEndringKategori = "",
-            sisteEndringTidspunkt = null,
-            sisteEndringAktivitetId = null,
-
+            sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
+            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
+            vedtak14a = mapVedtak14a(opensearchBruker),
             ytelser = YtelserForBruker(
                 ytelserArena = YtelserArena(
                     innsatsgruppe = innsatsgruppe,
@@ -132,19 +146,10 @@ object PortefoljebrukerFrontendModellMapper {
                     opensearchBruker.enslige_forsorgere_overgangsstonad
                 ),
             ),
-            meldingerVenterPaSvar = MeldingerVenterPaSvar(
-                datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
-                datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
-            ),
 
-            egenAnsatt = opensearchBruker.egen_ansatt,
-            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
-            nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId,
-            tiltakshendelse = TiltakshendelseForBruker.of(opensearchBruker.tiltakshendelse),
-            hendelse = mapHendelserBasertPåFiltervalg(opensearchBruker, filtervalg),
 
             ).apply {
             listOf(
@@ -165,12 +170,55 @@ object PortefoljebrukerFrontendModellMapper {
                 )
             }
             if (filtervalg != null) {
-                mapFelterBasertPåFiltervalg(this, opensearchBruker, filtervalg)
+                mapFelterBasertPåFiltervalg(this, filtervalg)
             }
 
         }
 
         return frontendbruker
+    }
+
+    private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
+        val vedtak14a = opensearchBruker.gjeldendeVedtak14a
+
+        val gjeldendeVedtak14a = buildIfAnyNotNull(vedtak14a?.innsatsgruppe, vedtak14a?.fattetDato) {
+            Vedtak14aForBruker.GjeldendeVedtak14a(
+                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a.innsatsgruppe,
+                hovedmal = opensearchBruker.gjeldendeVedtak14a.hovedmal,
+                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a.fattetDato)
+            )
+        }
+
+        val utkast14a = buildIfAnyNotNull(
+            opensearchBruker.utkast_14a_status,
+            opensearchBruker.utkast_14a_status_endret,
+            opensearchBruker.utkast_14a_ansvarlig_veileder
+        ) {
+            Vedtak14aForBruker.Utkast14a(
+                status = opensearchBruker.utkast_14a_status,
+                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
+                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
+            )
+        }
+
+        return Vedtak14aForBruker(
+            gjeldendeVedtak14a = gjeldendeVedtak14a,
+            utkast14a = utkast14a
+        )
+    }
+
+    inline fun <T> buildIfAnyNotNull(vararg fields: Any?, builder: () -> T): T? =
+        if (fields.any { it != null }) builder() else null
+
+    private fun lagDagerSidenTekst(utcDato: String): String {
+        val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
+        val dager = ChronoUnit.DAYS.between(parsed, LocalDate.now())
+
+        return when (dager) {
+            0L -> "I dag"
+            1L -> "1 dag siden"
+            else -> "$dager dager siden"
+        }
     }
 
     // Vi sender kun én hendelse til frontend så logikken der blir enklere, og fordi vi kun kan ha ett av hendelsesfilterne valgt av gangen
@@ -200,9 +248,27 @@ object PortefoljebrukerFrontendModellMapper {
         )
     }
 
+    private fun mapSisteEndringerAvBrukerBasertPåFiltervalg(
+        opensearchBruker: PortefoljebrukerOpensearchModell,
+        filtervalg: Filtervalg?
+    ): SisteEndringAvBruker? {
+        val opensearchSisteEndringer = opensearchBruker.siste_endringer
+        if (filtervalg == null || !filtervalg.harSisteEndringFilter() || opensearchSisteEndringer.isNullOrEmpty()) return null
+
+        //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
+        val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
+        val endringsdataForValgtFilter = opensearchSisteEndringer[valgtFilterSisteEndringKategori] ?: return null
+
+        return SisteEndringAvBruker(
+            kategori = valgtFilterSisteEndringKategori,
+            tidspunkt = toLocalDateOrNull(endringsdataForValgtFilter.tidspunkt),
+            aktivitetId = endringsdataForValgtFilter.aktivtetId
+        )
+    }
+
+
     private fun mapFelterBasertPåFiltervalg(
         frontendBruker: PortefoljebrukerFrontendModell,
-        opensearchBruker: PortefoljebrukerOpensearchModell,
         filtervalg: Filtervalg
     ) {
         when {
@@ -217,13 +283,6 @@ object PortefoljebrukerFrontendModellMapper {
             kalkulerNesteUtlopsdatoAvValgtAktivitetAvansert(frontendBruker, filtervalg.aktiviteter)
         }
 
-        if (filtervalg.harSisteEndringFilter()) {
-            kalkulerSisteEndring(
-                frontendBruker,
-                opensearchBruker.siste_endringer,
-                filtervalg.sisteEndringKategori
-            )
-        }
     }
 
     private fun kalkulerNesteUtlopsdatoAvValgtAktivitetForenklet(
@@ -257,33 +316,6 @@ object PortefoljebrukerFrontendModellMapper {
                 )
             }
         }
-    }
-
-    private fun kalkulerSisteEndring(
-        frontendbruker: PortefoljebrukerFrontendModell,
-        sisteEndringer: Map<String, Endring>?,
-        kategorier: List<String>
-    ) {
-        if (sisteEndringer == null) return
-
-        kategorier.forEach { kategori ->
-            if (erNyesteKategori(sisteEndringer, kategori, frontendbruker.sisteEndringTidspunkt)) {
-                val endring = sisteEndringer[kategori]
-                frontendbruker.sisteEndringKategori = kategori
-                frontendbruker.sisteEndringTidspunkt = toLocalDateTimeOrNull(endring?.tidspunkt)
-                frontendbruker.sisteEndringAktivitetId = endring?.aktivtetId
-            }
-        }
-    }
-
-    private fun erNyesteKategori(
-        sisteEndringer: Map<String, Endring>,
-        kategori: String,
-        sisteEndringTidspunkt: LocalDateTime?
-    ): Boolean {
-        val endring = sisteEndringer[kategori] ?: return false
-        val tidspunkt = toLocalDateTimeOrNull(endring.tidspunkt)
-        return sisteEndringTidspunkt == null || (tidspunkt != null && tidspunkt.isAfter(sisteEndringTidspunkt))
     }
 
     private fun addAvtaltAktivitetUtlopsdato(

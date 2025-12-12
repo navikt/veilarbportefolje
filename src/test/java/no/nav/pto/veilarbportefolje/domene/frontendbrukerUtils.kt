@@ -35,10 +35,12 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         bostedSistOppdatert = null
     ),
 
-    avvik14aVedtak = null,
-    gjeldendeVedtak14a = null,
+    vedtak14a = Vedtak14aForBruker(
+        gjeldendeVedtak14a = null,
+        utkast14a = null
+    ),
+
     oppfolgingStartdato = null,
-    utkast14a = null,
     veilederId = null,
     tildeltTidspunkt = null,
 
@@ -60,10 +62,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     tiltakshendelse = null,
     hendelse = null,
 
-    sisteEndringKategori = null,
-    sisteEndringTidspunkt = null,
-    sisteEndringAktivitetId = null,
-
+    sisteEndringAvBruker = null,
 
     ytelser = YtelserForBruker(
         ytelserArena = YtelserArena(

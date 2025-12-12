@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -535,17 +534,6 @@ class OpensearchFilterQueryBuilder {
             }
             )
             queryBuilder.must(bostedSubquery)
-        }
-
-        if (filtervalg.harAvvik14aVedtakFilter()) {
-            val avvik14aVedtakSubQuery = QueryBuilders.boolQuery()
-            filtervalg.avvik14aVedtak.forEach(Consumer { avvik14aVedtak: Avvik14aVedtak? ->
-                avvik14aVedtakSubQuery.should(
-                    QueryBuilders.matchQuery("avvik14aVedtak", avvik14aVedtak)
-                )
-            }
-            )
-            queryBuilder.must(avvik14aVedtakSubQuery)
         }
 
         if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere

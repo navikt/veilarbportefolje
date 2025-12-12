@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -42,6 +41,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     @Test
     fun skal_hente_alle_brukere_som_har_vedtak() {
+        val utcDato = "2024-06-01T12:00:00Z"
         val brukerMedVedtak = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
             .setAktoer_id(randomAktorId().toString())
@@ -51,6 +51,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Utkast")
             .setUtkast_14a_ansvarlig_veileder("BVeileder")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerMedVedtak1 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -61,6 +62,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Venter på tilbakemelding")
             .setUtkast_14a_ansvarlig_veileder("CVeileder")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerMedVedtak2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -71,15 +73,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setUtkast_14a_status("Venter på tilbakemelding")
             .setUtkast_14a_ansvarlig_veileder("AVeileder")
-
-        val brukerMedVedtakUtenAnsvarligVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setUtkast_14a_status("Utkast")
+            .setUtkast_14a_status_endret(utcDato)
 
         val brukerUtenVedtak = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -94,7 +88,6 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             brukerMedVedtak,
             brukerMedVedtak1,
             brukerMedVedtak2,
-            brukerMedVedtakUtenAnsvarligVeileder,
             brukerUtenVedtak
         )
 
@@ -115,212 +108,17 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(4)
+        Assertions.assertThat(response.antall).isEqualTo(3)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .containsExactlyInAnyOrder(
                 brukerMedVedtak.fnr,
                 brukerMedVedtak1.fnr,
                 brukerMedVedtak2.fnr,
-                brukerMedVedtakUtenAnsvarligVeileder.fnr
             )
 
-        Assertions.assertThat(response.brukere[0].utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
-        Assertions.assertThat(response.brukere[1].utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
-        Assertions.assertThat(response.brukere[2].utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
-        Assertions.assertThat(response.brukere[3].utkast14a?.ansvarligVeileder).isNull()
-    }
-
-
-    @Test
-    fun skal_filtrere_brukere_med_riktige_avvikstyper_naar_filter_for_avvik_er_valgt_hvor_noen_brukere_har_avvik_og_noen_ikke_har_avvik() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE)
-
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK)
-
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK)
-
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK)
-
-        val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
-
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setAvvik14aVedtak(
-                listOf(
-                    Avvik14aVedtak.INNSATSGRUPPE_ULIK,
-                    Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK
-                )
-            )
-
-        val response = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            filterValg,
-            null,
-            null
-        )
-
-        Assertions.assertThat(response.brukere)
-            .hasSize(2)
-            .extracting<Avvik14aVedtak, RuntimeException> { obj: PortefoljebrukerFrontendModell -> obj.avvik14aVedtak }
-            .containsExactlyInAnyOrder(
-                Avvik14aVedtak.INNSATSGRUPPE_ULIK,
-                Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK
-            )
-    }
-
-    @Test
-    fun skal_filtrere_brukere_med_riktige_avvikstyper_naar_filter_for_avvik_er_valgt_hvor_alle_brukere_ikke_har_avvik() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
-
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setAvvik14aVedtak(listOf(Avvik14aVedtak.INGEN_AVVIK))
-
-        val response = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            filterValg,
-            null,
-            null
-        )
-
-        Assertions.assertThat(response.brukere)
-            .hasSize(5)
-            .extracting<Avvik14aVedtak, RuntimeException> { obj: PortefoljebrukerFrontendModell -> obj.avvik14aVedtak }
-            .containsOnly(Avvik14aVedtak.INGEN_AVVIK)
-    }
-
-    @Test
-    fun skal_ikke_filtrere_paa_avvikstype_naar_filter_for_avvik_ikke_er_valgt() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INGEN_AVVIK)
-
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_MANGLER_I_NY_KILDE)
-
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_ULIK)
-
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.HOVEDMAAL_ULIK)
-
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setOppfolging(true)
-            .setAvvik14aVedtak(Avvik14aVedtak.INNSATSGRUPPE_OG_HOVEDMAAL_ULIK)
-
-        val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5)
-
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValg = Filtervalg()
-
-        val response = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.empty(),
-            Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.IKKE_SATT,
-            filterValg,
-            null,
-            null
-        )
-
-        Assertions.assertThat(response.brukere).hasSize(5)
+        Assertions.assertThat(response.brukere[0].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("AVeileder")
+        Assertions.assertThat(response.brukere[1].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("BVeileder")
+        Assertions.assertThat(response.brukere[2].vedtak14a.utkast14a?.ansvarligVeileder).isEqualTo("CVeileder")
     }
 
     @Test
@@ -376,12 +174,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerMedSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerMedSiste14aVedtakAktorId.get())
-        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
+        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.vedtak14a.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNotNull()
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.innsatsgruppe).isEqualTo(innsatsgruppe)
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.hovedmal).isEqualTo(hovedmal)
-        Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a?.fattetDato)
-            .isEqualTo(fattetDato.toOffsetDateTime().toZonedDateTime())
     }
 
     @Test
@@ -437,7 +233,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerUtenSiste14aVedtakFnr.get())
         Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerUtenSiste14aVedtakAktorId.get())
-        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.gjeldendeVedtak14a
+        val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.vedtak14a.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNull()
     }
 

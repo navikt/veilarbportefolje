@@ -9,16 +9,20 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
+import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils.fromIsoUtcToLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
-import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.*
+import java.time.format.DateTimeFormatter
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -315,6 +319,154 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.tiltakspenger)
         Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
+    }
+
+    @Test
+    fun `skal mappe vedtak 14a til riktig object når det finnes data `() {
+        val dagensDato = LocalDate.now()
+        val utcDateTimeStatus = dagensDato
+            .minusDays(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .withZoneSameInstant(ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_INSTANT)
+        val zonedDateTimeFattetDato = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        opensearchBruker.setUtkast_14a_status("Utkast")
+        opensearchBruker.setUtkast_14a_status_endret(utcDateTimeStatus)
+        opensearchBruker.setUtkast_14a_ansvarlig_veileder("Veileder Navn")
+        opensearchBruker.setGjeldendeVedtak14a(
+            GjeldendeVedtak14a(
+                Innsatsgruppe.STANDARD_INNSATS,
+                Hovedmal.SKAFFE_ARBEID,
+                zonedDateTimeFattetDato
+            )
+        )
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val vedtak14a = frontendBruker.vedtak14a
+
+        Assertions.assertNotNull(vedtak14a.gjeldendeVedtak14a)
+        Assertions.assertNotNull(vedtak14a.utkast14a)
+        Assertions.assertEquals(Innsatsgruppe.STANDARD_INNSATS, vedtak14a.gjeldendeVedtak14a!!.innsatsgruppe)
+        Assertions.assertEquals(Hovedmal.SKAFFE_ARBEID, vedtak14a.gjeldendeVedtak14a!!.hovedmal)
+        Assertions.assertEquals(zonedDateTimeFattetDato.toLocalDate(), vedtak14a.gjeldendeVedtak14a!!.fattetDato)
+        Assertions.assertEquals("Utkast", vedtak14a.utkast14a!!.status)
+        Assertions.assertEquals("1 dag siden", vedtak14a.utkast14a!!.dagerSidenStatusEndretSeg)
+        Assertions.assertEquals("Veileder Navn", vedtak14a.utkast14a!!.ansvarligVeileder)
+    }
+
+    @Test
+    fun `skal ikke mappe vedtak 14a når det ikke finnes data `() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val vedtak14a = frontendBruker.vedtak14a
+
+        Assertions.assertNotNull(vedtak14a)
+        Assertions.assertNull(vedtak14a.gjeldendeVedtak14a)
+        Assertions.assertNull(vedtak14a.utkast14a)
+    }
+
+    @Test
+    fun `skal mappe siste endring av bruker når det finnes data i samme kategori som valgt filter`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedSammeFilterkategori =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+            )
+
+        val sisteEndringMedSammeFilterkategori = frontendBrukerMedSammeFilterkategori.sisteEndringAvBruker
+        Assertions.assertNotNull(sisteEndringMedSammeFilterkategori)
+        Assertions.assertEquals("11111", sisteEndringMedSammeFilterkategori!!.aktivitetId)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(isoUtc), sisteEndringMedSammeFilterkategori.tidspunkt)
+        Assertions.assertEquals(kategori, sisteEndringMedSammeFilterkategori.kategori)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke finnes data i samme kategori som valgt filter`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedAnnenFilterkategori =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = Filtervalg().setSisteEndringKategori(listOf("NY_JOBB")),
+            )
+
+        val sisteEndringMedAnnenFilterkategori = frontendBrukerMedAnnenFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndringMedAnnenFilterkategori)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke finnes data i opensearch`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+
+        val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+        )
+
+        val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndring)
+    }
+
+    @Test
+    fun `skal ikke mappe siste endring av bruker når det ikke er valgt filter for siste endring`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val kategori = " NY_BEHANDLING"
+        val isoUtc = "2023-06-30T21:59:59Z"
+
+        val sisteEndringOpensearch: Map<String, Endring> = mapOf(
+            kategori to Endring(
+                aktivtetId = "11111",
+                tidspunkt = isoUtc,
+                erSett = "N"
+            )
+        )
+        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+
+        val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null,
+        )
+
+        val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
+        Assertions.assertNull(sisteEndring)
     }
 
 }

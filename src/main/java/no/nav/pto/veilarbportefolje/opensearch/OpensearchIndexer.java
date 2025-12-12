@@ -115,7 +115,6 @@ public class OpensearchIndexer {
     }
 
     private void flettInnNodvendigData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModell) {
-        postgresOpensearchMapper.flettInnAvvik14aVedtak(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnAktivitetsData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukerOpensearchModell);
