@@ -193,14 +193,11 @@ object PortefoljebrukerFrontendModellMapper {
                 "mote" to opensearchBruker.aktivitet_mote_utlopsdato,
                 "utdanningaktivitet" to opensearchBruker.aktivitet_utdanningaktivitet_utlopsdato
             )
-        }
-
-        aktiviteter.forEach { (aktivitetstype, dato) ->
+        }.forEach { (aktivitetstype, dato) ->
             val utlopsdato = dateToTimestamp(dato)
             if (utlopsdato != null && !isFarInTheFutureDate(utlopsdato)) {
                 aktiviteter[aktivitetstype] = utlopsdato
             }
-            return aktiviteter
         }
         return aktiviteter
     }
