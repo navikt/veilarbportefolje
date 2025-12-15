@@ -46,17 +46,24 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
 
     utdanningOgSituasjonSistEndret = null,
 
-    nyesteUtlopteAktivitet = null,
-    aktivitetStart = null,
-    nesteAktivitetStart = null,
-    forrigeAktivitetStart = null,
-
     moteStartTid = null,
     alleMoterStartTid = null,
     alleMoterSluttTid = null,
 
+    aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
+        nesteUtlopsdatoForAlleAktiviteter = null,
+        nyesteUtlopteAktivitet = null,
+        nesteUtlopsdatoForFiltrerteAktiviteter = null,
+        aktivitetStart = null,
+        nesteAktivitetStart = null,
+        forrigeAktivitetStart = null
+    ),
     aktiviteter = mutableMapOf(),
     nesteUtlopsdatoAktivitet = null,
+    nyesteUtlopteAktivitet = null,
+    aktivitetStart = null,
+    nesteAktivitetStart = null,
+    forrigeAktivitetStart = null,
 
     nesteSvarfristCvStillingFraNav = null,
     tiltakshendelse = null,
