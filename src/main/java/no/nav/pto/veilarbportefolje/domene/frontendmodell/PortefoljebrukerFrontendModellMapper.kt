@@ -109,9 +109,9 @@ object PortefoljebrukerFrontendModellMapper {
             ),
 
             aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
-                aktiviteter = mapAktiviteter(opensearchBruker),
+                nesteUtlopsdatoForAlleAktiviteter = mapNesteUtlopsdatoForAlleAktiviteter(opensearchBruker),
                 nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
-                nesteUtlopsdatoAktivitet = mapNesteUtlopsdatoForAktivitetBasertPåFiltervalg(
+                nesteUtlopsdatoForFiltrerteAktiviteter = mapNesteUtlopsdatoForAktivitetBasertPåFiltervalg(
                     opensearchBruker,
                     filtervalg
                 ),
@@ -297,6 +297,13 @@ object PortefoljebrukerFrontendModellMapper {
             }
         }
         return aktiviteter
+    }
+
+    private fun mapNesteUtlopsdatoForAlleAktiviteter(
+        opensearchBruker: PortefoljebrukerOpensearchModell
+    ): LocalDate? {
+        val aktiviteter = mapAktiviteter(opensearchBruker)
+        return aktiviteter.values.minOfOrNull { toLocalDateOrNull(it) }
     }
 
     private fun mapNesteUtlopsdatoForAktivitetBasertPåFiltervalg(

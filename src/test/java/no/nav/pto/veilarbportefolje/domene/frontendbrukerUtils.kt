@@ -51,9 +51,9 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     alleMoterSluttTid = null,
 
     aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
-        aktiviteter = mutableMapOf(),
+        nesteUtlopsdatoForAlleAktiviteter = null,
         nyesteUtlopteAktivitet = null,
-        nesteUtlopsdatoAktivitet = null,
+        nesteUtlopsdatoForFiltrerteAktiviteter = null,
         aktivitetStart = null,
         nesteAktivitetStart = null,
         forrigeAktivitetStart = null

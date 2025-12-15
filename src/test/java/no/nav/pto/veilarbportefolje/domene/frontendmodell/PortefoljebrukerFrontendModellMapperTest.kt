@@ -470,7 +470,7 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
-    fun `aktiviteterAvtaltMedNav - skal mappe aktiviteter med dato til ett objekt som kun har feltene med verdier`() {
+    fun `aktiviteterAvtaltMedNav - skal mappe aktiviteter med dato og hente ut den neste`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
         val tidspunkt1 = toIsoUTC(ZonedDateTime.now().plusDays(1))
         val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
@@ -487,13 +487,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = null,
         )
 
-        val aktiviteter = frontendBruker.aktiviteterAvtaltMedNav?.aktiviteter
-        Assertions.assertNotNull(aktiviteter)
-        Assertions.assertEquals(3, aktiviteter?.size)
-        Assertions.assertEquals(dateToTimestamp(tidspunkt1), aktiviteter?.get("tiltak"))
-        Assertions.assertEquals(dateToTimestamp(tidspunkt2), aktiviteter?.get("mote"))
-        Assertions.assertEquals(dateToTimestamp(tidspunkt3), aktiviteter?.get("stilling"))
-        Assertions.assertNull(aktiviteter?.get("behandling"))
+        val nesteUtlopsdato = frontendBruker.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForAlleAktiviteter
+        Assertions.assertNotNull(nesteUtlopsdato)
+        Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), nesteUtlopsdato)
     }
 
     @Test
@@ -515,7 +511,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = null,
         )
 
-        val aktiviteterUtenFilter = frontendBrukerUtenFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+        val aktiviteterUtenFilter = frontendBrukerUtenFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNull(aktiviteterUtenFilter)
 
         val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -525,7 +521,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
 
         val aktiviteterMedForenkletfilter =
-            frontendBrukerMedForenkletfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+            frontendBrukerMedForenkletfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNotNull(aktiviteterMedForenkletfilter)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteterMedForenkletfilter)
 
@@ -536,7 +532,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
 
         val aktiviteterMedTiltaksfilter =
-            frontendBrukerMedTiltaksfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+            frontendBrukerMedTiltaksfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNotNull(aktiviteterMedTiltaksfilter)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), aktiviteterMedTiltaksfilter)
     }
@@ -568,7 +564,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
 
         val aktiviteterMedAvansertfilter =
-            frontendBrukerMedAvansertfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+            frontendBrukerMedAvansertfilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNotNull(aktiviteterMedAvansertfilter)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteterMedAvansertfilter)
 
@@ -603,7 +599,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
 
         val aktiviteterMedBeggefilter =
-            frontendBrukerMedBeggeFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoAktivitet
+            frontendBrukerMedBeggeFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNotNull(aktiviteterMedBeggefilter)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt1), aktiviteterMedBeggefilter)
     }
