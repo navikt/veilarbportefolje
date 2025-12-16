@@ -1,0 +1,1 @@
+ALTER TABLE tiltakshendelse ALTER COLUMN tiltakstype_kode TYPE varchar(100);
