@@ -36,12 +36,7 @@ data class PortefoljebrukerFrontendModell(
     val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
     // AktiviterData
-    val nyesteUtlopteAktivitet: LocalDate?,
-    var nesteUtlopsdatoAktivitet: LocalDateTime?,
-    var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
-    val aktivitetStart: LocalDate?,
-    val nesteAktivitetStart: LocalDate?,
-    val forrigeAktivitetStart: LocalDate?,
+    val aktiviteterAvtaltMedNav: AktiviteterAvtaltMedNav?,
 
     // filtrert på "møter med nav i dag"
     val moteStartTid: LocalDateTime?, // gjør en sjekk på om dato er i dag, og setter "avtalt med nav" hvis true. Er kun for avtalte møter
