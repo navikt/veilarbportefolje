@@ -161,7 +161,7 @@ object PortefoljebrukerFrontendModellMapper {
         return frontendbruker
     }
 
-    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNavIDag? {
+    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNavIDag {
         val harAvtaltMoteMedNavIDag = opensearchBruker.aktivitet_mote_startdato?.let {
             toLocalDateOrNull(it).isEqual(LocalDate.now())
         } ?: false

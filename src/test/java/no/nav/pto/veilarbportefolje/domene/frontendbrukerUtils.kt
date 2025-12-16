@@ -46,6 +46,11 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
 
     utdanningOgSituasjonSistEndret = null,
 
+    moterMedNavIDag = MoterMedNavIDag(
+        harAvtaltMoteMedNavIDag = false,
+        forstkommendeMoteTidspunkt = null,
+        forstkommendeMoteVarighet = null
+    ),
     moteStartTid = null,
     alleMoterStartTid = null,
     alleMoterSluttTid = null,
