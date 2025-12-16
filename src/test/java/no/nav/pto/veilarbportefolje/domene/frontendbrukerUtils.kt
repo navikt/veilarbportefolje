@@ -58,12 +58,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         nesteAktivitetStart = null,
         forrigeAktivitetStart = null
     ),
-    aktiviteter = mutableMapOf(),
-    nesteUtlopsdatoAktivitet = null,
-    nyesteUtlopteAktivitet = null,
-    aktivitetStart = null,
-    nesteAktivitetStart = null,
-    forrigeAktivitetStart = null,
 
     nesteSvarfristCvStillingFraNav = null,
     tiltakshendelse = null,
