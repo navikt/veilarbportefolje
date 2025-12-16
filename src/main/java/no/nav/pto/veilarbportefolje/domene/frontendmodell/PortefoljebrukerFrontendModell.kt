@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -19,7 +18,7 @@ data class PortefoljebrukerFrontendModell(
     var hovedStatsborgerskap: StatsborgerskapForBruker?,
     var foedeland: String?,
     var geografiskBosted: GeografiskBostedForBruker,
-    var tolkebehov: Tolkebehov?, // maaange nullsjekker i frontend
+    var tolkebehov: Tolkebehov,
     var barnUnder18AarData: List<BarnUnder18AarData>?,
 
     // Oppfolgingsdata
