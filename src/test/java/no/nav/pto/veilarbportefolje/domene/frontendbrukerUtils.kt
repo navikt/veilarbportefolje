@@ -20,7 +20,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     etternavn = null,
     barnUnder18AarData = null,
 
-    tolkebehov = null,
+    tolkebehov = Tolkebehov("", "",null),
 
     foedeland = null,
     hovedStatsborgerskap = StatsborgerskapForBruker(
