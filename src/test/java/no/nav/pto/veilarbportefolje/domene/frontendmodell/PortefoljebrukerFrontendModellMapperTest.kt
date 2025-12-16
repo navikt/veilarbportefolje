@@ -3,19 +3,21 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
+import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.TILTAKSPENGER
-import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
@@ -23,6 +25,7 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import java.time.*
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class PortefoljebrukerFrontendModellMapperTest {
 
@@ -147,6 +150,39 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `personaliadata og en til en variabler skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        opensearchBruker.setFnr("12345678901")
+        opensearchBruker.setFornavn("Ola")
+        opensearchBruker.setEtternavn("Nordmann")
+        opensearchBruker.setFoedelandFulltNavn("NOR")
+        opensearchBruker.setBarn_under_18_aar(listOf(BarnUnder18AarData(8, null)))
+        opensearchBruker.setEgen_ansatt(false)
+        opensearchBruker.setSkjermet_til(LocalDateTime.of(2020, 1, 1, 10, 0))
+        opensearchBruker.setUtdanning_og_situasjon_sist_endret(LocalDate.of(2024, 1, 1))
+        opensearchBruker.setNeste_svarfrist_stilling_fra_nav(LocalDate.of(2024, 5, 1))
+
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertEquals("12345678901", frontendBruker.fnr)
+        Assertions.assertEquals("Ola", frontendBruker.fornavn)
+        Assertions.assertEquals("Nordmann", frontendBruker.etternavn)
+        Assertions.assertEquals("NOR", frontendBruker.foedeland)
+        Assertions.assertEquals(listOf(BarnUnder18AarData(8, null)), frontendBruker.barnUnder18AarData)
+        Assertions.assertEquals(false, frontendBruker.egenAnsatt)
+        Assertions.assertEquals(LocalDate.of(2020, 1, 1), frontendBruker.skjermetTil)
+        Assertions.assertEquals(LocalDate.of(2024, 1, 1), frontendBruker.utdanningOgSituasjonSistEndret)
+        Assertions.assertEquals(LocalDate.of(2024, 5, 1), frontendBruker.nesteSvarfristCvStillingFraNav)
+
+    }
+
+    @Test
     fun `geografiskBosted skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
@@ -167,6 +203,77 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("Ukjent", bosted.bostedKommuneUkjentEllerUtland)
         Assertions.assertEquals("0301", bosted.bostedKommune)
         Assertions.assertEquals(LocalDate.of(2025, 1, 1), bosted.bostedSistOppdatert)
+    }
+
+    @Test
+    fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val gyldigFraDato = LocalDate.of(2000, 5, 20)
+        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap("NOR", gyldigFraDato, null))
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val statsborgerskap = frontendBruker.hovedStatsborgerskap
+
+        Assertions.assertEquals("NOR", statsborgerskap!!.statsborgerskap)
+        Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
+    }
+
+    @Test
+    fun `tolkebehov skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        val tolkebehovUtenData = frontendBrukerUtenData.tolkebehov
+        Assertions.assertEquals("", tolkebehovUtenData.talespraaktolk)
+        Assertions.assertEquals("", tolkebehovUtenData.tegnspraaktolk)
+        Assertions.assertEquals(null, tolkebehovUtenData.sistOppdatert)
+
+        opensearchBruker.setTalespraaktolk("FR")
+        opensearchBruker.setTegnspraaktolk("EN")
+        val sistOppdatert = LocalDate.of(2025, 5, 20)
+        opensearchBruker.setTolkBehovSistOppdatert(sistOppdatert)
+
+        val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val tolkebehov = frontendBrukerMedData.tolkebehov
+
+        Assertions.assertEquals("FR", tolkebehov.talespraaktolk)
+        Assertions.assertEquals("EN", tolkebehov.tegnspraaktolk)
+        Assertions.assertEquals(sistOppdatert, tolkebehov.sistOppdatert)
+    }
+
+    @Test
+    fun `oppfølgingsdata skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        opensearchBruker.setOppfolging_startdato("2023-06-30T21:59:59Z")
+        opensearchBruker.setTildelt_tidspunkt(LocalDateTime.of(2023, 6, 15, 10, 0))
+        opensearchBruker.setVeileder_id("Z123456")
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertEquals(
+            toLocalDateTimeOrNull("2023-06-30T21:59:59Z")?.toLocalDate(),
+            frontendBruker.oppfolgingStartdato
+        )
+        Assertions.assertEquals(LocalDate.of(2023, 6, 15), frontendBruker.tildeltTidspunkt)
+        Assertions.assertEquals("Z123456", frontendBruker.veilederId)
     }
 
     @Test
@@ -216,8 +323,8 @@ class PortefoljebrukerFrontendModellMapperTest {
     @Test
     fun `dialogdata skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        val svarFraNavDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
-        val svarFraBrukerDato = DateUtils.toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        val svarFraNavDato = toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
+        val svarFraBrukerDato = toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
         opensearchBruker.setVenterpasvarfranav(svarFraNavDato)
         opensearchBruker.setVenterpasvarfrabruker(svarFraBrukerDato)
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -232,22 +339,6 @@ class PortefoljebrukerFrontendModellMapperTest {
 
     }
 
-    @Test
-    fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
-        val opensearchBruker = PortefoljebrukerOpensearchModell()
-        val gyldigFraDato = LocalDate.of(2000, 5, 20)
-        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap("NOR", gyldigFraDato, null))
-
-        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = null
-        )
-        val statsborgerskap = frontendBruker.hovedStatsborgerskap
-
-        Assertions.assertEquals("NOR", statsborgerskap!!.statsborgerskap)
-        Assertions.assertEquals(gyldigFraDato, statsborgerskap.gyldigFra)
-    }
 
     @Test
     fun `skal mappe alle ytelser til ytelserForBruker når det finnes data`() {
@@ -511,7 +602,8 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = null,
         )
 
-        val aktiviteterUtenFilter = frontendBrukerUtenFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
+        val aktiviteterUtenFilter =
+            frontendBrukerUtenFilter.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForFiltrerteAktiviteter
         Assertions.assertNull(aktiviteterUtenFilter)
 
         val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -630,5 +722,44 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt2), aktiviteter?.aktivitetStart)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt3), aktiviteter?.nesteAktivitetStart)
         Assertions.assertEquals(fromIsoUtcToLocalDateOrNull(tidspunkt4), aktiviteter?.forrigeAktivitetStart)
+    }
+
+    @Test
+    fun `huskelapp og fargekategori skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertNull(frontendBrukerUtenData.huskelapp)
+        Assertions.assertNull(frontendBrukerUtenData.fargekategori)
+        Assertions.assertNull(frontendBrukerUtenData.fargekategoriEnhetId)
+
+        val huskelapp = HuskelappForBruker(
+            LocalDate.now().plusDays(20),
+            "dddd avtal møte med bruker",
+            LocalDate.now().minusDays(10),
+            "Z123456",
+            UUID.randomUUID().toString(),
+            "0130"
+        )
+
+        opensearchBruker.setHuskelapp(huskelapp)
+        opensearchBruker.setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
+        opensearchBruker.setFargekategori_enhetId("1234")
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertEquals(huskelapp, frontendBruker.huskelapp)
+        Assertions.assertEquals(FargekategoriVerdi.FARGEKATEGORI_A.name, frontendBruker.fargekategori)
+        Assertions.assertEquals("1234", frontendBruker.fargekategoriEnhetId)
+
     }
 }
