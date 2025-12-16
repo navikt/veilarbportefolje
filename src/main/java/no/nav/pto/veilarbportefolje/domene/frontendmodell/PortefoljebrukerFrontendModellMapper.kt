@@ -119,6 +119,7 @@ object PortefoljebrukerFrontendModellMapper {
                 forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
             ),
 
+            moterMedNavIDag = mapMoterMedNavIDag(opensearchBruker),
             moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
             alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
             alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
@@ -155,9 +156,29 @@ object PortefoljebrukerFrontendModellMapper {
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId
 
-            )
+        )
 
         return frontendbruker
+    }
+
+    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNavIDag? {
+        val harAvtaltMoteMedNavIDag = opensearchBruker.aktivitet_mote_startdato?.let {
+            toLocalDateOrNull(it).isEqual(LocalDate.now())
+        } ?: false
+
+        val forstkommendeMoteStart = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato)
+        val forstkommendeMoteSlutt = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato)
+        val forstkommendeMoteVarighet = if (forstkommendeMoteStart != null && forstkommendeMoteSlutt != null) {
+            ChronoUnit.MINUTES.between(forstkommendeMoteStart, forstkommendeMoteSlutt).toInt()
+        } else {
+            null
+        }
+
+        return MoterMedNavIDag(
+            harAvtaltMoteMedNavIDag = harAvtaltMoteMedNavIDag,
+            forstkommendeMoteTidspunkt = forstkommendeMoteStart,
+            forstkommendeMoteVarighet = forstkommendeMoteVarighet
+        )
     }
 
     private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
