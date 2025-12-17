@@ -47,10 +47,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     utdanningOgSituasjonSistEndret = null,
 
     moteMedNavIDag = null,
-    moteStartTid = null,
-    alleMoterStartTid = null,
-    alleMoterSluttTid = null,
-
     aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
         nesteUtlopsdatoForAlleAktiviteter = null,
         nyesteUtlopteAktivitet = null,

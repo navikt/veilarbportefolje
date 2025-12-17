@@ -50,7 +50,6 @@ object PortefoljebrukerFrontendModellMapper {
 
         val frontendbruker = PortefoljebrukerFrontendModell(
             aktoerid = opensearchBruker.aktoer_id,
-
             etiketter = Etiketter(
                 erDoed = opensearchBruker.er_doed,
                 erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
@@ -62,7 +61,6 @@ object PortefoljebrukerFrontendModellMapper {
                 diskresjonskodeFortrolig = diskresjonskodeFortrolig,
                 profileringResultat = profileringResultat
             ),
-
             fnr = opensearchBruker.fnr,
             fornavn = opensearchBruker.fornavn,
             etternavn = opensearchBruker.etternavn,
@@ -85,13 +83,11 @@ object PortefoljebrukerFrontendModellMapper {
                 opensearchBruker.tolkBehovSistOppdatert
             ),
             barnUnder18AarData = opensearchBruker.barn_under_18_aar,
-
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
             veilederId = opensearchBruker.veileder_id,
             egenAnsatt = opensearchBruker.egen_ansatt,
             skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
-
             tiltakshendelse = opensearchBruker.tiltakshendelse?.let {
                 TiltakshendelseForBruker(
                     id = it.id,
@@ -106,7 +102,6 @@ object PortefoljebrukerFrontendModellMapper {
                 datoMeldingVenterPaNav = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfranav),
                 datoMeldingVenterPaBruker = fromIsoUtcToLocalDateOrNull(opensearchBruker.venterpasvarfrabruker),
             ),
-
             aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
                 nesteUtlopsdatoForAlleAktiviteter = mapNesteUtlopsdatoForAlleAktiviteter(opensearchBruker),
                 nyesteUtlopteAktivitet = fromIsoUtcToLocalDateOrNull(opensearchBruker.nyesteutlopteaktivitet),
@@ -118,12 +113,7 @@ object PortefoljebrukerFrontendModellMapper {
                 nesteAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.neste_aktivitet_start),
                 forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
             ),
-
             moteMedNavIDag = mapMoteMedNavIDag(opensearchBruker),
-            moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
-            alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
-            alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
-
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
@@ -151,11 +141,9 @@ object PortefoljebrukerFrontendModellMapper {
                     opensearchBruker.enslige_forsorgere_overgangsstonad
                 ),
             ),
-
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId
-
         )
 
         return frontendbruker
