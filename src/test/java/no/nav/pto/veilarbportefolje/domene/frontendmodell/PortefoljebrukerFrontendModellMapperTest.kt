@@ -725,6 +725,57 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `moteMedNav - skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val avtaltMedNavIDag = toIsoUTC(ZonedDateTime.now())
+        val ikkeAvtaltMedNavIDag = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val møteIDagStart = toIsoUTC(ZonedDateTime.now().withHour(9).withMinute(30))
+        val møteIDagSlutt = toIsoUTC(ZonedDateTime.now().withHour(10).withMinute(30))
+
+        // har møte i dag som er avtalt med nav
+        opensearchBruker.setAktivitet_mote_startdato(avtaltMedNavIDag)
+        opensearchBruker.setAlle_aktiviteter_mote_startdato(møteIDagStart)
+        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(møteIDagSlutt)
+
+        val frontendBrukerAvtaltMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        val moteIDagAvtalt = frontendBrukerAvtaltMøteIDag.moteMedNavIDag
+        Assertions.assertNotNull(moteIDagAvtalt)
+        Assertions.assertEquals(true, moteIDagAvtalt!!.avtaltMedNav)
+        Assertions.assertEquals("09:30", moteIDagAvtalt.klokkeslett)
+        Assertions.assertEquals(60, moteIDagAvtalt.varighetMinutter)
+
+        // har møte i dag som ikke er avtalt med nav
+        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
+        val frontendBrukerIkkeAvtaltIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val moteIDagIkkeAvtalt = frontendBrukerIkkeAvtaltIDag.moteMedNavIDag
+        Assertions.assertNotNull(moteIDagIkkeAvtalt)
+        Assertions.assertEquals(false, moteIDagIkkeAvtalt!!.avtaltMedNav)
+        Assertions.assertEquals("09:30", moteIDagIkkeAvtalt.klokkeslett)
+        Assertions.assertEquals(60, moteIDagIkkeAvtalt.varighetMinutter)
+
+        // har ikke møte i dag
+        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
+        opensearchBruker.setAlle_aktiviteter_mote_startdato(getFarInTheFutureDate())
+        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(getFarInTheFutureDate())
+        val frontendBrukerIkkeMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertNull(frontendBrukerIkkeMøteIDag.moteMedNavIDag)
+    }
+
+    @Test
     fun `huskelapp og fargekategori skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
