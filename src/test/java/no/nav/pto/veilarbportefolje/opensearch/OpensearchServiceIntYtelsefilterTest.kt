@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tiltakspenger
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -465,6 +466,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt1)
+            .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
 
         val midtImellomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -473,6 +475,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt2)
+            .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
 
         val senestTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -481,6 +484,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_tom_vedtaksdato(tidspunkt3)
+            .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
 
         val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -542,6 +546,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt1)
+            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
 
         val midtImellomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -550,6 +555,8 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt2)
+            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
+
 
         val senestTomBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -558,6 +565,8 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(true)
             .setTiltakspenger_vedtaksdato_tom(tidspunkt3)
+            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
+
 
         val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -565,6 +574,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setOppfolging(true)
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(false)
+            .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
 
 
         val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker)
@@ -618,6 +628,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.BISTANDSBEHOV)
+            .setAap_kelvin_tom_vedtaksdato(LocalDate.now())
 
         val studentBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -626,6 +637,8 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.STUDENT)
+            .setAap_kelvin_tom_vedtaksdato(LocalDate.now())
+
 
         val sykepengeerstatningBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -634,6 +647,8 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setAap_kelvin(true)
             .setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
+            .setAap_kelvin_tom_vedtaksdato(LocalDate.now())
+
 
         val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -691,6 +706,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(true)
             .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER)
+            .setTiltakspenger_vedtaksdato_tom(LocalDate.now())
 
         val bruker2 = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
@@ -699,6 +715,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             .setEnhet_id(TEST_ENHET)
             .setTiltakspenger(true)
             .setTiltakspenger_rettighet(TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG)
+            .setTiltakspenger_vedtaksdato_tom(LocalDate.now())
 
         val nullBruker = PortefoljebrukerOpensearchModell()
             .setFnr(randomFnr().toString())
