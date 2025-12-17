@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
@@ -130,10 +131,7 @@ object PortefoljebrukerFrontendModellMapper {
                     aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
                     aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato
                 ),
-                aap = AapKelvinForBruker.of(
-                    opensearchBruker.aap_kelvin_tom_vedtaksdato,
-                    opensearchBruker.aap_kelvin_rettighetstype
-                ),
+                aap = mapAapKelvin(opensearchBruker),
                 tiltakspenger = mapTiltakspenger(opensearchBruker),
                 ensligeForsorgereOvergangsstonad = opensearchBruker.enslige_forsorgere_overgangsstonad?.let {
                     EnsligForsorgerOvergangsstonad(
@@ -159,11 +157,25 @@ object PortefoljebrukerFrontendModellMapper {
         if (vedtaksdato == null && rettighet == null) {
             return null
         }
-        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet)!!
+        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet)
 
         return Tiltakspenger(
             vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom,
             rettighet = rettighetTekst
+        )
+    }
+
+    private fun mapAapKelvin(opensearchBruker: PortefoljebrukerOpensearchModell): AapKelvin? {
+        val vedtaksdato = opensearchBruker.aap_kelvin_tom_vedtaksdato
+        val rettighet = opensearchBruker.aap_kelvin_rettighetstype
+        if (vedtaksdato == null && rettighet == null) {
+            return null
+        }
+        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet)
+
+        return AapKelvin(
+            vedtaksdatoTilOgMed = vedtaksdato,
+            rettighetstype = rettighetTekst
         )
     }
 
