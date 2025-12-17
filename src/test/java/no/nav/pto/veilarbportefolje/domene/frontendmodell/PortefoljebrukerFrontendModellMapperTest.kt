@@ -725,35 +725,54 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
-    fun `moterMedNav - skal mappes riktig`() {
+    fun `moteMedNav - skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        val tidspunktStart = toIsoUTC(ZonedDateTime.now())
-        val tidspunktSlutt = toIsoUTC(ZonedDateTime.now().plusHours(1))
+        val avtaltMedNavIDag = toIsoUTC(ZonedDateTime.now())
+        val ikkeAvtaltMedNavIDag = toIsoUTC(ZonedDateTime.now().plusDays(1))
+        val møteIDagStart = toIsoUTC(ZonedDateTime.now().withHour(9).withMinute(30))
+        val møteIDagSlutt = toIsoUTC(ZonedDateTime.now().withHour(10).withMinute(30))
 
-        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+        // har møte i dag som er avtalt med nav
+        opensearchBruker.setAktivitet_mote_startdato(avtaltMedNavIDag)
+        opensearchBruker.setAlle_aktiviteter_mote_startdato(møteIDagStart)
+        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(møteIDagSlutt)
+
+        val frontendBrukerAvtaltMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
             filtervalg = null
         )
 
-        Assertions.assertEquals(false, frontendBrukerUtenData.moterMedNav.harAvtaltMoteMedNavIDag)
-        Assertions.assertEquals(toLocalDateTimeOrNull(getFarInTheFutureDate()), frontendBrukerUtenData.moterMedNav.forstkommendeMoteDato)
-        Assertions.assertEquals(0, frontendBrukerUtenData.moterMedNav.forstkommendeMoteVarighetMinutter)
+        val moteIDagAvtalt = frontendBrukerAvtaltMøteIDag.moteMedNavIDag
+        Assertions.assertNotNull(moteIDagAvtalt)
+        Assertions.assertEquals(true, moteIDagAvtalt!!.avtaltMedNav)
+        Assertions.assertEquals("09:30", moteIDagAvtalt.klokkeslett)
+        Assertions.assertEquals(60, moteIDagAvtalt.varighetMinutter)
 
-        opensearchBruker.setAktivitet_mote_startdato(tidspunktStart)
-        opensearchBruker.setAlle_aktiviteter_mote_startdato(tidspunktStart)
-        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(tidspunktSlutt)
+        // har møte i dag som ikke er avtalt med nav
+        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
+        val frontendBrukerIkkeAvtaltIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+        val moteIDagIkkeAvtalt = frontendBrukerIkkeAvtaltIDag.moteMedNavIDag
+        Assertions.assertNotNull(moteIDagIkkeAvtalt)
+        Assertions.assertEquals(false, moteIDagIkkeAvtalt!!.avtaltMedNav)
+        Assertions.assertEquals("09:30", moteIDagIkkeAvtalt.klokkeslett)
+        Assertions.assertEquals(60, moteIDagIkkeAvtalt.varighetMinutter)
 
-        val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+        // har ikke møte i dag
+        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
+        opensearchBruker.setAlle_aktiviteter_mote_startdato(getFarInTheFutureDate())
+        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(getFarInTheFutureDate())
+        val frontendBrukerIkkeMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
             filtervalg = null
         )
 
-        val moterMedNav = frontendBrukerMedData.moterMedNav
-        Assertions.assertEquals(true, moterMedNav.harAvtaltMoteMedNavIDag)
-        Assertions.assertEquals(toLocalDateTimeOrNull(tidspunktStart), moterMedNav.forstkommendeMoteDato)
-        Assertions.assertEquals(60, moterMedNav.forstkommendeMoteVarighetMinutter)
+        Assertions.assertNull(frontendBrukerIkkeMøteIDag.moteMedNavIDag)
     }
 
     @Test

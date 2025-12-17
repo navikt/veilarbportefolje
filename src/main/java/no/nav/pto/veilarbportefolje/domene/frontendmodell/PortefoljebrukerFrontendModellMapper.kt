@@ -119,7 +119,7 @@ object PortefoljebrukerFrontendModellMapper {
                 forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
             ),
 
-            moterMedNav = mapMoterMedNavIDag(opensearchBruker),
+            moteMedNavIDag = mapMoteMedNavIDag(opensearchBruker),
             moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
             alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
             alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
@@ -161,23 +161,28 @@ object PortefoljebrukerFrontendModellMapper {
         return frontendbruker
     }
 
-    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNav {
-        val harAvtaltMoteMedNavIDag = opensearchBruker.aktivitet_mote_startdato?.let {
+    private fun mapMoteMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoteMedNavIDag? {
+        val harMoteIDag = opensearchBruker.alle_aktiviteter_mote_startdato.let {
             toLocalDateOrNull(it).isEqual(LocalDate.now())
-        } ?: false
-
-        val forstkommendeMoteStart = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato)
-        val forstkommendeMoteSlutt = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato)
-        val forstkommendeMoteVarighet = if (forstkommendeMoteStart != null && forstkommendeMoteSlutt != null) {
-            ChronoUnit.MINUTES.between(forstkommendeMoteStart, forstkommendeMoteSlutt).toInt()
-        } else {
-            null
         }
 
-        return MoterMedNav(
-            harAvtaltMoteMedNavIDag = harAvtaltMoteMedNavIDag,
-            forstkommendeMoteDato = forstkommendeMoteStart,
-            forstkommendeMoteVarighetMinutter = forstkommendeMoteVarighet
+        if (!harMoteIDag) {
+            return null
+        }
+
+        val erAvtaltMedNav = opensearchBruker.aktivitet_mote_startdato.let {
+            toLocalDateOrNull(it).isEqual(LocalDate.now())
+        }
+
+        val moteStart = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato)
+        val moteSlutt = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato)
+        val varighet = ChronoUnit.MINUTES.between(moteStart, moteSlutt).toInt()
+        val klokkeslett = String.format("%02d:%02d", moteStart.hour, moteStart.minute)
+
+        return MoteMedNavIDag(
+            avtaltMedNav = erAvtaltMedNav,
+            klokkeslett = klokkeslett,
+            varighetMinutter = varighet
         )
     }
 

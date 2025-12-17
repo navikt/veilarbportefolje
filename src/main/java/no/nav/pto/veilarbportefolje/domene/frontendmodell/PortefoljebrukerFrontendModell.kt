@@ -37,9 +37,7 @@ data class PortefoljebrukerFrontendModell(
     // AktiviterData
     val aktiviteterAvtaltMedNav: AktiviteterAvtaltMedNav?,
 
-    // filtrert på "møter med nav i dag"
-    val moterMedNav: MoterMedNav,
-
+    val moteMedNavIDag: MoteMedNavIDag?,
     val moteStartTid: LocalDateTime?, // gjør en sjekk på om dato er i dag, og setter "avtalt med nav" hvis true. Er kun for avtalte møter
     val alleMoterStartTid: LocalDateTime?, // Førstkommende møte. bruker klokkeslett og regner ut varighet med alleMoterSluttTid. Inkluderer både pliktige og upliktige aktiviteter
     val alleMoterSluttTid: LocalDateTime?, // kun for å regne ut varighet på møtet.
