@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
@@ -129,17 +131,16 @@ object PortefoljebrukerFrontendModellMapper {
                     aapUnntakUkerIgjen = opensearchBruker.aapunntakukerigjen,
                     aapordinerutlopsdato = opensearchBruker.aapordinerutlopsdato
                 ),
-                aap = AapKelvinForBruker.of(
-                    opensearchBruker.aap_kelvin_tom_vedtaksdato,
-                    opensearchBruker.aap_kelvin_rettighetstype
-                ),
-                tiltakspenger = TiltakspengerForBruker.of(
-                    opensearchBruker.tiltakspenger_vedtaksdato_tom,
-                    opensearchBruker.tiltakspenger_rettighet
-                ),
-                ensligeForsorgereOvergangsstonad = EnsligeForsorgereOvergangsstonadFrontend.of(
-                    opensearchBruker.enslige_forsorgere_overgangsstonad
-                ),
+                aap = mapAapKelvin(opensearchBruker),
+                tiltakspenger = mapTiltakspenger(opensearchBruker),
+                ensligeForsorgereOvergangsstonad = opensearchBruker.enslige_forsorgere_overgangsstonad?.let {
+                    EnsligForsorgerOvergangsstonad(
+                        vedtaksPeriodetype = it.vedtaksPeriodetype,
+                        harAktivitetsplikt = it.harAktivitetsplikt,
+                        utlopsDato = it.utlopsDato,
+                        yngsteBarnsFodselsdato = it.yngsteBarnsFødselsdato
+                    )
+                }
             ),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
@@ -147,6 +148,35 @@ object PortefoljebrukerFrontendModellMapper {
         )
 
         return frontendbruker
+    }
+
+
+    private fun mapTiltakspenger(opensearchBruker: PortefoljebrukerOpensearchModell): Tiltakspenger? {
+        val vedtaksdato = opensearchBruker.tiltakspenger_vedtaksdato_tom
+        val rettighet = opensearchBruker.tiltakspenger_rettighet
+        if (vedtaksdato == null && rettighet == null) {
+            return null
+        }
+        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet)
+
+        return Tiltakspenger(
+            vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom,
+            rettighet = rettighetTekst
+        )
+    }
+
+    private fun mapAapKelvin(opensearchBruker: PortefoljebrukerOpensearchModell): AapKelvin? {
+        val vedtaksdato = opensearchBruker.aap_kelvin_tom_vedtaksdato
+        val rettighet = opensearchBruker.aap_kelvin_rettighetstype
+        if (vedtaksdato == null && rettighet == null) {
+            return null
+        }
+        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet)
+
+        return AapKelvin(
+            vedtaksdatoTilOgMed = vedtaksdato,
+            rettighetstype = rettighetTekst
+        )
     }
 
     private fun mapMoteMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoteMedNavIDag? {

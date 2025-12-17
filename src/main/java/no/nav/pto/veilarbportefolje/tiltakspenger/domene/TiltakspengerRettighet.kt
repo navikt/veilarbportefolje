@@ -6,8 +6,7 @@ enum class TiltakspengerRettighet {
     INGENTING;
 
     companion object {
-        fun tilFrontendtekst(rettighet: TiltakspengerRettighet?): String? {
-            if (rettighet == null) return null
+        fun tilFrontendtekst(rettighet: TiltakspengerRettighet): String {
 
             return when (rettighet) {
                 TILTAKSPENGER -> "Tiltakspenger"

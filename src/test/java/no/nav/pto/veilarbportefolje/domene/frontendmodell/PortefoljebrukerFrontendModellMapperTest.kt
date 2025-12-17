@@ -350,7 +350,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         opensearchBruker.setAapmaxtiduke(10)
         opensearchBruker.setAapunntakukerigjen(5)
         opensearchBruker.setAapordinerutlopsdato(LocalDate.of(2026, 1, 1))
-        opensearchBruker.setAap_kelvin_rettighetstype(AapRettighetstype.SYKEPENGEERSTATNING)
+        opensearchBruker.setAap_kelvin_rettighetstype(AapRettighetstype.VURDERES_FOR_UFØRETRYGD)
         opensearchBruker.setAap_kelvin_tom_vedtaksdato(LocalDate.of(2026, 1, 1))
         opensearchBruker.setTiltakspenger_rettighet(TILTAKSPENGER)
         opensearchBruker.setTiltakspenger_vedtaksdato_tom(LocalDate.of(2026, 1, 1))
@@ -377,7 +377,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(5, ytelser.ytelserArena.aapUnntakUkerIgjen)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ytelserArena.aapordinerutlopsdato)
         Assertions.assertEquals(
-            AapRettighetstype.Companion.tilFrontendtekst(AapRettighetstype.SYKEPENGEERSTATNING),
+            AapRettighetstype.Companion.tilFrontendtekst(AapRettighetstype.VURDERES_FOR_UFØRETRYGD),
             ytelser.aap!!.rettighetstype
         )
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap!!.vedtaksdatoTilOgMed)

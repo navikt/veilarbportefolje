@@ -90,10 +90,10 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(1);
-                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().vedtaksPeriodetype()).isEqualTo("Ny periode for nytt barn");
-                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().harAktivitetsplikt()).isEqualTo(false);
-                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().utlopsDato()).isEqualTo(LocalDate.now().plusDays(20));
-                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().yngsteBarnsFodselsdato()).isEqualTo(LocalDate.of(2023, 5, 4));
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Ny periode for nytt barn");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isEqualTo(false);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getUtlopsDato()).isEqualTo(LocalDate.now().plusDays(20));
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getYngsteBarnsFodselsdato()).isEqualTo(LocalDate.of(2023, 5, 4));
                 }
         );
     }
