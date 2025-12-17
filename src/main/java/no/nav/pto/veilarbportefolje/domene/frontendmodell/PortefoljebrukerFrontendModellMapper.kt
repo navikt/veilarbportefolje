@@ -119,7 +119,7 @@ object PortefoljebrukerFrontendModellMapper {
                 forrigeAktivitetStart = fromIsoUtcToLocalDateOrNull(opensearchBruker.forrige_aktivitet_start),
             ),
 
-            moterMedNavIDag = mapMoterMedNavIDag(opensearchBruker),
+            moterMedNav = mapMoterMedNavIDag(opensearchBruker),
             moteStartTid = toLocalDateTimeOrNull(opensearchBruker.aktivitet_mote_startdato),
             alleMoterStartTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_startdato),
             alleMoterSluttTid = toLocalDateTimeOrNull(opensearchBruker.alle_aktiviteter_mote_utlopsdato),
@@ -161,7 +161,7 @@ object PortefoljebrukerFrontendModellMapper {
         return frontendbruker
     }
 
-    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNavIDag {
+    private fun mapMoterMedNavIDag(opensearchBruker: PortefoljebrukerOpensearchModell): MoterMedNav {
         val harAvtaltMoteMedNavIDag = opensearchBruker.aktivitet_mote_startdato?.let {
             toLocalDateOrNull(it).isEqual(LocalDate.now())
         } ?: false
@@ -174,10 +174,10 @@ object PortefoljebrukerFrontendModellMapper {
             null
         }
 
-        return MoterMedNavIDag(
+        return MoterMedNav(
             harAvtaltMoteMedNavIDag = harAvtaltMoteMedNavIDag,
-            forstkommendeMoteTidspunkt = forstkommendeMoteStart,
-            forstkommendeMoteVarighet = forstkommendeMoteVarighet
+            forstkommendeMoteDato = forstkommendeMoteStart,
+            forstkommendeMoteVarighetMinutter = forstkommendeMoteVarighet
         )
     }
 

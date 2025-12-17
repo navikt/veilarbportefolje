@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import java.time.LocalDateTime
 
-data class MoterMedNavIDag(
+data class MoterMedNav(
     val harAvtaltMoteMedNavIDag: Boolean,
-    val forstkommendeMoteTidspunkt: LocalDateTime?,
-    val forstkommendeMoteVarighet: Int?,
+    val forstkommendeMoteDato: LocalDateTime?,
+    val forstkommendeMoteVarighetMinutter: Int?,
 )
