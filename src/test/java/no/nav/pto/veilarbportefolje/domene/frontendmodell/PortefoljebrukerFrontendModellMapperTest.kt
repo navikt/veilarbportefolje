@@ -725,6 +725,38 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `moterMedNav - skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+        val tidspunktStart = toIsoUTC(ZonedDateTime.now())
+        val tidspunktSlutt = toIsoUTC(ZonedDateTime.now().plusHours(1))
+
+        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        Assertions.assertEquals(false, frontendBrukerUtenData.moterMedNav.harAvtaltMoteMedNavIDag)
+        Assertions.assertEquals(toLocalDateTimeOrNull(getFarInTheFutureDate()), frontendBrukerUtenData.moterMedNav.forstkommendeMoteDato)
+        Assertions.assertEquals(0, frontendBrukerUtenData.moterMedNav.forstkommendeMoteVarighetMinutter)
+
+        opensearchBruker.setAktivitet_mote_startdato(tidspunktStart)
+        opensearchBruker.setAlle_aktiviteter_mote_startdato(tidspunktStart)
+        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(tidspunktSlutt)
+
+        val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = null
+        )
+
+        val moterMedNav = frontendBrukerMedData.moterMedNav
+        Assertions.assertEquals(true, moterMedNav.harAvtaltMoteMedNavIDag)
+        Assertions.assertEquals(toLocalDateTimeOrNull(tidspunktStart), moterMedNav.forstkommendeMoteDato)
+        Assertions.assertEquals(60, moterMedNav.forstkommendeMoteVarighetMinutter)
+    }
+
+    @Test
     fun `huskelapp og fargekategori skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
