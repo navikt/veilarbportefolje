@@ -803,41 +803,44 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4).hendelse
 
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-        bruker1.fnr = randomFnr().toString()
-        bruker1.aktoer_id = aktoridBruker1.toString()
-        bruker1.oppfolging = true
-        bruker1.veileder_id = TEST_VEILEDER_0
-        bruker1.enhet_id = TEST_ENHET
-        bruker1.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker1.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-        bruker2.fnr = randomFnr().toString()
-        bruker2.aktoer_id = aktoridBruker2.toString()
-        bruker2.oppfolging = true
-        bruker2.veileder_id = TEST_VEILEDER_0
-        bruker2.ny_for_veileder = false
-        bruker2.enhet_id = TEST_ENHET
-        bruker2.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker2.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-        bruker3.fnr = randomFnr().toString()
-        bruker3.aktoer_id = aktoridBruker3.toString()
-        bruker3.oppfolging = true
-        bruker3.veileder_id = TEST_VEILEDER_0
-        bruker3.ny_for_veileder = false
-        bruker3.enhet_id = TEST_ENHET
-        bruker3.hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker3.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3),
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-        bruker4.fnr = randomFnr().toString()
-        bruker4.aktoer_id = aktoridBruker4.toString()
-        bruker4.oppfolging = true
-        bruker4.veileder_id = TEST_VEILEDER_0
-        bruker4.ny_for_veileder = false
-        bruker4.enhet_id = TEST_ENHET
-        bruker4.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4)
-
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker4.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3, bruker4)
 
