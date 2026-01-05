@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
-import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
-import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -11,7 +10,8 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,13 +22,13 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     private val opensearchService: OpensearchService,
 ) : EndToEndTest() {
 
-    private lateinit var TEST_ENHET: String
-    private lateinit var TEST_VEILEDER_0: String
+    private lateinit var TESTENHET: String
+    private lateinit var TESTVEILEDER: String
 
     @BeforeEach
     fun setup() {
-        TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value
+        TESTENHET = randomNavKontor().value
+        TESTVEILEDER = randomVeilederId().value
     }
 
     @Test
@@ -38,45 +38,30 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         val tolkesprakNorsk = "NB"
 
         val trengerTalespraktolkBehovSistOppdatert = "2022-02-22"
-        val trengerTalespraktolk = genererRandomBruker(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
+        val trengerTalespraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert))
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
-        val trengerTaleOgTegnspraktolk = genererRandomBruker(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
+        val trengerTaleOgTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
 
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
-        val trengerTegnspraktolk = genererRandomBruker(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
+        val trengerTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTegnspraaktolk(tolkesprakNorsk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
 
-        val brukerUtenTolkebehov1 = genererRandomBruker(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
+        val brukerUtenTolkebehov1 = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
-        val brukerUtenTolkebehov2 = genererRandomBruker(
-            TEST_ENHET,
-            TEST_VEILEDER_0
-        )
+        val brukerUtenTolkebehov2 = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk("")
             .setTegnspraaktolk("")
 
-        val liste = listOf(
+        val brukere = listOf(
             trengerTalespraktolk,
             trengerTaleOgTegnspraktolk,
             trengerTegnspraktolk,
@@ -84,124 +69,129 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
             brukerUtenTolkebehov2
         )
 
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
 
         /* Skal hente alle med talespråktolk */
-        var filterValg = Filtervalg()
+        val filtrerPaTalespraktolk = Filtervalg()
             .setFerdigfilterListe(listOf())
             .setTolkebehov(listOf("TALESPRAAKTOLK"))
 
-        var response = opensearchService.hentBrukere(
-            TEST_ENHET,
+        val responsBrukereMedTalespraktolk = opensearchService.hentBrukere(
+            TESTENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtrerPaTalespraktolk,
             null,
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(2)
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+        assertThat(responsBrukereMedTalespraktolk.antall).isEqualTo(2)
+        assertTrue(
+            responsBrukereMedTalespraktolk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakSvensk }
+        assertTrue(
+            responsBrukereMedTalespraktolk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakSvensk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegnspråktolk */
-        filterValg = Filtervalg()
+        val filtrerPaTegnspraktolk = Filtervalg()
             .setFerdigfilterListe(listOf())
             .setTolkebehov(listOf("TEGNSPRAAKTOLK"))
 
-        response = opensearchService.hentBrukere(
-            TEST_ENHET,
+        val responsBrukereMedTegnspraktolk = opensearchService.hentBrukere(
+            TESTENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtrerPaTegnspraktolk,
             null,
             null
         )
-        Assertions.assertThat(response.antall).isEqualTo(2)
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakSvensk }
+        assertThat(responsBrukereMedTegnspraktolk.antall).isEqualTo(2)
+        assertTrue(
+            responsBrukereMedTegnspraktolk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakSvensk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakNorsk }
+        assertTrue(
+            responsBrukereMedTegnspraktolk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakNorsk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegn- eller talespråktolk */
-        filterValg = Filtervalg()
+        val filtrePaBadeTegnOgTalespraktolk = Filtervalg()
             .setFerdigfilterListe(listOf())
             .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
 
-        response = opensearchService.hentBrukere(
-            TEST_ENHET,
+        val responsBrukereMedTegnEllerTalespraktolk = opensearchService.hentBrukere(
+            TESTENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtrePaBadeTegnOgTalespraktolk,
             null,
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(3)
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream()
+        assertThat(responsBrukereMedTegnEllerTalespraktolk.antall).isEqualTo(3)
+        assertTrue(
+            responsBrukereMedTegnEllerTalespraktolk.brukere.stream()
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream()
+        assertTrue(
+            responsBrukereMedTegnEllerTalespraktolk.brukere.stream()
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream()
+        assertTrue(
+            responsBrukereMedTegnEllerTalespraktolk.brukere.stream()
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk */
-        filterValg = Filtervalg()
+        val filtrerPaTolkebehovJapansk = Filtervalg()
             .setFerdigfilterListe(listOf())
             .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
             .setTolkBehovSpraak(listOf(tolkesprakJapansk))
 
-        response = opensearchService.hentBrukere(
-            TEST_ENHET,
+        val responsBrukereMedTolkebehovJapansk = opensearchService.hentBrukere(
+            TESTENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtrerPaTolkebehovJapansk,
             null,
             null
         )
-        Assertions.assertThat(response.antall).isEqualTo(1)
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+        assertThat(responsBrukereMedTolkebehovJapansk.antall).isEqualTo(1)
+        assertTrue(
+            responsBrukereMedTolkebehovJapansk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
-        filterValg = Filtervalg()
+        val filtrerPaKunTolkesprakJapansk = Filtervalg()
             .setFerdigfilterListe(listOf())
             .setTolkebehov(listOf())
             .setTolkBehovSpraak(listOf(tolkesprakJapansk))
 
-        response = opensearchService.hentBrukere(
-            TEST_ENHET,
+        val responsBrukereMedTolkesprakJapansk = opensearchService.hentBrukere(
+            TESTENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtrerPaKunTolkesprakJapansk,
             null,
             null
         )
-        Assertions.assertThat(response.antall).isEqualTo(1)
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+        assertThat(responsBrukereMedTolkesprakJapansk.antall).isEqualTo(1)
+        assertTrue(
+            responsBrukereMedTolkesprakJapansk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
     }
 
@@ -209,7 +199,8 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         enhet: String, veilederId: String?
     ): PortefoljebrukerOpensearchModell {
         val bruker =
-            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
+            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get())
+                .setOppfolging(true)
                 .setEnhet_id(enhet).setEgen_ansatt(false).setDiskresjonskode(null)
 
         if (veilederId != null) {
