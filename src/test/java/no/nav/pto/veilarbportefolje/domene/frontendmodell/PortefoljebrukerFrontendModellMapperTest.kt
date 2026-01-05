@@ -34,12 +34,12 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `etiketter skal mappe data rett fra opensearch til frontendmodell`() {
         // given
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        opensearchBruker.setEr_doed(true)
-        opensearchBruker.setEr_sykmeldt_med_arbeidsgiver(true)
-        opensearchBruker.setNy_for_veileder(true)
-        opensearchBruker.setGjeldendeVedtak14a(null)
+        opensearchBruker.er_doed = true
+        opensearchBruker.er_sykmeldt_med_arbeidsgiver = true
+        opensearchBruker.ny_for_veileder = true
+        opensearchBruker.gjeldendeVedtak14a = null
         val ufordelt = true
-        opensearchBruker.setProfilering_resultat(Profileringsresultat.OPPGITT_HINDRINGER)
+        opensearchBruker.profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER
 
         // when
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -65,7 +65,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
         // fortrolig
-        opensearchBruker.setDiskresjonskode(Adressebeskyttelse.FORTROLIG.diskresjonskode)
+        opensearchBruker.diskresjonskode = Adressebeskyttelse.FORTROLIG.diskresjonskode
         val frontendBrukerMedFortrolig = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -74,7 +74,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val etiketterMedFortrolig = frontendBrukerMedFortrolig.etiketter
 
         // strengt fortrolig
-        opensearchBruker.setDiskresjonskode(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)
+        opensearchBruker.diskresjonskode = Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode
         val frontendBrukerMedStrengtFortrolig = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -83,7 +83,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val etiketterMedStrengtFortrolig = frontendBrukerMedStrengtFortrolig.etiketter
 
         // ugradert
-        opensearchBruker.setDiskresjonskode(Adressebeskyttelse.UGRADERT.diskresjonskode)
+        opensearchBruker.diskresjonskode = Adressebeskyttelse.UGRADERT.diskresjonskode
         val frontendBrukerUgradert = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -100,7 +100,7 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `etiketter for harSikkerhetstiltak skal settes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
-        opensearchBruker.setSikkerhetstiltak("TOAN")
+        opensearchBruker.sikkerhetstiltak = "TOAN"
         val frontendBrukerMedSikkerhetstiltak = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -108,7 +108,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val etiketterMedSikkerhetstiltak = frontendBrukerMedSikkerhetstiltak.etiketter
 
-        opensearchBruker.setSikkerhetstiltak(null)
+        opensearchBruker.sikkerhetstiltak = null
         val frontendBrukerUtenSikkerhetstiltak = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -126,9 +126,9 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `etiketter for harBehovForArbeidsevneVurdering skal settes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
-        opensearchBruker.setTrenger_vurdering(true)
-        opensearchBruker.setKvalifiseringsgruppekode("BKART")
-        opensearchBruker.setProfilering_resultat(null)
+        opensearchBruker.trenger_vurdering = true
+        opensearchBruker.kvalifiseringsgruppekode = "BKART"
+        opensearchBruker.profilering_resultat = null
 
         val frontendBrukerMedBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -137,7 +137,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val etiketterMedBehov = frontendBrukerMedBehov.etiketter
 
-        opensearchBruker.setProfilering_resultat(Profileringsresultat.ANTATT_GODE_MULIGHETER)
+        opensearchBruker.profilering_resultat = Profileringsresultat.ANTATT_GODE_MULIGHETER
         val frontendBrukerUtenBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -153,15 +153,15 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `personaliadata og en til en variabler skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
-        opensearchBruker.setFnr("12345678901")
-        opensearchBruker.setFornavn("Ola")
-        opensearchBruker.setEtternavn("Nordmann")
-        opensearchBruker.setFoedelandFulltNavn("NOR")
-        opensearchBruker.setBarn_under_18_aar(listOf(BarnUnder18AarData(8, null)))
-        opensearchBruker.setEgen_ansatt(false)
-        opensearchBruker.setSkjermet_til(LocalDateTime.of(2020, 1, 1, 10, 0))
-        opensearchBruker.setUtdanning_og_situasjon_sist_endret(LocalDate.of(2024, 1, 1))
-        opensearchBruker.setNeste_svarfrist_stilling_fra_nav(LocalDate.of(2024, 5, 1))
+        opensearchBruker.fnr = "12345678901"
+        opensearchBruker.fornavn = "Ola"
+        opensearchBruker.etternavn = "Nordmann"
+        opensearchBruker.foedelandFulltNavn = "NOR"
+        opensearchBruker.barn_under_18_aar = listOf(BarnUnder18AarData(8, null))
+        opensearchBruker.egen_ansatt = false
+        opensearchBruker.skjermet_til = LocalDateTime.of(2020, 1, 1, 10, 0)
+        opensearchBruker.utdanning_og_situasjon_sist_endret = LocalDate.of(2024, 1, 1)
+        opensearchBruker.neste_svarfrist_stilling_fra_nav = LocalDate.of(2024, 5, 1)
 
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -186,11 +186,11 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `geografiskBosted skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
-        opensearchBruker.setKommunenummer("0301")
-        opensearchBruker.setBydelsnummer("1234")
-        opensearchBruker.setBostedSistOppdatert(LocalDate.of(2025, 1, 1))
-        opensearchBruker.setHarUkjentBosted(true)
-        opensearchBruker.setUtenlandskAdresse(null)
+        opensearchBruker.kommunenummer = "0301"
+        opensearchBruker.bydelsnummer = "1234"
+        opensearchBruker.bostedSistOppdatert = LocalDate.of(2025, 1, 1)
+        opensearchBruker.harUkjentBosted = true
+        opensearchBruker.utenlandskAdresse = null
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -209,7 +209,7 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `statborgerskap og gyldig fra dato skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
         val gyldigFraDato = LocalDate.of(2000, 5, 20)
-        opensearchBruker.setHovedStatsborgerskap(Statsborgerskap("NOR", gyldigFraDato, null))
+        opensearchBruker.hovedStatsborgerskap = Statsborgerskap("NOR", gyldigFraDato, null)
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -237,10 +237,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("", tolkebehovUtenData.tegnspraaktolk)
         Assertions.assertEquals(null, tolkebehovUtenData.sistOppdatert)
 
-        opensearchBruker.setTalespraaktolk("FR")
-        opensearchBruker.setTegnspraaktolk("EN")
+        opensearchBruker.talespraaktolk = "FR"
+        opensearchBruker.tegnspraaktolk = "EN"
         val sistOppdatert = LocalDate.of(2025, 5, 20)
-        opensearchBruker.setTolkBehovSistOppdatert(sistOppdatert)
+        opensearchBruker.tolkBehovSistOppdatert = sistOppdatert
 
         val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -258,9 +258,9 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `oppfølgingsdata skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
 
-        opensearchBruker.setOppfolging_startdato("2023-06-30T21:59:59Z")
-        opensearchBruker.setTildelt_tidspunkt(LocalDateTime.of(2023, 6, 15, 10, 0))
-        opensearchBruker.setVeileder_id("Z123456")
+        opensearchBruker.oppfolging_startdato = "2023-06-30T21:59:59Z"
+        opensearchBruker.tildelt_tidspunkt = LocalDateTime.of(2023, 6, 15, 10, 0)
+        opensearchBruker.veileder_id = "Z123456"
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -283,13 +283,12 @@ class PortefoljebrukerFrontendModellMapperTest {
         val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
         val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
 
-        opensearchBruker
-            .setHendelser(
-                mapOf(
-                    Kategori.UTGATT_VARSEL to utgattVarselHendelse,
-                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
-                )
+        opensearchBruker.hendelser =
+            mapOf(
+                Kategori.UTGATT_VARSEL to utgattVarselHendelse,
+                Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
             )
+
 
         val frontendBrukerUtgåttVarselFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -325,8 +324,8 @@ class PortefoljebrukerFrontendModellMapperTest {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
         val svarFraNavDato = toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
         val svarFraBrukerDato = toIsoUTC(LocalDateTime.of(2024, 5, 20, 0, 0))
-        opensearchBruker.setVenterpasvarfranav(svarFraNavDato)
-        opensearchBruker.setVenterpasvarfrabruker(svarFraBrukerDato)
+        opensearchBruker.venterpasvarfranav = svarFraNavDato
+        opensearchBruker.venterpasvarfrabruker = svarFraBrukerDato
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -343,25 +342,24 @@ class PortefoljebrukerFrontendModellMapperTest {
     @Test
     fun `skal mappe alle ytelser til ytelserForBruker når det finnes data`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        opensearchBruker.setYtelse("ORDINARE_DAGPENGER")
-        opensearchBruker.setUtlopsdato("2023-06-30T21:59:59Z")
-        opensearchBruker.setDagputlopuke(2)
-        opensearchBruker.setPermutlopuke(4)
-        opensearchBruker.setAapmaxtiduke(10)
-        opensearchBruker.setAapunntakukerigjen(5)
-        opensearchBruker.setAapordinerutlopsdato(LocalDate.of(2026, 1, 1))
-        opensearchBruker.setAap_kelvin_rettighetstype(AapRettighetstype.VURDERES_FOR_UFØRETRYGD)
-        opensearchBruker.setAap_kelvin_tom_vedtaksdato(LocalDate.of(2026, 1, 1))
-        opensearchBruker.setTiltakspenger_rettighet(TILTAKSPENGER)
-        opensearchBruker.setTiltakspenger_vedtaksdato_tom(LocalDate.of(2026, 1, 1))
-        opensearchBruker.setEnslige_forsorgere_overgangsstonad(
+        opensearchBruker.ytelse = "ORDINARE_DAGPENGER"
+        opensearchBruker.utlopsdato = "2023-06-30T21:59:59Z"
+        opensearchBruker.dagputlopuke = 2
+        opensearchBruker.permutlopuke = 4
+        opensearchBruker.aapmaxtiduke = 10
+        opensearchBruker.aapunntakukerigjen = 5
+        opensearchBruker.aapordinerutlopsdato = LocalDate.of(2026, 1, 1)
+        opensearchBruker.aap_kelvin_rettighetstype = AapRettighetstype.VURDERES_FOR_UFØRETRYGD
+        opensearchBruker.aap_kelvin_tom_vedtaksdato = LocalDate.of(2026, 1, 1)
+        opensearchBruker.tiltakspenger_rettighet = TILTAKSPENGER
+        opensearchBruker.tiltakspenger_vedtaksdato_tom = LocalDate.of(2026, 1, 1)
+        opensearchBruker.enslige_forsorgere_overgangsstonad =
             EnsligeForsorgereOvergangsstonad(
                 "Utvidelse",
                 false,
                 LocalDate.now().plusMonths(1),
                 LocalDate.now().minusMonths(3)
             )
-        );
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -423,16 +421,16 @@ class PortefoljebrukerFrontendModellMapperTest {
         val zonedDateTimeFattetDato = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
         val opensearchBruker = PortefoljebrukerOpensearchModell()
-        opensearchBruker.setUtkast_14a_status("Utkast")
-        opensearchBruker.setUtkast_14a_status_endret(utcDateTimeStatus)
-        opensearchBruker.setUtkast_14a_ansvarlig_veileder("Veileder Navn")
-        opensearchBruker.setGjeldendeVedtak14a(
+        opensearchBruker.utkast_14a_status = "Utkast"
+        opensearchBruker.utkast_14a_status_endret = utcDateTimeStatus
+        opensearchBruker.utkast_14a_ansvarlig_veileder = "Veileder Navn"
+        opensearchBruker.gjeldendeVedtak14a =
             GjeldendeVedtak14a(
                 Innsatsgruppe.STANDARD_INNSATS,
                 Hovedmal.SKAFFE_ARBEID,
                 zonedDateTimeFattetDato
             )
-        )
+
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -478,7 +476,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 erSett = "N"
             )
         )
-        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+        opensearchBruker.siste_endringer = sisteEndringOpensearch
 
         val frontendBrukerMedSammeFilterkategori =
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -507,7 +505,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 erSett = "N"
             )
         )
-        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+        opensearchBruker.siste_endringer = sisteEndringOpensearch
 
         val frontendBrukerMedAnnenFilterkategori =
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
@@ -548,7 +546,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 erSett = "N"
             )
         )
-        opensearchBruker.setSiste_endringer(sisteEndringOpensearch)
+        opensearchBruker.siste_endringer = sisteEndringOpensearch
 
         val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -567,10 +565,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         val tidspunkt2 = toIsoUTC(ZonedDateTime.now().plusDays(2))
         val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
         val tidspunkt4 = getFarInTheFutureDate()
-        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
-        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
-        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
-        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+        opensearchBruker.aktivitet_tiltak_utlopsdato = tidspunkt1
+        opensearchBruker.aktivitet_mote_utlopsdato = tidspunkt2
+        opensearchBruker.aktivitet_stilling_utlopsdato = tidspunkt3
+        opensearchBruker.aktivitet_behandling_utlopsdato = tidspunkt4
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -591,10 +589,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
         val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
 
-        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
-        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
-        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
-        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+        opensearchBruker.aktivitet_tiltak_utlopsdato = tidspunkt1
+        opensearchBruker.aktivitet_mote_utlopsdato = tidspunkt2
+        opensearchBruker.aktivitet_stilling_utlopsdato = tidspunkt3
+        opensearchBruker.aktivitet_behandling_utlopsdato = tidspunkt4
 
         val frontendBrukerUtenFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -637,10 +635,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
         val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
 
-        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
-        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
-        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
-        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+        opensearchBruker.aktivitet_tiltak_utlopsdato = tidspunkt1
+        opensearchBruker.aktivitet_mote_utlopsdato = tidspunkt2
+        opensearchBruker.aktivitet_stilling_utlopsdato = tidspunkt3
+        opensearchBruker.aktivitet_behandling_utlopsdato = tidspunkt4
 
         val frontendBrukerMedAvansertfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -670,10 +668,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
         val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
 
-        opensearchBruker.setAktivitet_tiltak_utlopsdato(tidspunkt1)
-        opensearchBruker.setAktivitet_mote_utlopsdato(tidspunkt2)
-        opensearchBruker.setAktivitet_stilling_utlopsdato(tidspunkt3)
-        opensearchBruker.setAktivitet_behandling_utlopsdato(tidspunkt4)
+        opensearchBruker.aktivitet_tiltak_utlopsdato = tidspunkt1
+        opensearchBruker.aktivitet_mote_utlopsdato = tidspunkt2
+        opensearchBruker.aktivitet_stilling_utlopsdato = tidspunkt3
+        opensearchBruker.aktivitet_behandling_utlopsdato = tidspunkt4
 
         val frontendBrukerMedBeggeFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -705,10 +703,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         val tidspunkt3 = toIsoUTC(ZonedDateTime.now().plusDays(3))
         val tidspunkt4 = toIsoUTC(ZonedDateTime.now().plusDays(4))
 
-        opensearchBruker.setNyesteutlopteaktivitet(tidspunkt1)
-        opensearchBruker.setAktivitet_start(tidspunkt2)
-        opensearchBruker.setNeste_aktivitet_start(tidspunkt3)
-        opensearchBruker.setForrige_aktivitet_start(tidspunkt4)
+        opensearchBruker.nyesteutlopteaktivitet = tidspunkt1
+        opensearchBruker.aktivitet_start = tidspunkt2
+        opensearchBruker.neste_aktivitet_start = tidspunkt3
+        opensearchBruker.forrige_aktivitet_start = tidspunkt4
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -733,9 +731,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val møteIDagSlutt = toIsoUTC(ZonedDateTime.now().withHour(10).withMinute(30))
 
         // har møte i dag som er avtalt med nav
-        opensearchBruker.setAktivitet_mote_startdato(avtaltMedNavIDag)
-        opensearchBruker.setAlle_aktiviteter_mote_startdato(møteIDagStart)
-        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(møteIDagSlutt)
+        opensearchBruker.aktivitet_mote_startdato = avtaltMedNavIDag
+        opensearchBruker.alle_aktiviteter_mote_startdato = møteIDagStart
+        opensearchBruker.alle_aktiviteter_mote_utlopsdato = møteIDagSlutt
 
         val frontendBrukerAvtaltMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
@@ -750,7 +748,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(60, moteIDagAvtalt.varighetMinutter)
 
         // har møte i dag som ikke er avtalt med nav
-        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
+        opensearchBruker.aktivitet_mote_startdato = ikkeAvtaltMedNavIDag
         val frontendBrukerIkkeAvtaltIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -763,9 +761,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(60, moteIDagIkkeAvtalt.varighetMinutter)
 
         // har ikke møte i dag
-        opensearchBruker.setAktivitet_mote_startdato(ikkeAvtaltMedNavIDag)
-        opensearchBruker.setAlle_aktiviteter_mote_startdato(getFarInTheFutureDate())
-        opensearchBruker.setAlle_aktiviteter_mote_utlopsdato(getFarInTheFutureDate())
+        opensearchBruker.aktivitet_mote_startdato = ikkeAvtaltMedNavIDag
+        opensearchBruker.alle_aktiviteter_mote_startdato = getFarInTheFutureDate()
+        opensearchBruker.alle_aktiviteter_mote_utlopsdato = getFarInTheFutureDate()
         val frontendBrukerIkkeMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
@@ -798,9 +796,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             "0130"
         )
 
-        opensearchBruker.setHuskelapp(huskelapp)
-        opensearchBruker.setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
-        opensearchBruker.setFargekategori_enhetId("1234")
+        opensearchBruker.huskelapp = huskelapp
+        opensearchBruker.fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name
+        opensearchBruker.fargekategori_enhetId = "1234"
 
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,

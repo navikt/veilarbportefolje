@@ -794,46 +794,49 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val hendelsedatoBruker3 = ZonedDateTime.of(2023, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
         val hendelsedatoBruker4 = ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
-        val udeltSamtalereferatBruker1 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker1).hendelse
-        val udeltSamtalereferatBruker2 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker2).hendelse
+        val udeltSamtalereferatBruker1 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker1).hendelse
+        val udeltSamtalereferatBruker2 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
-        val udeltSamtalereferatBruker4 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4 ).hendelse
+        val udeltSamtalereferatBruker4 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4).hendelse
 
 
         val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker1.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1))
+        bruker1.fnr = randomFnr().toString()
+        bruker1.aktoer_id = aktoridBruker1.toString()
+        bruker1.oppfolging = true
+        bruker1.veileder_id = TEST_VEILEDER_0
+        bruker1.enhet_id = TEST_ENHET
+        bruker1.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1)
 
         val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker2.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2))
+        bruker2.fnr = randomFnr().toString()
+        bruker2.aktoer_id = aktoridBruker2.toString()
+        bruker2.oppfolging = true
+        bruker2.veileder_id = TEST_VEILEDER_0
+        bruker2.ny_for_veileder = false
+        bruker2.enhet_id = TEST_ENHET
+        bruker2.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2)
 
         val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker3.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
+        bruker3.fnr = randomFnr().toString()
+        bruker3.aktoer_id = aktoridBruker3.toString()
+        bruker3.oppfolging = true
+        bruker3.veileder_id = TEST_VEILEDER_0
+        bruker3.ny_for_veileder = false
+        bruker3.enhet_id = TEST_ENHET
+        bruker3.hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3)
 
         val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker4.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4))
+        bruker4.fnr = randomFnr().toString()
+        bruker4.aktoer_id = aktoridBruker4.toString()
+        bruker4.oppfolging = true
+        bruker4.veileder_id = TEST_VEILEDER_0
+        bruker4.ny_for_veileder = false
+        bruker4.enhet_id = TEST_ENHET
+        bruker4.hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4)
 
 
         val brukere = listOf(bruker1, bruker2, bruker3, bruker4)
