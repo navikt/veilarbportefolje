@@ -7,13 +7,10 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
@@ -29,14 +26,13 @@ import org.junit.jupiter.api.Test
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import java.net.URI
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
 class OpensearchServiceSerderAlleFelterIntTest(
-    @Autowired val opensearchService: OpensearchService,
+    @param:Autowired val opensearchService: OpensearchService,
 ) : EndToEndTest() {
 
     @Test
@@ -89,7 +85,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utenlandskAdresse = PortefoljebrukerOpensearchModell.UTENLANDSK_ADRESSE,
 
             // Oppfølging
-            avvik14aVedtak = PortefoljebrukerOpensearchModell.AVVIK_14_A_VEDTAK,
             enhet_id = PortefoljebrukerOpensearchModell.ENHET_ID,
             gjeldendeVedtak14a = PortefoljebrukerOpensearchModell.GJELDENDE_VEDTAK_14A,
             hovedmaalkode = PortefoljebrukerOpensearchModell.HOVEDMAAL_KODE,
@@ -185,90 +180,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utgatt_varsel = PortefoljebrukerOpensearchModell.UTGATT_VARSEL,
         )
 
-        val portefoljebrukerFrontendModell = PortefoljebrukerFrontendModell(
-            // Personalia
-            fnr = PortefoljebrukerFrontendModell.FNR,
-            aktoerid = PortefoljebrukerFrontendModell.AKTOER_ID,
-            fornavn = PortefoljebrukerFrontendModell.FORNAVN,
-            etternavn = PortefoljebrukerFrontendModell.ETTERNAVN,
-            erDoed = PortefoljebrukerFrontendModell.ER_DOED,
-            barnUnder18AarData = PortefoljebrukerFrontendModell.BARN_UNDER_18_AAR_DATA,
-            sikkerhetstiltak = PortefoljebrukerFrontendModell.SIKKERHETSTILTAK,
-            diskresjonskode = PortefoljebrukerFrontendModell.DISKRESJONSKODE,
-            tolkebehov = PortefoljebrukerFrontendModell.TOLKEBEHOV,
-            foedeland = PortefoljebrukerFrontendModell.FOEDELAND,
-            hovedStatsborgerskap = PortefoljebrukerFrontendModell.HOVED_STATSBORGERSKAP,
-            bostedKommune = PortefoljebrukerFrontendModell.BOSTED_KOMMUNE,
-            bostedBydel = PortefoljebrukerFrontendModell.BOSTED_BYDEL,
-            bostedSistOppdatert = PortefoljebrukerFrontendModell.BOSTED_SIST_OPPDATERT,
-            harUtelandsAddresse = PortefoljebrukerFrontendModell.HAR_UTELANDS_ADDRESSE,
-            harUkjentBosted = PortefoljebrukerFrontendModell.HAR_UKJENT_BOSTED,
-
-            // Oppfølging
-            avvik14aVedtak = PortefoljebrukerFrontendModell.AVVIK_14_A_VEDTAK,
-            gjeldendeVedtak14a = PortefoljebrukerFrontendModell.GJELDENDE_VEDTAK_14_A,
-            oppfolgingStartdato = PortefoljebrukerFrontendModell.OPPFOLGING_STARTDATO,
-            utkast14a = PortefoljebrukerFrontendModell.UTKAST_14_A,
-            veilederId = PortefoljebrukerFrontendModell.VEILEDER_ID,
-            nyForVeileder = PortefoljebrukerFrontendModell.NY_FOR_VEILEDER,
-            nyForEnhet = PortefoljebrukerFrontendModell.NY_FOR_ENHET,
-            tildeltTidspunkt = PortefoljebrukerFrontendModell.TILDELT_TIDSPUNKT,
-            trengerOppfolgingsvedtak = PortefoljebrukerFrontendModell.TRENGER_OPPFOLGINGSVEDTAK,
-            vurderingsBehov = PortefoljebrukerFrontendModell.VURDERINGSBEHOV,
-            innsatsgruppe = PortefoljebrukerFrontendModell.INNSATSGRUPPE,
-
-            // Arbeidssøker
-            profileringResultat = PortefoljebrukerFrontendModell.PROFILERINGRESULTAT,
-            utdanningOgSituasjonSistEndret = PortefoljebrukerFrontendModell.UTDANNING_OG_SITUASJON_SIST_ENDRET,
-
-            // Arbeidsforhold
-            erSykmeldtMedArbeidsgiver = PortefoljebrukerFrontendModell.ER_SYKMELDT_MED_ARBEIDSGIVER,
-
-            // Aktiviteter
-            nyesteUtlopteAktivitet = PortefoljebrukerFrontendModell.NYESTE_UTLOPTE_AKTIVITET,
-            aktivitetStart = PortefoljebrukerFrontendModell.AKTIVITET_START,
-            nesteAktivitetStart = PortefoljebrukerFrontendModell.NESTE_AKTIVITET_START,
-            forrigeAktivitetStart = PortefoljebrukerFrontendModell.FORRIGE_AKTIVITET_START,
-            moteStartTid = PortefoljebrukerFrontendModell.MOTE_STARTTID,
-            alleMoterStartTid = PortefoljebrukerFrontendModell.ALLE_MOTER_STARTTID,
-            alleMoterSluttTid = PortefoljebrukerFrontendModell.ALLE_MOTER_SLUTTTID,
-            aktiviteter = PortefoljebrukerFrontendModell.AKTIVITETER,
-            nesteUtlopsdatoAktivitet = PortefoljebrukerFrontendModell.NESTE_UTLOPSDATO_AKTIVITET,
-            sisteEndringKategori = PortefoljebrukerFrontendModell.SISTE_ENDRING_KATEGORI,
-            sisteEndringTidspunkt = PortefoljebrukerFrontendModell.SISTE_ENDRING_TIDSPUNKT,
-            sisteEndringAktivitetId = PortefoljebrukerFrontendModell.SISTE_ENDRING_AKTIVITETID,
-
-            // Ytelser
-            ytelse = PortefoljebrukerFrontendModell.YTELSE,
-            utlopsdato = PortefoljebrukerFrontendModell.UTLOPSDATO,
-            dagputlopUke = PortefoljebrukerFrontendModell.DAGP_UTLOP_UKE,
-            permutlopUke = PortefoljebrukerFrontendModell.PERM_UTLOP_UKE,
-            aapmaxtidUke = PortefoljebrukerFrontendModell.AAP_MAXTID_UKE,
-            aapUnntakUkerIgjen = PortefoljebrukerFrontendModell.AAP_UNNTAK_UKER_IGJEN,
-            aapordinerutlopsdato = PortefoljebrukerFrontendModell.AAP_ORDINER_UTLOPSDATO,
-            aapKelvin = PortefoljebrukerFrontendModell.AAP_KELVIN,
-            tiltakspenger = PortefoljebrukerFrontendModell.TILTAKSPENGER,
-            ensligeForsorgereOvergangsstonad = PortefoljebrukerFrontendModell.ENSLIGE_FORSORGERE_OVERGANGSSTONAD,
-
-            // Dialog
-            venterPaSvarFraNAV = PortefoljebrukerFrontendModell.VENTER_PA_SVAR_FRA_NAV,
-            venterPaSvarFraBruker = PortefoljebrukerFrontendModell.VENTER_PA_SVAR_FRA_BRUKER,
-
-            // Nav ansatt
-            egenAnsatt = PortefoljebrukerFrontendModell.EGEN_ANSATT,
-            skjermetTil = PortefoljebrukerFrontendModell.SKJERMET_TIL,
-
-            // CV
-            nesteSvarfristCvStillingFraNav = PortefoljebrukerFrontendModell.NESTE_SVARFRIST_CV_STILLING_FRA_NAV,
-
-            // Annet
-            huskelapp = PortefoljebrukerFrontendModell.HUSKELAPP,
-            fargekategori = PortefoljebrukerFrontendModell.FARGEKATEGORI,
-            fargekategoriEnhetId = PortefoljebrukerFrontendModell.FARGEKATEGORI_ENHET_ID,
-            tiltakshendelse = PortefoljebrukerFrontendModell.TILTAKSHENDELSE,
-            utgattVarsel = PortefoljebrukerFrontendModell.UTGATT_VARSEL,
-        )
-
         object PortefoljebrukerOpensearchModell {
             // Personalia
             val AKTOR_ID: String = "1111111111111"
@@ -302,7 +213,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val UTENLANDSK_ADRESSE: String = "FIN"
 
             // Oppfølging
-            val AVVIK_14_A_VEDTAK: Avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK
             val ENHET_ID: String = "0914"
             val GJELDENDE_VEDTAK_14A: GjeldendeVedtak14a = GjeldendeVedtak14a(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
@@ -510,109 +420,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 lenke = URI.create("https://veilarbpersonflate.ansatt.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null
             )
-        }
-
-        object PortefoljebrukerFrontendModell {
-            // Personalia
-            val FNR: String = "11111111111"
-            val AKTOER_ID: String = "1111111111111"
-            val FORNAVN: String = "Ola"
-            val ETTERNAVN: String = "Nordmann"
-            val ER_DOED: Boolean = false
-            val BARN_UNDER_18_AAR_DATA: List<BarnUnder18AarData> =
-                listOf(BarnUnder18AarData(12, Adressebeskyttelse.UGRADERT.diskresjonskode))
-            val SIKKERHETSTILTAK: List<String> = listOf("TFUS")
-            val DISKRESJONSKODE: String = "6"
-            val TOLKEBEHOV: Tolkebehov = Tolkebehov(
-                "NN",
-                "EN",
-                LocalDate.parse("2025-11-07")
-            )
-            val FOEDELAND: String = "NOR"
-            val HOVED_STATSBORGERSKAP: Statsborgerskap = Statsborgerskap(
-                "NORGE",
-                LocalDate.parse("1974-10-04"),
-                null
-            )
-            val BOSTED_KOMMUNE: String = "3324"
-            val BOSTED_BYDEL: String = "030101"
-            val BOSTED_SIST_OPPDATERT: LocalDate = LocalDate.parse("2025-11-06")
-            val HAR_UTELANDS_ADDRESSE: Boolean = true
-            val HAR_UKJENT_BOSTED: Boolean = false
-
-            // Oppfølging
-            val AVVIK_14_A_VEDTAK: Avvik14aVedtak = Avvik14aVedtak.INGEN_AVVIK
-            val GJELDENDE_VEDTAK_14_A: GjeldendeVedtak14a = GjeldendeVedtak14a(
-                Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
-                Hovedmal.BEHOLDE_ARBEID,
-                ZonedDateTime.parse("2025-11-07T12:00:00.000000+01:00")
-            )
-            val OPPFOLGING_STARTDATO: LocalDate = LocalDate.parse("2025-10-10")
-            val UTKAST_14_A: Utkast14a = Utkast14a(
-                "UTKAST_OPPRETTET",
-                LocalDateTime.parse("2025-10-11T12:00:00.000000"),
-                "Z999988"
-            )
-            val VEILEDER_ID: String = "Z999999"
-            val NY_FOR_VEILEDER: Boolean = true
-            val NY_FOR_ENHET: Boolean = false
-            val TILDELT_TIDSPUNKT: LocalDate = LocalDate.parse("2025-10-10")
-            val TRENGER_OPPFOLGINGSVEDTAK: Boolean = false
-            val VURDERINGSBEHOV: VurderingsBehov = VurderingsBehov.ANTATT_GODE_MULIGHETER
-            val INNSATSGRUPPE: String = "BFORM"
-
-            // Arbeidssøker
-            val PROFILERINGRESULTAT: Profileringsresultat = Profileringsresultat.ANTATT_GODE_MULIGHETER
-            val UTDANNING_OG_SITUASJON_SIST_ENDRET: LocalDate = LocalDate.parse("2024-07-18")
-
-            // Arbeidsforhold
-            val ER_SYKMELDT_MED_ARBEIDSGIVER: Boolean = false
-
-            // Aktiviteter
-            val NYESTE_UTLOPTE_AKTIVITET: LocalDate = LocalDate.parse("2025-10-10")
-            val AKTIVITET_START: LocalDate? = LocalDate.parse("2025-10-10")
-            val NESTE_AKTIVITET_START: LocalDate? = LocalDate.parse("2025-10-10")
-            val FORRIGE_AKTIVITET_START: LocalDate? = LocalDate.parse("2025-10-10")
-            val MOTE_STARTTID: LocalDateTime = LocalDateTime.parse("2025-10-10T10:00:00.000")
-            val ALLE_MOTER_STARTTID: LocalDateTime = LocalDateTime.parse("2025-10-10T10:00:00.000")
-            val ALLE_MOTER_SLUTTTID: LocalDateTime = LocalDateTime.parse("2025-10-10T10:00:00.000")
-            val AKTIVITETER: MutableMap<String, Timestamp> = mutableMapOf(
-
-            )
-            val NESTE_UTLOPSDATO_AKTIVITET: LocalDateTime? = null
-            val SISTE_ENDRING_KATEGORI: String? = null
-            val SISTE_ENDRING_TIDSPUNKT: LocalDateTime? = null
-            val SISTE_ENDRING_AKTIVITETID: String? = null
-
-            // Ytelser
-            val YTELSE: YtelseMapping? = null
-            val UTLOPSDATO: LocalDateTime? = null
-            val DAGP_UTLOP_UKE: Int? = null
-            val PERM_UTLOP_UKE: Int? = null
-            val AAP_MAXTID_UKE: Int? = null
-            val AAP_UNNTAK_UKER_IGJEN: Int? = null
-            val AAP_ORDINER_UTLOPSDATO: LocalDate? = null
-            val AAP_KELVIN: AapKelvinForBruker? = null
-            val TILTAKSPENGER: TiltakspengerForBruker? = null
-            val ENSLIGE_FORSORGERE_OVERGANGSSTONAD: EnsligeForsorgereOvergangsstonadFrontend? = null
-
-            // Dialog
-            val VENTER_PA_SVAR_FRA_NAV: LocalDate? = null
-            val VENTER_PA_SVAR_FRA_BRUKER: LocalDate? = null
-
-            // Nav ansatt
-            val EGEN_ANSATT: Boolean = false
-            val SKJERMET_TIL: LocalDate? = null
-
-            // CV
-            val NESTE_SVARFRIST_CV_STILLING_FRA_NAV: LocalDate? = null
-
-            // Annet
-            val HUSKELAPP: HuskelappForBruker? = null
-            val FARGEKATEGORI: String? = null
-            val FARGEKATEGORI_ENHET_ID: String? = null
-            val TILTAKSHENDELSE: TiltakshendelseForBruker? = null
-            val UTGATT_VARSEL: Hendelse.HendelseInnhold? = null
         }
     }
 }
