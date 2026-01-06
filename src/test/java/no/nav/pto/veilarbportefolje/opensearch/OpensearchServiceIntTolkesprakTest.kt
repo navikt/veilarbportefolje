@@ -349,6 +349,95 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkJapanskBehovSistOppdatert })
     }
 
+    @Test
+    fun `Skal kunne sortere på tolkespråk når det er filtrert på talespråktolk`() {
+        // Given
+        val bruker1Aktorid = AktorId.of("2222222222222")
+        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid).setTalespraaktolk("AR")
+
+        val bruker2Aktorid = AktorId.of("1111111111111")
+        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid).setTalespraaktolk("FR")
+
+        val bruker3Aktorid = AktorId.of("3333333333333")
+        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid).setTalespraaktolk("NO")
+
+        val brukere = listOf(
+            bruker1,
+            bruker2,
+            bruker3
+        )
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+
+        // When
+        val sorterStigende = Filtervalg()
+            .setFerdigfilterListe(listOf())
+            .setTolkebehov(listOf("TALESPRAAKTOLK"))
+
+        val sorterteBrukere = opensearchService.hentBrukere(
+            TESTENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.TOLKESPRAK,
+            sorterStigende,
+            null,
+            null
+        )
+
+        // Then
+        assertThat(sorterteBrukere.antall).isEqualTo(3)
+        assertThat(sorterteBrukere.brukere[0].aktoerid).isEqualTo(bruker1Aktorid.toString())
+        assertThat(sorterteBrukere.brukere[1].aktoerid).isEqualTo(bruker2Aktorid.toString())
+        assertThat(sorterteBrukere.brukere[2].aktoerid).isEqualTo(bruker3Aktorid.toString())
+    }
+
+
+    @Test
+    fun `Skal kunne sortere på tolkespråk når det er filtrert på tegnspråktolk`() {
+        // Given
+        val bruker1Aktorid = AktorId.of("2222222222222")
+        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid).setTegnspraaktolk("AR")
+
+        val bruker2Aktorid = AktorId.of("1111111111111")
+        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid).setTegnspraaktolk("FR")
+
+        val bruker3Aktorid = AktorId.of("3333333333333")
+        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid).setTegnspraaktolk("NO")
+
+        val brukere = listOf(
+            bruker1,
+            bruker2,
+            bruker3
+        )
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+
+        // When
+        val sorterStigende = Filtervalg()
+            .setFerdigfilterListe(listOf())
+            .setTolkebehov(listOf("TEGNSPRAAKTOLK"))
+
+        val sorterteBrukere = opensearchService.hentBrukere(
+            TESTENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.TOLKESPRAK,
+            sorterStigende,
+            null,
+            null
+        )
+
+        // Then
+        assertThat(sorterteBrukere.antall).isEqualTo(3)
+        assertThat(sorterteBrukere.brukere[0].aktoerid).isEqualTo(bruker1Aktorid.toString())
+        assertThat(sorterteBrukere.brukere[1].aktoerid).isEqualTo(bruker2Aktorid.toString())
+        assertThat(sorterteBrukere.brukere[2].aktoerid).isEqualTo(bruker3Aktorid.toString())
+    }
+
     private fun genererRandomBruker(
         enhet: String = TESTENHET, veilederId: String? = TESTVEILEDER, aktorId: AktorId? = randomAktorId()
     ): PortefoljebrukerOpensearchModell {
