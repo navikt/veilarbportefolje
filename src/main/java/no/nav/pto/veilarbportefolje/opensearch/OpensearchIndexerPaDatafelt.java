@@ -20,7 +20,6 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import org.opensearch.OpenSearchException;
-import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -285,16 +283,6 @@ public class OpensearchIndexerPaDatafelt {
     }
 
     @SneakyThrows
-    public void slettDokumenter(List<AktorId> aktorIds) {
-        secureLog.info("Sletter gamle aktorIder {}", aktorIds);
-        for (AktorId aktorId : aktorIds) {
-            if (aktorId != null) {
-                delete(aktorId);
-            }
-        }
-    }
-
-    @SneakyThrows
     public void updateTiltakshendelse(AktorId aktorId, Tiltakshendelse tiltakshendelse) {
         final XContentBuilder content = jsonBuilder()
                 .startObject()
@@ -435,24 +423,4 @@ public class OpensearchIndexerPaDatafelt {
             }
         }
     }
-
-    @SneakyThrows
-    private void delete(AktorId aktoerId) {
-        DeleteRequest deleteRequest = new DeleteRequest();
-        deleteRequest.index(indexName.getValue());
-        deleteRequest.id(aktoerId.get());
-
-        try {
-            restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
-            secureLog.info("Slettet dokument for {} ", aktoerId);
-        } catch (OpenSearchException e) {
-            if (e.status() == RestStatus.NOT_FOUND) {
-                secureLog.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
-            } else {
-                final String message = format("Det skjedde en feil ved sletting i opensearch for bruker %s", aktoerId.get());
-                secureLog.error(message, e);
-            }
-        }
-    }
-
 }
