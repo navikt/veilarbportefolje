@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
@@ -157,10 +158,19 @@ object PortefoljebrukerFrontendModellMapper {
         if (vedtaksdato == null && rettighet == null) {
             return null
         }
-        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet)
+        // TODO: 2026-01-05, Sondre
+        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
+        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
+        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
+        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
+        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
+        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet!!)
 
         return Tiltakspenger(
-            vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom,
+            vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom!!,
             rettighet = rettighetTekst
         )
     }
@@ -171,10 +181,19 @@ object PortefoljebrukerFrontendModellMapper {
         if (vedtaksdato == null && rettighet == null) {
             return null
         }
-        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet)
+        // TODO: 2026-01-05, Sondre
+        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
+        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
+        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
+        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
+        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
+        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet!!)
 
         return AapKelvin(
-            vedtaksdatoTilOgMed = vedtaksdato,
+            vedtaksdatoTilOgMed = vedtaksdato!!,
             rettighetstype = rettighetTekst
         )
     }
@@ -209,9 +228,18 @@ object PortefoljebrukerFrontendModellMapper {
 
         val gjeldendeVedtak14a = buildIfAnyNotNull(vedtak14a?.innsatsgruppe, vedtak14a?.fattetDato) {
             Vedtak14aForBruker.GjeldendeVedtak14a(
-                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a.innsatsgruppe,
-                hovedmal = opensearchBruker.gjeldendeVedtak14a.hovedmal,
-                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a.fattetDato)
+                // TODO: 2026-01-05, Sondre
+                //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
+                //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
+                //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
+                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
+                //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
+                //    (veilarbportefoljeflatefs bør då også oppdaterast)
+                //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+                //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
+                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a?.innsatsgruppe!!,
+                hovedmal = opensearchBruker.gjeldendeVedtak14a?.hovedmal,
+                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a?.fattetDato)
             )
         }
 
@@ -221,9 +249,18 @@ object PortefoljebrukerFrontendModellMapper {
             opensearchBruker.utkast_14a_ansvarlig_veileder
         ) {
             Vedtak14aForBruker.Utkast14a(
-                status = opensearchBruker.utkast_14a_status,
-                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret),
-                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder
+                // TODO: 2026-01-05, Sondre
+                //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
+                //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
+                //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
+                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
+                //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
+                //    (veilarbportefoljeflatefs bør då også oppdaterast)
+                //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+                //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
+                status = opensearchBruker.utkast_14a_status!!,
+                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret!!),
+                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder!!
             )
         }
 
@@ -252,12 +289,21 @@ object PortefoljebrukerFrontendModellMapper {
         opensearchBruker: PortefoljebrukerOpensearchModell,
         filtervalg: Filtervalg?
     ): HendelseInnhold? {
+        // TODO: 2026-01-05, Sondre
+        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
+        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
+        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
+        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
+        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
         if (filtervalg?.ferdigfilterListe == null) return null
         if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
-            val innhold = opensearchBruker.hendelser[Kategori.UTGATT_VARSEL]
+            val innhold = opensearchBruker.hendelser!![Kategori.UTGATT_VARSEL]
             return mapHendelseTilFrontendModell(innhold)
         } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
-            val innhold = opensearchBruker.hendelser[Kategori.UDELT_SAMTALEREFERAT]
+            val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
             return mapHendelseTilFrontendModell(innhold)
         } else {
             return null
