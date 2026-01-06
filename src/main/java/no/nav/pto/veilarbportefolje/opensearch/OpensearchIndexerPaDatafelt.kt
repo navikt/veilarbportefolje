@@ -35,7 +35,7 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 @Service
-class OpensearchIndexerPaDatafeltKt(
+class OpensearchIndexerPaDatafelt(
     val indexName: IndexName,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val restHighLevelClient: RestHighLevelClient
@@ -197,8 +197,8 @@ class OpensearchIndexerPaDatafeltKt(
     }
 
     fun updateDialog(melding: DialogdataDto) {
-        val venterPaaSvarFraBruker = DateUtils.toIsoUTC(melding.getTidspunktEldsteVentende())
-        val venterPaaSvarFraNav = DateUtils.toIsoUTC(melding.getTidspunktEldsteUbehandlede())
+        val venterPaaSvarFraBruker = DateUtils.toIsoUTC(melding.tidspunktEldsteVentende)
+        val venterPaaSvarFraNav = DateUtils.toIsoUTC(melding.tidspunktEldsteUbehandlede)
 
         val content = XContentFactory.jsonBuilder()
             .startObject()
@@ -207,7 +207,7 @@ class OpensearchIndexerPaDatafeltKt(
             .endObject()
 
         update(
-            AktorId.of(melding.getAktorId()),
+            AktorId.of(melding.aktorId),
             content,
             "Oppdatert dialog med venter på svar fra nav: $venterPaaSvarFraNav og venter på svar fra bruker: $venterPaaSvarFraBruker"
         )

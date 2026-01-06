@@ -32,7 +32,7 @@ class TiltakspengerService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
-    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(TiltakspengerService::class.java)
 

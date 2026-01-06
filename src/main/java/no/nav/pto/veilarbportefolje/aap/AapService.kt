@@ -63,24 +63,35 @@ class AapService(
         lagreAapForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
-    fun lagreAapForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate, meldingstype: YTELSE_MELDINGSTYPE) {
+    fun lagreAapForBruker(
+        personIdent: String,
+        aktorId: AktorId,
+        oppfolgingsStartdato: LocalDate,
+        meldingstype: YTELSE_MELDINGSTYPE
+    ) {
         val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato)
 
         if (sisteAapPeriode == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
-                secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
-                        "sletter eventuell eksisterende AAP-periode i databasen", personIdent)
+                secureLog.info(
+                    "Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
+                            "sletter eventuell eksisterende AAP-periode i databasen", personIdent
+                )
                 slettAapForAlleIdenterForBruker(personIdent)
                 opensearchIndexerPaDatafelt.slettAapKelvin(aktorId)
                 return
             } else {
-                secureLog.info("Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, ignorerer aap-ytelse melding.", personIdent)
+                secureLog.info(
+                    "Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, ignorerer aap-ytelse melding.",
+                    personIdent
+                )
                 return
             }
 
-        val harAktivAap = sisteAapPeriode.status == AapVedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
-            LocalDate.now().minusDays(1)
-        )
+        val harAktivAap =
+            sisteAapPeriode.status == AapVedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
+                LocalDate.now().minusDays(1)
+            )
 
         upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
         opensearchIndexerPaDatafelt.oppdaterAapKelvin(
