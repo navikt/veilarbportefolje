@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -36,7 +35,6 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
     private final BrukerServiceV2 brukerService;
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
-    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     @Override
     @SneakyThrows
@@ -71,17 +69,17 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 
-                List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
+            List<Fnr> foreldreTilBarn = barnUnder18AarService.finnForeldreTilBarn(aktivtFnr);
 
-                foreldreTilBarn.forEach(fnrForelder -> {
-                            Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
-                            if (aktorIdForelder.isPresent()) {
-                                opensearchIndexer.indekser(aktorIdForelder.get());
-                            } else {
-                                secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
-                            }
+            foreldreTilBarn.forEach(fnrForelder -> {
+                        Optional<AktorId> aktorIdForelder = brukerService.hentAktorId(fnrForelder);
+                        if (aktorIdForelder.isPresent()) {
+                            opensearchIndexer.indekser(aktorIdForelder.get());
+                        } else {
+                            secureLog.warn("Kunne ikke indeksere forelder med fnr {} til barn med fnr {}", fnrForelder, aktivtFnr);
                         }
-                );
+                    }
+            );
         }
     }
 
@@ -131,7 +129,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
     private void oppdaterOpensearch(AktorId aktivAktorId, List<PDLIdent> pdlIdenter) {
         List<AktorId> inaktiveAktorider = hentInaktiveAktorider(pdlIdenter);
 
-        opensearchIndexerPaDatafelt.slettDokumenter(inaktiveAktorider);
+        opensearchIndexer.slettDokumenter(inaktiveAktorider);
         opensearchIndexer.indekser(aktivAktorId);
     }
 
