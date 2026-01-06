@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
+import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
@@ -40,20 +41,20 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal hente alle brukere med talespråktolk`() {
         // Given
         val trengerTalespraktolkSistOppdatert = "2022-02-22"
-        val trengerTalespraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTalespraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkSistOppdatert))
 
         val trengerTaleOgTegnspraktolkSistOppdatert = "2021-03-23"
-        val trengerTaleOgTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTaleOgTegnspraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkSistOppdatert))
 
-        val brukerMedAndreTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerMedAndreTolkebehov = genererRandomBruker()
             .setTegnspraaktolk(tolkesprakNorsk)
 
-        val brukerUtenTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTolkebehov = genererRandomBruker()
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
@@ -98,20 +99,20 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal hente alle brukere med tegnspråktolk`() {
         // Given
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
-        val trengerTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolk = genererRandomBruker()
             .setTegnspraaktolk(tolkesprakNorsk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
-        val trengerTaleOgTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTaleOgTegnspraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
 
-        val brukerUtenTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTegnspraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakJapansk)
 
-        val brukerUtenTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTolkebehov = genererRandomBruker()
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
@@ -156,22 +157,22 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal hente alle brukere med tale- eller tegnspråktolk`() {
         // Given
         val trengerTalespraktolkBehovSistOppdatert = "2022-02-22"
-        val trengerTalespraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTalespraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert))
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
-        val trengerTaleOgTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTaleOgTegnspraktolk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
 
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
-        val trengerTegnspraktolk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolk = genererRandomBruker()
             .setTegnspraaktolk(tolkesprakNorsk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
 
-        val brukerUtenTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTolkebehov = genererRandomBruker()
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
@@ -218,26 +219,26 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal hente alle brukere med tegn- eller talespråktolkebehov for japansk`() {
         // Given
         val trengerTalespraktolkJapanskBehovSistOppdatert = "2022-02-22"
-        val trengerTalespraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTalespraktolkJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
 
         val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
-        val trengerTegnspraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolkJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
 
-        val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"))
 
-        val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker()
             .setTegnspraaktolk(tolkesprakNorsk)
             .setTolkBehovSistOppdatert(LocalDate.parse("2023-03-24"))
 
-        val brukerUtenTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTolkebehov = genererRandomBruker()
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
@@ -286,26 +287,26 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal hente alle brukere med tolkespråk japansk når det bare er filtret på tolkespråk`() {
         // Given
         val trengerTalespraktolkJapanskBehovSistOppdatert = "2022-02-22"
-        val trengerTalespraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTalespraktolkJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
 
         val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
-        val trengerTegnspraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolkJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
 
-        val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker()
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
             .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"))
 
-        val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker()
             .setTegnspraaktolk(tolkesprakNorsk)
             .setTolkBehovSistOppdatert(LocalDate.parse("2023-03-24"))
 
-        val brukerUtenTolkebehov = genererRandomBruker(TESTENHET, TESTVEILEDER)
+        val brukerUtenTolkebehov = genererRandomBruker()
             .setTalespraaktolk(null)
             .setTegnspraaktolk(null)
 
@@ -349,10 +350,10 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     }
 
     private fun genererRandomBruker(
-        enhet: String, veilederId: String?
+        enhet: String = TESTENHET, veilederId: String? = TESTVEILEDER, aktorId: AktorId? = randomAktorId()
     ): PortefoljebrukerOpensearchModell {
         val bruker =
-            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get())
+            PortefoljebrukerOpensearchModell().setAktoer_id(aktorId.toString()).setFnr(randomFnr().get())
                 .setOppfolging(true)
                 .setEnhet_id(enhet).setEgen_ansatt(false).setDiskresjonskode(null)
 
