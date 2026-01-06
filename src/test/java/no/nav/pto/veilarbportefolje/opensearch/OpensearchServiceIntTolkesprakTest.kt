@@ -222,6 +222,12 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
 
+        val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
+        val trengerTegnspraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+            .setTalespraaktolk(tolkesprakSvensk)
+            .setTegnspraaktolk(tolkesprakJapansk)
+            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
+
         val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(tolkesprakSvensk)
             .setTegnspraaktolk(tolkesprakSvensk)
@@ -237,6 +243,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
         val brukere = listOf(
             trengerTalespraktolkJapansk,
+            trengerTegnspraktolkJapansk,
             trengerTaleOgTegnspraktolkMenIkkeJapansk,
             trengerTegnspraktolkMenIkkeJapansk,
             brukerUtenTolkebehov,
@@ -263,11 +270,15 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         )
 
         // Then
-        assertThat(responsBrukereMedTolkebehovJapansk.antall).isEqualTo(1)
+        assertThat(responsBrukereMedTolkebehovJapansk.antall).isEqualTo(2)
         assertTrue(
             responsBrukereMedTolkebehovJapansk.brukere.stream()
                 .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkJapanskBehovSistOppdatert })
+        assertTrue(
+            responsBrukereMedTolkebehovJapansk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakJapansk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkJapanskBehovSistOppdatert })
     }
 
 
@@ -278,6 +289,12 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         val trengerTalespraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(tolkesprakJapansk)
             .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
+
+        val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
+        val trengerTegnspraktolkJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
+            .setTalespraaktolk(tolkesprakSvensk)
+            .setTegnspraaktolk(tolkesprakJapansk)
+            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
 
         val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker(TESTENHET, TESTVEILEDER)
             .setTalespraaktolk(tolkesprakSvensk)
@@ -294,6 +311,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
         val brukere = listOf(
             trengerTalespraktolkJapansk,
+            trengerTegnspraktolkJapansk,
             trengerTaleOgTegnspraktolkMenIkkeJapansk,
             trengerTegnspraktolkMenIkkeJapansk,
             brukerUtenTolkebehov,
@@ -319,11 +337,15 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         )
 
         // Then
-        assertThat(responsBrukereMedTolkesprakJapansk.antall).isEqualTo(1)
+        assertThat(responsBrukereMedTolkesprakJapansk.antall).isEqualTo(2)
         assertTrue(
             responsBrukereMedTolkesprakJapansk.brukere.stream()
                 .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkJapanskBehovSistOppdatert })
+        assertTrue(
+            responsBrukereMedTolkesprakJapansk.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakJapansk }
+                .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkJapanskBehovSistOppdatert })
     }
 
     private fun genererRandomBruker(
