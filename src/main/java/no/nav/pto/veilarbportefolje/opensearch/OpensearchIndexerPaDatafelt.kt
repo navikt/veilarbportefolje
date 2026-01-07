@@ -6,16 +6,13 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoeker
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto
-import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse.HendelseInnhold
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
-import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
-import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO
@@ -25,7 +22,6 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.opensearch.OpenSearchException
-import org.opensearch.action.delete.DeleteRequest
 import org.opensearch.action.update.UpdateRequest
 import org.opensearch.client.RequestOptions
 import org.opensearch.client.RestHighLevelClient
@@ -51,14 +47,14 @@ class OpensearchIndexerPaDatafelt(
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .field(
-                FeltNavn.ARBEIDSSOEKER_BRUKERS_SITUASJONER,
+                DatafeltKeys.ARBEIDSSOEKER_BRUKERS_SITUASJONER,
                 opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon.jobbsituasjon
             )
-            .field(FeltNavn.ARBEIDSSOEKER_UTDANNING, mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode))
-            .field(FeltNavn.ARBEIDSSOEKER_UTDANNING_BESTATT, opplysningerOmArbeidssoeker.utdanningBestatt)
-            .field(FeltNavn.ARBEIDSSOEKER_UTDANNING_GODKJENT, opplysningerOmArbeidssoeker.utdanningGodkjent)
+            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING, mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode))
+            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING_BESTATT, opplysningerOmArbeidssoeker.utdanningBestatt)
+            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING_GODKJENT, opplysningerOmArbeidssoeker.utdanningGodkjent)
             .field(
-                FeltNavn.ARBEIDSSOEKER_UTDANNING_OG_SITUASJON_SIST_ENDRET,
+                DatafeltKeys.ARBEIDSSOEKER_UTDANNING_OG_SITUASJON_SIST_ENDRET,
                 DateUtils.toLocalDateOrNull(opplysningerOmArbeidssoeker.sendtInnTidspunkt)
             )
             .endObject()
@@ -69,7 +65,7 @@ class OpensearchIndexerPaDatafelt(
     fun updateProfilering(aktoerId: AktorId, profileringEntity: ProfileringEntity) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.ARBEIDSSOEKER_PROFILERING_RESULTAT, profileringEntity.profileringsresultat)
+            .field(DatafeltKeys.ARBEIDSSOEKER_PROFILERING_RESULTAT, profileringEntity.profileringsresultat)
             .endObject()
 
         update(aktoerId, content, "Oppdater profileringsresultat")
@@ -78,13 +74,13 @@ class OpensearchIndexerPaDatafelt(
     fun updateHuskelapp(aktoerId: AktorId, huskelapp: HuskelappForBruker) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.HUSKELAPP)
-            .field(FeltNavn.HUSKELAPP_FRIST, huskelapp.frist)
-            .field(FeltNavn.HUSKELAPP_KOMMENTAR, huskelapp.kommentar)
-            .field(FeltNavn.HUSKELAPP_ENDRET_AV, huskelapp.endretAv)
-            .field(FeltNavn.HUSKELAPP_ENDRET_DATO, huskelapp.endretDato)
-            .field(FeltNavn.HUSKELAPP_HUSKELAPP_ID, huskelapp.huskelappId)
-            .field(FeltNavn.HUSKELAPP_ENHET_ID, huskelapp.enhetId)
+            .startObject(DatafeltKeys.HUSKELAPP)
+            .field(DatafeltKeys.HUSKELAPP_FRIST, huskelapp.frist)
+            .field(DatafeltKeys.HUSKELAPP_KOMMENTAR, huskelapp.kommentar)
+            .field(DatafeltKeys.HUSKELAPP_ENDRET_AV, huskelapp.endretAv)
+            .field(DatafeltKeys.HUSKELAPP_ENDRET_DATO, huskelapp.endretDato)
+            .field(DatafeltKeys.HUSKELAPP_HUSKELAPP_ID, huskelapp.huskelappId)
+            .field(DatafeltKeys.HUSKELAPP_ENHET_ID, huskelapp.enhetId)
             .endObject()
             .endObject()
 
@@ -94,7 +90,7 @@ class OpensearchIndexerPaDatafelt(
     fun slettHuskelapp(aktoerId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(FeltNavn.HUSKELAPP)
+            .nullField(DatafeltKeys.HUSKELAPP)
             .endObject()
 
         update(aktoerId, content, "Sletter huskelapp")
@@ -103,8 +99,8 @@ class OpensearchIndexerPaDatafelt(
     fun updateFargekategori(aktoerId: AktorId, fargekategori: String?, enhetId: String?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.FARGEKATEGORI, fargekategori)
-            .field(FeltNavn.FARGEKATEGORI_ENHET_ID, enhetId)
+            .field(DatafeltKeys.FARGEKATEGORI, fargekategori)
+            .field(DatafeltKeys.FARGEKATEGORI_ENHET_ID, enhetId)
             .endObject()
 
         update(aktoerId, content, "Oppretter/redigerer fargekategori")
@@ -113,8 +109,8 @@ class OpensearchIndexerPaDatafelt(
     fun slettFargekategori(aktoerId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(FeltNavn.FARGEKATEGORI)
-            .nullField(FeltNavn.FARGEKATEGORI_ENHET_ID)
+            .nullField(DatafeltKeys.FARGEKATEGORI)
+            .nullField(DatafeltKeys.FARGEKATEGORI_ENHET_ID)
             .endObject()
 
         update(aktoerId, content, "Sletter fargekategori")
@@ -126,11 +122,11 @@ class OpensearchIndexerPaDatafelt(
 
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.AKTIVITETER_SISTE_ENDRINGER)
+            .startObject(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER)
             .startObject(kategori)
-            .field(FeltNavn.AKTIVITETER_SISTE_ENDRINGER_TIDSPUNKT, tidspunkt)
-            .field(FeltNavn.AKTIVITETER_SISTE_ENDRINGER_AKTIVTETID, dto.aktivtetId)
-            .field(FeltNavn.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "N")
+            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_TIDSPUNKT, tidspunkt)
+            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_AKTIVTETID, dto.aktivtetId)
+            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "N")
             .endObject()
             .endObject()
             .endObject()
@@ -144,9 +140,9 @@ class OpensearchIndexerPaDatafelt(
     fun updateSisteEndring(aktorId: AktorId, kategori: SisteEndringsKategori) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.AKTIVITETER_SISTE_ENDRINGER)
+            .startObject(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER)
             .startObject(kategori.name)
-            .field(FeltNavn.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "J")
+            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "J")
             .endObject()
             .endObject()
             .endObject()
@@ -156,7 +152,7 @@ class OpensearchIndexerPaDatafelt(
     fun updateHarDeltCv(aktoerId: AktorId, harDeltCv: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.CV_HAR_DELT_CV, harDeltCv)
+            .field(DatafeltKeys.CV_HAR_DELT_CV, harDeltCv)
             .endObject()
 
         update(aktoerId, content, "Har delt cv: $harDeltCv")
@@ -165,7 +161,7 @@ class OpensearchIndexerPaDatafelt(
     fun updateCvEksistere(aktoerId: AktorId, cvEksistere: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.CV_CV_EKSISTERE, cvEksistere)
+            .field(DatafeltKeys.CV_CV_EKSISTERE, cvEksistere)
             .endObject()
 
         update(aktoerId, content, "CV eksistere: $cvEksistere")
@@ -174,7 +170,7 @@ class OpensearchIndexerPaDatafelt(
     fun settManuellStatus(aktoerId: AktorId, manuellStatus: String?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.OPPFOLGING_MANUELL_BRUKER, manuellStatus)
+            .field(DatafeltKeys.OPPFOLGING_MANUELL_BRUKER, manuellStatus)
             .endObject()
 
         update(aktoerId, content, "Satt til manuell bruker: $manuellStatus")
@@ -183,7 +179,7 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterNyForVeileder(aktoerId: AktorId, nyForVeileder: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.OPPFOLGING_NY_FOR_VEILEDER, nyForVeileder)
+            .field(DatafeltKeys.OPPFOLGING_NY_FOR_VEILEDER, nyForVeileder)
             .endObject()
 
         update(aktoerId, content, "Oppdatert ny for veileder: $nyForVeileder")
@@ -192,9 +188,9 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterVeileder(aktoerId: AktorId, veilederId: VeilederId, tildeltTidspunkt: ZonedDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.OPPFOLGING_VEILEDER_ID, veilederId.toString())
-            .field(FeltNavn.OPPFOLGING_NY_FOR_VEILEDER, true)
-            .field(FeltNavn.OPPFOLGING_TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
+            .field(DatafeltKeys.OPPFOLGING_VEILEDER_ID, veilederId.toString())
+            .field(DatafeltKeys.OPPFOLGING_NY_FOR_VEILEDER, true)
+            .field(DatafeltKeys.OPPFOLGING_TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
             .endObject()
 
         update(aktoerId, content, "Oppdatert veileder")
@@ -206,8 +202,8 @@ class OpensearchIndexerPaDatafelt(
 
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.DIALOG_VENTER_PA_SVAR_FRA_BRUKER, venterPaaSvarFraBruker)
-            .field(FeltNavn.DIALOG_VENTER_PA_SVAR_FRA_NAV, venterPaaSvarFraNav)
+            .field(DatafeltKeys.DIALOG_VENTER_PA_SVAR_FRA_BRUKER, venterPaaSvarFraBruker)
+            .field(DatafeltKeys.DIALOG_VENTER_PA_SVAR_FRA_NAV, venterPaaSvarFraNav)
             .endObject()
 
         update(
@@ -220,26 +216,26 @@ class OpensearchIndexerPaDatafelt(
     fun updateErSkjermet(aktorId: AktorId, erSkjermet: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.EGEN_ANSATT, erSkjermet)
+            .field(DatafeltKeys.EGEN_ANSATT, erSkjermet)
             .endObject()
 
         update(
             aktorId,
             content,
-            "Oppdatert ${FeltNavn.EGEN_ANSATT} $erSkjermet for bruker: $aktorId"
+            "Oppdatert ${DatafeltKeys.EGEN_ANSATT} $erSkjermet for bruker: $aktorId"
         )
     }
 
     fun updateSkjermetTil(aktorId: AktorId, skjermetTil: LocalDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.SKJERMET_TIL, skjermetTil)
+            .field(DatafeltKeys.SKJERMET_TIL, skjermetTil)
             .endObject()
 
         update(
             aktorId,
             content,
-            "Oppdatert ${FeltNavn.SKJERMET_TIL} $skjermetTil for bruker: $aktorId"
+            "Oppdatert ${DatafeltKeys.SKJERMET_TIL} $skjermetTil for bruker: $aktorId"
         )
     }
 
@@ -249,21 +245,21 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
+            .startObject(DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
             .field(
-                FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE,
+                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE,
                 ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse
             )
             .field(
-                FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HARAKTIVITETSPLIKT,
+                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HARAKTIVITETSPLIKT,
                 ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt
             )
             .field(
-                FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
+                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
                 ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato
             )
             .field(
-                FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTEBARNSFØDSELSDATO,
+                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTEBARNSFØDSELSDATO,
                 ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato
             )
             .endObject()
@@ -275,7 +271,7 @@ class OpensearchIndexerPaDatafelt(
     fun deleteOvergansstonad(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.ENSLIGE_FORSORGERE_OVERGANGSSTONAD, null as String?)
+            .field(DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD, null as String?)
             .endObject()
 
         update(aktorId, content, "Fjern overgangsstønad")
@@ -284,12 +280,12 @@ class OpensearchIndexerPaDatafelt(
     fun updateTiltakshendelse(aktorId: AktorId, tiltakshendelse: Tiltakshendelse) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.TILTAKSHENDELSE)
-            .field(FeltNavn.TILTAKSHENDELSE_ID, tiltakshendelse.id.toString())
-            .field(FeltNavn.TILTAKSHENDELSE_LENKE, tiltakshendelse.lenke)
-            .field(FeltNavn.TILTAKSHENDELSE_OPPRETTET, tiltakshendelse.opprettet)
-            .field(FeltNavn.TILTAKSHENDELSE_TEKST, tiltakshendelse.tekst)
-            .field(FeltNavn.TILTAKSHENDELSE_TILTAKSTYPE, tiltakshendelse.tiltakstype)
+            .startObject(DatafeltKeys.TILTAKSHENDELSE)
+            .field(DatafeltKeys.TILTAKSHENDELSE_ID, tiltakshendelse.id.toString())
+            .field(DatafeltKeys.TILTAKSHENDELSE_LENKE, tiltakshendelse.lenke)
+            .field(DatafeltKeys.TILTAKSHENDELSE_OPPRETTET, tiltakshendelse.opprettet)
+            .field(DatafeltKeys.TILTAKSHENDELSE_TEKST, tiltakshendelse.tekst)
+            .field(DatafeltKeys.TILTAKSHENDELSE_TILTAKSTYPE, tiltakshendelse.tiltakstype)
             .endObject()
             .endObject()
 
@@ -299,7 +295,7 @@ class OpensearchIndexerPaDatafelt(
     fun slettTiltakshendelse(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(FeltNavn.TILTAKSHENDELSE)
+            .nullField(DatafeltKeys.TILTAKSHENDELSE)
             .endObject()
 
         update(aktorId, content, "Slettet tiltakshendelse for aktorId: $aktorId")
@@ -308,10 +304,10 @@ class OpensearchIndexerPaDatafelt(
     fun updateGjeldendeVedtak14a(gjeldendeVedtak14a: GjeldendeVedtak14a, aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.GJELDENDE_VEDTAK_14A)
-            .field(FeltNavn.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE, gjeldendeVedtak14a.innsatsgruppe)
-            .field(FeltNavn.GJELDENDE_VEDTAK_14A_HOVEDMAL, gjeldendeVedtak14a.hovedmal)
-            .field(FeltNavn.GJELDENDE_VEDTAK_14A_FATTET_DATO, gjeldendeVedtak14a.fattetDato)
+            .startObject(DatafeltKeys.GJELDENDE_VEDTAK_14A)
+            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE, gjeldendeVedtak14a.innsatsgruppe)
+            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_HOVEDMAL, gjeldendeVedtak14a.hovedmal)
+            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_FATTET_DATO, gjeldendeVedtak14a.fattetDato)
             .endObject()
             .endObject()
 
@@ -321,12 +317,12 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterHendelse(hendelse: Hendelse, aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(FeltNavn.HENDELSER)
+            .startObject(DatafeltKeys.HENDELSER)
             .startObject(hendelse.kategori.name)
-            .field(FeltNavn.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
-            .field(FeltNavn.HENDELSER_DATO, hendelse.hendelse.dato)
-            .field(FeltNavn.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
-            .field(FeltNavn.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
+            .field(DatafeltKeys.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
+            .field(DatafeltKeys.HENDELSER_DATO, hendelse.hendelse.dato)
+            .field(DatafeltKeys.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
+            .field(DatafeltKeys.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
             .endObject()
             .endObject()
             .endObject()
@@ -345,7 +341,7 @@ class OpensearchIndexerPaDatafelt(
         val updateScript = Script(
             ScriptType.INLINE,
             "painless",
-            "ctx._source.${FeltNavn.HENDELSER}.remove(params.$kategoriKey)",
+            "ctx._source.${DatafeltKeys.HENDELSER}.remove(params.$kategoriKey)",
             params
         )
 
@@ -364,9 +360,9 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.AAP_KELVIN, harAapKelvin)
-            .field(FeltNavn.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
-            .field(FeltNavn.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.AAP_KELVIN, harAapKelvin)
+            .field(DatafeltKeys.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
+            .field(DatafeltKeys.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
             .endObject()
 
         update(aktorId, content, "Oppdatert aap kelvin for aktorId: $aktorId")
@@ -375,9 +371,9 @@ class OpensearchIndexerPaDatafelt(
     fun slettAapKelvin(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.AAP_KELVIN, false)
-            .nullField(FeltNavn.AAP_KELVIN_TOM_VEDTAKSDATO)
-            .nullField(FeltNavn.AAP_KELVIN_RETTIGHETSTYPE)
+            .field(DatafeltKeys.AAP_KELVIN, false)
+            .nullField(DatafeltKeys.AAP_KELVIN_TOM_VEDTAKSDATO)
+            .nullField(DatafeltKeys.AAP_KELVIN_RETTIGHETSTYPE)
             .endObject()
 
         update(aktorId, content, "Slettet aap kelvin for aktorId: $aktorId")
@@ -391,9 +387,9 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(FeltNavn.TILTAKSPENGER, harTiltakspenger)
-            .field(FeltNavn.TILTAKSPENGER_VEDTAKSDATO_TOM, vedtaksdatoTom)
-            .field(FeltNavn.TILTAKSPENGER_RETTIGHET, rettighet)
+            .field(DatafeltKeys.TILTAKSPENGER, harTiltakspenger)
+            .field(DatafeltKeys.TILTAKSPENGER_VEDTAKSDATO_TOM, vedtaksdatoTom)
+            .field(DatafeltKeys.TILTAKSPENGER_RETTIGHET, rettighet)
             .endObject()
 
         update(aktorId, content, "Oppdatert tiltakspenger for aktorId: $aktorId")
@@ -433,79 +429,4 @@ class OpensearchIndexerPaDatafelt(
             }
         }
     }
-}
-
-object FeltNavn {
-    val ARBEIDSSOEKER_PROFILERING_RESULTAT = PortefoljebrukerOpensearchModell::profilering_resultat.name
-    val ARBEIDSSOEKER_BRUKERS_SITUASJONER = PortefoljebrukerOpensearchModell::brukers_situasjoner.name
-    val ARBEIDSSOEKER_UTDANNING = PortefoljebrukerOpensearchModell::utdanning.name
-    val ARBEIDSSOEKER_UTDANNING_BESTATT = PortefoljebrukerOpensearchModell::utdanning_bestatt.name
-    val ARBEIDSSOEKER_UTDANNING_GODKJENT = PortefoljebrukerOpensearchModell::utdanning_godkjent.name
-    val ARBEIDSSOEKER_UTDANNING_OG_SITUASJON_SIST_ENDRET =
-        PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
-
-    val HUSKELAPP = PortefoljebrukerOpensearchModell::huskelapp.name
-    val HUSKELAPP_FRIST = HuskelappForBruker::frist.name
-    val HUSKELAPP_KOMMENTAR = HuskelappForBruker::kommentar.name
-    val HUSKELAPP_ENDRET_AV = HuskelappForBruker::endretAv.name
-    val HUSKELAPP_ENDRET_DATO = HuskelappForBruker::endretDato.name
-    val HUSKELAPP_HUSKELAPP_ID = HuskelappForBruker::huskelappId.name
-    val HUSKELAPP_ENHET_ID = HuskelappForBruker::enhetId.name
-    val FARGEKATEGORI = PortefoljebrukerOpensearchModell::fargekategori.name
-    val FARGEKATEGORI_ENHET_ID = PortefoljebrukerOpensearchModell::fargekategori_enhetId.name
-
-    val AKTIVITETER_SISTE_ENDRINGER = PortefoljebrukerOpensearchModell::siste_endringer.name
-    val AKTIVITETER_SISTE_ENDRINGER_ER_SETT =
-        "erSett" // Denne har ingen korresponderende property i PortefoljebrukerOpensearchModell
-    val AKTIVITETER_SISTE_ENDRINGER_TIDSPUNKT = Endring::tidspunkt.name
-    val AKTIVITETER_SISTE_ENDRINGER_AKTIVTETID = Endring::aktivtetId.name
-
-    val CV_HAR_DELT_CV = PortefoljebrukerOpensearchModell::har_delt_cv.name
-    val CV_CV_EKSISTERE = PortefoljebrukerOpensearchModell::cv_eksistere.name
-
-    val OPPFOLGING_MANUELL_BRUKER = PortefoljebrukerOpensearchModell::manuell_bruker.name
-    val OPPFOLGING_VEILEDER_ID = PortefoljebrukerOpensearchModell::veileder_id.name
-    val OPPFOLGING_NY_FOR_VEILEDER = PortefoljebrukerOpensearchModell::ny_for_veileder.name
-    val OPPFOLGING_TILDELT_TIDSPUNKT = PortefoljebrukerOpensearchModell::tildelt_tidspunkt.name
-
-    val DIALOG_VENTER_PA_SVAR_FRA_BRUKER = PortefoljebrukerOpensearchModell::venterpasvarfrabruker.name
-    val DIALOG_VENTER_PA_SVAR_FRA_NAV = PortefoljebrukerOpensearchModell::venterpasvarfranav.name
-
-    val EGEN_ANSATT = PortefoljebrukerOpensearchModell::egen_ansatt.name
-    val SKJERMET_TIL = PortefoljebrukerOpensearchModell::skjermet_til.name
-
-    val ENSLIGE_FORSORGERE_OVERGANGSSTONAD = PortefoljebrukerOpensearchModell::enslige_forsorgere_overgangsstonad.name
-    val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE =
-        EnsligeForsorgereOvergangsstonad::vedtaksPeriodetype.name
-    val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HARAKTIVITETSPLIKT =
-        EnsligeForsorgereOvergangsstonad::harAktivitetsplikt.name
-    val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO = EnsligeForsorgereOvergangsstonad::utlopsDato.name
-    val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTEBARNSFØDSELSDATO =
-        EnsligeForsorgereOvergangsstonad::yngsteBarnsFødselsdato.name
-
-    val TILTAKSHENDELSE = PortefoljebrukerOpensearchModell::tiltakshendelse.name
-    val TILTAKSHENDELSE_ID = Tiltakshendelse::id.name
-    val TILTAKSHENDELSE_LENKE = Tiltakshendelse::lenke.name
-    val TILTAKSHENDELSE_OPPRETTET = Tiltakshendelse::opprettet.name
-    val TILTAKSHENDELSE_TEKST = Tiltakshendelse::tekst.name
-    val TILTAKSHENDELSE_TILTAKSTYPE = Tiltakshendelse::tiltakstype.name
-
-    val GJELDENDE_VEDTAK_14A = PortefoljebrukerOpensearchModell::gjeldendeVedtak14a.name
-    val GJELDENDE_VEDTAK_14A_INNSATSGRUPPE = GjeldendeVedtak14a::innsatsgruppe.name
-    val GJELDENDE_VEDTAK_14A_HOVEDMAL = GjeldendeVedtak14a::hovedmal.name
-    val GJELDENDE_VEDTAK_14A_FATTET_DATO = GjeldendeVedtak14a::fattetDato.name
-
-    val HENDELSER = PortefoljebrukerOpensearchModell::hendelser.name
-    val HENDELSER_BESKRIVELSE = HendelseInnhold::beskrivelse.name
-    val HENDELSER_DATO = HendelseInnhold::dato.name
-    val HENDELSER_LENKE = HendelseInnhold::lenke.name
-    val HENDELSER_DETALJER = HendelseInnhold::detaljer.name
-
-    val AAP_KELVIN = PortefoljebrukerOpensearchModell::aap_kelvin.name
-    val AAP_KELVIN_TOM_VEDTAKSDATO = PortefoljebrukerOpensearchModell::aap_kelvin_tom_vedtaksdato.name
-    val AAP_KELVIN_RETTIGHETSTYPE = PortefoljebrukerOpensearchModell::aap_kelvin_rettighetstype.name
-
-    val TILTAKSPENGER = PortefoljebrukerOpensearchModell::tiltakspenger.name
-    val TILTAKSPENGER_VEDTAKSDATO_TOM = PortefoljebrukerOpensearchModell::tiltakspenger_vedtaksdato_tom.name
-    val TILTAKSPENGER_RETTIGHET = PortefoljebrukerOpensearchModell::tiltakspenger_rettighet.name
 }
