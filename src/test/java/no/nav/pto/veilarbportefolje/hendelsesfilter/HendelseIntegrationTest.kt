@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -252,9 +253,9 @@ class HendelseIntegrationTest(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().apply {
+            filtervalgDefaults.copy(
                 ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
-            },
+            ),
             null,
             null
         ).brukere
@@ -488,9 +489,9 @@ class HendelseIntegrationTest(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().apply {
+            filtervalgDefaults.copy(
                 ferdigfilterListe = filter
-            },
+            ),
             null,
             null
         ).brukere.first()

@@ -680,7 +680,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
                 Optional.of(veilederId),
                 Sorteringsrekkefolge.IKKE_SATT,
                 Sorteringsfelt.IKKE_SATT,
-                Filtervalg(),
+                filtervalgDefaults,
                 null,
                 null
             )
@@ -698,7 +698,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
                 Optional.empty(),
                 Sorteringsrekkefolge.IKKE_SATT,
                 Sorteringsfelt.IKKE_SATT,
-                Filtervalg(),
+                filtervalgDefaults,
                 null,
                 null
             )

@@ -7,16 +7,13 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.StillingFraNAVFilter;
-import no.nav.pto.veilarbportefolje.domene.NavKontor;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,8 +28,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus.I_AKTIVITET;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
+import static no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,7 +68,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     public void lasteroppeikkelagreteaktiviteteter() {
         NavKontor navKontor = randomNavKontor();
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of(I_AKTIVITET));
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
@@ -101,7 +99,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     public void lasteroppaktivitetStillingFraNAV() {
         NavKontor navKontor = randomNavKontor();
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setNavnEllerFnrQuery(fodselsnummer.toString());
         filtervalg.setFerdigfilterListe(new ArrayList<>());
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -141,7 +139,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         AktorId aktorIdCvDeltMedNav = randomAktorId();
         AktorId aktorIdIkkeDeltCv = randomAktorId();
         VeilederId veileder = randomVeilederId();
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of(I_AKTIVITET));
         testDataClient.lagreBrukerUnderOppfolging(aktorIdCvDeltMedNav, navKontor, veileder, ZonedDateTime.now(), null);
         testDataClient.lagreBrukerUnderOppfolging(aktorIdIkkeDeltCv, navKontor, veileder, ZonedDateTime.now(), null);
@@ -177,7 +175,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                   filtervalg,
+                    filtervalg,
                     null,
                     null);
 
@@ -314,7 +312,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         assertThat(moteplaner.size()).isEqualTo(4);
         assertEquals(120, moteplaner.get(0).varighetMinutter());
         assertEquals(15, moteplaner.get(1).varighetMinutter());
-        assertEquals(2*24*60, moteplaner.get(2).varighetMinutter());
+        assertEquals(2 * 24 * 60, moteplaner.get(2).varighetMinutter());
         assertEquals(0, moteplaner.get(3).varighetMinutter());
     }
 

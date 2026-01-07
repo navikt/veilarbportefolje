@@ -94,7 +94,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg(),
+            filtervalgDefaults,
             null,
             null
         )
@@ -125,9 +125,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         skrivBrukereTilTestindeks(brukere)
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ferdigfilterListe = listOf(Brukerstatus.I_AVTALT_AKTIVITET)
-        }
+        )
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         val response = opensearchService.hentBrukere(
@@ -182,11 +182,10 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         skrivBrukereTilTestindeks(brukere)
 
-        val filtervalg = Filtervalg().apply {
-            ferdigfilterListe = listOf(Brukerstatus.UTLOPTE_AKTIVITETER)
+        val filtervalg = filtervalgDefaults.copy(
+            ferdigfilterListe = listOf(Brukerstatus.UTLOPTE_AKTIVITETER),
             veiledere = listOf(TEST_VEILEDER_0, TEST_VEILEDER_1)
-        }
-
+        )
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
@@ -239,9 +238,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ferdigfilterListe = listOf(Brukerstatus.UFORDELTE_BRUKERE)
-        }
+        )
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
@@ -333,14 +332,14 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg1 = Filtervalg().apply {
-            aktiviteterForenklet = listOf("EGEN", "MOTE")
+        val filtervalg1 = filtervalgDefaults.copy(
+            aktiviteterForenklet = listOf("EGEN", "MOTE"),
             ferdigfilterListe = listOf()
-        }
-        val filtervalg2 = Filtervalg().apply {
-            aktiviteterForenklet = listOf("MOTE", "EGEN")
+        )
+        val filtervalg2 = filtervalgDefaults.copy(
+            aktiviteterForenklet = listOf("MOTE", "EGEN"),
             ferdigfilterListe = listOf()
-        }
+        )
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -416,9 +415,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().apply {
+            filtervalgDefaults.copy(
                 ferdigfilterListe = ferdigFiltere
-            },
+            ),
             null,
             null
         )
@@ -456,7 +455,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             Optional.of(TEST_VEILEDER_0),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg(),
+            filtervalgDefaults,
             null,
             null
         )
@@ -501,9 +500,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             Optional.of(LITE_PRIVILEGERT_VEILEDER),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().apply {
+            filtervalgDefaults.copy(
                 ferdigfilterListe = listOf(Brukerstatus.UFORDELTE_BRUKERE)
-            },
+            ),
             null,
             null
         )
@@ -552,10 +551,10 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg().apply {
-            ferdigfilterListe = emptyList()
+        val filterValg = filtervalgDefaults.copy(
+            ferdigfilterListe = emptyList(),
             aktiviteter = mutableMapOf("SOKEAVTALE" to AktivitetFiltervalg.JA)
-        }
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -604,10 +603,10 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg().apply {
-            ferdigfilterListe = emptyList()
+        val filterValg = filtervalgDefaults.copy(
+            ferdigfilterListe = emptyList(),
             aktiviteter = mutableMapOf("SOKEAVTALE" to AktivitetFiltervalg.NEI)
-        }
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -658,10 +657,10 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg().apply {
-            ferdigfilterListe = emptyList()
+        val filterValg = filtervalgDefaults.copy(
+            ferdigfilterListe = emptyList(),
             aktiviteter = mutableMapOf("TILTAK" to AktivitetFiltervalg.JA)
-        }
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -714,10 +713,10 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg().apply {
-            ferdigfilterListe = emptyList()
+        val filterValg = filtervalgDefaults.copy(
+            ferdigfilterListe = emptyList(),
             aktiviteter = mutableMapOf("TILTAK" to AktivitetFiltervalg.NEI)
-        }
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -775,7 +774,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
+        val filterValg = filtervalgDefaults
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -828,7 +827,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
+        val filterValg = filtervalgDefaults
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -922,9 +921,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg().apply {
+        val filterValg = filtervalgDefaults.copy(
             ferdigfilterListe = listOf()
-        }
+        )
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -1076,9 +1075,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().apply {
-                ferdigfilterListe = emptyList()
-            },
+            filtervalgDefaults,
             null,
             null
         )
@@ -1100,9 +1097,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
                     Optional.empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     sorteringsfelt,
-                    Filtervalg().apply {
+                    filtervalgDefaults.copy(
                         ferdigfilterListe = emptyList()
-                    },
+                    ),
                     null,
                     null
                 )
@@ -1160,9 +1157,9 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ferdigfilterListe = emptyList()
-        }
+        )
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,

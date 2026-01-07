@@ -2,13 +2,14 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
 import no.nav.pto.veilarbportefolje.util.TestUtil
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat
 import org.opensearch.index.query.BoolQueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.opensearch.search.builder.SearchSourceBuilder
@@ -32,7 +33,7 @@ class OpensearchQueryBuilderTest {
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.ETTERNAVN,
             SearchSourceBuilder(),
-            Filtervalg(),
+            filtervalgDefaults,
             BrukerinnsynTilganger(true, true, true)
         )
         val fieldName: String = searchSourceBuilder.sorts()[0].toString()
@@ -51,10 +52,12 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling"
-        val filtervalg: Filtervalg = Filtervalg().apply {
-            aktiviteter[navnPaAktivitet] = AktivitetFiltervalg.JA
-            aktiviteter["egen"] = AktivitetFiltervalg.NEI
-        }
+        val filtervalg = filtervalgDefaults.copy(
+            aktiviteter = mutableMapOf(
+                navnPaAktivitet to AktivitetFiltervalg.JA,
+                "egen" to AktivitetFiltervalg.NEI
+            )
+        )
 
         val sorteringer =
             sortQueryBuilder.sorterValgteAktiviteter(
@@ -71,9 +74,9 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
-        val filtervalg: Filtervalg = Filtervalg().apply {
-            aktiviteter["tiltak"] = AktivitetFiltervalg.NEI
-        }
+        val filtervalg = filtervalgDefaults.copy(
+            aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.NEI)
+        )
 
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
@@ -85,9 +88,9 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg: Filtervalg = Filtervalg().apply {
-            aktiviteter["behandling"] = AktivitetFiltervalg.JA
-        }
+        val filtervalg = filtervalgDefaults.copy(
+            aktiviteter = mutableMapOf("behandling" to AktivitetFiltervalg.JA)
+        )
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_behandling.json", javaClass)
@@ -98,9 +101,9 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg: Filtervalg = Filtervalg().apply {
-            aktiviteter["tiltak"] = AktivitetFiltervalg.JA
-        }
+        val filtervalg = filtervalgDefaults.copy(
+            aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.JA)
+        )
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_tiltak.json", javaClass)

@@ -206,10 +206,9 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isNotNull
         assertThat(aapKelvinRespons).isEqualTo(true)
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
-            ferdigfilterListe = emptyList()
-        }
+        )
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS
@@ -256,10 +255,9 @@ class AapServiceTest(
         val aapKelvinRespons2 = getResponse2.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons2).isEqualTo(false)
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
-            ferdigfilterListe = emptyList()
-        }
+        )
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS
@@ -335,10 +333,9 @@ class AapServiceTest(
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
         //indeksering skal fortsatt være på aktørid
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
-            ferdigfilterListe = emptyList()
-        }
+        )
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS

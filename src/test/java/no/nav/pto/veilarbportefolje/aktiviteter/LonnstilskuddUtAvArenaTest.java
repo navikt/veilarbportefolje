@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_ARENA_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -136,7 +137,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktorId2 = randomAktorId();
         Fnr fnr1 = randomFnr();
         Fnr fnr2 = randomFnr();
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
@@ -226,7 +227,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fnr1 = randomFnr();
         Fnr fnr2 = randomFnr();
         Fnr fnr3 = randomFnr();
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
@@ -333,7 +334,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         NavKontor navKontor = randomNavKontor();
         AktorId aktorId1 = randomAktorId();
         Fnr fnr1 = randomFnr();
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
@@ -630,7 +631,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktoer = randomAktorId();
         Fnr fodselsnummer = randomFnr();
         NavKontor navKontor = randomNavKontor();
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setFerdigfilterListe(List.of());
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()

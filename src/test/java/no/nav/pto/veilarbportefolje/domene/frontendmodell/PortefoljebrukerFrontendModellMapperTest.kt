@@ -2,13 +2,9 @@ package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
-import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping
+import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -278,17 +274,17 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtgåttVarselFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
-            }
+            )
         )
         val frontendBrukerUdeltSamtalereferatFilter =
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().apply {
+                filtervalg = filtervalgDefaults.copy(
                     ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
-                }
+                )
             )
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
@@ -475,9 +471,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().apply {
+                filtervalg = filtervalgDefaults.copy(
                     sisteEndringKategori = listOf(kategori)
-                }
+                )
             )
 
         val sisteEndringMedSammeFilterkategori = frontendBrukerMedSammeFilterkategori.sisteEndringAvBruker
@@ -504,9 +500,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().apply {
+                filtervalg = filtervalgDefaults.copy(
                     sisteEndringKategori = listOf("NY_JOBB")
-                }
+                )
             )
 
         val sisteEndringMedAnnenFilterkategori = frontendBrukerMedAnnenFilterkategori.sisteEndringAvBruker
@@ -521,9 +517,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 sisteEndringKategori = listOf(kategori)
-            }
+            )
         )
 
         val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
@@ -603,9 +599,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 aktiviteterForenklet = listOf("BEHANDLING", "MOTE")
-            }
+            )
         )
 
         val aktiviteterMedForenkletfilter =
@@ -616,9 +612,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedTiltaksfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 tiltakstyper = listOf("BEHANDLING", "MOTE")
-            }
+            )
         )
 
         val aktiviteterMedTiltaksfilter =
@@ -643,16 +639,15 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedAvansertfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 aktiviteter =
-
                     mutableMapOf(
                         "BEHANDLING" to AktivitetFiltervalg.JA,
                         "MOTE" to AktivitetFiltervalg.JA,
                         "STILLING" to AktivitetFiltervalg.NEI,
                         "TILTAK" to AktivitetFiltervalg.NEI
                     )
-            }
+            )
         )
 
         val aktiviteterMedAvansertfilter =
@@ -678,13 +673,13 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedBeggeFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().apply {
+            filtervalg = filtervalgDefaults.copy(
                 aktiviteter = mutableMapOf(
                     "BEHANDLING" to AktivitetFiltervalg.JA,
                     "STILLING" to AktivitetFiltervalg.JA,
-                )
-                aktiviteterForenklet = (listOf("TILTAK", "MOTE"))
-            }
+                ),
+                aktiviteterForenklet = listOf("TILTAK", "MOTE")
+            )
         )
 
         val aktiviteterMedBeggefilter =

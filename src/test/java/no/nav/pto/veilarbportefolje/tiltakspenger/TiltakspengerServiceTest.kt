@@ -196,10 +196,9 @@ class TiltakspengerServiceTest(
         assertThat(tiltakspengerRespons).isNotNull
         assertThat(tiltakspengerRespons).isEqualTo(true)
 
-        val filtervalg = Filtervalg().apply {
+        val filtervalg = filtervalgDefaults.copy(
             ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
-            ferdigfilterListe = listOf()
-        }
+        )
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS

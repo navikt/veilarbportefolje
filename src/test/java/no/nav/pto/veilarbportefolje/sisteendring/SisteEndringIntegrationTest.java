@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -185,7 +186,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -220,7 +221,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -308,7 +309,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -447,8 +448,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori, boolean uleste) {
-        Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setSisteEndringKategori(List.of(kategori.name()));
         if (uleste) {
             filtervalg.setUlesteEndringer("ULESTE_ENDRINGER");
@@ -457,8 +457,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori_1, SisteEndringsKategori kategori_2) {
-        Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setSisteEndringKategori(List.of(kategori_1.name(), kategori_2.name()));
         return filtervalg;
     }
