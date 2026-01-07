@@ -24,6 +24,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
@@ -36,7 +37,6 @@ public class OpensearchIndexer {
 
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepositoryV2 brukerRepositoryV2;
-    private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
 
     public void indekser(AktorId aktoerId) {
@@ -47,7 +47,7 @@ public class OpensearchIndexer {
 
     @SneakyThrows
     public void syncronIndekseringsRequest(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
-        IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(brukerOpensearchModell.getAktoer_id());
+        IndexRequest indexRequest = new IndexRequest(BRUKERINDEKS_ALIAS).id(brukerOpensearchModell.getAktoer_id());
         indexRequest.source(toJson(brukerOpensearchModell), XContentType.JSON);
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
@@ -97,7 +97,7 @@ public class OpensearchIndexer {
 
         if (brukere != null && !brukere.isEmpty()) {
             flettInnNodvendigData(brukere);
-            this.skrivBulkTilIndeks(alias.getValue(), brukere);
+            this.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, brukere);
         }
     }
 
@@ -114,7 +114,7 @@ public class OpensearchIndexer {
     @SneakyThrows
     private void delete(AktorId aktoerId) {
         DeleteRequest deleteRequest = new DeleteRequest();
-        deleteRequest.index(alias.getValue());
+        deleteRequest.index(BRUKERINDEKS_ALIAS);
         deleteRequest.id(aktoerId.get());
 
         try {

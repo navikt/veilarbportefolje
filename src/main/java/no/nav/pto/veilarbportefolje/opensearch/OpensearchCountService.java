@@ -15,27 +15,25 @@ import org.springframework.stereotype.Service;
 import java.util.Base64;
 
 import static no.nav.common.rest.client.RestClient.baseClient;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 
 @Slf4j
 @Service
 public class OpensearchCountService {
     private final OpensearchClientConfig opensearchClientConfig;
-    private final String indexName;
     private final OkHttpClient client;
 
     @Autowired
     public OpensearchCountService(
-            OpensearchClientConfig opensearchClientConfig,
-            IndexName opensearchIndex
+            OpensearchClientConfig opensearchClientConfig
     ) {
         this.opensearchClientConfig = opensearchClientConfig;
-        this.indexName = opensearchIndex.getValue();
         client = baseClient();
     }
 
     @SneakyThrows
     public long getCount() {
-        String url = createAbsoluteUrl(opensearchClientConfig, indexName) + "_count";
+        String url = createAbsoluteUrl(opensearchClientConfig, BRUKERINDEKS_ALIAS) + "_count";
 
         Request request = new Request.Builder()
                 .url(url)
@@ -51,10 +49,10 @@ public class OpensearchCountService {
         }
     }
 
-    public static String createAbsoluteUrl(OpensearchClientConfig config, String indexName) {
+    public static String createAbsoluteUrl(OpensearchClientConfig config, String BRUKERINDEKS_ALIAS) {
         return String.format("%s%s/",
                 createAbsoluteUrl(config),
-                indexName
+                BRUKERINDEKS_ALIAS
         );
     }
 
