@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerO
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse.HendelseInnhold
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -40,7 +41,6 @@ import java.time.ZonedDateTime
 
 @Service
 class OpensearchIndexerPaDatafelt(
-    val indexName: IndexName,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val restHighLevelClient: RestHighLevelClient
 ) {
@@ -418,7 +418,7 @@ class OpensearchIndexerPaDatafelt(
         }
 
         updateRequest
-            .index(indexName.value)
+            .index(BRUKERINDEKS_ALIAS)
             .id(aktoerId.get())
             .retryOnConflict(6)
 
@@ -436,7 +436,7 @@ class OpensearchIndexerPaDatafelt(
 
     private fun delete(aktoerId: AktorId) {
         val deleteRequest = DeleteRequest()
-        deleteRequest.index(indexName.value)
+        deleteRequest.index(BRUKERINDEKS_ALIAS)
         deleteRequest.id(aktoerId.get())
 
         try {

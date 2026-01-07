@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -43,7 +44,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
 
         // When
         val opensearchResponse =
-            opensearchService.search(SearchSourceBuilder(), indexName.value, OpensearchResponse::class.java)
+            opensearchService.search(SearchSourceBuilder(), BRUKERINDEKS_ALIAS, OpensearchResponse::class.java)
 
         // Then
         assertThat(opensearchResponse.hits.hits.first()._source)
