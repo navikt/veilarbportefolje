@@ -47,14 +47,23 @@ class OpensearchIndexerPaDatafelt(
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .field(
-                DatafeltKeys.ARBEIDSSOEKER_BRUKERS_SITUASJONER,
+                DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER,
                 opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon.jobbsituasjon
             )
-            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING, mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode))
-            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING_BESTATT, opplysningerOmArbeidssoeker.utdanningBestatt)
-            .field(DatafeltKeys.ARBEIDSSOEKER_UTDANNING_GODKJENT, opplysningerOmArbeidssoeker.utdanningGodkjent)
             .field(
-                DatafeltKeys.ARBEIDSSOEKER_UTDANNING_OG_SITUASJON_SIST_ENDRET,
+                DatafeltKeys.Arbeidssoeker.UTDANNING,
+                mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode)
+            )
+            .field(
+                DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT,
+                opplysningerOmArbeidssoeker.utdanningBestatt
+            )
+            .field(
+                DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT,
+                opplysningerOmArbeidssoeker.utdanningGodkjent
+            )
+            .field(
+                DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET,
                 DateUtils.toLocalDateOrNull(opplysningerOmArbeidssoeker.sendtInnTidspunkt)
             )
             .endObject()
@@ -65,7 +74,10 @@ class OpensearchIndexerPaDatafelt(
     fun updateProfilering(aktoerId: AktorId, profileringEntity: ProfileringEntity) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.ARBEIDSSOEKER_PROFILERING_RESULTAT, profileringEntity.profileringsresultat)
+            .field(
+                DatafeltKeys.Arbeidssoeker.PROFILERING_RESULTAT,
+                profileringEntity.profileringsresultat
+            )
             .endObject()
 
         update(aktoerId, content, "Oppdater profileringsresultat")
@@ -74,13 +86,13 @@ class OpensearchIndexerPaDatafelt(
     fun updateHuskelapp(aktoerId: AktorId, huskelapp: HuskelappForBruker) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.HUSKELAPP)
-            .field(DatafeltKeys.HUSKELAPP_FRIST, huskelapp.frist)
-            .field(DatafeltKeys.HUSKELAPP_KOMMENTAR, huskelapp.kommentar)
-            .field(DatafeltKeys.HUSKELAPP_ENDRET_AV, huskelapp.endretAv)
-            .field(DatafeltKeys.HUSKELAPP_ENDRET_DATO, huskelapp.endretDato)
-            .field(DatafeltKeys.HUSKELAPP_HUSKELAPP_ID, huskelapp.huskelappId)
-            .field(DatafeltKeys.HUSKELAPP_ENHET_ID, huskelapp.enhetId)
+            .startObject(DatafeltKeys.Annet.HUSKELAPP)
+            .field(DatafeltKeys.Annet.HUSKELAPP_FRIST, huskelapp.frist)
+            .field(DatafeltKeys.Annet.HUSKELAPP_KOMMENTAR, huskelapp.kommentar)
+            .field(DatafeltKeys.Annet.HUSKELAPP_ENDRET_AV, huskelapp.endretAv)
+            .field(DatafeltKeys.Annet.HUSKELAPP_ENDRET_DATO, huskelapp.endretDato)
+            .field(DatafeltKeys.Annet.HUSKELAPP_HUSKELAPP_ID, huskelapp.huskelappId)
+            .field(DatafeltKeys.Annet.HUSKELAPP_ENHET_ID, huskelapp.enhetId)
             .endObject()
             .endObject()
 
@@ -90,7 +102,7 @@ class OpensearchIndexerPaDatafelt(
     fun slettHuskelapp(aktoerId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(DatafeltKeys.HUSKELAPP)
+            .nullField(DatafeltKeys.Annet.HUSKELAPP)
             .endObject()
 
         update(aktoerId, content, "Sletter huskelapp")
@@ -99,8 +111,8 @@ class OpensearchIndexerPaDatafelt(
     fun updateFargekategori(aktoerId: AktorId, fargekategori: String?, enhetId: String?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.FARGEKATEGORI, fargekategori)
-            .field(DatafeltKeys.FARGEKATEGORI_ENHET_ID, enhetId)
+            .field(DatafeltKeys.Annet.FARGEKATEGORI, fargekategori)
+            .field(DatafeltKeys.Annet.FARGEKATEGORI_ENHET_ID, enhetId)
             .endObject()
 
         update(aktoerId, content, "Oppretter/redigerer fargekategori")
@@ -109,8 +121,8 @@ class OpensearchIndexerPaDatafelt(
     fun slettFargekategori(aktoerId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(DatafeltKeys.FARGEKATEGORI)
-            .nullField(DatafeltKeys.FARGEKATEGORI_ENHET_ID)
+            .nullField(DatafeltKeys.Annet.FARGEKATEGORI)
+            .nullField(DatafeltKeys.Annet.FARGEKATEGORI_ENHET_ID)
             .endObject()
 
         update(aktoerId, content, "Sletter fargekategori")
@@ -122,11 +134,11 @@ class OpensearchIndexerPaDatafelt(
 
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER)
+            .startObject(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER)
             .startObject(kategori)
-            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_TIDSPUNKT, tidspunkt)
-            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_AKTIVTETID, dto.aktivtetId)
-            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "N")
+            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_TIDSPUNKT, tidspunkt)
+            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_AKTIVTETID, dto.aktivtetId)
+            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_ER_SETT, "N")
             .endObject()
             .endObject()
             .endObject()
@@ -140,9 +152,9 @@ class OpensearchIndexerPaDatafelt(
     fun updateSisteEndring(aktorId: AktorId, kategori: SisteEndringsKategori) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER)
+            .startObject(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER)
             .startObject(kategori.name)
-            .field(DatafeltKeys.AKTIVITETER_SISTE_ENDRINGER_ER_SETT, "J")
+            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_ER_SETT, "J")
             .endObject()
             .endObject()
             .endObject()
@@ -152,7 +164,7 @@ class OpensearchIndexerPaDatafelt(
     fun updateHarDeltCv(aktoerId: AktorId, harDeltCv: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.CV_HAR_DELT_CV, harDeltCv)
+            .field(DatafeltKeys.CV.HAR_DELT_CV, harDeltCv)
             .endObject()
 
         update(aktoerId, content, "Har delt cv: $harDeltCv")
@@ -161,7 +173,7 @@ class OpensearchIndexerPaDatafelt(
     fun updateCvEksistere(aktoerId: AktorId, cvEksistere: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.CV_CV_EKSISTERE, cvEksistere)
+            .field(DatafeltKeys.CV.CV_EKSISTERE, cvEksistere)
             .endObject()
 
         update(aktoerId, content, "CV eksistere: $cvEksistere")
@@ -170,7 +182,7 @@ class OpensearchIndexerPaDatafelt(
     fun settManuellStatus(aktoerId: AktorId, manuellStatus: String?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.OPPFOLGING_MANUELL_BRUKER, manuellStatus)
+            .field(DatafeltKeys.Oppfolging.MANUELL_BRUKER, manuellStatus)
             .endObject()
 
         update(aktoerId, content, "Satt til manuell bruker: $manuellStatus")
@@ -179,7 +191,7 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterNyForVeileder(aktoerId: AktorId, nyForVeileder: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.OPPFOLGING_NY_FOR_VEILEDER, nyForVeileder)
+            .field(DatafeltKeys.Oppfolging.NY_FOR_VEILEDER, nyForVeileder)
             .endObject()
 
         update(aktoerId, content, "Oppdatert ny for veileder: $nyForVeileder")
@@ -188,9 +200,9 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterVeileder(aktoerId: AktorId, veilederId: VeilederId, tildeltTidspunkt: ZonedDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.OPPFOLGING_VEILEDER_ID, veilederId.toString())
-            .field(DatafeltKeys.OPPFOLGING_NY_FOR_VEILEDER, true)
-            .field(DatafeltKeys.OPPFOLGING_TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
+            .field(DatafeltKeys.Oppfolging.VEILEDER_ID, veilederId.toString())
+            .field(DatafeltKeys.Oppfolging.NY_FOR_VEILEDER, true)
+            .field(DatafeltKeys.Oppfolging.TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
             .endObject()
 
         update(aktoerId, content, "Oppdatert veileder")
@@ -202,8 +214,8 @@ class OpensearchIndexerPaDatafelt(
 
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.DIALOG_VENTER_PA_SVAR_FRA_BRUKER, venterPaaSvarFraBruker)
-            .field(DatafeltKeys.DIALOG_VENTER_PA_SVAR_FRA_NAV, venterPaaSvarFraNav)
+            .field(DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_BRUKER, venterPaaSvarFraBruker)
+            .field(DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_NAV, venterPaaSvarFraNav)
             .endObject()
 
         update(
@@ -216,26 +228,26 @@ class OpensearchIndexerPaDatafelt(
     fun updateErSkjermet(aktorId: AktorId, erSkjermet: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.EGEN_ANSATT, erSkjermet)
+            .field(DatafeltKeys.NavAnsatt.EGEN_ANSATT, erSkjermet)
             .endObject()
 
         update(
             aktorId,
             content,
-            "Oppdatert ${DatafeltKeys.EGEN_ANSATT} $erSkjermet for bruker: $aktorId"
+            "Oppdatert ${DatafeltKeys.NavAnsatt.EGEN_ANSATT} $erSkjermet for bruker: $aktorId"
         )
     }
 
     fun updateSkjermetTil(aktorId: AktorId, skjermetTil: LocalDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.SKJERMET_TIL, skjermetTil)
+            .field(DatafeltKeys.NavAnsatt.SKJERMET_TIL, skjermetTil)
             .endObject()
 
         update(
             aktorId,
             content,
-            "Oppdatert ${DatafeltKeys.SKJERMET_TIL} $skjermetTil for bruker: $aktorId"
+            "Oppdatert ${DatafeltKeys.NavAnsatt.SKJERMET_TIL} $skjermetTil for bruker: $aktorId"
         )
     }
 
@@ -245,21 +257,21 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
+            .startObject(DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
             .field(
-                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE,
+                DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE,
                 ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse
             )
             .field(
-                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HARAKTIVITETSPLIKT,
+                DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT,
                 ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt
             )
             .field(
-                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
+                DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
                 ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato
             )
             .field(
-                DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTEBARNSFØDSELSDATO,
+                DatafeltKeys.Ytelser.`ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO`,
                 ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato
             )
             .endObject()
@@ -271,7 +283,7 @@ class OpensearchIndexerPaDatafelt(
     fun deleteOvergansstonad(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.ENSLIGE_FORSORGERE_OVERGANGSSTONAD, null as String?)
+            .field(DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD, null as String?)
             .endObject()
 
         update(aktorId, content, "Fjern overgangsstønad")
@@ -280,12 +292,12 @@ class OpensearchIndexerPaDatafelt(
     fun updateTiltakshendelse(aktorId: AktorId, tiltakshendelse: Tiltakshendelse) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.TILTAKSHENDELSE)
-            .field(DatafeltKeys.TILTAKSHENDELSE_ID, tiltakshendelse.id.toString())
-            .field(DatafeltKeys.TILTAKSHENDELSE_LENKE, tiltakshendelse.lenke)
-            .field(DatafeltKeys.TILTAKSHENDELSE_OPPRETTET, tiltakshendelse.opprettet)
-            .field(DatafeltKeys.TILTAKSHENDELSE_TEKST, tiltakshendelse.tekst)
-            .field(DatafeltKeys.TILTAKSHENDELSE_TILTAKSTYPE, tiltakshendelse.tiltakstype)
+            .startObject(DatafeltKeys.Annet.TILTAKSHENDELSE)
+            .field(DatafeltKeys.Annet.TILTAKSHENDELSE_ID, tiltakshendelse.id.toString())
+            .field(DatafeltKeys.Annet.TILTAKSHENDELSE_LENKE, tiltakshendelse.lenke)
+            .field(DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET, tiltakshendelse.opprettet)
+            .field(DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST, tiltakshendelse.tekst)
+            .field(DatafeltKeys.Annet.TILTAKSHENDELSE_TILTAKSTYPE, tiltakshendelse.tiltakstype)
             .endObject()
             .endObject()
 
@@ -295,7 +307,7 @@ class OpensearchIndexerPaDatafelt(
     fun slettTiltakshendelse(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(DatafeltKeys.TILTAKSHENDELSE)
+            .nullField(DatafeltKeys.Annet.TILTAKSHENDELSE)
             .endObject()
 
         update(aktorId, content, "Slettet tiltakshendelse for aktorId: $aktorId")
@@ -304,10 +316,10 @@ class OpensearchIndexerPaDatafelt(
     fun updateGjeldendeVedtak14a(gjeldendeVedtak14a: GjeldendeVedtak14a, aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.GJELDENDE_VEDTAK_14A)
-            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE, gjeldendeVedtak14a.innsatsgruppe)
-            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_HOVEDMAL, gjeldendeVedtak14a.hovedmal)
-            .field(DatafeltKeys.GJELDENDE_VEDTAK_14A_FATTET_DATO, gjeldendeVedtak14a.fattetDato)
+            .startObject(DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A)
+            .field(DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE, gjeldendeVedtak14a.innsatsgruppe)
+            .field(DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL, gjeldendeVedtak14a.hovedmal)
+            .field(DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_FATTET_DATO, gjeldendeVedtak14a.fattetDato)
             .endObject()
             .endObject()
 
@@ -317,12 +329,12 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterHendelse(hendelse: Hendelse, aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .startObject(DatafeltKeys.HENDELSER)
+            .startObject(DatafeltKeys.Annet.HENDELSER)
             .startObject(hendelse.kategori.name)
-            .field(DatafeltKeys.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
-            .field(DatafeltKeys.HENDELSER_DATO, hendelse.hendelse.dato)
-            .field(DatafeltKeys.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
-            .field(DatafeltKeys.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
+            .field(DatafeltKeys.Annet.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
+            .field(DatafeltKeys.Annet.HENDELSER_DATO, hendelse.hendelse.dato)
+            .field(DatafeltKeys.Annet.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
+            .field(DatafeltKeys.Annet.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
             .endObject()
             .endObject()
             .endObject()
@@ -341,7 +353,7 @@ class OpensearchIndexerPaDatafelt(
         val updateScript = Script(
             ScriptType.INLINE,
             "painless",
-            "ctx._source.${DatafeltKeys.HENDELSER}.remove(params.$kategoriKey)",
+            "ctx._source.${DatafeltKeys.Annet.HENDELSER}.remove(params.$kategoriKey)",
             params
         )
 
@@ -360,9 +372,9 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.AAP_KELVIN, harAapKelvin)
-            .field(DatafeltKeys.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
-            .field(DatafeltKeys.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN, harAapKelvin)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
             .endObject()
 
         update(aktorId, content, "Oppdatert aap kelvin for aktorId: $aktorId")
@@ -371,9 +383,9 @@ class OpensearchIndexerPaDatafelt(
     fun slettAapKelvin(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.AAP_KELVIN, false)
-            .nullField(DatafeltKeys.AAP_KELVIN_TOM_VEDTAKSDATO)
-            .nullField(DatafeltKeys.AAP_KELVIN_RETTIGHETSTYPE)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN, false)
+            .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO)
+            .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE)
             .endObject()
 
         update(aktorId, content, "Slettet aap kelvin for aktorId: $aktorId")
@@ -387,9 +399,9 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.TILTAKSPENGER, harTiltakspenger)
-            .field(DatafeltKeys.TILTAKSPENGER_VEDTAKSDATO_TOM, vedtaksdatoTom)
-            .field(DatafeltKeys.TILTAKSPENGER_RETTIGHET, rettighet)
+            .field(DatafeltKeys.Ytelser.TILTAKSPENGER, harTiltakspenger)
+            .field(DatafeltKeys.Ytelser.TILTAKSPENGER_VEDTAKSDATO_TOM, vedtaksdatoTom)
+            .field(DatafeltKeys.Ytelser.TILTAKSPENGER_RETTIGHET, rettighet)
             .endObject()
 
         update(aktorId, content, "Oppdatert tiltakspenger for aktorId: $aktorId")
