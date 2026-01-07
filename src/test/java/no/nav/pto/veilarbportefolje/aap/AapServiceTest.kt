@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.VeilederId
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -206,7 +205,7 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isNotNull
         assertThat(aapKelvinRespons).isEqualTo(true)
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
 
@@ -255,7 +254,7 @@ class AapServiceTest(
         val aapKelvinRespons2 = getResponse2.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons2).isEqualTo(false)
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
 
@@ -333,7 +332,7 @@ class AapServiceTest(
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
         //indeksering skal fortsatt være på aktørid
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
 

@@ -6,8 +6,8 @@ import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker
@@ -100,7 +100,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.UNDER_VURDERING)
         )
 
@@ -173,7 +173,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults.copy(
+            getFiltervalgDefaults().copy(
                 gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK")
             ),
             null,
@@ -235,7 +235,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults.copy(
+            getFiltervalgDefaults().copy(
                 gjeldendeVedtak14a = listOf("HAR_IKKE_14A_VEDTAK")
             ),
             null,
@@ -295,7 +295,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults.copy(
+            getFiltervalgDefaults().copy(
                 gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
             ),
             null,
@@ -366,7 +366,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtrertHarGjeldendeVedtak = filtervalgDefaults.copy(
+        val filtrertHarGjeldendeVedtak = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
         )
@@ -401,7 +401,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         /* Nuller sorteringa ved å sortere på etternamn */
         sorterBrukerePaStandardsorteringenAktorid(opensearchService)
 
-        val filtrertInnsatsgruppe = filtervalgDefaults.copy(
+        val filtrertInnsatsgruppe = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             innsatsgruppeGjeldendeVedtak14a =
                 listOf(
@@ -454,7 +454,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             bruker1.aktoer_id
         )
 
-        val filtrertHovedmal = filtervalgDefaults.copy(
+        val filtrertHovedmal = getFiltervalgDefaults().copy(
             hovedmalGjeldendeVedtak14a =
                 listOf(
                     Hovedmal.SKAFFE_ARBEID,
@@ -554,7 +554,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
         )
 
@@ -726,7 +726,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             innsatsgruppeGjeldendeVedtak14a =
                 listOf(
                     Innsatsgruppe.VARIG_TILPASSET_INNSATS,
@@ -835,7 +835,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             hovedmalGjeldendeVedtak14a =
                 listOf(
                     Hovedmal.SKAFFE_ARBEID,
@@ -868,7 +868,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults,
+            getFiltervalgDefaults(),
             null,
             null
         )

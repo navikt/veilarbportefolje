@@ -60,7 +60,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             rettighetsgruppe = listOf(Rettighetsgruppe.AAP)
         )
 
@@ -114,7 +114,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK)
         )
@@ -161,7 +161,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
@@ -207,7 +207,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
         )
@@ -254,7 +254,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseTiltakspengerArena = listOf(YtelseTiltakspengerArena.HAR_TILTAKSPENGER)
         )
@@ -330,7 +330,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseDagpengerArena = listOf(
                 YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
@@ -431,7 +431,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        var filterValg = filtervalgDefaults.copy(
+        var filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(),
             ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_ORDINAR)
         )
@@ -451,7 +451,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere[1].fnr).isEqualTo(bruker6.fnr)
         Assertions.assertThat(response.brukere[2].fnr).isEqualTo(bruker2.fnr)
 
-        filterValg = filtervalgDefaults.copy(
+        filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(),
             ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_UNNTAK)
         )
@@ -522,7 +522,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
@@ -608,7 +608,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
         )
@@ -688,7 +688,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
         )
@@ -759,7 +759,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
             ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
         )

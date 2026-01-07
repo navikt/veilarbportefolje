@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseTiltakspenger
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
@@ -196,7 +195,7 @@ class TiltakspengerServiceTest(
         assertThat(tiltakspengerRespons).isNotNull
         assertThat(tiltakspengerRespons).isEqualTo(true)
 
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
         )
 

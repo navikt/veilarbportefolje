@@ -274,7 +274,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtgåttVarselFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
             )
         )
@@ -282,7 +282,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = filtervalgDefaults.copy(
+                filtervalg = getFiltervalgDefaults().copy(
                     ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
                 )
             )
@@ -471,7 +471,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = filtervalgDefaults.copy(
+                filtervalg = getFiltervalgDefaults().copy(
                     sisteEndringKategori = listOf(kategori)
                 )
             )
@@ -500,7 +500,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = filtervalgDefaults.copy(
+                filtervalg = getFiltervalgDefaults().copy(
                     sisteEndringKategori = listOf("NY_JOBB")
                 )
             )
@@ -517,7 +517,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 sisteEndringKategori = listOf(kategori)
             )
         )
@@ -599,7 +599,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 aktiviteterForenklet = listOf("BEHANDLING", "MOTE")
             )
         )
@@ -612,7 +612,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedTiltaksfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 tiltakstyper = listOf("BEHANDLING", "MOTE")
             )
         )
@@ -639,7 +639,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedAvansertfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 aktiviteter =
                     mutableMapOf(
                         "BEHANDLING" to AktivitetFiltervalg.JA,
@@ -673,7 +673,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedBeggeFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = filtervalgDefaults.copy(
+            filtervalg = getFiltervalgDefaults().copy(
                 aktiviteter = mutableMapOf(
                     "BEHANDLING" to AktivitetFiltervalg.JA,
                     "STILLING" to AktivitetFiltervalg.JA,

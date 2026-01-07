@@ -7,8 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -147,7 +146,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = filtervalgDefaults
+        val filterValg = getFiltervalgDefaults()
 
         var response: BrukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -286,7 +285,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             fargekategorier = listOf(
                 FargekategoriVerdi.FARGEKATEGORI_B.name,
                 FargekategoriVerdi.FARGEKATEGORI_A.name
@@ -316,7 +315,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults.copy(
+            getFiltervalgDefaults().copy(
                 fargekategorier = listOf("INGEN_KATEGORI")
             ),
             null,
@@ -336,7 +335,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FARGEKATEGORI,
-            filtervalgDefaults,
+            getFiltervalgDefaults(),
             null,
             null
         )
@@ -419,7 +418,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filtervalgDefaults.copy(
+            getFiltervalgDefaults().copy(
                 ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
             ),
             null,
@@ -508,7 +507,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
         )
 
@@ -604,7 +603,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
         )
 
@@ -685,7 +684,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
         )
 
@@ -755,7 +754,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
         )
 
@@ -843,7 +842,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
         )
 

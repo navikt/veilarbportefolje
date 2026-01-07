@@ -5,7 +5,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.util.TestUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
@@ -33,7 +33,7 @@ class OpensearchQueryBuilderTest {
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.ETTERNAVN,
             SearchSourceBuilder(),
-            filtervalgDefaults,
+            getFiltervalgDefaults(),
             BrukerinnsynTilganger(true, true, true)
         )
         val fieldName: String = searchSourceBuilder.sorts()[0].toString()
@@ -52,7 +52,7 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling"
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mutableMapOf(
                 navnPaAktivitet to AktivitetFiltervalg.JA,
                 "egen" to AktivitetFiltervalg.NEI
@@ -74,7 +74,7 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.NEI)
         )
 
@@ -88,7 +88,7 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mutableMapOf("behandling" to AktivitetFiltervalg.JA)
         )
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
@@ -101,7 +101,7 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg = filtervalgDefaults.copy(
+        val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.JA)
         )
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())

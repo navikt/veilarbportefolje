@@ -4,8 +4,7 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalgDefaults
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -54,7 +53,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             veileder_id = TEST_VEILEDER_0,
         )
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             fodselsdagIMnd = listOf("7")
         )
 
@@ -106,7 +105,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults.copy(
+        val filterValg = getFiltervalgDefaults().copy(
             kjonn = Kjonn.K
         )
 
@@ -184,7 +183,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med talespråktolk */
-        val filterValgTalespraaktolk = filtervalgDefaults.copy(
+        val filterValgTalespraaktolk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TALESPRAAKTOLK")
         )
 
@@ -210,7 +209,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med tegnspråktolk */
-        val filterValgTegnspraaktolk = filtervalgDefaults.copy(
+        val filterValgTegnspraaktolk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TEGNSPRAAKTOLK")
         )
 
@@ -235,7 +234,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med tegn- eller talespråktolk */
-        val filtervalgBegge = filtervalgDefaults.copy(
+        val filtervalgBegge = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK")
         )
 
@@ -262,7 +261,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk */
-        val filterValgBeggeJapansk = filtervalgDefaults.copy(
+        val filterValgBeggeJapansk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"),
             tolkBehovSpraak = listOf(tolkesprakJapansk)
         )
@@ -284,7 +283,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
-        val filterValgIngenJapansk = filtervalgDefaults.copy(
+        val filterValgIngenJapansk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"),
             tolkBehovSpraak = listOf(tolkesprakJapansk)
         )
@@ -380,7 +379,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValgGr3 = filtervalgDefaults.copy(
+        val filterValgGr3 = getFiltervalgDefaults().copy(
             landgruppe = listOf("LANDGRUPPE_3")
         )
 
@@ -401,7 +400,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             (response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.foedeland == "Singapore" })
         )
 
-        val filterValgFoedelandNorge = filtervalgDefaults.copy(
+        val filterValgFoedelandNorge = getFiltervalgDefaults().copy(
             foedeland = listOf("NOR")
         )
 
@@ -418,7 +417,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.foedeland == "Norge" })
 
-        val filterValgLandgruppeUkjent = filtervalgDefaults.copy(
+        val filterValgLandgruppeUkjent = getFiltervalgDefaults().copy(
             landgruppe = listOf("LANDGRUPPE_UKJENT")
         )
 
@@ -435,7 +434,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream().noneMatch { x: PortefoljebrukerFrontendModell -> x.foedeland != null })
 
-        val filterValgLandgruppeUkjentOgTre = filtervalgDefaults.copy(
+        val filterValgLandgruppeUkjentOgTre = getFiltervalgDefaults().copy(
             landgruppe = listOf("LANDGRUPPE_UKJENT", "LANDGRUPPE_3")
         )
 
@@ -544,7 +543,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults
+        val filterValg = getFiltervalgDefaults()
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -668,7 +667,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValgGeo10 = filtervalgDefaults.copy(
+        val filterValgGeo10 = getFiltervalgDefaults().copy(
             geografiskBosted = listOf("10")
         )
 
@@ -687,7 +686,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             response.brukere.stream()
                 .allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune == "10" })
 
-        val filterValgGeo1233 = filtervalgDefaults.copy(
+        val filterValgGeo1233 = getFiltervalgDefaults().copy(
             geografiskBosted = listOf("1233")
         )
 
@@ -705,7 +704,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             response.brukere.stream()
                 .allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel == "1233" })
 
-        val filterValgGeoBegge = filtervalgDefaults.copy(
+        val filterValgGeoBegge = getFiltervalgDefaults().copy(
             geografiskBosted = listOf("10", "1233")
         )
 
@@ -799,7 +798,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = filtervalgDefaults
+        val filterValg = getFiltervalgDefaults()
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
