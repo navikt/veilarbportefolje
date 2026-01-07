@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.domene
 
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 
-var filtervalgDefaults: Filtervalg = Filtervalg(
+fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ferdigfilterListe = emptyList(),
     alder = emptyList(),
     kjonn = null,
@@ -24,15 +24,15 @@ var filtervalgDefaults: Filtervalg = Filtervalg(
     alleAktiviteter = emptyList(),
     ulesteEndringer = null,
     cvJobbprofil = null,
-    landgruppe = null,
-    foedeland = null,
-    tolkebehov = null,
-    tolkBehovSpraak = null,
-    stillingFraNavFilter = null,
+    landgruppe = emptyList(),
+    foedeland = emptyList(),
+    tolkebehov = emptyList(),
+    tolkBehovSpraak = emptyList(),
+    stillingFraNavFilter = emptyList(),
     barnUnder18Aar = emptyList(),
     barnUnder18AarAlder = emptyList(),
-    geografiskBosted = null,
-    ensligeForsorgere = null,
+    geografiskBosted = emptyList(),
+    ensligeForsorgere = emptyList(),
     fargekategorier = emptyList(),
     gjeldendeVedtak14a = emptyList(),
     innsatsgruppeGjeldendeVedtak14a = emptyList(),

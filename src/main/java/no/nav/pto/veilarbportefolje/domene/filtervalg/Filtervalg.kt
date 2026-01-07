@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import java.util.Collections.emptyList
 
 data class Filtervalg(
-    var ferdigfilterListe: List<Brukerstatus>? = null,
+    var ferdigfilterListe: List<Brukerstatus>?,
     var alder: List<String> = emptyList(),
     var kjonn: Kjonn?,
     var fodselsdagIMnd: List<String> = emptyList(),
