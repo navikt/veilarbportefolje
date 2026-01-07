@@ -108,7 +108,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         val filterValg = Filtervalg().apply {
             ferdigfilterListe = listOf()
-            kjonn = Kjonn.M
+            kjonn = Kjonn.K
         }
 
         val response = opensearchService.hentBrukere(

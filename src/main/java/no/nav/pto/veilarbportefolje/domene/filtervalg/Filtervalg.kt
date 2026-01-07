@@ -10,7 +10,7 @@ import java.util.Collections.emptyList
 data class Filtervalg(
     var ferdigfilterListe: List<Brukerstatus>? = null,
     var alder: List<String> = emptyList(),
-    var kjonn: Kjonn? = null,
+    var kjonn: Kjonn?,
     var fodselsdagIMnd: List<String> = emptyList(),
     var formidlingsgruppe: List<Formidlingsgruppe> = emptyList(),
     var servicegruppe: List<Servicegruppe> = emptyList(),
