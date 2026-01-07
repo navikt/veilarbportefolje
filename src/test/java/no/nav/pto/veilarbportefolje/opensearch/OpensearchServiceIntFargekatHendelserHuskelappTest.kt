@@ -146,8 +146,9 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+        }
 
         var response: BrukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -286,14 +287,13 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setFargekategorier(
-                listOf(
-                    FargekategoriVerdi.FARGEKATEGORI_B.name,
-                    FargekategoriVerdi.FARGEKATEGORI_A.name
-                )
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            fargekategorier = listOf(
+                FargekategoriVerdi.FARGEKATEGORI_B.name,
+                FargekategoriVerdi.FARGEKATEGORI_A.name
             )
+        }
 
         var response: BrukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -313,16 +313,15 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
         )
 
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setFargekategorier(listOf("INGEN_KATEGORI"))
-
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            Filtervalg().apply {
+                ferdigfilterListe = listOf()
+                fargekategorier = listOf("INGEN_KATEGORI")
+            },
             null,
             null
         )
@@ -335,16 +334,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
         )
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FARGEKATEGORI,
-            filterValg,
+            Filtervalg().apply {
+                ferdigfilterListe = listOf()
+            },
             null,
             null
         )
@@ -422,15 +419,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.TILTAKSHENDELSER))
-
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            Filtervalg().apply {
+                ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
+            },
             null,
             null
         )
@@ -517,8 +513,9 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.TILTAKSHENDELSER))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
+        }
 
         /* Om ein filtrerer på tiltakshendelse og ikkje har valgt sortering: sorter på opprettet-tidspunkt stigande. */
         val responseDefaultSortering = opensearchService.hentBrukere(
@@ -612,8 +609,9 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -692,15 +690,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            filtervalg,
+            filterValg,
             null,
             null
         )
@@ -761,15 +760,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FILTERHENDELSE_DATO,
-            filtervalg,
+            filterValg,
             null,
             null
         )
@@ -848,15 +848,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FILTERHENDELSE_DATO,
-            filtervalg,
+            filterValg,
             null,
             null
         )

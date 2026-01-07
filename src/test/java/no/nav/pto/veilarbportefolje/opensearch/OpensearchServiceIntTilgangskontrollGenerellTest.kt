@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -84,35 +83,35 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
 
         val kode6BrukerMedTilordnetVeileder = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_0)
 
-        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_0)
-        kode6BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_0).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val kode7Bruker = createKode7Bruker(TEST_ENHET, null)
 
         val kode7BrukerMedTilordnetVeileder = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
 
-        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        kode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val egenAnsattBruker = createEgenAnsattBruker(TEST_ENHET, null)
 
         val egenAnsattBrukerMedTilordnetVeileder = createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_2)
 
         val egenAnsattBrukerSomVenterPaSvarFraNav =
-            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_2)
-        egenAnsattBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_2).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val egenAnsattOgKode7Bruker = createEgenAnsattOgKode7Bruker(TEST_ENHET, null)
 
         val egenAnsattOgKode7BrukerMedTilordnetVeileder = createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_3)
 
         val egenAnsattOgKode7BrukerSomVenterPaSvarFraNav =
-            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_3)
-        egenAnsattOgKode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_3).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val fordeltBrukerSomIkkeSkalInkluderes = createRegularBruker(TEST_ENHET, TEST_VEILEDER_3)
 
@@ -120,9 +119,9 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
 
         val brukerSomVenterPaSvarFraNavSomIkkeSkalInkluderes = createRegularBruker(
             TEST_ENHET, null
-        )
-        brukerSomVenterPaSvarFraNavSomIkkeSkalInkluderes.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        ).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val brukere = listOf(
             kode6Bruker,
@@ -166,43 +165,43 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
 
         val kode6BrukerMedTilordnetVeileder = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_0)
 
-        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        kode6BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val kode7Bruker = createKode7Bruker(TEST_ENHET, null)
 
         val kode7BrukerMedTilordnetVeileder = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_0)
-        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        kode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val egenAnsattBruker = createEgenAnsattBruker(TEST_ENHET, null)
 
         val egenAnsattBrukerMedTilordnetVeileder = createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_0)
 
         val egenAnsattBrukerSomVenterPaSvarFraNav =
-            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_1)
-        egenAnsattBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val egenAnsattOgKode7Bruker = createEgenAnsattOgKode7Bruker(TEST_ENHET, null)
 
         val egenAnsattOgKode7BrukerMedTilordnetVeileder = createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_0)
 
         val egenAnsattOgKode7BrukerSomVenterPaSvarFraNav =
-            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        egenAnsattOgKode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val tilfeldigFordeltBruker = createRegularBruker(TEST_ENHET, TEST_VEILEDER_0)
 
         val tilfeldigUfordeltBruker = createRegularBruker(TEST_ENHET, null)
 
         val tilfeldigBrukerSomVenterPaSvarFraNav =
-            createRegularBruker(TEST_ENHET, TEST_VEILEDER_0)
-        tilfeldigBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createRegularBruker(TEST_ENHET, TEST_VEILEDER_0).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val brukere = listOf(
             kode6Bruker,
@@ -245,26 +244,26 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
 
         val kode6BrukerMedTilordnetVeileder = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_0)
 
-        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        kode6BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode6BrukerSomVenterPaSvarFraNav = createKode6Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val kode7Bruker = createKode7Bruker(TEST_ENHET, null)
 
         val kode7BrukerMedTilordnetVeileder = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_0)
 
-        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        kode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+        val kode7BrukerSomVenterPaSvarFraNav = createKode7Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val egenAnsattBruker = createEgenAnsattBruker(TEST_ENHET, null)
 
         val egenAnsattBrukerMedTilordnetVeileder = createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_0)
 
         val egenAnsattBrukerSomVenterPaSvarFraNav =
-            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_1)
-        egenAnsattBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattBruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val egenAnsattOgKode7Bruker = createEgenAnsattOgKode7Bruker(TEST_ENHET, null)
 
@@ -273,18 +272,18 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         )
 
         val egenAnsattOgKode7BrukerSomVenterPaSvarFraNav =
-            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_1)
-        egenAnsattOgKode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createEgenAnsattOgKode7Bruker(TEST_ENHET, TEST_VEILEDER_1).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val tilfeldigFordeltBruker = createRegularBruker(TEST_ENHET, TEST_VEILEDER_0)
 
         val tilfeldigUfordeltBruker = createRegularBruker(TEST_ENHET, null)
 
         val tilfeldigBrukerSomVenterPaSvarFraNav =
-            createRegularBruker(TEST_ENHET, TEST_VEILEDER_0)
-        tilfeldigBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
-            DateUtils.toIsoUTC(LocalDateTime.now())
+            createRegularBruker(TEST_ENHET, TEST_VEILEDER_0).apply {
+                venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            }
 
         val brukere = listOf(
             kode6Bruker,
@@ -413,7 +412,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker0, true, null),
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker1, true, null),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker2, true,null),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker2, true, null),
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker3, true, null)
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
@@ -521,18 +520,42 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(3)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6BrukerMedVeileder0Tilordnet, false, null)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode6BrukerMedVeileder0Tilordnet,
+                false,
+                null
+            )
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7BrukerMedVeileder1Tilordnet, false, null)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7BrukerMedVeileder1Tilordnet,
+                false,
+                null
+            )
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBrukerMedVeileder2Tilordnet, false, null)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBrukerMedVeileder2Tilordnet,
+                false,
+                null
+            )
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7BrukerMedVeileder3Tilordnet, false, null),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBrukerMedVeileder3Tilordnet, false, null),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7BrukerMedVeileder3Tilordnet, false, null)
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7BrukerMedVeileder3Tilordnet,
+                false,
+                null
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBrukerMedVeileder3Tilordnet,
+                false,
+                null
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattOgKode7BrukerMedVeileder3Tilordnet,
+                false,
+                null
+            )
         )
     }
 
@@ -543,12 +566,13 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         Mockito.doReturn(Deny("", "")).`when`(poaoTilgangWrapper).harVeilederTilgangTilKode7()
         Mockito.doReturn(Deny("", "")).`when`(poaoTilgangWrapper).harVeilederTilgangTilEgenAnsatt()
 
-        val testBruker1 = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().toString(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
+        val testBruker1 = PortefoljebrukerOpensearchModell().apply {
+            aktoer_id = randomAktorId().toString()
+            fnr = randomFnr().toString()
+            oppfolging = true
+            enhet_id = TEST_ENHET
+            veileder_id = TEST_VEILEDER_0
+            formidlingsgruppekode = "IAKTIV"
             huskelapp = HuskelappForBruker(
                 LocalDate.now(),
                 "test huskelapp",
@@ -556,56 +580,57 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
                 TEST_VEILEDER_0,
                 UUID.randomUUID().toString(),
                 TEST_ENHET
-            ),
-            fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name,
-            fargekategori_enhetId = TEST_ENHET,
-        )
+            )
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name
+            fargekategori_enhetId = TEST_ENHET
+        }
 
-        val testBruker2 = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().toString(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
-            formidlingsgruppekode = "IARBS",
-            kvalifiseringsgruppekode = "BATT",
-            aktiviteter = setOf("egen"),
-            ny_for_veileder = true,
-            trenger_vurdering = true,
-            venterpasvarfranav = "2018-05-09T22:00:00Z",
-            nyesteutlopteaktivitet = "2018-05-09T22:00:00Z",
-            huskelapp = null,
-            fargekategori = FargekategoriVerdi.FARGEKATEGORI_B.name,
-            fargekategori_enhetId = TEST_ENHET,
-        )
+        val testBruker2 = PortefoljebrukerOpensearchModell().apply {
+            aktoer_id = randomAktorId().toString()
+            fnr = randomFnr().toString()
+            oppfolging = true
+            enhet_id = TEST_ENHET
+            veileder_id = TEST_VEILEDER_0
+            formidlingsgruppekode = "IARBS"
+            kvalifiseringsgruppekode = "BATT"
+            aktiviteter = setOf("egen")
+            ny_for_veileder = true
+            trenger_vurdering = true
+            venterpasvarfranav = "2018-05-09T22:00:00Z"
+            nyesteutlopteaktivitet = "2018-05-09T22:00:00Z"
+            huskelapp = null
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_B.name
+            fargekategori_enhetId = TEST_ENHET
+        }
 
-        val inaktivBruker = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().toString(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
-            formidlingsgruppekode = "ISERV",
-        )
+        val inaktivBruker = PortefoljebrukerOpensearchModell().apply {
+            aktoer_id = randomAktorId().toString()
+            fnr = randomFnr().toString()
+            oppfolging = true
+            enhet_id = TEST_ENHET
+            veileder_id = TEST_VEILEDER_0
+            formidlingsgruppekode = "ISERV"
+        }
 
         val kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(
             TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false
-        )
-        kode6BrukerSomVeilederIkkeHarInnsynsrettPa.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
-        kode6BrukerSomVeilederIkkeHarInnsynsrettPa.fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name
-        kode6BrukerSomVeilederIkkeHarInnsynsrettPa.fargekategori_enhetId = TEST_ENHET
-
+        ).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name
+            fargekategori_enhetId = TEST_ENHET
+        }
         val kode7BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(
             TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.FORTROLIG.diskresjonskode, false
-        )
-        kode7BrukerSomVeilederIkkeHarInnsynsrettPa.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
-        kode7BrukerSomVeilederIkkeHarInnsynsrettPa.fargekategori = FargekategoriVerdi.FARGEKATEGORI_B.name
-        kode7BrukerSomVeilederIkkeHarInnsynsrettPa.fargekategori_enhetId = TEST_ENHET
-
+        ).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_B.name
+            fargekategori_enhetId = TEST_ENHET
+        }
         val egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(
             TEST_ENHET, TEST_VEILEDER_0, null, true
-        )
-        egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        ).apply {
+            venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
+        }
 
         val liste = listOf(
             testBruker1,
@@ -683,27 +708,15 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
     private fun genererRandomBruker(
         enhet: String, veilederId: String?, diskresjonskode: String?, egenAnsatt: Boolean
     ): PortefoljebrukerOpensearchModell {
-        val bruker =
-            PortefoljebrukerOpensearchModell(
-                aktoer_id = randomAktorId().toString(),
-                fnr = randomFnr().get(),
-                oppfolging = true,
-                enhet_id = enhet,
-            )
-
-        if (veilederId != null) {
-            bruker.veileder_id = veilederId
+        return PortefoljebrukerOpensearchModell().apply {
+            aktoer_id = randomAktorId().toString()
+            fnr = randomFnr().get()
+            oppfolging = true
+            enhet_id = enhet
+            veilederId?.let { this.veileder_id = it }
+            diskresjonskode?.let { this.diskresjonskode = it }
+            egen_ansatt = egenAnsatt
         }
-
-        if (diskresjonskode != null) {
-            bruker.diskresjonskode = diskresjonskode
-        }
-
-        if (egenAnsatt) {
-            bruker.egen_ansatt = true
-        }
-
-        return bruker
     }
 
     private fun createKode6Bruker(enhet: String, veileder: String? = null) =

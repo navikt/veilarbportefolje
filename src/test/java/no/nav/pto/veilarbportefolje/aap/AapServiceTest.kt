@@ -7,10 +7,10 @@ import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.VeilederId
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -206,9 +206,10 @@ class AapServiceTest(
         assertThat(aapKelvinRespons).isNotNull
         assertThat(aapKelvinRespons).isEqualTo(true)
 
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
-        filtervalg.setFerdigfilterListe(listOf())
+        val filtervalg = Filtervalg().apply {
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+            ferdigfilterListe = emptyList()
+        }
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS
@@ -255,9 +256,10 @@ class AapServiceTest(
         val aapKelvinRespons2 = getResponse2.sourceAsMap["aap_kelvin"];
         assertThat(aapKelvinRespons2).isEqualTo(false)
 
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
-        filtervalg.setFerdigfilterListe(listOf())
+        val filtervalg = Filtervalg().apply {
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+            ferdigfilterListe = emptyList()
+        }
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS
@@ -333,9 +335,10 @@ class AapServiceTest(
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(personId = norskIdent.toString()))
 
         //indeksering skal fortsatt være på aktørid
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
-        filtervalg.setFerdigfilterListe(listOf())
+        val filtervalg = Filtervalg().apply {
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+            ferdigfilterListe = emptyList()
+        }
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS

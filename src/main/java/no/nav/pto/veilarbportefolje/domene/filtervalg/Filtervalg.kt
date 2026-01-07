@@ -1,79 +1,70 @@
-package no.nav.pto.veilarbportefolje.domene.filtervalg;
+package no.nav.pto.veilarbportefolje.domene.filtervalg
 
-import lombok.Data;
-import lombok.experimental.Accessors;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
-import no.nav.pto.veilarbportefolje.domene.*;
-import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
-import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
-import org.apache.commons.lang3.StringUtils;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
+import no.nav.pto.veilarbportefolje.domene.Kjonn
+import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
+import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
+import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
+import java.util.Collections.emptyList
 
-import java.util.*;
-import java.util.function.BinaryOperator;
+data class Filtervalg(
+    var ferdigfilterListe: List<Brukerstatus>? = null,
+    var alder: List<String> = emptyList(),
+    var kjonn: Kjonn? = null,
+    var fodselsdagIMnd: List<String> = emptyList(),
+    var formidlingsgruppe: List<Formidlingsgruppe> = emptyList(),
+    var servicegruppe: List<Servicegruppe> = emptyList(),
+    var rettighetsgruppe: List<Rettighetsgruppe> = emptyList(),
+    var veiledere: List<String> = emptyList(),
+    var aktiviteter: MutableMap<String, AktivitetFiltervalg> = mutableMapOf(),
+    var tiltakstyper: List<String> = emptyList(),
+    var manuellBrukerStatus: List<ManuellBrukerStatus> = emptyList(),
+    var navnEllerFnrQuery: String? = null,
+    var registreringstype: List<JobbSituasjonBeskrivelse> = emptyList(),
+    var utdanning: List<UtdanningSvar> = emptyList(),
+    var utdanningBestatt: List<UtdanningBestattSvar> = emptyList(),
+    var utdanningGodkjent: List<UtdanningGodkjentSvar> = emptyList(),
+    var sisteEndringKategori: List<String> = emptyList(), // TODO: trenger dette å være en liste? sender kun en kategori via radioknapper
+    var aktiviteterForenklet: List<String> = emptyList(),
+    var alleAktiviteter: List<String> = emptyList(),
+    var ulesteEndringer: String? = null,
+    var cvJobbprofil: CVjobbprofil? = null,
+    var landgruppe: List<String>? = null,
+    var foedeland: List<String>? = null,
+    var tolkebehov: List<String>? = null,
+    var tolkBehovSpraak: List<String>? = null,
+    var stillingFraNavFilter: List<StillingFraNAVFilter>? = null,
+    var barnUnder18Aar: List<BarnUnder18Aar> = emptyList(),
+    var barnUnder18AarAlder: List<String> = emptyList(),
+    var geografiskBosted: List<String>? = null,
+    var ensligeForsorgere: List<EnsligeForsorgere>? = null,
+    var fargekategorier: List<String> = emptyList(),
+    var gjeldendeVedtak14a: List<String> = emptyList(),
+    var innsatsgruppeGjeldendeVedtak14a: List<Innsatsgruppe> = emptyList(),
+    var hovedmalGjeldendeVedtak14a: List<Hovedmal> = emptyList(),
+    var ytelseAapArena: List<YtelseAapArena> = emptyList(),
+    var ytelseAapKelvin: List<YtelseAapKelvin> = emptyList(),
+    var ytelseTiltakspenger: List<YtelseTiltakspenger> = emptyList(),
+    var ytelseTiltakspengerArena: List<YtelseTiltakspengerArena> = emptyList(),
+    var ytelseDagpengerArena: List<YtelseDagpengerArena> = emptyList()
+) {
 
-import static java.lang.Integer.parseInt;
-
-@Data()
-@Accessors(chain = true)
-public class Filtervalg {
-    public List<Brukerstatus> ferdigfilterListe;
-    public List<String> alder = new ArrayList<>();
-    public Kjonn kjonn;
-    public List<String> fodselsdagIMnd = new ArrayList<>();
-    public List<Formidlingsgruppe> formidlingsgruppe = new ArrayList<>();
-    public List<Servicegruppe> servicegruppe = new ArrayList<>();
-    public List<Rettighetsgruppe> rettighetsgruppe = new ArrayList<>();
-    public List<String> veiledere = new ArrayList<>();
-    public Map<String, AktivitetFiltervalg> aktiviteter = new HashMap<>();
-    public List<String> tiltakstyper = new ArrayList<>();
-    public List<ManuellBrukerStatus> manuellBrukerStatus = new ArrayList<>();
-    public String navnEllerFnrQuery;
-    public List<JobbSituasjonBeskrivelse> registreringstype = new ArrayList<>();
-    public List<UtdanningSvar> utdanning = new ArrayList<>();
-    public List<UtdanningBestattSvar> utdanningBestatt = new ArrayList<>();
-    public List<UtdanningGodkjentSvar> utdanningGodkjent = new ArrayList<>();
-    public List<String> sisteEndringKategori = new ArrayList<>(); // trenger dette å være en liste? sender kun en kategori via radioknapper
-    public List<String> aktiviteterForenklet = new ArrayList<>();
-    public List<String> alleAktiviteter = new ArrayList<>(); // finst ikkje i veilarbportefoljeflatefs
-    public String ulesteEndringer;
-    public CVjobbprofil cvJobbprofil;
-    public List<String> landgruppe;
-    public List<String> foedeland;
-    public List<String> tolkebehov;
-    public List<String> tolkBehovSpraak;
-    public List<StillingFraNAVFilter> stillingFraNavFilter;
-    public List<BarnUnder18Aar> barnUnder18Aar = new ArrayList<>();
-    public List<String> barnUnder18AarAlder = new ArrayList<>();
-    public List<String> geografiskBosted;
-    public List<EnsligeForsorgere> ensligeForsorgere;
-    public List<String> fargekategorier = new ArrayList<>();
-    public List<String> gjeldendeVedtak14a = new ArrayList<>();
-    public List<Innsatsgruppe> innsatsgruppeGjeldendeVedtak14a = new ArrayList<>();
-    public List<Hovedmal> hovedmalGjeldendeVedtak14a = new ArrayList<>();
-    public List<YtelseAapArena> ytelseAapArena = new ArrayList<>();
-    public List<YtelseAapKelvin> ytelseAapKelvin = new ArrayList<>();
-    public List<YtelseTiltakspenger> ytelseTiltakspenger = new ArrayList<>();
-    public List<YtelseTiltakspengerArena> ytelseTiltakspengerArena = new ArrayList<>();
-    public List<YtelseDagpengerArena> ytelseDagpengerArena = new ArrayList<>();
-
-
-    public boolean harAktiveFilter() {
-        return harFerdigFilter() ||
-                !alder.isEmpty() ||
+    fun harAktiveFilter(): Boolean =
+        harFerdigFilter() ||
+                alder.isNotEmpty() ||
                 harKjonnfilter() ||
-                !fodselsdagIMnd.isEmpty() ||
-                !formidlingsgruppe.isEmpty() ||
-                !servicegruppe.isEmpty() ||
-                !rettighetsgruppe.isEmpty() ||
-                !veiledere.isEmpty() ||
-                !aktiviteter.isEmpty() ||
-                !tiltakstyper.isEmpty() ||
-                !registreringstype.isEmpty() ||
-                !utdanning.isEmpty() ||
-                !utdanningBestatt.isEmpty() ||
-                !utdanningGodkjent.isEmpty() ||
-                !sisteEndringKategori.isEmpty() ||
+                fodselsdagIMnd.isNotEmpty() ||
+                formidlingsgruppe.isNotEmpty() ||
+                servicegruppe.isNotEmpty() ||
+                rettighetsgruppe.isNotEmpty() ||
+                veiledere.isNotEmpty() ||
+                aktiviteter.isNotEmpty() ||
+                tiltakstyper.isNotEmpty() ||
+                registreringstype.isNotEmpty() ||
+                utdanning.isNotEmpty() ||
+                utdanningBestatt.isNotEmpty() ||
+                utdanningGodkjent.isNotEmpty() ||
+                sisteEndringKategori.isNotEmpty() ||
                 harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
@@ -95,195 +86,100 @@ public class Filtervalg {
                 harYtelseAapKelvinFilter() ||
                 harYtelseTiltakspengerFilter() ||
                 harYtelseTiltakspengerArenaFilter() ||
-                harYtelseDagpengerArenaFilter();
-    }
+                harYtelseDagpengerArenaFilter()
 
-    public boolean harGjeldendeVedtak14aFilter() {
-        return gjeldendeVedtak14a != null && !gjeldendeVedtak14a.isEmpty();
-    }
+    fun harGjeldendeVedtak14aFilter(): Boolean =
+        gjeldendeVedtak14a.isNotEmpty()
 
-    public boolean harInnsatsgruppeGjeldendeVedtak14a() {
-        return innsatsgruppeGjeldendeVedtak14a != null && !innsatsgruppeGjeldendeVedtak14a.isEmpty();
-    }
+    fun harInnsatsgruppeGjeldendeVedtak14a(): Boolean =
+        innsatsgruppeGjeldendeVedtak14a.isNotEmpty()
 
-    public boolean harHovedmalGjeldendeVedtak14a() {
-        return hovedmalGjeldendeVedtak14a != null && !hovedmalGjeldendeVedtak14a.isEmpty();
-    }
+    fun harHovedmalGjeldendeVedtak14a(): Boolean =
+        hovedmalGjeldendeVedtak14a.isNotEmpty()
 
-    public boolean harEnsligeForsorgereFilter() {
-        return ensligeForsorgere != null && !ensligeForsorgere.isEmpty();
-    }
+    fun harEnsligeForsorgereFilter(): Boolean =
+        !ensligeForsorgere.isNullOrEmpty()
 
-    public boolean harCvFilter() {
-        return cvJobbprofil != null;
-    }
+    fun harCvFilter(): Boolean =
+        cvJobbprofil != null
 
-    public boolean harFerdigFilter() {
-        return ferdigfilterListe != null && !ferdigfilterListe.isEmpty();
-    }
+    fun harFerdigFilter(): Boolean =
+        !ferdigfilterListe.isNullOrEmpty()
 
-    public boolean harYtelseAapKelvinFilter() {
-        return ytelseAapKelvin != null && !ytelseAapKelvin.isEmpty();
-    }
+    fun harYtelseAapKelvinFilter(): Boolean =
+        ytelseAapKelvin.isNotEmpty()
 
-    public boolean harYtelseAapArenaFilter() {
-        return ytelseAapArena != null && !ytelseAapArena.isEmpty();
-    }
+    fun harYtelseAapArenaFilter(): Boolean =
+        ytelseAapArena.isNotEmpty()
 
-    public boolean harYtelseTiltakspengerFilter() {
-        return ytelseTiltakspenger != null && !ytelseTiltakspenger.isEmpty();
-    }
+    fun harYtelseTiltakspengerFilter(): Boolean =
+        ytelseTiltakspenger.isNotEmpty()
 
-    public boolean harYtelseTiltakspengerArenaFilter() {
-        return ytelseTiltakspengerArena != null && !ytelseTiltakspengerArena.isEmpty();
-    }
+    fun harYtelseTiltakspengerArenaFilter(): Boolean =
+        ytelseTiltakspengerArena.isNotEmpty()
 
-    public boolean harYtelseDagpengerArenaFilter() {
-        return ytelseDagpengerArena != null && !ytelseDagpengerArena.isEmpty();
-    }
+    fun harYtelseDagpengerArenaFilter(): Boolean =
+        ytelseDagpengerArena.isNotEmpty()
 
-    public boolean harKjonnfilter() {
-        return kjonn != null;
-    }
+    fun harKjonnfilter(): Boolean =
+        kjonn != null
 
-    public boolean harAktivitetFilter() {
-        return tiltakstyper != null;
-    }
+    //TODO: denne er alltid true, og sjekker kun en type av aktivitetene. Fjernes eller endres?
+    fun harAktivitetFilter(): Boolean =
+        tiltakstyper != null
 
-    public boolean harSisteEndringFilter() {
-        return !sisteEndringKategori.isEmpty();
-    }
+    fun harSisteEndringFilter(): Boolean =
+        sisteEndringKategori.isNotEmpty()
 
-    public boolean harManuellBrukerStatus() {
-        return manuellBrukerStatus != null && !manuellBrukerStatus.isEmpty();
-    }
+    fun harManuellBrukerStatus(): Boolean =
+        manuellBrukerStatus.isNotEmpty()
 
-    public boolean harAktiviteterForenklet() {
-        return !aktiviteterForenklet.isEmpty();
-    }
+    fun harAktiviteterForenklet(): Boolean =
+        aktiviteterForenklet.isNotEmpty()
 
-    public boolean harNavnEllerFnrQuery() {
-        return StringUtils.isNotBlank(navnEllerFnrQuery);
-    }
+    fun harNavnEllerFnrQuery(): Boolean =
+        !navnEllerFnrQuery.isNullOrBlank()
 
-    public boolean harUlesteEndringerFilter() {
-        return StringUtils.isNotBlank(ulesteEndringer);
-    }
+    fun harUlesteEndringerFilter(): Boolean =
+        !ulesteEndringer.isNullOrBlank()
 
-    public boolean harFoedelandFilter() {
-        return foedeland != null && !foedeland.isEmpty();
-    }
+    fun harFoedelandFilter(): Boolean =
+        !foedeland.isNullOrEmpty()
 
-    public boolean harTolkbehovSpraakFilter() {
-        return tolkBehovSpraak != null && !tolkBehovSpraak.isEmpty();
-    }
+    fun harTolkbehovSpraakFilter(): Boolean =
+        !tolkBehovSpraak.isNullOrEmpty()
 
-    public boolean harTalespraaktolkFilter() {
-        return tolkebehov != null && tolkebehov.contains("TALESPRAAKTOLK");
-    }
+    fun harTalespraaktolkFilter(): Boolean =
+        tolkebehov?.contains("TALESPRAAKTOLK") == true
 
-    public boolean harTegnspraakFilter() {
-        return tolkebehov != null && tolkebehov.contains("TEGNSPRAAKTOLK");
-    }
+    fun harTegnspraakFilter(): Boolean =
+        tolkebehov?.contains("TEGNSPRAAKTOLK") == true
 
-    public boolean harLandgruppeFilter() {
-        return landgruppe != null && !landgruppe.isEmpty();
-    }
+    fun harLandgruppeFilter(): Boolean =
+        !landgruppe.isNullOrEmpty()
 
-    public boolean harFargeKategoriFilter() {
-        return fargekategorier != null && !fargekategorier.isEmpty();
-    }
+    fun harFargeKategoriFilter(): Boolean =
+        fargekategorier.isNotEmpty()
 
-    public boolean harStillingFraNavFilter() {
-        return stillingFraNavFilter != null && !stillingFraNavFilter.isEmpty();
-    }
+    fun harStillingFraNavFilter(): Boolean =
+        !stillingFraNavFilter.isNullOrEmpty()
 
-    public boolean harBarnUnder18AarFilter() {
-        return (barnUnder18Aar != null && !barnUnder18Aar.isEmpty()) || (barnUnder18AarAlder != null && !barnUnder18AarAlder.isEmpty());
-    }
+    fun harBarnUnder18AarFilter(): Boolean =
+        barnUnder18Aar.isNotEmpty() || barnUnder18AarAlder.isNotEmpty()
 
-    public boolean harBostedFilter() {
-        return geografiskBosted != null && !geografiskBosted.isEmpty();
-    }
+    fun harBostedFilter(): Boolean =
+        !geografiskBosted.isNullOrEmpty()
 
-    public boolean harDinSituasjonSvar() {
-        return registreringstype != null && !registreringstype.isEmpty();
-    }
+    fun harDinSituasjonSvar(): Boolean =
+        registreringstype.isNotEmpty()
 
-    public boolean harUtdanningSvar() {
-        return utdanning != null && !utdanning.isEmpty();
-    }
+    fun harUtdanningSvar(): Boolean =
+        utdanning.isNotEmpty()
 
-    public boolean harUtdanningBestattSvar() {
-        return utdanningBestatt != null && !utdanningBestatt.isEmpty();
-    }
+    fun harUtdanningBestattSvar(): Boolean =
+        utdanningBestatt.isNotEmpty()
 
-    public boolean harUtdanningGodkjentSvar() {
-        return utdanningGodkjent != null && !utdanningGodkjent.isEmpty();
-    }
-
-    public boolean valider() {
-        if (!harAktiveFilter()) {
-            return true;
-        }
-
-        Boolean alderOk = alder
-                .stream()
-                .map(Filtervalg::erGyldigAldersSpenn)
-                .reduce(true, and());
-
-        Boolean fodselsdatoOk = fodselsdagIMnd
-                .stream()
-                .map((dato) -> dato.matches("\\d+"))
-                .reduce(true, and());
-
-        Boolean veiledereOk = veiledere
-                .stream()
-                .map((veileder) -> veileder.matches("[A-Z]\\d{6}"))
-                .reduce(true, and());
-
-        Boolean utdanningOK = utdanning
-                .stream()
-                .map(Objects::nonNull)
-                .reduce(true, and());
-
-        Boolean sisteEndringOK = sisteEndringKategori
-                .stream()
-                .map(SisteEndringsKategori::contains)
-                .reduce(true, and());
-
-        Boolean barnAlderOk = barnUnder18AarAlder
-                .stream()
-                .map(Filtervalg::erGyldigAldersSpenn)
-                .reduce(true, and());
-
-        Boolean gjeldendeVedtak14aOk = gjeldendeVedtak14a
-                .stream()
-                .map(GjeldendeVedtak14aFilter::contains)
-                .reduce(true, and());
-
-        Boolean innsatsgruppeGjeldendeVedtak14aOk = innsatsgruppeGjeldendeVedtak14a
-                .stream()
-                .map(Innsatsgruppe::contains)
-                .reduce(true, and());
-
-        Boolean hovedmalGjeldendeVedtak14aOk = hovedmalGjeldendeVedtak14a
-                .stream()
-                .map(Hovedmal::contains)
-                .reduce(true, and());
-
-        return alderOk && fodselsdatoOk && veiledereOk && utdanningOK && sisteEndringOK && barnAlderOk &&
-                gjeldendeVedtak14aOk && innsatsgruppeGjeldendeVedtak14aOk && hovedmalGjeldendeVedtak14aOk;
-    }
-
-    private BinaryOperator<Boolean> and() {
-        return (aBoolean, aBoolean2) -> aBoolean && aBoolean2;
-    }
-
-    public static boolean erGyldigAldersSpenn(String fraTilAlderIput) {
-        String[] fraTilAlder = fraTilAlderIput.split("-");
-        return fraTilAlder.length == 2 && parseInt(fraTilAlder[0]) <= parseInt(fraTilAlder[1]);
-    }
-
+    fun harUtdanningGodkjentSvar(): Boolean =
+        utdanningGodkjent.isNotEmpty()
 
 }

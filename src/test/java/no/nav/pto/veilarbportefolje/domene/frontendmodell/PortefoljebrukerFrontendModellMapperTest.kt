@@ -278,13 +278,17 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtgåttVarselFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+            filtervalg = Filtervalg().apply {
+                ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+            }
         )
         val frontendBrukerUdeltSamtalereferatFilter =
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+                filtervalg = Filtervalg().apply {
+                    ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
+                }
             )
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
@@ -471,7 +475,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+                filtervalg = Filtervalg().apply {
+                    sisteEndringKategori = listOf(kategori)
+                }
             )
 
         val sisteEndringMedSammeFilterkategori = frontendBrukerMedSammeFilterkategori.sisteEndringAvBruker
@@ -498,7 +504,9 @@ class PortefoljebrukerFrontendModellMapperTest {
             PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
-                filtervalg = Filtervalg().setSisteEndringKategori(listOf("NY_JOBB")),
+                filtervalg = Filtervalg().apply {
+                    sisteEndringKategori = listOf("NY_JOBB")
+                }
             )
 
         val sisteEndringMedAnnenFilterkategori = frontendBrukerMedAnnenFilterkategori.sisteEndringAvBruker
@@ -513,7 +521,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().setSisteEndringKategori(listOf(kategori)),
+            filtervalg = Filtervalg().apply {
+                sisteEndringKategori = listOf(kategori)
+            }
         )
 
         val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
@@ -593,7 +603,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedForenkletfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().setAktiviteterForenklet(listOf("BEHANDLING", "MOTE")),
+            filtervalg = Filtervalg().apply {
+                aktiviteterForenklet = listOf("BEHANDLING", "MOTE")
+            }
         )
 
         val aktiviteterMedForenkletfilter =
@@ -604,7 +616,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedTiltaksfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().setTiltakstyper(listOf("BEHANDLING", "MOTE")),
+            filtervalg = Filtervalg().apply {
+                tiltakstyper = listOf("BEHANDLING", "MOTE")
+            }
         )
 
         val aktiviteterMedTiltaksfilter =
@@ -629,14 +643,16 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedAvansertfilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg().setAktiviteter(
-                mutableMapOf(
-                    "BEHANDLING" to AktivitetFiltervalg.JA,
-                    "MOTE" to AktivitetFiltervalg.JA,
-                    "STILLING" to AktivitetFiltervalg.NEI,
-                    "TILTAK" to AktivitetFiltervalg.NEI
-                )
-            ),
+            filtervalg = Filtervalg().apply {
+                aktiviteter =
+
+                    mutableMapOf(
+                        "BEHANDLING" to AktivitetFiltervalg.JA,
+                        "MOTE" to AktivitetFiltervalg.JA,
+                        "STILLING" to AktivitetFiltervalg.NEI,
+                        "TILTAK" to AktivitetFiltervalg.NEI
+                    )
+            }
         )
 
         val aktiviteterMedAvansertfilter =
@@ -662,16 +678,13 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedBeggeFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = Filtervalg()
-                .setAktiviteter(
-                    mutableMapOf(
-                        "BEHANDLING" to AktivitetFiltervalg.JA,
-                        "STILLING" to AktivitetFiltervalg.JA,
-                    )
+            filtervalg = Filtervalg().apply {
+                aktiviteter = mutableMapOf(
+                    "BEHANDLING" to AktivitetFiltervalg.JA,
+                    "STILLING" to AktivitetFiltervalg.JA,
                 )
-                .setAktiviteterForenklet(
-                    listOf("TILTAK", "MOTE")
-                )
+                aktiviteterForenklet = (listOf("TILTAK", "MOTE"))
+            }
         )
 
         val aktiviteterMedBeggefilter =

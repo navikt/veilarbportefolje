@@ -171,9 +171,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of())
-                .setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
+        Filtervalg filterValg = new Filtervalg();
+        filterValg.setFerdigfilterListe(List.of());
+        filterValg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 navKontor.toString(),

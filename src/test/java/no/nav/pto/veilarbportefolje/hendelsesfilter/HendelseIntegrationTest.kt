@@ -252,7 +252,9 @@ class HendelseIntegrationTest(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL)),
+            Filtervalg().apply {
+                ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+            },
             null,
             null
         ).brukere
@@ -486,7 +488,9 @@ class HendelseIntegrationTest(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(filter),
+            Filtervalg().apply {
+                ferdigfilterListe = filter
+            },
             null,
             null
         ).brukere.first()

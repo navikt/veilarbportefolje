@@ -112,9 +112,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -229,9 +230,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -430,9 +432,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -483,9 +486,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -543,9 +547,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -603,9 +608,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
 
@@ -680,9 +686,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
 
@@ -756,9 +763,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        }
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
@@ -846,9 +854,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18AarAlder(listOf("1-5"))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18AarAlder = listOf("1-5")
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -906,9 +915,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18AarAlder(listOf("1-5"))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            barnUnder18AarAlder = listOf("1-5")
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,

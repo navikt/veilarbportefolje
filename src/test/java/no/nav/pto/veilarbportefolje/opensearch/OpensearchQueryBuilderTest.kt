@@ -51,12 +51,10 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling"
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
-                navnPaAktivitet to AktivitetFiltervalg.JA,
-                "egen" to AktivitetFiltervalg.NEI
-            )
-        )
+        val filtervalg: Filtervalg = Filtervalg().apply {
+            aktiviteter[navnPaAktivitet] = AktivitetFiltervalg.JA
+            aktiviteter["egen"] = AktivitetFiltervalg.NEI
+        }
 
         val sorteringer =
             sortQueryBuilder.sorterValgteAktiviteter(
@@ -73,12 +71,10 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
-                "tiltak" to
-                        AktivitetFiltervalg.NEI
-            )
-        )
+        val filtervalg: Filtervalg = Filtervalg().apply {
+            aktiviteter["tiltak"] = AktivitetFiltervalg.NEI
+        }
+
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/nei_paa_tiltak.json", javaClass)
@@ -89,12 +85,9 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
-                "behandling" to
-                        AktivitetFiltervalg.JA
-            )
-        )
+        val filtervalg: Filtervalg = Filtervalg().apply {
+            aktiviteter["behandling"] = AktivitetFiltervalg.JA
+        }
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_behandling.json", javaClass)
@@ -105,8 +98,9 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg: Filtervalg =
-            Filtervalg().setAktiviteter(mapOf("tiltak" to AktivitetFiltervalg.JA))
+        val filtervalg: Filtervalg = Filtervalg().apply {
+            aktiviteter["tiltak"] = AktivitetFiltervalg.JA
+        }
         val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_tiltak.json", javaClass)

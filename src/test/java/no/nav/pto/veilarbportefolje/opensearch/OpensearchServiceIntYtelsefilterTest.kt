@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tiltakspenger
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -61,9 +60,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setRettighetsgruppe(listOf(Rettighetsgruppe.AAP))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            rettighetsgruppe = listOf(Rettighetsgruppe.AAP)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -115,9 +115,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseAapArena(listOf(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_ORDINAR, YtelseAapArena.HAR_AAP_UNNTAK)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -161,9 +162,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -206,9 +208,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -252,9 +255,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspengerArena(listOf(YtelseTiltakspengerArena.HAR_TILTAKSPENGER))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseTiltakspengerArena = listOf(YtelseTiltakspengerArena.HAR_TILTAKSPENGER)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -276,44 +280,44 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     @Test
     fun skal_hente_ut_brukere_som_gaar_paa_dagpenger_behandlet_i_arena() {
         val brukerMedDagpenger = PortefoljebrukerOpensearchModell()
-            brukerMedDagpenger.aktoer_id = randomAktorId().get()
-            brukerMedDagpenger.fnr = randomFnr().toString()
-            brukerMedDagpenger.oppfolging = true
-            brukerMedDagpenger.enhet_id = TEST_ENHET
-            brukerMedDagpenger.veileder_id = TEST_VEILEDER_0
-            brukerMedDagpenger.ytelse = YtelseMapping.ORDINARE_DAGPENGER.name
+        brukerMedDagpenger.aktoer_id = randomAktorId().get()
+        brukerMedDagpenger.fnr = randomFnr().toString()
+        brukerMedDagpenger.oppfolging = true
+        brukerMedDagpenger.enhet_id = TEST_ENHET
+        brukerMedDagpenger.veileder_id = TEST_VEILEDER_0
+        brukerMedDagpenger.ytelse = YtelseMapping.ORDINARE_DAGPENGER.name
 
         val brukerMedDagpengerPerm = PortefoljebrukerOpensearchModell()
-            brukerMedDagpengerPerm.aktoer_id = randomAktorId().get()
-            brukerMedDagpengerPerm.fnr = randomFnr().toString()
-            brukerMedDagpengerPerm.oppfolging = true
-            brukerMedDagpengerPerm.enhet_id = TEST_ENHET
-            brukerMedDagpengerPerm.veileder_id = TEST_VEILEDER_0
-            brukerMedDagpengerPerm.ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING.name
+        brukerMedDagpengerPerm.aktoer_id = randomAktorId().get()
+        brukerMedDagpengerPerm.fnr = randomFnr().toString()
+        brukerMedDagpengerPerm.oppfolging = true
+        brukerMedDagpengerPerm.enhet_id = TEST_ENHET
+        brukerMedDagpengerPerm.veileder_id = TEST_VEILEDER_0
+        brukerMedDagpengerPerm.ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING.name
 
         val brukerMedDagpengerFiske = PortefoljebrukerOpensearchModell()
-            brukerMedDagpengerFiske.aktoer_id = randomAktorId().get()
-            brukerMedDagpengerFiske.fnr = randomFnr().toString()
-            brukerMedDagpengerFiske.oppfolging = true
-            brukerMedDagpengerFiske.enhet_id = TEST_ENHET
-            brukerMedDagpengerFiske.veileder_id = TEST_VEILEDER_0
-            brukerMedDagpengerFiske.ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name
+        brukerMedDagpengerFiske.aktoer_id = randomAktorId().get()
+        brukerMedDagpengerFiske.fnr = randomFnr().toString()
+        brukerMedDagpengerFiske.oppfolging = true
+        brukerMedDagpengerFiske.enhet_id = TEST_ENHET
+        brukerMedDagpengerFiske.veileder_id = TEST_VEILEDER_0
+        brukerMedDagpengerFiske.ytelse = YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI.name
 
         val brukerMedDagpengerLønn = PortefoljebrukerOpensearchModell()
-            brukerMedDagpengerLønn.aktoer_id = randomAktorId().get()
-            brukerMedDagpengerLønn.fnr = randomFnr().toString()
-            brukerMedDagpengerLønn.oppfolging = true
-            brukerMedDagpengerLønn.enhet_id = TEST_ENHET
-            brukerMedDagpengerLønn.veileder_id = TEST_VEILEDER_0
-            brukerMedDagpengerLønn.ytelse = YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER.name
+        brukerMedDagpengerLønn.aktoer_id = randomAktorId().get()
+        brukerMedDagpengerLønn.fnr = randomFnr().toString()
+        brukerMedDagpengerLønn.oppfolging = true
+        brukerMedDagpengerLønn.enhet_id = TEST_ENHET
+        brukerMedDagpengerLønn.veileder_id = TEST_VEILEDER_0
+        brukerMedDagpengerLønn.ytelse = YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER.name
 
         val brukerUtenDagpenger = PortefoljebrukerOpensearchModell()
-            brukerUtenDagpenger.aktoer_id = randomAktorId().get()
-            brukerUtenDagpenger.fnr = randomFnr().toString()
-            brukerUtenDagpenger.oppfolging = true
-            brukerUtenDagpenger.enhet_id = TEST_ENHET
-            brukerUtenDagpenger.veileder_id = TEST_VEILEDER_0
-            brukerUtenDagpenger.ytelse = "TILTAKSPENGER"
+        brukerUtenDagpenger.aktoer_id = randomAktorId().get()
+        brukerUtenDagpenger.fnr = randomFnr().toString()
+        brukerUtenDagpenger.oppfolging = true
+        brukerUtenDagpenger.enhet_id = TEST_ENHET
+        brukerUtenDagpenger.veileder_id = TEST_VEILEDER_0
+        brukerUtenDagpenger.ytelse = "TILTAKSPENGER"
 
 
         val liste = listOf(
@@ -327,16 +331,15 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseDagpengerArena(
-                listOf(
-                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING,
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
-                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER
-                )
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseDagpengerArena = listOf(
+                YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER,
+                YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING,
+                YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI,
+                YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER
             )
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -429,9 +432,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setYtelseAapArena(listOf(YtelseAapArena.HAR_AAP_ORDINAR))
+        var filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_ORDINAR)
+        }
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -448,9 +452,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere[1].fnr).isEqualTo(bruker6.fnr)
         Assertions.assertThat(response.brukere[2].fnr).isEqualTo(bruker2.fnr)
 
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setYtelseAapArena(listOf(YtelseAapArena.HAR_AAP_UNNTAK))
+        filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf()
+            ytelseAapArena = listOf(YtelseAapArena.HAR_AAP_UNNTAK)
+        }
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -518,9 +523,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+        }
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -603,13 +609,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspenger(
-                listOf(
-                    YtelseTiltakspenger.HAR_TILTAKSPENGER
-                )
-            )
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
+        }
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -686,9 +689,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseAapKelvin(listOf(YtelseAapKelvin.HAR_AAP))
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+        }
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -756,9 +760,10 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
+        }
 
         val brukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,

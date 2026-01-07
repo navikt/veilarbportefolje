@@ -2,8 +2,9 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
@@ -99,8 +100,9 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UNDER_VURDERING))
+        val filterValg = Filtervalg().apply {
+            ferdigfilterListe = listOf(Brukerstatus.UNDER_VURDERING)
+        }
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -171,7 +173,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(listOf("HAR_14A_VEDTAK")),
+            Filtervalg().apply {
+                ferdigfilterListe = emptyList()
+                gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK")
+            },
             null,
             null
         )
@@ -231,14 +236,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()).setGjeldendeVedtak14a(listOf("HAR_IKKE_14A_VEDTAK")),
+            Filtervalg().apply {
+                ferdigfilterListe = emptyList()
+                gjeldendeVedtak14a = listOf("HAR_IKKE_14A_VEDTAK")
+            },
             null,
             null
         )
         Assertions.assertThat(respons.antall).isEqualTo(1)
         val brukerFraOpenSearch: PortefoljebrukerFrontendModell = respons.brukere.first()
         Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerUtenSiste14aVedtakFnr.get())
-        Assertions.assertThat(brukerFraOpenSearch.aktoerid).isEqualTo(brukerUtenSiste14aVedtakAktorId.get())
+        Assertions.assertThat(brukerFraOpenSearch.aktoerid)
+            .isEqualTo(brukerUtenSiste14aVedtakAktorId.get())
         val brukerFraOpenSearchGjeldendeVedtak14a = brukerFraOpenSearch.vedtak14a.gjeldendeVedtak14a
         Assertions.assertThat(brukerFraOpenSearchGjeldendeVedtak14a).isNull()
     }
@@ -288,8 +297,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList())
-                .setGjeldendeVedtak14a(listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")),
+            Filtervalg().apply {
+                ferdigfilterListe = emptyList()
+                gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
+            },
             null,
             null
         )
@@ -303,9 +314,12 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val aktoridBrukerMedGjeldendeVedtak14a3 = AktorId.of("2222222222222")
         val aktoridBrukerUtenVedtak = AktorId.of("1111111111111")
 
-        val vedtaksdatoBruker1 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-        val vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-        val vedtaksdatoBruker3 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker1 =
+            ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker2 =
+            ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker3 =
+            ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
         val bruker1 = PortefoljebrukerOpensearchModell(
             fnr = randomFnr().get(),
@@ -355,9 +369,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtrertHarGjeldendeVedtak = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setGjeldendeVedtak14a(listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"))
+        val filtrertHarGjeldendeVedtak = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
+        }
 
         val responsFiltrertGjeldendeVedtak = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -389,15 +404,16 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         /* Nuller sorteringa ved å sortere på etternamn */
         sorterBrukerePaStandardsorteringenAktorid(opensearchService)
 
-        val filtrertInnsatsgruppe = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setInnsatsgruppeGjeldendeVedtak14a(
+        val filtrertInnsatsgruppe = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            innsatsgruppeGjeldendeVedtak14a =
                 listOf(
                     Innsatsgruppe.STANDARD_INNSATS,
                     Innsatsgruppe.VARIG_TILPASSET_INNSATS,
                     Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS
                 )
-            )
+
+        }
 
         val responsFiltrertInnsatsgruppe = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -423,24 +439,33 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         )
 
         /* Nuller sorteringa ved å sortere på etternamn */
-        val responsNullstilling: BrukereMedAntall = sorterBrukerePaStandardsorteringenAktorid(opensearchService)
+        val responsNullstilling: BrukereMedAntall =
+            sorterBrukerePaStandardsorteringenAktorid(opensearchService)
         org.junit.jupiter.api.Assertions.assertEquals(
             responsNullstilling.brukere[0].aktoerid,
             brukerUtenGjeldendeVedtak.aktoer_id
         )
-        org.junit.jupiter.api.Assertions.assertEquals(responsNullstilling.brukere[1].aktoerid, bruker3.aktoer_id)
-        org.junit.jupiter.api.Assertions.assertEquals(responsNullstilling.brukere[2].aktoerid, bruker2.aktoer_id)
-        org.junit.jupiter.api.Assertions.assertEquals(responsNullstilling.brukere[3].aktoerid, bruker1.aktoer_id)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsNullstilling.brukere[1].aktoerid,
+            bruker3.aktoer_id
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsNullstilling.brukere[2].aktoerid,
+            bruker2.aktoer_id
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsNullstilling.brukere[3].aktoerid,
+            bruker1.aktoer_id
+        )
 
-        val filtrertHovedmal = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setHovedmalGjeldendeVedtak14a(
-                listOf(
-                    Hovedmal.SKAFFE_ARBEID,
-                    Hovedmal.BEHOLDE_ARBEID,
-                    Hovedmal.OKE_DELTAKELSE
-                )
+        val filtrertHovedmal = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            hovedmalGjeldendeVedtak14a = listOf(
+                Hovedmal.SKAFFE_ARBEID,
+                Hovedmal.BEHOLDE_ARBEID,
+                Hovedmal.OKE_DELTAKELSE
             )
+        }
 
         val responsFiltrertHovedmal = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -478,16 +503,23 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
         val hovedmalBruker1 = Hovedmal.OKE_DELTAKELSE
         val hovedmalBruker2 = Hovedmal.SKAFFE_ARBEID
         val hovedmalBruker3 = Hovedmal.BEHOLDE_ARBEID
-        val vedtaksdatoBruker1 = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-        val vedtaksdatoBruker2 = ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
-        val vedtaksdatoBruker3 = ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker1 =
+            ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker2 =
+            ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        val vedtaksdatoBruker3 =
+            ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
         val bruker1 = PortefoljebrukerOpensearchModell(
             fnr = brukerMedSiste14aVedtakFnr1.get(),
             aktoer_id = randomAktorId().get(),
             enhet_id = TEST_ENHET,
             oppfolging = true,
-            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker1, hovedmalBruker1, vedtaksdatoBruker1),
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                innsatsgruppeBruker1,
+                hovedmalBruker1,
+                vedtaksdatoBruker1
+            ),
         )
 
         val bruker2 = PortefoljebrukerOpensearchModell(
@@ -495,7 +527,11 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             aktoer_id = randomAktorId().get(),
             enhet_id = TEST_ENHET,
             oppfolging = true,
-            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker2, hovedmalBruker2, vedtaksdatoBruker2),
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                innsatsgruppeBruker2,
+                hovedmalBruker2,
+                vedtaksdatoBruker2
+            ),
         )
 
         val bruker3 = PortefoljebrukerOpensearchModell(
@@ -503,7 +539,11 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             aktoer_id = randomAktorId().get(),
             enhet_id = TEST_ENHET,
             oppfolging = true,
-            gjeldendeVedtak14a = GjeldendeVedtak14a(innsatsgruppeBruker3, hovedmalBruker3, vedtaksdatoBruker3),
+            gjeldendeVedtak14a = GjeldendeVedtak14a(
+                innsatsgruppeBruker3,
+                hovedmalBruker3,
+                vedtaksdatoBruker3
+            ),
         )
 
         val brukerUtenGjeldendeVedtak = PortefoljebrukerOpensearchModell(
@@ -518,9 +558,10 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setGjeldendeVedtak14a(listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK"))
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            gjeldendeVedtak14a = listOf("HAR_14A_VEDTAK", "HAR_IKKE_14A_VEDTAK")
+        }
 
         /* Innsatsgruppe, stigande. Forventa rekkefølgje: 2, 3, 1, Uten */
         val responsInnsatsgruppeStigende = opensearchService.hentBrukere(
@@ -533,9 +574,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(responsInnsatsgruppeStigende.antall).isEqualTo(4)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeStigende.brukere[0].fnr, bruker2.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeStigende.brukere[1].fnr, bruker3.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeStigende.brukere[2].fnr, bruker1.fnr)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeStigende.brukere[0].fnr,
+            bruker2.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeStigende.brukere[1].fnr,
+            bruker3.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeStigende.brukere[2].fnr,
+            bruker1.fnr
+        )
         org.junit.jupiter.api.Assertions.assertEquals(
             responsInnsatsgruppeStigende.brukere[3].fnr,
             brukerUtenGjeldendeVedtak.fnr
@@ -552,9 +602,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(responsInnsatsgruppeSynkende.antall).isEqualTo(4)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeSynkende.brukere[0].fnr, bruker1.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeSynkende.brukere[1].fnr, bruker3.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsInnsatsgruppeSynkende.brukere[2].fnr, bruker2.fnr)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeSynkende.brukere[0].fnr,
+            bruker1.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeSynkende.brukere[1].fnr,
+            bruker3.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsInnsatsgruppeSynkende.brukere[2].fnr,
+            bruker2.fnr
+        )
         org.junit.jupiter.api.Assertions.assertEquals(
             responsInnsatsgruppeSynkende.brukere[3].fnr,
             brukerUtenGjeldendeVedtak.fnr
@@ -571,9 +630,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(responsHovedmalStigende.antall).isEqualTo(4)
-        org.junit.jupiter.api.Assertions.assertEquals(responsHovedmalStigende.brukere[0].fnr, bruker3.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsHovedmalStigende.brukere[1].fnr, bruker1.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsHovedmalStigende.brukere[2].fnr, bruker2.fnr)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsHovedmalStigende.brukere[0].fnr,
+            bruker3.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsHovedmalStigende.brukere[1].fnr,
+            bruker1.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsHovedmalStigende.brukere[2].fnr,
+            bruker2.fnr
+        )
         org.junit.jupiter.api.Assertions.assertEquals(
             responsHovedmalStigende.brukere[3].fnr,
             brukerUtenGjeldendeVedtak.fnr
@@ -590,9 +658,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             null
         )
         Assertions.assertThat(responsVedtaksdatoStigende.antall).isEqualTo(4)
-        org.junit.jupiter.api.Assertions.assertEquals(responsVedtaksdatoStigende.brukere[0].fnr, bruker3.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsVedtaksdatoStigende.brukere[1].fnr, bruker2.fnr)
-        org.junit.jupiter.api.Assertions.assertEquals(responsVedtaksdatoStigende.brukere[2].fnr, bruker1.fnr)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsVedtaksdatoStigende.brukere[0].fnr,
+            bruker3.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsVedtaksdatoStigende.brukere[1].fnr,
+            bruker2.fnr
+        )
+        org.junit.jupiter.api.Assertions.assertEquals(
+            responsVedtaksdatoStigende.brukere[2].fnr,
+            bruker1.fnr
+        )
         org.junit.jupiter.api.Assertions.assertEquals(
             responsVedtaksdatoStigende.brukere[3].fnr,
             brukerUtenGjeldendeVedtak.fnr
@@ -654,14 +731,15 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setInnsatsgruppeGjeldendeVedtak14a(
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            innsatsgruppeGjeldendeVedtak14a =
                 listOf(
                     Innsatsgruppe.VARIG_TILPASSET_INNSATS,
                     Innsatsgruppe.STANDARD_INNSATS
                 )
-            )
+
+        }
 
         val respons = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -675,9 +753,11 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         Assertions.assertThat(respons.antall).isEqualTo(2)
         val brukerFraOpenSearch = respons.brukere[0]
-        Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerMedSiste14aVedtakFnr3.get())
+        Assertions.assertThat(brukerFraOpenSearch.fnr)
+            .isEqualTo(brukerMedSiste14aVedtakFnr3.get())
         val brukerFraOpenSearch1 = respons.brukere[1]
-        Assertions.assertThat(brukerFraOpenSearch1.fnr).isEqualTo(brukerMedSiste14aVedtakFnr1.get())
+        Assertions.assertThat(brukerFraOpenSearch1.fnr)
+            .isEqualTo(brukerMedSiste14aVedtakFnr1.get())
     }
 
     @Test
@@ -695,7 +775,16 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             gjeldendeVedtak14a = GjeldendeVedtak14a(
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
-                ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ZonedDateTime.of(
+                    2024,
+                    1,
+                    1,
+                    12,
+                    0,
+                    0,
+                    0,
+                    ZoneId.systemDefault()
+                )
             ),
         )
 
@@ -707,7 +796,16 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             gjeldendeVedtak14a = GjeldendeVedtak14a(
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                 Hovedmal.SKAFFE_ARBEID,
-                ZonedDateTime.of(2022, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ZonedDateTime.of(
+                    2022,
+                    1,
+                    1,
+                    12,
+                    0,
+                    0,
+                    0,
+                    ZoneId.systemDefault()
+                )
             ),
         )
 
@@ -719,7 +817,16 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             gjeldendeVedtak14a = GjeldendeVedtak14a(
                 Innsatsgruppe.STANDARD_INNSATS,
                 Hovedmal.BEHOLDE_ARBEID,
-                ZonedDateTime.of(2020, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+                ZonedDateTime.of(
+                    2020,
+                    1,
+                    1,
+                    12,
+                    0,
+                    0,
+                    0,
+                    ZoneId.systemDefault()
+                )
             )
         )
 
@@ -735,9 +842,14 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setHovedmalGjeldendeVedtak14a(listOf(Hovedmal.SKAFFE_ARBEID, Hovedmal.OKE_DELTAKELSE))
+        val filtervalg = Filtervalg().apply {
+            ferdigfilterListe = emptyList()
+            hovedmalGjeldendeVedtak14a =
+                listOf(
+                    Hovedmal.SKAFFE_ARBEID,
+                    Hovedmal.OKE_DELTAKELSE
+                )
+        }
 
         val respons = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -751,9 +863,11 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
         Assertions.assertThat(respons.antall).isEqualTo(2)
         val brukerFraOpenSearch = respons.brukere[0]
-        Assertions.assertThat(brukerFraOpenSearch.fnr).isEqualTo(brukerMedSiste14aVedtakFnr1.get())
+        Assertions.assertThat(brukerFraOpenSearch.fnr)
+            .isEqualTo(brukerMedSiste14aVedtakFnr1.get())
         val brukerFraOpenSearch1 = respons.brukere[1]
-        Assertions.assertThat(brukerFraOpenSearch1.fnr).isEqualTo(brukerMedSiste14aVedtakFnr2.get())
+        Assertions.assertThat(brukerFraOpenSearch1.fnr)
+            .isEqualTo(brukerMedSiste14aVedtakFnr2.get())
     }
 
     private fun sorterBrukerePaStandardsorteringenAktorid(osService: OpensearchService): BrukereMedAntall {
@@ -762,13 +876,18 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(emptyList()),
+            Filtervalg().apply {
+                ferdigfilterListe = emptyList()
+            },
             null,
             null
         )
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(
+            indexName.value,
+            listOf(*brukere.toTypedArray())
+        )
     }
 }
