@@ -15,6 +15,17 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+/**
+ * Representerer en person under arbeidsrettet oppfølging, med tilhørende opplysninger, som er relevant i oppfølgingsøyemed.
+ * Opplysningene mappes stort 1-til-1 til properties i [no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell],
+ * med unntak av noen properties her som bare brukes i forbindelse med filtrering i spørringer mot OpenSearch.
+ *
+ * NB: Alle properties her brukes også for å utlede navn på felt ved indeksering av enkeltopplysninger. Dersom det gjøres
+ * endringer her, eksempelvis renaming av properties, vil dette kunne påvirke [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt].
+ * Dette er med hensikt; se [DatafeltKeys] for flere detaljer. Skal man ta inn nye opplysninger, og med andre ord legge
+ * til nye properties her, bør det legges nye koblinger i [DatafeltKeys], som igjen bør brukes i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt]
+ * til fordel for å hardkode strengverdier.
+ */
 data class PortefoljebrukerOpensearchModell(
     // Personalia
     var aktoer_id: String? = null,

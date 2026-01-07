@@ -6,6 +6,25 @@ import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 
+/**
+ * Data sendes til OpenSearch på JSON-format hvor hver enkelt key i JSON-strukturen vil mappes til et felt i OpenSearch.
+ *
+ * Når vi indekserer hele brukere (eksempelvis i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer]) populerer
+ * vi først en instans av [PortefoljebrukerOpensearchModell] før denne deserialiseres og sendes til OpenSearch i sin helhet.
+ * Hver enkelt property i [PortefoljebrukerOpensearchModell] vil med andre ord mappes til et korresponderende felt i OpenSearch.
+ *
+ * Når vi derimot indekserer deler av brukere (eksempelvis i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt])
+ * skreddersyr vi JSON-strukturen vha. [org.opensearch.common.xcontent.XContentFactory.jsonBuilder]. Med andre ord sender
+ * vi ikke instanser av [PortefoljebrukerOpensearchModell].
+ *
+ * [DatafeltKeys] har som hensikt å sikre at vi har en definert kobling fra properties i [PortefoljebrukerOpensearchModell]
+ * til streng-verdier som brukes for å konstruere JSON. Koblingen er her gjort ved å referere til navnet på property-en i
+ * [PortefoljebrukerOpensearchModell] som aksesseres kjøretid vha. reflection.
+ *
+ * Dersom man gjør endringer, eksempelvis renaming av properties i [PortefoljebrukerOpensearchModell], vil dette reflekteres
+ * i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt], slik at vi slipper å manuelt oppdatere hardkodede
+ * verdier.
+ */
 object DatafeltKeys {
     val ARBEIDSSOEKER_PROFILERING_RESULTAT = PortefoljebrukerOpensearchModell::profilering_resultat.name
     val ARBEIDSSOEKER_BRUKERS_SITUASJONER = PortefoljebrukerOpensearchModell::brukers_situasjoner.name
