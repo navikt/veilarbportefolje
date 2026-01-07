@@ -8,6 +8,7 @@ import no.nav.common.utils.fn.UnsafeSupplier
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.domene.Statustall
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -482,6 +483,6 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 }

@@ -103,8 +103,7 @@ public class BarnUnder18AarKafkaTest {
                 , this.pdlIdentRepository,
                 new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
                 this.barnUnder18AarService,
-                opensearchIndexer,
-                opensearchIndexerPaDatafelt
+                opensearchIndexer
         );
     }
 
