@@ -433,27 +433,6 @@ class OpensearchIndexerPaDatafelt(
             }
         }
     }
-
-    private fun delete(aktoerId: AktorId) {
-        val deleteRequest = DeleteRequest()
-        deleteRequest.index(BRUKERINDEKS_ALIAS)
-        deleteRequest.id(aktoerId.get())
-
-        try {
-            restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT)
-            secureLog.info("Slettet dokument for $aktoerId")
-        } catch (e: OpenSearchException) {
-            if (e.status() == RestStatus.NOT_FOUND) {
-                secureLog.info("Kunne ikke finne dokument for bruker $aktoerId ved sletting av indeks")
-            } else {
-                secureLog.error(
-                    "Det skjedde en feil ved sletting i opensearch for bruker $aktoerId",
-                    e
-                )
-            }
-        }
-    }
-
 }
 
 object FeltNavn {
