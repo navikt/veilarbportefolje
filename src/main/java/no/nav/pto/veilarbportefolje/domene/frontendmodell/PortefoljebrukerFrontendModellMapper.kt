@@ -299,10 +299,10 @@ object PortefoljebrukerFrontendModellMapper {
         //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
         //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
         if (filtervalg?.ferdigfilterListe == null) return null
-        if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
+        if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true) {
             val innhold = opensearchBruker.hendelser!![Kategori.UTGATT_VARSEL]
             return mapHendelseTilFrontendModell(innhold)
-        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
+        } else if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UDELT_SAMTALEREFERAT) == true) {
             val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
             return mapHendelseTilFrontendModell(innhold)
         } else {

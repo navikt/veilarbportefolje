@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.common.json.JsonUtils.fromJson;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere.OVERGANGSSTONAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
@@ -71,7 +72,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     public void testNyOvergangsstonadForBrukerIndex() {
         setInitialState();
 
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
         filtervalg.setFerdigfilterListe(List.of());
 
@@ -111,7 +112,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                 )
         );
 
-        Filtervalg filtervalg = new Filtervalg();
+        Filtervalg filtervalg = getFiltervalgDefaults();
         filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
         filtervalg.setFerdigfilterListe(List.of());
 
@@ -171,9 +172,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        Filtervalg filterValg = new Filtervalg()
-                .setFerdigfilterListe(List.of())
-                .setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
+        Filtervalg filterValg = getFiltervalgDefaults();
+        filterValg.setFerdigfilterListe(List.of());
+        filterValg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
 
         BrukereMedAntall response = opensearchService.hentBrukere(
                 navKontor.toString(),

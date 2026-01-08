@@ -348,7 +348,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harKjonnfilter()) {
-            queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn.name))
+            queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn?.name))
         }
 
         if (filtervalg.harCvFilter()) {
@@ -364,7 +364,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harStillingFraNavFilter()) {
-            filtervalg.stillingFraNavFilter.forEach(
+            filtervalg.stillingFraNavFilter?.forEach(
                 Consumer { stillingFraNAVFilter: StillingFraNAVFilter? ->
                     when (stillingFraNAVFilter) {
                         StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA -> queryBuilder.must(
@@ -392,7 +392,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harNavnEllerFnrQuery()) {
-            val query = filtervalg.navnEllerFnrQuery.trim { it <= ' ' }.lowercase(Locale.getDefault())
+            val query = filtervalg.navnEllerFnrQuery?.trim { it <= ' ' }?.lowercase(Locale.getDefault())
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery("fnr", query))
             } else {
@@ -402,7 +402,7 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harFoedelandFilter()) {
             val subQuery = QueryBuilders.boolQuery()
-            filtervalg.foedeland.forEach(
+            filtervalg.foedeland?.forEach(
                 Consumer { foedeLand: String? ->
                     queryBuilder.must(
                         subQuery.should(
@@ -418,7 +418,7 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harLandgruppeFilter()) {
             val subQuery = QueryBuilders.boolQuery()
             val subQueryUnkjent = QueryBuilders.boolQuery()
-            filtervalg.landgruppe.forEach(
+            filtervalg.landgruppe?.forEach(
                 Consumer { landGruppe: String ->
                     val landgruppeCode = landGruppe.replace("LANDGRUPPE_", "")
                     if (landgruppeCode.equals("UKJENT", ignoreCase = true)) {
@@ -477,7 +477,7 @@ class OpensearchFilterQueryBuilder {
             val tolkBehovSubquery = QueryBuilders.boolQuery()
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
                             QueryBuilders.matchQuery(
@@ -490,7 +490,7 @@ class OpensearchFilterQueryBuilder {
                 tolkbehovSelected = true
             }
             if (filtervalg.harTegnspraakFilter()) {
-                filtervalg.tolkBehovSpraak.forEach(Consumer { tolkbehovSpraak: String? ->
+                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
                             "tegnspraaktolk",
@@ -503,7 +503,7 @@ class OpensearchFilterQueryBuilder {
             }
 
             if (!tolkbehovSelected) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
                             QueryBuilders.matchQuery(
@@ -513,7 +513,7 @@ class OpensearchFilterQueryBuilder {
                         )
                     }
                 )
-                filtervalg.tolkBehovSpraak.forEach(Consumer { tolkbehovSpraak: String? ->
+                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
                             "tegnspraaktolk",
@@ -528,7 +528,7 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harBostedFilter()) {
             val bostedSubquery = QueryBuilders.boolQuery()
-            filtervalg.geografiskBosted.forEach(Consumer { geografiskBosted: String? ->
+            filtervalg.geografiskBosted?.forEach(Consumer { geografiskBosted: String? ->
                 bostedSubquery.should(QueryBuilders.matchQuery("kommunenummer", geografiskBosted))
                 bostedSubquery.should(QueryBuilders.matchQuery("bydelsnummer", geografiskBosted))
             }
@@ -537,7 +537,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere
-                .contains(EnsligeForsorgere.OVERGANGSSTONAD)
+                ?.contains(EnsligeForsorgere.OVERGANGSSTONAD) == true
         ) {
             queryBuilder.must(QueryBuilders.existsQuery("enslige_forsorgere_overgangsstonad"))
         }

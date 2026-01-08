@@ -1,9 +1,13 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapArena
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import org.opensearch.script.Script
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.opensearch.search.sort.FieldSortBuilder
@@ -11,17 +15,18 @@ import org.opensearch.search.sort.ScriptSortBuilder
 import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
 import org.opensearch.search.sort.SortMode
 import org.opensearch.search.sort.SortOrder
-import java.util.*
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.*
+import java.util.stream.Collectors
 
 @Service
 class OpensearchSortQueryBuilder {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(OpensearchSortQueryBuilder::class.java)
     }
+
     fun byggVeilederPaaEnhetScript(veilederePaaEnhet: List<String?>): String {
         val veiledere = veilederePaaEnhet.stream()
             .map { id: String? -> String.format("\"%s\"", id) }
@@ -239,9 +244,9 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.FILTERHENDELSE_DATO -> {
-                if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
+                if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true) {
                     sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
-                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
+                } else if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UDELT_SAMTALEREFERAT) == true) {
                     sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 }
                 searchSourceBuilder
@@ -286,12 +291,12 @@ class OpensearchSortQueryBuilder {
         searchSourceBuilder: SearchSourceBuilder
     ) {
         val filtrertPaTiltakshendelse =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER)
+            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe?.contains(Brukerstatus.TILTAKSHENDELSER) == true
         val filtrertPaUtgatteVarsel =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)
+            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true
         val filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.isNotEmpty()) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.isNotEmpty())
+                (filtervalg.innsatsgruppeGjeldendeVedtak14a.isNotEmpty()) ||
+                (filtervalg.hovedmalGjeldendeVedtak14a.isNotEmpty())
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC)
@@ -422,37 +427,38 @@ class OpensearchSortQueryBuilder {
             builder.sort(scriptBuilder)
         }
     }
-fun sorterValgteAktiviteter(
-    filtervalg: Filtervalg,
-    builder: SearchSourceBuilder,
-    order: SortOrder?
-): SearchSourceBuilder {
-    val sorteringsAktiviteter: List<String> = when {
-        filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet
-        filtervalg.tiltakstyper.isNotEmpty() -> listOf("TILTAK")
-        else -> filtervalg.aktiviteter
-            .filter { it.value == AktivitetFiltervalg.JA }
-            .map { it.key ?: "" }
-            .filter { it.isNotEmpty() }
-    }
 
-    if (sorteringsAktiviteter.isEmpty()) {
+    fun sorterValgteAktiviteter(
+        filtervalg: Filtervalg,
+        builder: SearchSourceBuilder,
+        order: SortOrder?
+    ): SearchSourceBuilder {
+        val sorteringsAktiviteter: List<String> = when {
+            filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet
+            filtervalg.tiltakstyper.isNotEmpty() -> listOf("TILTAK")
+            else -> filtervalg.aktiviteter
+                .filter { it.value == AktivitetFiltervalg.JA }
+                .map { it.key ?: "" }
+                .filter { it.isNotEmpty() }
+        }
+
+        if (sorteringsAktiviteter.isEmpty()) {
+            return builder
+        }
+
+        val script = buildString {
+            append("List l = new ArrayList(); ")
+            sorteringsAktiviteter.forEach { aktivitet ->
+                append("l.add(doc['aktivitet_${aktivitet.lowercase(Locale.getDefault())}_utlopsdato']?.value.toInstant().toEpochMilli()); ")
+            }
+            append("return l.stream().sorted().findFirst().get();")
+        }
+
+        val scriptBuilder = ScriptSortBuilder(Script(script), ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
         return builder
     }
-
-    val script = buildString {
-        append("List l = new ArrayList(); ")
-        sorteringsAktiviteter.forEach { aktivitet ->
-            append("l.add(doc['aktivitet_${aktivitet.lowercase(Locale.getDefault())}_utlopsdato']?.value.toInstant().toEpochMilli()); ")
-        }
-        append("return l.stream().sorted().findFirst().get();")
-    }
-
-    val scriptBuilder = ScriptSortBuilder(Script(script), ScriptSortType.NUMBER)
-    scriptBuilder.order(order)
-    builder.sort(scriptBuilder)
-    return builder
-}
 
     private fun sorterHuskelappFrist(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = if (order === SortOrder.ASC) {
