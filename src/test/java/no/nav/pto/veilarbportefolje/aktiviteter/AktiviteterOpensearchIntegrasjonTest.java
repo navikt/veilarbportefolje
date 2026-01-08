@@ -23,12 +23,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
-import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgAktivteterForJavaTester;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -68,8 +67,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     public void lasteroppeikkelagreteaktiviteteter() {
         NavKontor navKontor = randomNavKontor();
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of(I_AKTIVITET));
+        Filtervalg filtervalg = getFiltervalgAktivteterForJavaTester(List.of(I_AKTIVITET));
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -99,9 +97,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     public void lasteroppaktivitetStillingFraNAV() {
         NavKontor navKontor = randomNavKontor();
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setNavnEllerFnrQuery(fodselsnummer.toString());
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        Filtervalg filtervalg = getFiltervalgAktivteterForJavaTester(List.of(), fodselsnummer.toString());
+
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
                 .setAktorId(aktoer.get())
@@ -139,8 +136,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         AktorId aktorIdCvDeltMedNav = randomAktorId();
         AktorId aktorIdIkkeDeltCv = randomAktorId();
         VeilederId veileder = randomVeilederId();
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of(I_AKTIVITET));
+        Filtervalg filtervalgKunIAktivitet = getFiltervalgAktivteterForJavaTester(List.of(I_AKTIVITET));
         testDataClient.lagreBrukerUnderOppfolging(aktorIdCvDeltMedNav, navKontor, veileder, ZonedDateTime.now(), null);
         testDataClient.lagreBrukerUnderOppfolging(aktorIdIkkeDeltCv, navKontor, veileder, ZonedDateTime.now(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
@@ -175,26 +171,25 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    filtervalg,
+                    filtervalgKunIAktivitet,
                     null,
                     null);
 
             assertThat(responseBrukere.getAntall()).isEqualTo(2);
         });
 
-        filtervalg.setStillingFraNavFilter(List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA));
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
+        Filtervalg filtervalgIAktivitetOgStillingFraNav = getFiltervalgAktivteterForJavaTester(List.of(I_AKTIVITET), "", List.of(StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA));
         BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                 navKontor.getValue(),
                 empty(),
                 Sorteringsrekkefolge.STIGENDE,
                 Sorteringsfelt.IKKE_SATT,
-                filtervalg,
+                filtervalgIAktivitetOgStillingFraNav,
                 null,
                 null);
 
 
-        System.out.println(JsonUtils.toJson(filtervalg));
+        System.out.println(JsonUtils.toJson(filtervalgKunIAktivitet));
         assertThat(responseBrukere.getAntall()).isEqualTo(1);
         assertEquals(aktorIdCvDeltMedNav.toString(), responseBrukere.getBrukere().getFirst().getAktoerid());
         assertThat(responseBrukere.getBrukere().getFirst().getNesteSvarfristCvStillingFraNav()).isEqualTo(LocalDate.parse("2044-02-03"));

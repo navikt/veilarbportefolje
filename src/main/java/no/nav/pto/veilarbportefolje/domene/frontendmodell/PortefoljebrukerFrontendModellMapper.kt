@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
@@ -23,7 +22,7 @@ object PortefoljebrukerFrontendModellMapper {
     fun toPortefoljebrukerFrontendModell(
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
-        filtervalg: Filtervalg?
+        filtervalg: Filtervalg
     ): PortefoljebrukerFrontendModell {
 
         val kvalifiseringsgruppekode = opensearchBruker.kvalifiseringsgruppekode
@@ -287,7 +286,7 @@ object PortefoljebrukerFrontendModellMapper {
     // Vi sender kun én hendelse til frontend så logikken der blir enklere, og fordi vi kun kan ha ett av hendelsesfilterne valgt av gangen
     private fun mapHendelserBasertPåFiltervalg(
         opensearchBruker: PortefoljebrukerOpensearchModell,
-        filtervalg: Filtervalg?
+        filtervalg: Filtervalg
     ): HendelseInnhold? {
         // TODO: 2026-01-05, Sondre
         //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
@@ -298,11 +297,12 @@ object PortefoljebrukerFrontendModellMapper {
         //    (veilarbportefoljeflatefs bør då også oppdaterast)
         //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
         //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-        if (filtervalg?.ferdigfilterListe == null) return null
-        if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true) {
+
+        if (!filtervalg.harFerdigFilter()) return null
+        if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
             val innhold = opensearchBruker.hendelser!![Kategori.UTGATT_VARSEL]
             return mapHendelseTilFrontendModell(innhold)
-        } else if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UDELT_SAMTALEREFERAT) == true) {
+        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
             val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
             return mapHendelseTilFrontendModell(innhold)
         } else {
@@ -322,10 +322,10 @@ object PortefoljebrukerFrontendModellMapper {
 
     private fun mapSisteEndringerAvBrukerBasertPåFiltervalg(
         opensearchBruker: PortefoljebrukerOpensearchModell,
-        filtervalg: Filtervalg?
+        filtervalg: Filtervalg
     ): SisteEndringAvBruker? {
         val opensearchSisteEndringer = opensearchBruker.siste_endringer
-        if (filtervalg == null || !filtervalg.harSisteEndringFilter() || opensearchSisteEndringer.isNullOrEmpty()) return null
+        if (!filtervalg.harSisteEndringFilter() || opensearchSisteEndringer.isNullOrEmpty()) return null
 
         //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
         val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
@@ -380,30 +380,29 @@ object PortefoljebrukerFrontendModellMapper {
         when {
             filtervalg.harAktiviteterForenklet() -> {
                 val aktivitetDatoerBasertPaFiltervalg =
-                    filtervalg.aktiviteterForenklet?.mapNotNull { navn ->
+                    filtervalg.aktiviteterForenklet.mapNotNull { navn ->
                         aktiviteter[navn.lowercase()]
                     }
 
-                nesteUtopsdatoForenkletFilter = aktivitetDatoerBasertPaFiltervalg?.minOfOrNull { toLocalDateOrNull(it) }
+                nesteUtopsdatoForenkletFilter = aktivitetDatoerBasertPaFiltervalg.minOfOrNull { toLocalDateOrNull(it) }
             }
 
             filtervalg.tiltakstyper.isNotEmpty() ->
                 nesteUtopsdatoForenkletFilter = toLocalDateOrNull(aktiviteter["tiltak"])
         }
 
-        if (filtervalg.harAktivitetFilter()) {
-            val aktivitetDatoerBaserPaAvansertFiltervalg =
-                filtervalg.aktiviteter?.mapNotNull { (navn, valg) ->
-                    if (valg == AktivitetFiltervalg.JA) {
-                        aktiviteter[navn.lowercase()]
-                    } else {
-                        null
-                    }
+        val aktivitetDatoerBaserPaAvansertFiltervalg =
+            filtervalg.aktiviteter.mapNotNull { (navn, valg) ->
+                if (valg == AktivitetFiltervalg.JA) {
+                    aktiviteter[navn.lowercase()]
+                } else {
+                    null
                 }
+            }
 
-            nesteUlopsdatoAvansertFilter =
-                aktivitetDatoerBaserPaAvansertFiltervalg?.minOfOrNull { toLocalDateOrNull(it) }
-        }
+        nesteUlopsdatoAvansertFilter =
+            aktivitetDatoerBaserPaAvansertFiltervalg.minOfOrNull { toLocalDateOrNull(it) }
+
 
         val nesteUlopsDato = listOfNotNull(nesteUtopsdatoForenkletFilter, nesteUlopsdatoAvansertFilter).minOrNull()
         return nesteUlopsDato

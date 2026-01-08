@@ -553,7 +553,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mutableMapOf("SOKEAVTALE" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf("SOKEAVTALE" to AktivitetFiltervalg.JA)
         )
 
         val response = opensearchService.hentBrukere(
@@ -605,7 +605,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mutableMapOf("SOKEAVTALE" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf("SOKEAVTALE" to AktivitetFiltervalg.NEI)
         )
 
         val response = opensearchService.hentBrukere(
@@ -659,7 +659,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mutableMapOf("TILTAK" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf("TILTAK" to AktivitetFiltervalg.JA)
         )
 
         val response = opensearchService.hentBrukere(
@@ -715,7 +715,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mutableMapOf("TILTAK" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf("TILTAK" to AktivitetFiltervalg.NEI)
         )
 
         val response = opensearchService.hentBrukere(

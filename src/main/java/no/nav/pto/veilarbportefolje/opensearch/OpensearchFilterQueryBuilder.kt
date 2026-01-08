@@ -212,7 +212,6 @@ class OpensearchFilterQueryBuilder {
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak")
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode")
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter")
-        byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter")
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe")
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal")
 
@@ -364,7 +363,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harStillingFraNavFilter()) {
-            filtervalg.stillingFraNavFilter?.forEach(
+            filtervalg.stillingFraNavFilter.forEach(
                 Consumer { stillingFraNAVFilter: StillingFraNAVFilter? ->
                     when (stillingFraNAVFilter) {
                         StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA -> queryBuilder.must(
@@ -379,8 +378,8 @@ class OpensearchFilterQueryBuilder {
                 })
         }
 
-        if (filtervalg.harAktivitetFilter()) {
-            byggAktivitetFilterQuery(filtervalg, queryBuilder)
+        if (filtervalg.harAktiviteterAvansert()) {
+            byggAvansertAktivitetFilterQuery(filtervalg, queryBuilder)
         }
 
         if (filtervalg.harUlesteEndringerFilter()) {
@@ -402,7 +401,7 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harFoedelandFilter()) {
             val subQuery = QueryBuilders.boolQuery()
-            filtervalg.foedeland?.forEach(
+            filtervalg.foedeland.forEach(
                 Consumer { foedeLand: String? ->
                     queryBuilder.must(
                         subQuery.should(
@@ -418,7 +417,7 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harLandgruppeFilter()) {
             val subQuery = QueryBuilders.boolQuery()
             val subQueryUnkjent = QueryBuilders.boolQuery()
-            filtervalg.landgruppe?.forEach(
+            filtervalg.landgruppe.forEach(
                 Consumer { landGruppe: String ->
                     val landgruppeCode = landGruppe.replace("LANDGRUPPE_", "")
                     if (landgruppeCode.equals("UKJENT", ignoreCase = true)) {
@@ -528,7 +527,7 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harBostedFilter()) {
             val bostedSubquery = QueryBuilders.boolQuery()
-            filtervalg.geografiskBosted?.forEach(Consumer { geografiskBosted: String? ->
+            filtervalg.geografiskBosted.forEach(Consumer { geografiskBosted: String? ->
                 bostedSubquery.should(QueryBuilders.matchQuery("kommunenummer", geografiskBosted))
                 bostedSubquery.should(QueryBuilders.matchQuery("bydelsnummer", geografiskBosted))
             }
@@ -536,8 +535,7 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(bostedSubquery)
         }
 
-        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere
-                ?.contains(EnsligeForsorgere.OVERGANGSSTONAD) == true
+        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere.contains(EnsligeForsorgere.OVERGANGSSTONAD)
         ) {
             queryBuilder.must(QueryBuilders.existsQuery("enslige_forsorgere_overgangsstonad"))
         }
@@ -632,7 +630,7 @@ class OpensearchFilterQueryBuilder {
         }
     }
 
-    fun byggAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
+    fun byggAvansertAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
         return filtervalg.aktiviteter.entries.stream()
             .map { entry: Map.Entry<String, AktivitetFiltervalg> ->
                 val navnPaaAktivitet = entry.key

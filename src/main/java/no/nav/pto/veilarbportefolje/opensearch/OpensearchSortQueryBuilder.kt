@@ -244,9 +244,9 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.FILTERHENDELSE_DATO -> {
-                if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true) {
+                if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
                     sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
-                } else if (filtervalg.ferdigfilterListe?.contains(Brukerstatus.UDELT_SAMTALEREFERAT) == true) {
+                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
                     sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 }
                 searchSourceBuilder
@@ -290,13 +290,11 @@ class OpensearchSortQueryBuilder {
         filtervalg: Filtervalg,
         searchSourceBuilder: SearchSourceBuilder
     ) {
-        val filtrertPaTiltakshendelse =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe?.contains(Brukerstatus.TILTAKSHENDELSER) == true
-        val filtrertPaUtgatteVarsel =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe?.contains(Brukerstatus.UTGATTE_VARSEL) == true
+        val filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER)
+        val filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)
         val filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a.isNotEmpty()) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a.isNotEmpty())
+                (filtervalg.harInnsatsgruppeGjeldendeVedtak14a()) ||
+                (filtervalg.harHovedmalGjeldendeVedtak14a())
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC)
@@ -310,7 +308,7 @@ class OpensearchSortQueryBuilder {
     }
 
     fun sorterSisteEndringTidspunkt(builder: SearchSourceBuilder, order: SortOrder?, filtervalg: Filtervalg) {
-        if (filtervalg.sisteEndringKategori.size == 0) {
+        if (!filtervalg.harSisteEndringFilter()) {
             return
         }
         if (filtervalg.sisteEndringKategori.size != 1) {

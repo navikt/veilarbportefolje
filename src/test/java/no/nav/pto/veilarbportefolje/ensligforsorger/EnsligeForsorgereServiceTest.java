@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgMedEnsligeforsorgereForJavaTester;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere.OVERGANGSSTONAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
@@ -71,11 +71,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     @Test
     public void testNyOvergangsstonadForBrukerIndex() {
         setInitialState();
-
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
-        filtervalg.setFerdigfilterListe(List.of());
-
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.toString(),
@@ -112,10 +108,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                 )
         );
 
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
-        filtervalg.setFerdigfilterListe(List.of());
-
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
         verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
                             navKontor.toString(),
@@ -172,16 +165,13 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
         pollOpensearchUntil(() -> opensearchTestClient.countDocuments() == liste.size());
 
-        Filtervalg filterValg = getFiltervalgDefaults();
-        filterValg.setFerdigfilterListe(List.of());
-        filterValg.setEnsligeForsorgere(List.of(OVERGANGSSTONAD));
-
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
         BrukereMedAntall response = opensearchService.hentBrukere(
                 navKontor.toString(),
                 empty(),
                 Sorteringsrekkefolge.STIGENDE,
                 Sorteringsfelt.IKKE_SATT,
-                filterValg,
+                filtervalg,
                 null,
                 null
         );
