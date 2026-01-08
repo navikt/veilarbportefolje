@@ -125,7 +125,14 @@ public class BarnUnder18AarRepository {
 
     public BarnUnder18AarData hentInfoOmBarn(Fnr fnrBarn) {
         try {
-            return queryForObjectOrNull(() -> dbReadOnly.queryForObject("SELECT * FROM bruker_data_barn WHERE barn_ident = ?", (rs, row) -> new BarnUnder18AarData(alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO"))), rs.getString("BARN_DISKRESJONKODE")), fnrBarn.get()));
+            return queryForObjectOrNull(() -> dbReadOnly.queryForObject(
+                    "SELECT * FROM bruker_data_barn WHERE barn_ident = ?",
+                    (rs, row) -> new BarnUnder18AarData(
+                            alderFraFodselsdato(toLocalDateOrNull(rs.getDate("BARN_FOEDSELSDATO"))),
+                            rs.getString("BARN_DISKRESJONKODE")
+                    ),
+                    fnrBarn.get())
+            );
         } catch (Exception e) {
             log.error("Can't get info about barn under 18 " + e, e);
             return null;
