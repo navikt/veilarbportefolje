@@ -146,7 +146,7 @@ data class Filtervalg(
         foedeland.isNotEmpty()
 
     fun harTolkbehovSpraakFilter(): Boolean =
-        !tolkBehovSpraak.isNullOrEmpty()
+        tolkBehovSpraak.isNotEmpty()
 
     fun harTalespraaktolkFilter(): Boolean =
         tolkebehov.contains("TALESPRAAKTOLK")
