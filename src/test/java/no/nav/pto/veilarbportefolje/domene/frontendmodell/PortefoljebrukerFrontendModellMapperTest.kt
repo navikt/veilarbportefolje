@@ -473,7 +473,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
                 filtervalg = getFiltervalgDefaults().copy(
-                    sisteEndringKategori = listOf(kategori)
+                    sisteEndringKategori = kategori
                 )
             )
 
@@ -502,7 +502,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 opensearchBruker = opensearchBruker,
                 ufordelt = true,
                 filtervalg = getFiltervalgDefaults().copy(
-                    sisteEndringKategori = listOf("NY_JOBB")
+                    sisteEndringKategori = "NY_JOBB"
                 )
             )
 
@@ -519,7 +519,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             opensearchBruker = opensearchBruker,
             ufordelt = true,
             filtervalg = getFiltervalgDefaults().copy(
-                sisteEndringKategori = listOf(kategori)
+                sisteEndringKategori = kategori
             )
         )
 

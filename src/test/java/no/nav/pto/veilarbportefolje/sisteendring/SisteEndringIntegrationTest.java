@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -39,7 +38,6 @@ import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -209,7 +207,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseBrukere.getAntall()).isEqualTo(0);
     }
 
-    //@Test
+    @Test
     public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
@@ -404,20 +402,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
     }
 
-    @Test
-    public void sisteendring_filterPaFlereEndringerSkalKasteError() {
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> opensearchService.hentBrukere(
-                        testEnhet.getValue(),
-                        empty(),
-                        Sorteringsrekkefolge.SYNKENDE,
-                        Sorteringsfelt.SISTE_ENDRING_DATO,
-                        getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
-                        null,
-                        null));
-        assertThat(exception).isNotNull();
-    }
-
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
                                        KafkaAktivitetMelding.AktivitetStatus status, KafkaAktivitetMelding.AktivitetTypeData typeData) {
         KafkaAktivitetMelding melding = new KafkaAktivitetMelding().setAktivitetId(String.valueOf(getRandomPositiveInteger()))
@@ -452,15 +436,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori, boolean uleste) {
-        Filtervalg filtervalg = getFiltervalgSisteEndringForJavaTester(List.of(kategori.name()));
+        Filtervalg filtervalg = getFiltervalgSisteEndringForJavaTester(kategori.name());
         if (uleste) {
-            return getFiltervalgSisteEndringForJavaTester(List.of(kategori.name()), "ULESTE_ENDRINGER");
+            return getFiltervalgSisteEndringForJavaTester(kategori.name(), "ULESTE_ENDRINGER");
         }
         return filtervalg;
-    }
-
-    private static Filtervalg getFiltervalg(SisteEndringsKategori kategori_1, SisteEndringsKategori kategori_2) {
-        return getFiltervalgSisteEndringForJavaTester(List.of(kategori_1.name(), kategori_2.name()));
     }
 
     private String getValueFromNestedObject(GetResponse respons, SisteEndringsKategori field) {
