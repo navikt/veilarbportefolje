@@ -23,7 +23,7 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     utdanning = emptyList(),
     utdanningBestatt = emptyList(),
     utdanningGodkjent = emptyList(),
-    sisteEndringKategori = emptyList(),
+    sisteEndringKategori = null,
     aktiviteterForenklet = emptyList(),
     ulesteEndringer = null,
     cvJobbprofil = null,
@@ -61,7 +61,7 @@ fun getFiltervalgAktivteterForJavaTester(
 
 @JvmOverloads
 fun getFiltervalgSisteEndringForJavaTester(
-    sisteEndringKategori: List<String> = emptyList(),
+    sisteEndringKategori: String? = null,
     ulesteEndringer: String? = null
 ): Filtervalg =
     getFiltervalgDefaults().copy(

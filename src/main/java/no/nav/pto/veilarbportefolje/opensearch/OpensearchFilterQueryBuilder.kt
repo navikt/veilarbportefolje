@@ -276,7 +276,9 @@ class OpensearchFilterQueryBuilder {
                         )
                     )
 
-                    else -> {throw IllegalStateException("ytelseTiltakspenger har ugyldig verdi")}
+                    else -> {
+                        throw IllegalStateException("ytelseTiltakspenger har ugyldig verdi")
+                    }
                 }
             })
 
@@ -289,7 +291,9 @@ class OpensearchFilterQueryBuilder {
                         )
                     )
 
-                    else -> {throw IllegalStateException("ytelseTiltakspengerArena har ugyldig verdi")}
+                    else -> {
+                        throw IllegalStateException("ytelseTiltakspengerArena har ugyldig verdi")
+                    }
                 }
             })
 
@@ -391,7 +395,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harNavnEllerFnrQuery()) {
-            val query = filtervalg.navnEllerFnrQuery?.trim { it <= ' ' }?.lowercase(Locale.getDefault())
+            val query = filtervalg.navnEllerFnrQuery.trim { it <= ' ' }.lowercase(Locale.getDefault())
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery("fnr", query))
             } else {
@@ -630,7 +634,10 @@ class OpensearchFilterQueryBuilder {
         }
     }
 
-    fun byggAvansertAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
+    fun byggAvansertAktivitetFilterQuery(
+        filtervalg: Filtervalg,
+        queryBuilder: BoolQueryBuilder
+    ): List<BoolQueryBuilder> {
         return filtervalg.aktiviteter.entries.stream()
             .map { entry: Map.Entry<String, AktivitetFiltervalg> ->
                 val navnPaaAktivitet = entry.key
@@ -856,8 +863,16 @@ class OpensearchFilterQueryBuilder {
             ),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "hendelser.UTGATT_VARSEL"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key, "hendelser.UDELT_SAMTALEREFERAT")
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UTGATTE_VARSEL.key,
+                "hendelser.UTGATT_VARSEL"
+            ),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
+                "hendelser.UDELT_SAMTALEREFERAT"
+            )
         )
 
         return SearchSourceBuilder()
@@ -865,43 +880,27 @@ class OpensearchFilterQueryBuilder {
             .aggregation(AggregationBuilders.filters("statustall", *filtre))
     }
 
-    private fun byggUlestEndringsFilter(sisteEndringKategori: List<String>?, queryBuilder: BoolQueryBuilder) {
-        if (sisteEndringKategori != null && sisteEndringKategori.size > 1) {
-            log.error(
-                "Det ble filtrert på flere ulike siste endringer (ulest): {}",
-                sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
-        var relvanteKategorier = sisteEndringKategori
-        if (sisteEndringKategori.isNullOrEmpty()) {
-            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.entries.toTypedArray())
-                .map { obj: SisteEndringsKategori -> obj.name }).collect(
-                    Collectors.toList()
-                )
-        }
+    private fun byggUlestEndringsFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
+        val relevanteKategorier: List<String> =
+            if (sisteEndringKategori.isNullOrBlank()) {
+                SisteEndringsKategori.entries.map { it.name }
+            } else {
+                listOf(sisteEndringKategori)
+            }
 
         val orQuery = QueryBuilders.boolQuery()
-        relvanteKategorier!!.forEach(Consumer { kategori: String ->
+
+        relevanteKategorier.forEach { kategori ->
             orQuery.should(
                 QueryBuilders.matchQuery("siste_endringer.$kategori.erSett", "N")
             )
-        })
+        }
+
         queryBuilder.must(orQuery)
     }
 
-    private fun byggSisteEndringFilter(sisteEndringKategori: List<String>, queryBuilder: BoolQueryBuilder) {
-        if (sisteEndringKategori.isEmpty()) {
-            return
-        }
-        if (sisteEndringKategori.size != 1) {
-            log.error(
-                "Det ble filtrert på flere ulike siste endringer: {}",
-                sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
-        queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori[0]))
+    private fun byggSisteEndringFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
+        queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori))
     }
 
     private fun byggMoteMedNavIdag(): RangeQueryBuilder {

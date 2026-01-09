@@ -24,7 +24,7 @@ data class Filtervalg(
     val utdanning: List<UtdanningSvar>,
     val utdanningBestatt: List<UtdanningBestattSvar>,
     val utdanningGodkjent: List<UtdanningGodkjentSvar>,
-    val sisteEndringKategori: List<String>, // TODO: endre til å ikke være en liste, sender kun en kategori via radioknapper
+    val sisteEndringKategori: String?,
     val ulesteEndringer: String?,
     val cvJobbprofil: CVjobbprofil?,
     val landgruppe: List<String>,
@@ -131,7 +131,7 @@ data class Filtervalg(
         aktiviteterForenklet.isNotEmpty()
 
     fun harSisteEndringFilter(): Boolean =
-        sisteEndringKategori.isNotEmpty()
+        !sisteEndringKategori.isNullOrBlank()
 
     fun harManuellBrukerStatus(): Boolean =
         manuellBrukerStatus.isNotEmpty()

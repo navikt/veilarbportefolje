@@ -311,15 +311,8 @@ class OpensearchSortQueryBuilder {
         if (!filtervalg.harSisteEndringFilter()) {
             return
         }
-        if (filtervalg.sisteEndringKategori.size != 1) {
-            log.error(
-                "Det ble sortert på flere ulike siste endringer: {}",
-                filtervalg.sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
         val expresion =
-            "doc['siste_endringer." + filtervalg.sisteEndringKategori[0] + ".tidspunkt']?.value.toInstant().toEpochMilli()"
+            "doc['siste_endringer." + filtervalg.sisteEndringKategori + ".tidspunkt']?.value.toInstant().toEpochMilli()"
 
         val script = Script(expresion)
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
