@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient
@@ -42,21 +42,21 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val trengerTalespraktolkSistOppdatert = "2022-02-22"
         val trengerTalespraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkSistOppdatert))
+        trengerTalespraktolk.talespraaktolk = tolkesprakJapansk
+        trengerTalespraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTalespraktolkSistOppdatert)
 
         val trengerTaleOgTegnspraktolkSistOppdatert = "2021-03-23"
         val trengerTaleOgTegnspraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkSistOppdatert))
+        trengerTaleOgTegnspraktolk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTaleOgTegnspraktolkSistOppdatert)
 
         val brukerMedAndreTolkebehov = genererRandomBruker()
-            .setTegnspraaktolk(tolkesprakNorsk)
+        brukerMedAndreTolkebehov.tegnspraaktolk = tolkesprakNorsk
 
         val brukerUtenTolkebehov = genererRandomBruker()
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov.talespraaktolk = null
+        brukerUtenTolkebehov.tegnspraaktolk = null
 
         val brukere = listOf(
             trengerTalespraktolk,
@@ -68,10 +68,11 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
+
         // When
-        val filtrerPaTalespraktolk = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TALESPRAAKTOLK"))
+        val filtrerPaTalespraktolk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TALESPRAAKTOLK")
+        )
 
         val response = opensearchService.hentBrukere(
             TESTENHET,
@@ -100,21 +101,22 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
         val trengerTegnspraktolk = genererRandomBruker()
-            .setTegnspraaktolk(tolkesprakNorsk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
+        trengerTegnspraktolk.tegnspraaktolk = tolkesprakNorsk
+        trengerTegnspraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert)
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
         val trengerTaleOgTegnspraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
+        trengerTaleOgTegnspraktolk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert)
 
         val brukerUtenTegnspraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakJapansk)
+        brukerUtenTegnspraktolk.talespraaktolk = tolkesprakJapansk
 
         val brukerUtenTolkebehov = genererRandomBruker()
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov.talespraaktolk = null
+        brukerUtenTolkebehov.tegnspraaktolk = null
 
         val brukere = listOf(
             trengerTegnspraktolk,
@@ -126,10 +128,11 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
+
         // When
-        val filtrerPaTegnspraktolk = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK"))
+        val filtrerPaTegnspraktolk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK")
+        )
 
         val responsBrukereMedTegnspraktolk = opensearchService.hentBrukere(
             TESTENHET,
@@ -158,23 +161,24 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val trengerTalespraktolkBehovSistOppdatert = "2022-02-22"
         val trengerTalespraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert))
+        trengerTalespraktolk.talespraaktolk = tolkesprakJapansk
+        trengerTalespraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTalespraktolkBehovSistOppdatert)
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
         val trengerTaleOgTegnspraktolk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
+        trengerTaleOgTegnspraktolk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert)
 
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
         val trengerTegnspraktolk = genererRandomBruker()
-            .setTegnspraaktolk(tolkesprakNorsk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
+        trengerTegnspraktolk.tegnspraaktolk = tolkesprakNorsk
+        trengerTegnspraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert)
 
         val brukerUtenTolkebehov = genererRandomBruker()
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov.talespraaktolk = null
+        brukerUtenTolkebehov.tegnspraaktolk = null
 
         val brukere = listOf(
             trengerTalespraktolk,
@@ -186,10 +190,11 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
+
         // When
-        val filtrePaBadeTegnOgTalespraktolk = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
+        val filtrePaBadeTegnOgTalespraktolk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK")
+        )
 
         val responsBrukereMedTegnEllerTalespraktolk = opensearchService.hentBrukere(
             TESTENHET,
@@ -220,27 +225,29 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val trengerTalespraktolkJapanskBehovSistOppdatert = "2022-02-22"
         val trengerTalespraktolkJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
+        trengerTalespraktolkJapansk.talespraaktolk = tolkesprakJapansk
+        trengerTalespraktolkJapansk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert)
 
         val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
         val trengerTegnspraktolkJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
+        trengerTegnspraktolkJapansk.talespraaktolk = tolkesprakSvensk
+        trengerTegnspraktolkJapansk.tegnspraaktolk = tolkesprakJapansk
+        trengerTegnspraktolkJapansk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert)
 
         val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"))
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.tolkBehovSistOppdatert = LocalDate.parse("2021-03-23")
 
         val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker()
-            .setTegnspraaktolk(tolkesprakNorsk)
-            .setTolkBehovSistOppdatert(LocalDate.parse("2023-03-24"))
+        trengerTegnspraktolkMenIkkeJapansk.tegnspraaktolk = tolkesprakNorsk
+        trengerTegnspraktolkMenIkkeJapansk.tolkBehovSistOppdatert = LocalDate.parse("2023-03-24")
 
         val brukerUtenTolkebehov = genererRandomBruker()
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov.talespraaktolk = null
+        brukerUtenTolkebehov.tegnspraaktolk = null
 
         val brukere = listOf(
             trengerTalespraktolkJapansk,
@@ -254,11 +261,12 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
+
         // When
-        val filtrerPaTolkebehovJapansk = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
-            .setTolkBehovSpraak(listOf(tolkesprakJapansk))
+        val filtrerPaTolkebehovJapansk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"),
+            tolkBehovSpraak = listOf(tolkesprakJapansk)
+        )
 
         val responsBrukereMedTolkebehovJapansk = opensearchService.hentBrukere(
             TESTENHET,
@@ -288,27 +296,29 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val trengerTalespraktolkJapanskBehovSistOppdatert = "2022-02-22"
         val trengerTalespraktolkJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert))
+        trengerTalespraktolkJapansk.talespraaktolk = tolkesprakJapansk
+        trengerTalespraktolkJapansk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTalespraktolkJapanskBehovSistOppdatert)
 
         val trengerTegnspraktolkJapanskBehovSistOppdatert = "2023-02-22"
         val trengerTegnspraktolkJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert))
+        trengerTegnspraktolkJapansk.talespraaktolk = tolkesprakSvensk
+        trengerTegnspraktolkJapansk.tegnspraaktolk = tolkesprakJapansk
+        trengerTegnspraktolkJapansk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTegnspraktolkJapanskBehovSistOppdatert)
 
         val trengerTaleOgTegnspraktolkMenIkkeJapansk = genererRandomBruker()
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse("2021-03-23"))
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolkMenIkkeJapansk.tolkBehovSistOppdatert = LocalDate.parse("2021-03-23")
 
         val trengerTegnspraktolkMenIkkeJapansk = genererRandomBruker()
-            .setTegnspraaktolk(tolkesprakNorsk)
-            .setTolkBehovSistOppdatert(LocalDate.parse("2023-03-24"))
+        trengerTegnspraktolkMenIkkeJapansk.tegnspraaktolk = tolkesprakNorsk
+        trengerTegnspraktolkMenIkkeJapansk.tolkBehovSistOppdatert = LocalDate.parse("2023-03-24")
 
         val brukerUtenTolkebehov = genererRandomBruker()
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov.talespraaktolk = null
+        brukerUtenTolkebehov.tegnspraaktolk = null
 
         val brukere = listOf(
             trengerTalespraktolkJapansk,
@@ -321,11 +331,12 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
+
         // When
-        val filtrerPaKunTolkesprakJapansk = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf())
-            .setTolkBehovSpraak(listOf(tolkesprakJapansk))
+        val filtrerPaKunTolkesprakJapansk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf(),
+            tolkBehovSpraak = listOf(tolkesprakJapansk)
+        )
 
         val responsBrukereMedTolkesprakJapansk = opensearchService.hentBrukere(
             TESTENHET,
@@ -353,13 +364,16 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal sortere på tolkespråk når det er filtrert på talespråktolk`() {
         // Given
         val bruker1Aktorid = AktorId.of("2222222222222")
-        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid).setTalespraaktolk("AR")
+        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid)
+        bruker1.talespraaktolk = "AR"
 
         val bruker2Aktorid = AktorId.of("1111111111111")
-        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid).setTalespraaktolk("FR")
+        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid)
+        bruker2.talespraaktolk = "FR"
 
         val bruker3Aktorid = AktorId.of("3333333333333")
-        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid).setTalespraaktolk("NO")
+        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid)
+        bruker3.talespraaktolk = "NO"
 
         val brukere = listOf(
             bruker1,
@@ -372,9 +386,9 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TALESPRAAKTOLK"))
+        val sorterStigende = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TALESPRAAKTOLK")
+        )
 
         val sorterteBrukere = opensearchService.hentBrukere(
             TESTENHET,
@@ -398,13 +412,16 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
     fun `Skal sortere på tolkespråk når det er filtrert på tegnspråktolk`() {
         // Given
         val bruker1Aktorid = AktorId.of("2222222222222")
-        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid).setTegnspraaktolk("AR")
+        val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid)
+        bruker1.tegnspraaktolk = "AR"
 
         val bruker2Aktorid = AktorId.of("1111111111111")
-        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid).setTegnspraaktolk("FR")
+        val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid)
+        bruker2.tegnspraaktolk = "FR"
 
         val bruker3Aktorid = AktorId.of("3333333333333")
-        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid).setTegnspraaktolk("NO")
+        val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid)
+        bruker3.tegnspraaktolk = "NO"
 
         val brukere = listOf(
             bruker1,
@@ -417,9 +434,9 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK"))
+        val sorterStigende = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK")
+        )
 
         val sorterteBrukere = opensearchService.hentBrukere(
             TESTENHET,
@@ -443,18 +460,18 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         // Given
         val bruker1Aktorid = AktorId.of("2222222222222")
         val bruker1 = genererRandomBruker(aktorId = bruker1Aktorid)
-            .setTalespraaktolk("AR")
-            .setTegnspraaktolk("NO")
+        bruker1.talespraaktolk = "AR"
+        bruker1.tegnspraaktolk = "NO"
 
         val bruker2Aktorid = AktorId.of("1111111111111")
         val bruker2 = genererRandomBruker(aktorId = bruker2Aktorid)
-            .setTalespraaktolk("FR")
-            .setTegnspraaktolk("SWE")
+        bruker2.talespraaktolk = "FR"
+        bruker2.tegnspraaktolk = "SWE"
 
         val bruker3Aktorid = AktorId.of("3333333333333")
         val bruker3 = genererRandomBruker(aktorId = bruker3Aktorid)
-            .setTalespraaktolk("NO")
-            .setTegnspraaktolk("AR")
+        bruker3.talespraaktolk = "NO"
+        bruker3.tegnspraaktolk = "AR"
 
         val brukere = listOf(
             bruker1,
@@ -467,9 +484,9 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TALESPRAAKTOLK", "TEGNSPRAAKTOLK"))
+        val sorterStigende = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TALESPRAAKTOLK", "TEGNSPRAAKTOLK")
+        )
 
         val sorterteBrukere = opensearchService.hentBrukere(
             TESTENHET,
@@ -492,12 +509,17 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         enhet: String = TESTENHET, veilederId: String? = TESTVEILEDER, aktorId: AktorId? = randomAktorId()
     ): PortefoljebrukerOpensearchModell {
         val bruker =
-            PortefoljebrukerOpensearchModell().setAktoer_id(aktorId.toString()).setFnr(randomFnr().get())
-                .setOppfolging(true)
-                .setEnhet_id(enhet).setEgen_ansatt(false).setDiskresjonskode(null)
+            PortefoljebrukerOpensearchModell(
+                aktoer_id = aktorId.toString(),
+                fnr = randomFnr().get(),
+                oppfolging = true,
+                enhet_id = enhet,
+                egen_ansatt = false,
+                diskresjonskode = null,
+            )
 
         if (veilederId != null) {
-            bruker.setVeileder_id(veilederId)
+            bruker.veileder_id = veilederId
         }
         return bruker
     }

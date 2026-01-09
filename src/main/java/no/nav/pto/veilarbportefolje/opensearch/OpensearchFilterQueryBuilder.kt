@@ -212,7 +212,6 @@ class OpensearchFilterQueryBuilder {
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak")
         byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode")
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter")
-        byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter")
         byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe")
         byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal")
 
@@ -348,7 +347,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harKjonnfilter()) {
-            queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn.name))
+            queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn?.name))
         }
 
         if (filtervalg.harCvFilter()) {
@@ -379,8 +378,8 @@ class OpensearchFilterQueryBuilder {
                 })
         }
 
-        if (filtervalg.harAktivitetFilter()) {
-            byggAktivitetFilterQuery(filtervalg, queryBuilder)
+        if (filtervalg.harAktiviteterAvansert()) {
+            byggAvansertAktivitetFilterQuery(filtervalg, queryBuilder)
         }
 
         if (filtervalg.harUlesteEndringerFilter()) {
@@ -392,7 +391,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harNavnEllerFnrQuery()) {
-            val query = filtervalg.navnEllerFnrQuery.trim { it <= ' ' }.lowercase(Locale.getDefault())
+            val query = filtervalg.navnEllerFnrQuery?.trim { it <= ' ' }?.lowercase(Locale.getDefault())
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery("fnr", query))
             } else {
@@ -479,7 +478,7 @@ class OpensearchFilterQueryBuilder {
             val finnDeMedSpraketSomTegnspraktolkebehov = filtervalg.harTegnspraakFilter() || skalFinneAlleMedSpraket
 
             if (finnDeMedSpraketSomTalespraktolkebehov) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
                             QueryBuilders.matchQuery(
@@ -491,7 +490,7 @@ class OpensearchFilterQueryBuilder {
                 )
             }
             if (finnDeMedSpraketSomTegnspraktolkebehov) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
@@ -516,8 +515,7 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(bostedSubquery)
         }
 
-        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere
-                .contains(EnsligeForsorgere.OVERGANGSSTONAD)
+        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere.contains(EnsligeForsorgere.OVERGANGSSTONAD)
         ) {
             queryBuilder.must(QueryBuilders.existsQuery("enslige_forsorgere_overgangsstonad"))
         }
@@ -612,7 +610,7 @@ class OpensearchFilterQueryBuilder {
         }
     }
 
-    fun byggAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
+    fun byggAvansertAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
         return filtervalg.aktiviteter.entries.stream()
             .map { entry: Map.Entry<String, AktivitetFiltervalg> ->
                 val navnPaaAktivitet = entry.key
