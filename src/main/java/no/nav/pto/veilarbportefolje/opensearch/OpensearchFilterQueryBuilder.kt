@@ -472,10 +472,12 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(tolkebehovSubQuery)
         }
         if (filtervalg.harTolkbehovSpraakFilter()) {
-            var tolkbehovSelected = false
             val tolkBehovSubquery = QueryBuilders.boolQuery()
+            val skalFinneAlleMedSpraket = !filtervalg.harTalespraaktolkFilter() && !filtervalg.harTegnspraakFilter()
+            val finnDeMedSpraketSomTalespraktolkebehov = filtervalg.harTalespraaktolkFilter() || skalFinneAlleMedSpraket
+            val finnDeMedSpraketSomTegnspraktolkebehov = filtervalg.harTegnspraakFilter() || skalFinneAlleMedSpraket
 
-            if (filtervalg.harTalespraaktolkFilter()) {
+            if (finnDeMedSpraketSomTalespraktolkebehov) {
                 filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
@@ -486,33 +488,10 @@ class OpensearchFilterQueryBuilder {
                         )
                     }
                 )
-                tolkbehovSelected = true
             }
-            if (filtervalg.harTegnspraakFilter()) {
-                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
-                    tolkBehovSubquery.should(
-                        QueryBuilders.matchQuery(
-                            "tegnspraaktolk",
-                            tolkbehovSpraak
-                        )
-                    )
-                }
-                )
-                tolkbehovSelected = true
-            }
-
-            if (!tolkbehovSelected) {
+            if (finnDeMedSpraketSomTegnspraktolkebehov) {
                 filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
-                        tolkBehovSubquery.should(
-                            QueryBuilders.matchQuery(
-                                "talespraaktolk",
-                                tolkbehovSpraak
-                            )
-                        )
-                    }
-                )
-                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
                             "tegnspraaktolk",
@@ -522,6 +501,7 @@ class OpensearchFilterQueryBuilder {
                 }
                 )
             }
+
             queryBuilder.must(tolkBehovSubquery)
         }
 
@@ -856,8 +836,16 @@ class OpensearchFilterQueryBuilder {
             ),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "hendelser.UTGATT_VARSEL"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key, "hendelser.UDELT_SAMTALEREFERAT")
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UTGATTE_VARSEL.key,
+                "hendelser.UTGATT_VARSEL"
+            ),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
+                "hendelser.UDELT_SAMTALEREFERAT"
+            )
         )
 
         return SearchSourceBuilder()
