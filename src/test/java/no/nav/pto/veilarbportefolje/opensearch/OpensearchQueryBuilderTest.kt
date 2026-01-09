@@ -53,7 +53,7 @@ class OpensearchQueryBuilderTest {
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling"
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mutableMapOf(
+            aktiviteter = mapOf(
                 navnPaAktivitet to AktivitetFiltervalg.JA,
                 "egen" to AktivitetFiltervalg.NEI
             )
@@ -75,10 +75,10 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.NEI)
         )
 
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/nei_paa_tiltak.json", javaClass)
         val actualJson: String = builders[0].toString()
@@ -89,9 +89,9 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mutableMapOf("behandling" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf("behandling" to AktivitetFiltervalg.JA)
         )
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_behandling.json", javaClass)
         val actualJson: String = builders[0].toString()
@@ -102,9 +102,9 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mutableMapOf("tiltak" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.JA)
         )
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_tiltak.json", javaClass)
         val actualJson: String = builders[0].toString()

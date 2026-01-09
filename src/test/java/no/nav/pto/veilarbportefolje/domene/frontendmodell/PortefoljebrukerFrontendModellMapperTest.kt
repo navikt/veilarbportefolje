@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -41,7 +42,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val etiketter = frontendBruker.etiketter
@@ -62,7 +63,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedFortrolig = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(diskresjonskode = Adressebeskyttelse.FORTROLIG.diskresjonskode),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterMedFortrolig = frontendBrukerMedFortrolig.etiketter
 
@@ -70,7 +71,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedStrengtFortrolig = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(diskresjonskode = Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterMedStrengtFortrolig = frontendBrukerMedStrengtFortrolig.etiketter
 
@@ -78,7 +79,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUgradert = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(diskresjonskode = Adressebeskyttelse.UGRADERT.diskresjonskode),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterUtenSikkerhetstiltak = frontendBrukerUgradert.etiketter
 
@@ -92,14 +93,14 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedSikkerhetstiltak = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(sikkerhetstiltak = "TOAN"),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterMedSikkerhetstiltak = frontendBrukerMedSikkerhetstiltak.etiketter
 
         val frontendBrukerUtenSikkerhetstiltak = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(sikkerhetstiltak = null),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterUtenSikkerhetstiltak = frontendBrukerUtenSikkerhetstiltak.etiketter
 
@@ -120,14 +121,14 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterMedBehov = frontendBrukerMedBehov.etiketter
 
         val frontendBrukerUtenBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker.copy(profilering_resultat = Profileringsresultat.ANTATT_GODE_MULIGHETER),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val etiketterUtenBehov = frontendBrukerUtenBehov.etiketter
 
@@ -152,7 +153,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         Assertions.assertEquals("12345678901", frontendBruker.fnr)
@@ -180,7 +181,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val bosted = frontendBruker.geografiskBosted
 
@@ -197,7 +198,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 hovedStatsborgerskap = Statsborgerskap("NOR", LocalDate.of(2000, 5, 20), null)
             ),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val statsborgerskap = frontendBruker.hovedStatsborgerskap
 
@@ -213,7 +214,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val tolkebehovUtenData = frontendBrukerUtenData.tolkebehov
@@ -228,7 +229,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 tolkBehovSistOppdatert = sistOppdatert,
             ),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val tolkebehov = frontendBrukerMedData.tolkebehov
 
@@ -248,7 +249,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         Assertions.assertEquals(
@@ -316,7 +317,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val dialogdata = frontendBruker.meldingerVenterPaSvar
@@ -352,7 +353,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val ytelser = frontendBruker.ytelser
@@ -380,7 +381,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val ytelser = frontendBruker.ytelser
@@ -425,7 +426,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val vedtak14a = frontendBruker.vedtak14a
@@ -445,7 +446,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val vedtak14a = frontendBruker.vedtak14a
 
@@ -542,7 +543,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerMedFilterkategori = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null,
+            filtervalg = getFiltervalgDefaults(),
         )
 
         val sisteEndring = frontendBrukerMedFilterkategori.sisteEndringAvBruker
@@ -565,7 +566,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null,
+            filtervalg = getFiltervalgDefaults(),
         )
 
         val nesteUtlopsdato = frontendBruker.aktiviteterAvtaltMedNav?.nesteUtlopsdatoForAlleAktiviteter
@@ -589,7 +590,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtenFilter = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null,
+            filtervalg = getFiltervalgDefaults(),
         )
 
         val aktiviteterUtenFilter =
@@ -641,7 +642,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             ufordelt = true,
             filtervalg = getFiltervalgDefaults().copy(
                 aktiviteter =
-                    mutableMapOf(
+                    mapOf(
                         "BEHANDLING" to AktivitetFiltervalg.JA,
                         "MOTE" to AktivitetFiltervalg.JA,
                         "STILLING" to AktivitetFiltervalg.NEI,
@@ -674,7 +675,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             opensearchBruker = opensearchBruker,
             ufordelt = true,
             filtervalg = getFiltervalgDefaults().copy(
-                aktiviteter = mutableMapOf(
+                aktiviteter = mapOf(
                     "BEHANDLING" to AktivitetFiltervalg.JA,
                     "STILLING" to AktivitetFiltervalg.JA,
                 ),
@@ -705,7 +706,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val aktiviteter = frontendBruker.aktiviteterAvtaltMedNav
@@ -732,7 +733,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerAvtaltMøteIDag = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         val moteIDagAvtalt = frontendBrukerAvtaltMøteIDag.moteMedNavIDag
@@ -747,7 +748,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 aktivitet_mote_startdato = ikkeAvtaltMedNavIDag
             ),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
         val moteIDagIkkeAvtalt = frontendBrukerIkkeAvtaltIDag.moteMedNavIDag
         Assertions.assertNotNull(moteIDagIkkeAvtalt)
@@ -763,7 +764,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 alle_aktiviteter_mote_utlopsdato = getFarInTheFutureDate(),
             ),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         Assertions.assertNull(frontendBrukerIkkeMøteIDag.moteMedNavIDag)
@@ -776,7 +777,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = opensearchBruker,
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         Assertions.assertNull(frontendBrukerUtenData.huskelapp)
@@ -799,7 +800,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 fargekategori_enhetId = "1234",
             ),
             ufordelt = true,
-            filtervalg = null
+            filtervalg = getFiltervalgDefaults()
         )
 
         Assertions.assertEquals(huskelapp, frontendBruker.huskelapp)

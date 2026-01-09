@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.domene
 
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.StillingFraNAVFilter
 
 fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ferdigfilterListe = emptyList(),
@@ -11,17 +15,16 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     servicegruppe = emptyList(),
     rettighetsgruppe = emptyList(),
     veiledere = emptyList(),
-    aktiviteter = mutableMapOf(),
+    aktiviteter = mapOf(),
     tiltakstyper = emptyList(),
     manuellBrukerStatus = emptyList(),
-    navnEllerFnrQuery = null,
+    navnEllerFnrQuery = "",
     registreringstype = emptyList(),
     utdanning = emptyList(),
     utdanningBestatt = emptyList(),
     utdanningGodkjent = emptyList(),
     sisteEndringKategori = emptyList(),
     aktiviteterForenklet = emptyList(),
-    alleAktiviteter = emptyList(),
     ulesteEndringer = null,
     cvJobbprofil = null,
     landgruppe = emptyList(),
@@ -43,3 +46,39 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ytelseTiltakspengerArena = emptyList(),
     ytelseDagpengerArena = emptyList()
 )
+
+@JvmOverloads
+fun getFiltervalgAktivteterForJavaTester(
+    ferdigfilterListe: List<Brukerstatus> = emptyList(),
+    navnEllerFrn: String = "",
+    stillingFraNav: List<StillingFraNAVFilter> = emptyList()
+): Filtervalg =
+    getFiltervalgDefaults().copy(
+        ferdigfilterListe = ferdigfilterListe,
+        navnEllerFnrQuery = navnEllerFrn,
+        stillingFraNavFilter = stillingFraNav
+    )
+
+@JvmOverloads
+fun getFiltervalgSisteEndringForJavaTester(
+    sisteEndringKategori: List<String> = emptyList(),
+    ulesteEndringer: String? = null
+): Filtervalg =
+    getFiltervalgDefaults().copy(
+        sisteEndringKategori = sisteEndringKategori,
+        ulesteEndringer = ulesteEndringer,
+    )
+
+fun getFiltervalgMedTiltakstyperForJavaTester(
+    tiltakstyper: List<String>
+): Filtervalg =
+    getFiltervalgDefaults().copy(
+        tiltakstyper = tiltakstyper
+    )
+
+fun getFiltervalgMedEnsligeforsorgereForJavaTester(
+    ensligeForsorgere: List<EnsligeForsorgere>
+): Filtervalg =
+    getFiltervalgDefaults().copy(
+        ensligeForsorgere = ensligeForsorgere
+    )

@@ -5,48 +5,46 @@ import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
-import java.util.Collections.emptyList
 
 data class Filtervalg(
-    var ferdigfilterListe: List<Brukerstatus>?,
-    var alder: List<String> = emptyList(),
-    var kjonn: Kjonn?,
-    var fodselsdagIMnd: List<String> = emptyList(),
-    var formidlingsgruppe: List<Formidlingsgruppe> = emptyList(),
-    var servicegruppe: List<Servicegruppe> = emptyList(),
-    var rettighetsgruppe: List<Rettighetsgruppe> = emptyList(),
-    var veiledere: List<String> = emptyList(),
-    var aktiviteter: MutableMap<String, AktivitetFiltervalg> = mutableMapOf(),
-    var tiltakstyper: List<String> = emptyList(),
-    var manuellBrukerStatus: List<ManuellBrukerStatus> = emptyList(),
-    var navnEllerFnrQuery: String?,
-    var registreringstype: List<JobbSituasjonBeskrivelse> = emptyList(),
-    var utdanning: List<UtdanningSvar> = emptyList(),
-    var utdanningBestatt: List<UtdanningBestattSvar> = emptyList(),
-    var utdanningGodkjent: List<UtdanningGodkjentSvar> = emptyList(),
-    var sisteEndringKategori: List<String> = emptyList(), // TODO: trenger dette å være en liste? sender kun en kategori via radioknapper
-    var aktiviteterForenklet: List<String> = emptyList(),
-    var alleAktiviteter: List<String> = emptyList(), // finst ikkje i veilarbportefoljeflatefs
-    var ulesteEndringer: String?,
-    var cvJobbprofil: CVjobbprofil?,
-    var landgruppe: List<String>?,
-    var foedeland: List<String>?,
-    var tolkebehov: List<String>?,
-    var tolkBehovSpraak: List<String>?,
-    var stillingFraNavFilter: List<StillingFraNAVFilter>?,
-    var barnUnder18Aar: List<BarnUnder18Aar> = emptyList(),
-    var barnUnder18AarAlder: List<String> = emptyList(),
-    var geografiskBosted: List<String>?,
-    var ensligeForsorgere: List<EnsligeForsorgere>?,
-    var fargekategorier: List<String> = emptyList(),
-    var gjeldendeVedtak14a: List<String> = emptyList(),
-    var innsatsgruppeGjeldendeVedtak14a: List<Innsatsgruppe> = emptyList(),
-    var hovedmalGjeldendeVedtak14a: List<Hovedmal> = emptyList(),
-    var ytelseAapArena: List<YtelseAapArena> = emptyList(),
-    var ytelseAapKelvin: List<YtelseAapKelvin> = emptyList(),
-    var ytelseTiltakspenger: List<YtelseTiltakspenger> = emptyList(),
-    var ytelseTiltakspengerArena: List<YtelseTiltakspengerArena> = emptyList(),
-    var ytelseDagpengerArena: List<YtelseDagpengerArena> = emptyList()
+    val ferdigfilterListe: List<Brukerstatus>,
+    val alder: List<String>,
+    val kjonn: Kjonn?,
+    val fodselsdagIMnd: List<String>,
+    val formidlingsgruppe: List<Formidlingsgruppe>,
+    val servicegruppe: List<Servicegruppe>,
+    val rettighetsgruppe: List<Rettighetsgruppe>,
+    val veiledere: List<String>,
+    val aktiviteter: Map<String, AktivitetFiltervalg>,
+    val aktiviteterForenklet: List<String>,
+    val tiltakstyper: List<String>,
+    val manuellBrukerStatus: List<ManuellBrukerStatus>,
+    val navnEllerFnrQuery: String,
+    val registreringstype: List<JobbSituasjonBeskrivelse>,
+    val utdanning: List<UtdanningSvar>,
+    val utdanningBestatt: List<UtdanningBestattSvar>,
+    val utdanningGodkjent: List<UtdanningGodkjentSvar>,
+    val sisteEndringKategori: List<String>, // TODO: endre til å ikke være en liste, sender kun en kategori via radioknapper
+    val ulesteEndringer: String?,
+    val cvJobbprofil: CVjobbprofil?,
+    val landgruppe: List<String>,
+    val foedeland: List<String>,
+    val tolkebehov: List<String>,
+    val tolkBehovSpraak: List<String>,
+    val stillingFraNavFilter: List<StillingFraNAVFilter>,
+    val barnUnder18Aar: List<BarnUnder18Aar>,
+    val barnUnder18AarAlder: List<String>,
+    val geografiskBosted: List<String>,
+    val ensligeForsorgere: List<EnsligeForsorgere>,
+    val fargekategorier: List<String>,
+    val gjeldendeVedtak14a: List<String>,
+    val innsatsgruppeGjeldendeVedtak14a: List<Innsatsgruppe>,
+    val hovedmalGjeldendeVedtak14a: List<Hovedmal>,
+    val ytelseAapArena: List<YtelseAapArena>,
+    val ytelseAapKelvin: List<YtelseAapKelvin>,
+    val ytelseTiltakspenger: List<YtelseTiltakspenger>,
+    val ytelseTiltakspengerArena: List<YtelseTiltakspengerArena>,
+    val ytelseDagpengerArena: List<YtelseDagpengerArena>
 ) {
 
     fun harAktiveFilter(): Boolean =
@@ -60,11 +58,11 @@ data class Filtervalg(
                 veiledere.isNotEmpty() ||
                 aktiviteter.isNotEmpty() ||
                 tiltakstyper.isNotEmpty() ||
-                registreringstype.isNotEmpty() ||
-                utdanning.isNotEmpty() ||
-                utdanningBestatt.isNotEmpty() ||
-                utdanningGodkjent.isNotEmpty() ||
-                sisteEndringKategori.isNotEmpty() ||
+                harDinSituasjonSvar() ||
+                harUtdanningSvar() ||
+                harUtdanningBestattSvar() ||
+                harUtdanningGodkjentSvar() ||
+                harSisteEndringFilter() ||
                 harAktiviteterForenklet() ||
                 harCvFilter() ||
                 harManuellBrukerStatus() ||
@@ -98,13 +96,13 @@ data class Filtervalg(
         hovedmalGjeldendeVedtak14a.isNotEmpty()
 
     fun harEnsligeForsorgereFilter(): Boolean =
-        !ensligeForsorgere.isNullOrEmpty()
+        ensligeForsorgere.isNotEmpty()
 
     fun harCvFilter(): Boolean =
         cvJobbprofil != null
 
     fun harFerdigFilter(): Boolean =
-        !ferdigfilterListe.isNullOrEmpty()
+        ferdigfilterListe.isNotEmpty()
 
     fun harYtelseAapKelvinFilter(): Boolean =
         ytelseAapKelvin.isNotEmpty()
@@ -124,9 +122,13 @@ data class Filtervalg(
     fun harKjonnfilter(): Boolean =
         kjonn != null
 
-    //TODO: denne er alltid true, og sjekker kun en type av aktivitetene. Fjernes eller endres?
-    fun harAktivitetFilter(): Boolean =
-        tiltakstyper != null
+    fun harAktiviteterAvansert(): Boolean =
+        aktiviteter.values.any {
+            it == AktivitetFiltervalg.JA || it == AktivitetFiltervalg.NEI
+        }
+
+    fun harAktiviteterForenklet(): Boolean =
+        aktiviteterForenklet.isNotEmpty()
 
     fun harSisteEndringFilter(): Boolean =
         sisteEndringKategori.isNotEmpty()
@@ -134,41 +136,38 @@ data class Filtervalg(
     fun harManuellBrukerStatus(): Boolean =
         manuellBrukerStatus.isNotEmpty()
 
-    fun harAktiviteterForenklet(): Boolean =
-        aktiviteterForenklet.isNotEmpty()
-
     fun harNavnEllerFnrQuery(): Boolean =
-        !navnEllerFnrQuery.isNullOrBlank()
+        navnEllerFnrQuery.isNotBlank()
 
     fun harUlesteEndringerFilter(): Boolean =
         !ulesteEndringer.isNullOrBlank()
 
     fun harFoedelandFilter(): Boolean =
-        !foedeland.isNullOrEmpty()
+        foedeland.isNotEmpty()
 
     fun harTolkbehovSpraakFilter(): Boolean =
-        !tolkBehovSpraak.isNullOrEmpty()
+        tolkBehovSpraak.isNotEmpty()
 
     fun harTalespraaktolkFilter(): Boolean =
-        tolkebehov?.contains("TALESPRAAKTOLK") == true
+        tolkebehov.contains("TALESPRAAKTOLK")
 
     fun harTegnspraakFilter(): Boolean =
-        tolkebehov?.contains("TEGNSPRAAKTOLK") == true
+        tolkebehov.contains("TEGNSPRAAKTOLK")
 
     fun harLandgruppeFilter(): Boolean =
-        !landgruppe.isNullOrEmpty()
+        landgruppe.isNotEmpty()
 
     fun harFargeKategoriFilter(): Boolean =
         fargekategorier.isNotEmpty()
 
     fun harStillingFraNavFilter(): Boolean =
-        !stillingFraNavFilter.isNullOrEmpty()
+        stillingFraNavFilter.isNotEmpty()
 
     fun harBarnUnder18AarFilter(): Boolean =
         barnUnder18Aar.isNotEmpty() || barnUnder18AarAlder.isNotEmpty()
 
     fun harBostedFilter(): Boolean =
-        !geografiskBosted.isNullOrEmpty()
+        geografiskBosted.isNotEmpty()
 
     fun harDinSituasjonSvar(): Boolean =
         registreringstype.isNotEmpty()

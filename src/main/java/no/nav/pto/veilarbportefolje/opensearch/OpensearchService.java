@@ -83,12 +83,12 @@ public class OpensearchService {
         }
 
         if (filtervalg.harBarnUnder18AarFilter()) {
-            if (filtervalg.getBarnUnder18Aar() != null && !filtervalg.getBarnUnder18AarAlder().isEmpty()) {
+            if (!filtervalg.getBarnUnder18AarAlder().isEmpty()) {
                 String[] fraTilAlder = filtervalg.getBarnUnder18AarAlder().getFirst().split("-");
                 int fraAlder = parseInt(fraTilAlder[0]);
                 int tilAlder = parseInt(fraTilAlder[1]);
                 filterQueryBuilder.leggTilBarnAlderFilter(boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7(), fraAlder, tilAlder);
-            } else if (filtervalg.getBarnUnder18Aar() != null && !filtervalg.getBarnUnder18Aar().isEmpty()) {
+            } else if (!filtervalg.getBarnUnder18Aar().isEmpty()) {
                 filterQueryBuilder.leggTilBarnFilter(filtervalg, boolQuery, authService.harVeilederTilgangTilKode6(), authService.harVeilederTilgangTilKode7());
             }
         }

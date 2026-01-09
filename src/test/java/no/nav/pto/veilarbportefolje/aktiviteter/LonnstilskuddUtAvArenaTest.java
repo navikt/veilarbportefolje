@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgMedTiltakstyperForJavaTester;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_ARENA_TOPIC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -137,8 +138,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktorId2 = randomAktorId();
         Fnr fnr1 = randomFnr();
         Fnr fnr2 = randomFnr();
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
         testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
@@ -191,25 +190,25 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         aktivitetService.behandleKafkaMeldingLogikk(k3);
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    filtervalg.setTiltakstyper(List.of("MIDLONTIL"));
+                    Filtervalg filtervalgMidlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("MIDLONTIL"));
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgMidlontil,
                             null,
                             null);
 
                     assertThat(response1.getAntall()).isEqualTo(1);
 
-                    filtervalg.setTiltakstyper(List.of("VARLONTIL"));
+                    Filtervalg filtervalgVarlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("VARLONTIL"));
                     BrukereMedAntall response2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgVarlontil,
                             null,
                             null);
 
@@ -228,7 +227,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fnr2 = randomFnr();
         Fnr fnr3 = randomFnr();
         Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
         when(aktorClient.hentAktorId(fnr3)).thenReturn(aktorId3);
@@ -302,25 +300,25 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         aktivitetService.behandleKafkaMeldingLogikk(k3);
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    filtervalg.setTiltakstyper(List.of("MIDLONTIL"));
+                    Filtervalg filtervalgMidlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("MIDLONTIL"));
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgMidlontil,
                             null,
                             null);
 
                     assertThat(response1.getAntall()).isEqualTo(1);
 
-                    filtervalg.setTiltakstyper(List.of("VARLONTIL"));
+                    Filtervalg filtervalgVarlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("VARLONTIL"));
                     BrukereMedAntall response2 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgVarlontil,
                             null,
                             null);
 
@@ -335,7 +333,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         AktorId aktorId1 = randomAktorId();
         Fnr fnr1 = randomFnr();
         Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of());
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
 
@@ -355,15 +352,14 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setHistorisk(false);
 
         aktivitetService.behandleKafkaMeldingLogikk(k1);
-
-        filtervalg.setTiltakstyper(List.of("MIDLONTIL"));
+        Filtervalg filtervalgMidlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("MIDLONTIL"));
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
                     BrukereMedAntall response1 = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgMidlontil,
                             null,
                             null);
 
@@ -632,7 +628,6 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         Fnr fodselsnummer = randomFnr();
         NavKontor navKontor = randomNavKontor();
         Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setFerdigfilterListe(List.of());
         testDataClient.lagreBrukerUnderOppfolging(aktoer, fodselsnummer, navKontor.getValue(), null);
         aktivitetService.behandleKafkaMeldingLogikk(new KafkaAktivitetMelding()
                 .setAktivitetId("2")
@@ -658,23 +653,23 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
                 .setAvtalt(true));
 
         verifiserAsynkront(5, TimeUnit.SECONDS, () -> {
-                    filtervalg.setTiltakstyper(List.of("MIDLONTIL"));
+                    Filtervalg filtervalgMidlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("MIDLONTIL"));
                     BrukereMedAntall responseBrukereMIDLONTIL = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgMidlontil,
                             null,
                             null);
 
-                    filtervalg.setTiltakstyper(List.of("VARLONTIL"));
+                    Filtervalg filtervalgVarlontil = getFiltervalgMedTiltakstyperForJavaTester(List.of("VARLONTIL"));
                     BrukereMedAntall responseBrukereLONNTILS = opensearchService.hentBrukere(
                             navKontor.getValue(),
                             empty(),
                             Sorteringsrekkefolge.STIGENDE,
                             Sorteringsfelt.IKKE_SATT,
-                            filtervalg,
+                            filtervalgVarlontil,
                             null,
                             null);
 

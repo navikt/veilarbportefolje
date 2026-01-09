@@ -26,11 +26,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgSisteEndringForJavaTester;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -448,18 +452,15 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori, boolean uleste) {
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setSisteEndringKategori(List.of(kategori.name()));
+        Filtervalg filtervalg = getFiltervalgSisteEndringForJavaTester(List.of(kategori.name()));
         if (uleste) {
-            filtervalg.setUlesteEndringer("ULESTE_ENDRINGER");
+            return getFiltervalgSisteEndringForJavaTester(List.of(kategori.name()), "ULESTE_ENDRINGER");
         }
         return filtervalg;
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori_1, SisteEndringsKategori kategori_2) {
-        Filtervalg filtervalg = getFiltervalgDefaults();
-        filtervalg.setSisteEndringKategori(List.of(kategori_1.name(), kategori_2.name()));
-        return filtervalg;
+        return getFiltervalgSisteEndringForJavaTester(List.of(kategori_1.name(), kategori_2.name()));
     }
 
     private String getValueFromNestedObject(GetResponse respons, SisteEndringsKategori field) {
