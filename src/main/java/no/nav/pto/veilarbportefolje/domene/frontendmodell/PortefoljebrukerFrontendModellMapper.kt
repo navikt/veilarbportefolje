@@ -327,8 +327,7 @@ object PortefoljebrukerFrontendModellMapper {
         val opensearchSisteEndringer = opensearchBruker.siste_endringer
         if (!filtervalg.harSisteEndringFilter() || opensearchSisteEndringer.isNullOrEmpty()) return null
 
-        //NB antar at her kan man kun få en, bør endre filteret til å være en enkel verdi istedenfor liste
-        val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori.first()
+        val valgtFilterSisteEndringKategori = filtervalg.sisteEndringKategori ?: return null
         val endringsdataForValgtFilter = opensearchSisteEndringer[valgtFilterSisteEndringKategori] ?: return null
 
         return SisteEndringAvBruker(

@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.TestUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
@@ -145,19 +146,36 @@ class OpensearchQueryBuilderTest {
     }
 
     @Test
-    fun `byggUlestEndringsFilter should add orQuery for single category`() {
+    fun `byggUlestEndringsFilter skal bruke orQuery for endringskategorien når den finnes`() {
         val boolQuery = BoolQueryBuilder()
-        val categories = listOf("AKTIVITET")
         val method = OpensearchFilterQueryBuilder::class.java.getDeclaredMethod(
-            "byggUlestEndringsFilter", List::class.java, BoolQueryBuilder::class.java
+            "byggUlestEndringsFilter", String::class.java, BoolQueryBuilder::class.java
         )
         method.isAccessible = true
-
-        method.invoke(filterQueryBuilder, categories, boolQuery)
+        method.invoke(filterQueryBuilder, "AKTIVITET", boolQuery)
 
         val queryString = boolQuery.toString()
-        assertThat(queryString).contains("siste_endringer.AKTIVITET.erSett")
+        assertThat(queryString)
+            .contains("siste_endringer.AKTIVITET.erSett")
     }
+
+    @Test
+    fun `byggUlestEndringsFilter skal bruke orQuery for alle de mulige kategoriene når endringskategorien er null`() {
+        val boolQuery = BoolQueryBuilder()
+        val method = OpensearchFilterQueryBuilder::class.java.getDeclaredMethod(
+            "byggUlestEndringsFilter", String::class.java, BoolQueryBuilder::class.java
+        )
+        method.isAccessible = true
+        method.invoke(filterQueryBuilder, null, boolQuery)
+
+        val queryString = boolQuery.toString()
+
+        SisteEndringsKategori.entries.forEach {
+            assertThat(queryString)
+                .contains("siste_endringer.${it.name}.erSett")
+        }
+    }
+
 
     companion object {
         @JvmStatic
