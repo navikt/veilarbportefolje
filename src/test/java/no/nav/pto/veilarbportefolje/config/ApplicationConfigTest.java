@@ -230,11 +230,6 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public IndexName indexName() {
-        return new IndexName(generateId());
-    }
-
-    @Bean
     public AktorClient aktorClient() {
         return mock(AktorClient.class);
     }
