@@ -93,7 +93,7 @@ object DatafeltKeys {
         val SISTE_ENDRINGER_ER_SETT =
             "erSett" // Denne har ingen korresponderende property i PortefoljebrukerOpensearchModell
         val SISTE_ENDRINGER_TIDSPUNKT = Endring::tidspunkt.name
-        val SISTE_ENDRINGER_AKTIVTETID = Endring::aktivtetId.name
+        val SISTE_ENDRINGER_AKTIVITET_ID = Endring::aktivtetId.name
         val TILTAK = PortefoljebrukerOpensearchModell::tiltak.name
     }
 

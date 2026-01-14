@@ -137,7 +137,7 @@ class OpensearchIndexerPaDatafelt(
             .startObject(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER)
             .startObject(kategori)
             .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_TIDSPUNKT, tidspunkt)
-            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_AKTIVTETID, dto.aktivtetId)
+            .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_AKTIVITET_ID, dto.aktivtetId)
             .field(DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_ER_SETT, "N")
             .endObject()
             .endObject()
