@@ -15,12 +15,15 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
  * Hver enkelt property i [PortefoljebrukerOpensearchModell] vil med andre ord mappes til et korresponderende felt i OpenSearch.
  *
  * Når vi derimot indekserer deler av brukere (eksempelvis i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt])
- * skreddersyr vi JSON-strukturen vha. [org.opensearch.common.xcontent.XContentFactory.jsonBuilder]. Med andre ord sender
- * vi ikke instanser av [PortefoljebrukerOpensearchModell].
+ * skreddersyr vi JSON-strukturen vha. [org.opensearch.common.xcontent.XContentFactory.jsonBuilder]. I tillegg har vi
+ * funksjonalitet for filtrering [no.nav.pto.veilarbportefolje.opensearch.OpensearchFilterQueryBuilder] og sortering
+ * [no.nav.pto.veilarbportefolje.opensearch.OpensearchSortQueryBuilder] hvor vi refererer til properties i [PortefoljebrukerOpensearchModell].
+ * Historisk sett ble properties referert til med hardkodede strings i disse tilfellene.
  *
  * [DatafeltKeys] har som hensikt å sikre at vi har en definert kobling fra properties i [PortefoljebrukerOpensearchModell]
- * til streng-verdier som brukes for å konstruere JSON. Koblingen er her gjort ved å referere til navnet på property-en i
- * [PortefoljebrukerOpensearchModell] som aksesseres kjøretid vha. reflection.
+ * til string-verdier som brukes for å konstruere JSON. Koblingen er her gjort ved å referere til navnet på property-en i
+ * [PortefoljebrukerOpensearchModell] som aksesseres kjøretid vha. reflection. Enkelte verdier har ingen korresponderende
+ * property i [PortefoljebrukerOpensearchModell]; i slike tilfeller er de hardkodet som strings i denne filen.
  *
  * Dersom man gjør endringer, eksempelvis renaming av properties i [PortefoljebrukerOpensearchModell], vil dette reflekteres
  * i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt], slik at vi slipper å manuelt oppdatere hardkodede
