@@ -49,10 +49,10 @@ public class OpensearchCountService {
         }
     }
 
-    public static String createAbsoluteUrl(OpensearchClientConfig config, String BRUKERINDEKS_ALIAS) {
+    public static String createAbsoluteUrl(OpensearchClientConfig config, String indexName) {
         return String.format("%s%s/",
                 createAbsoluteUrl(config),
-                BRUKERINDEKS_ALIAS
+                indexName
         );
     }
 
