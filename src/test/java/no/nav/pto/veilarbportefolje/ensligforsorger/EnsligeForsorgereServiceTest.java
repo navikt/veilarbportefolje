@@ -32,6 +32,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgMedEnsligeforsorgereForJavaTester;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere.OVERGANGSSTONAD;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -337,7 +338,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
     @SneakyThrows
     private void skrivBrukereTilTestindeks(PortefoljebrukerOpensearchModell... brukere) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.getValue(), List.of(brukere));
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, List.of(brukere));
     }
 
     @Test

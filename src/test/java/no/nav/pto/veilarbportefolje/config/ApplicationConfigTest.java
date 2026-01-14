@@ -211,9 +211,12 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService,
-                                                     OpensearchCountService opensearchCountService, IndexName indexName) {
-        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
+    public OpensearchTestClient opensearchTestClient(
+            RestHighLevelClient restHighLevelClient,
+            OpensearchAdminService opensearchAdminService,
+            OpensearchCountService opensearchCountService
+    ) {
+        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService);
     }
 
     @Bean
@@ -224,11 +227,6 @@ public class ApplicationConfigTest {
     @Bean
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
-    }
-
-    @Bean
-    public IndexName indexName() {
-        return new IndexName(generateId());
     }
 
     @Bean
