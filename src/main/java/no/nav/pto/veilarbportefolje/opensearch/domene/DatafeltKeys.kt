@@ -11,7 +11,7 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
  * Data sendes til OpenSearch på JSON-format hvor hver enkelt key i JSON-strukturen vil mappes til et felt i OpenSearch.
  *
  * Når vi indekserer hele brukere (eksempelvis i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer]) populerer
- * vi først en instans av [PortefoljebrukerOpensearchModell] før denne deserialiseres og sendes til OpenSearch i sin helhet.
+ * vi først en instans av [PortefoljebrukerOpensearchModell] før denne serialiseres og sendes til OpenSearch i sin helhet.
  * Hver enkelt property i [PortefoljebrukerOpensearchModell] vil med andre ord mappes til et korresponderende felt i OpenSearch.
  *
  * Når vi derimot indekserer deler av brukere (eksempelvis i [no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt])
