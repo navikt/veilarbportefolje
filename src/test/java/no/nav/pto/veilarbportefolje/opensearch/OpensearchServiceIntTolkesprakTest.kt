@@ -386,7 +386,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = getFiltervalgDefaults().copy(
+        val filtrerPaTalespraktolk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TALESPRAAKTOLK")
         )
 
@@ -395,7 +395,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.TOLKESPRAK,
-            sorterStigende,
+            filtrerPaTalespraktolk,
             null,
             null
         )
@@ -434,7 +434,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = getFiltervalgDefaults().copy(
+        val filtrerPaTegnspraktolk = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TEGNSPRAAKTOLK")
         )
 
@@ -443,7 +443,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.TOLKESPRAK,
-            sorterStigende,
+            filtrerPaTegnspraktolk,
             null,
             null
         )
@@ -484,7 +484,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
 
 
         // When
-        val sorterStigende = getFiltervalgDefaults().copy(
+        val filtrerPaTolkebehov = getFiltervalgDefaults().copy(
             tolkebehov = listOf("TALESPRAAKTOLK", "TEGNSPRAAKTOLK")
         )
 
@@ -493,7 +493,7 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.TOLKESPRAK,
-            sorterStigende,
+            filtrerPaTolkebehov,
             null,
             null
         )
@@ -503,6 +503,46 @@ class OpensearchServiceIntTolkesprakTest @Autowired constructor(
         assertThat(sorterteBrukere.brukere[0].aktoerid).isEqualTo(bruker1Aktorid.toString())
         assertThat(sorterteBrukere.brukere[1].aktoerid).isEqualTo(bruker2Aktorid.toString())
         assertThat(sorterteBrukere.brukere[2].aktoerid).isEqualTo(bruker3Aktorid.toString())
+    }
+
+    @Test
+    fun `Tolkespråkfiltrering skal fungere på ulike nullverdier`() {
+        // Given
+        val brukerMedNullverdier = genererRandomBruker()
+        brukerMedNullverdier.talespraaktolk = null
+        brukerMedNullverdier.tegnspraaktolk = null
+
+        val brukerMedTommeStrenger = genererRandomBruker()
+        brukerMedTommeStrenger.talespraaktolk = ""
+        brukerMedTommeStrenger.tegnspraaktolk = ""
+
+
+        val brukere = listOf(
+            brukerMedNullverdier,
+            brukerMedTommeStrenger,
+        )
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+
+        // When
+        val filtrerPaTolkebehov = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK")
+        )
+
+        val brukereMedTolkebehov = opensearchService.hentBrukere(
+            TESTENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.TOLKESPRAK,
+            filtrerPaTolkebehov,
+            null,
+            null
+        )
+
+        // Then
+        assertThat(brukereMedTolkebehov.antall).isEqualTo(0)
     }
 
     private fun genererRandomBruker(
