@@ -752,8 +752,8 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER -> byggErSykmeldtMedArbeidsgiverFilter()
             Brukerstatus.UNDER_VURDERING -> QueryBuilders.existsQuery(UTKAST_14A_STATUS)
             Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery(TILTAKSHENDELSE)
-            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL}")
-            Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT}")
+            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
+            Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}")
 
         }
         return queryBuilder
@@ -941,12 +941,12 @@ class OpensearchFilterQueryBuilder {
             mustExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.UTGATTE_VARSEL.key,
-                "$HENDELSER.${Kategori.UTGATT_VARSEL}"
+                "$HENDELSER.${Kategori.UTGATT_VARSEL.name}"
             ),
             mustExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
-                "$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT}"
+                "$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}"
             )
         )
 
