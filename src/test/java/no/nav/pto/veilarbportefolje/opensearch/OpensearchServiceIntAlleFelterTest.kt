@@ -55,11 +55,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             .isEqualTo(portefoljebrukerOpensearchModell)
     }
 
-    @Test
-    fun `temp`() {
-        val alleFeltNavn = DatafeltKeys::class.declaredMemberProperties.map { it.name }
-    }
-
     companion object Testdata {
         val portefoljebrukerOpensearchModell = PortefoljebrukerOpensearchModell(
             // Personalia
