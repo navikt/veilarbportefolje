@@ -391,11 +391,11 @@ class OpensearchSortQueryBuilder {
     }
 
     fun sorterUtgattVarselHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("$HENDELSER.${Kategori.UTGATT_VARSEL}.$HENDELSER_DATO", order)
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.UTGATT_VARSEL.name}.$HENDELSER_DATO", order)
     }
 
     fun sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT}.$HENDELSER_DATO", order)
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}.$HENDELSER_DATO", order)
     }
 
     fun sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
