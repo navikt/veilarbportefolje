@@ -32,6 +32,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static org.opensearch.index.query.QueryBuilders.*;
 
 @Service
@@ -39,7 +40,6 @@ import static org.opensearch.index.query.QueryBuilders.*;
 public class OpensearchService {
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
-    private final IndexName indexName;
     private final DefaultUnleash defaultUnleash;
     private final AuthService authService;
     private final OpensearchFilterQueryBuilder filterQueryBuilder = new OpensearchFilterQueryBuilder();
@@ -101,7 +101,7 @@ public class OpensearchService {
 
         sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
 
-        OpensearchResponse response = search(searchSourceBuilder, indexName.getValue(), OpensearchResponse.class);
+        OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
@@ -123,7 +123,7 @@ public class OpensearchService {
 
         SearchSourceBuilder request = filterQueryBuilder.byggStatustallQuery(veilederOgEnhetQuery, emptyList());
 
-        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
+        StatustallResponse response = search(request, BRUKERINDEKS_ALIAS, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new Statustall(buckets);
     }
@@ -148,14 +148,14 @@ public class OpensearchService {
 
         SearchSourceBuilder request = filterQueryBuilder.byggStatustallQuery(enhetQuery, veilederPaaEnhet);
 
-        StatustallResponse response = search(request, indexName.getValue(), StatustallResponse.class);
+        StatustallResponse response = search(request, BRUKERINDEKS_ALIAS, StatustallResponse.class);
         StatustallBuckets buckets = response.getAggregations().getFilters().getBuckets();
         return new Statustall(buckets);
     }
 
     public FacetResults hentPortefoljestorrelser(String enhetId) {
         SearchSourceBuilder request = filterQueryBuilder.byggPortefoljestorrelserQuery(enhetId);
-        PortefoljestorrelserResponse response = search(request, indexName.getValue(), PortefoljestorrelserResponse.class);
+        PortefoljestorrelserResponse response = search(request, BRUKERINDEKS_ALIAS, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
     }
