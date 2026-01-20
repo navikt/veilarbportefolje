@@ -14,11 +14,11 @@ import java.util.function.Supplier
 class DagpengerClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
     private val client: OkHttpClient = baseClient()
 
-    fun hentDagpengerVedtak(personnr: String, fom: String): List<DagpengerVedtakResponseDto> {
-        val requestBody = DagpengerVedtakRequest(personnr, fom)
+    fun hentDagpengerVedtak(personnr: String, fom: String, tom: String): DagpengerVedtakResponseDto {
+        val requestBody = DagpengerVedtakRequest(personnr, fom, tom)
 
         val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "")) //todo: legg til riktig endpoint når det er klart
+            .url(UrlUtils.joinPaths(baseUrl, "/dagpenger/datadeling/v1/perioder"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .post(RestUtils.toJsonRequestBody(requestBody))
             .build()

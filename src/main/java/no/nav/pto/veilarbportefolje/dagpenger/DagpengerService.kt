@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.dagpenger
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
-import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerVedtakResponseDto
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -63,9 +63,9 @@ class DagpengerService(
         aktorId: AktorId,
         oppfolgingsStartdato: LocalDate,
     ) {
-        val sisteDagpengerVedtak = hentSistePeriodeFraApi(personIdent, oppfolgingsStartdato)
+        val sisteDagpengerPeriode = hentSistePeriodeFraApi(personIdent, oppfolgingsStartdato)
 
-        if (sisteDagpengerVedtak == null) {
+        if (sisteDagpengerPeriode == null) {
             secureLog.info(
                 "Ingen Dagpenger-periode funnet i oppfølgingsperioden for bruker {}, ignorerer dagpenger-ytelse melding.",
                 personIdent
@@ -74,10 +74,9 @@ class DagpengerService(
         }
 
 
-        // legg til sjekk på om bruker har aktiv ytelse (avhenging av hva slags data vi får fra apiet)
-        val harAktivYtelse = sisteDagpengerVedtak.tom.isAfter(LocalDate.now().minusDays(1))
+        val harAktivYtelse = sisteDagpengerPeriode.tilOgMedDato == null || sisteDagpengerPeriode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
 
-        upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerVedtak)
+        upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerPeriode)
 //        opensearchIndexerPaDatafelt.oppdaterDagpenger(
 //            aktorId,
 //            harAktivYtelse,
@@ -86,18 +85,29 @@ class DagpengerService(
 //        )
     }
 
-    // Oppdater logikk avhenging av hvordan vi får dataene fra apiet
-    fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): DagpengerVedtakResponseDto? {
-        val respons = dagpengerClient.hentDagpengerVedtak(personIdent, oppfolgingsStartdato.toString())
-        val vedtakIOppfolgingsPeriode = respons
-            .filter { vedtak -> vedtak.tom.isAfter(oppfolgingsStartdato.minusDays(1)) }
+    fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): DagpengerPeriodeDto? {
+        // todo: må vi sette en til og med dato i requesten, eller kan den være null?
+        val respons = dagpengerClient.hentDagpengerVedtak(personIdent, oppfolgingsStartdato.toString(), "")
+        val vedtakIDPSAK = respons.perioder.filter { vedtak -> vedtak.kilde == "DP_SAK" }
 
-        return vedtakIOppfolgingsPeriode.maxByOrNull { it.fom }
+        //Siste dato ytelsen gjelder. Hvis elementet er tomt eller ikke er angitt, er ytelsen fortsatt aktiv.
+        val vedtakIOppfolgingsPeriode = vedtakIDPSAK
+            .filter { vedtak ->
+                vedtak.tilOgMedDato == null || vedtak.tilOgMedDato.isAfter(
+                    oppfolgingsStartdato.minusDays(
+                        1
+                    )
+                )
+            }
+
+        // er det riktig å ta siste perioden her, eller må vi ta den som er i dagens dato? Høre med team dagpenger.
+        // Trenger vi da å lagre flere perioder? - Ønsker kun en aktiv periode per bruker i porteføljen.
+        return vedtakIOppfolgingsPeriode.maxByOrNull { it.fraOgMedDato }
     }
 
     fun upsertDagpengerForAktivIdentForBruker(
         personIdent: String,
-        sisteDagpengerVedtak: DagpengerVedtakResponseDto
+        sisteDagpengerPeriode: DagpengerPeriodeDto
     ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
