@@ -47,6 +47,7 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
         )
     }
 
+    // kun for tester
     fun hentTiltakspenger(norskIdent: NorskIdent): TiltakspengerVedtakEntity? {
         val sql = "SELECT * FROM ${YTELSER_TILTAKSPENGER.TABLE_NAME} WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?"
         return try {
