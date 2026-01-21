@@ -1,9 +1,61 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapArena
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITET_MOTE_STARTDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITET_UTLOPSDATOER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.ALLE_AKTIVITETER_MOTE_STARTDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.NYESTE_UTLOPTE_AKTIVITET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.SISTE_ENDRINGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_TIDSPUNKT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FARGEKATEGORI
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER_DATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_ENDRET_DATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_FRIST
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_KOMMENTAR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJON_SIST_ENDRET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_FATTET_DATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.TILDELT_TIDSPUNKT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.UTKAST_14A_STATUS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.AKTOER_ID
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BARN_UNDER_18_AAR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BARN_UNDER_18_AAR_DISKRESJONSKODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FNR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FOEDELAND_FULLT_NAVN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.HOVED_STATSBORGERSKAP
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TALESPRAAK_TOLK
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TEGNSPRAAK_TOLK
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TOLKBEHOV_SIST_OPPDATERT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_MAXTID_UKE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_ORDINER_UTLOPSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_UNNTAK_UKER_IGJEN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_RETTIGHET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_VEDTAKSDATO_TOM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UTLOPSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import org.opensearch.script.Script
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.opensearch.search.sort.FieldSortBuilder
@@ -11,17 +63,18 @@ import org.opensearch.search.sort.ScriptSortBuilder
 import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
 import org.opensearch.search.sort.SortMode
 import org.opensearch.search.sort.SortOrder
-import java.util.*
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.*
+import java.util.stream.Collectors
 
 @Service
 class OpensearchSortQueryBuilder {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(OpensearchSortQueryBuilder::class.java)
     }
+
     fun byggVeilederPaaEnhetScript(veilederePaaEnhet: List<String?>): String {
         val veiledere = veilederePaaEnhet.stream()
             .map { id: String? -> String.format("\"%s\"", id) }
@@ -71,17 +124,17 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.MOTER_MED_NAV_IDAG -> {
-                searchSourceBuilder.sort("alle_aktiviteter_mote_startdato", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(ALLE_AKTIVITETER_MOTE_STARTDATO, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.MOTESTATUS -> {
-                searchSourceBuilder.sort("aktivitet_mote_startdato", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(AKTIVITET_MOTE_STARTDATO, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.I_AVTALT_AKTIVITET -> {
-                val builder = FieldSortBuilder("aktivitet_utlopsdatoer")
+                val builder = FieldSortBuilder(AKTIVITET_UTLOPSDATOER)
                     .order(sorteringsrekkefolgeOpenSearch)
                     .sortMode(SortMode.MIN)
                 searchSourceBuilder.sort(builder)
@@ -89,17 +142,17 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.FODSELSNUMMER -> {
-                searchSourceBuilder.sort("fnr.raw", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$FNR.raw", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.UTLOPTE_AKTIVITETER -> {
-                searchSourceBuilder.sort("nyesteutlopteaktivitet", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(NYESTE_UTLOPTE_AKTIVITET, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.AAP_TYPE -> {
-                searchSourceBuilder.sort("ytelse", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(YTELSE, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -114,12 +167,18 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE -> {
-                searchSourceBuilder.sort("gjeldendeVedtak14a.innsatsgruppe", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(
+                    "$GJELDENDE_VEDTAK_14A.$GJELDENDE_VEDTAK_14A_INNSATSGRUPPE",
+                    sorteringsrekkefolgeOpenSearch
+                )
                 searchSourceBuilder
             }
 
             Sorteringsfelt.GJELDENDE_VEDTAK_14A_HOVEDMAL -> {
-                searchSourceBuilder.sort("gjeldendeVedtak14a.hovedmal", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(
+                    "$GJELDENDE_VEDTAK_14A.$GJELDENDE_VEDTAK_14A_HOVEDMAL",
+                    sorteringsrekkefolgeOpenSearch
+                )
                 searchSourceBuilder
             }
 
@@ -129,7 +188,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.UTKAST_14A_STATUS -> {
-                searchSourceBuilder.sort("utkast_14a_status", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(UTKAST_14A_STATUS, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -159,7 +218,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TOLKEBEHOV_SIST_OPPDATERT -> {
-                searchSourceBuilder.sort("tolkBehovSistOppdatert", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(TOLKBEHOV_SIST_OPPDATERT, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -194,12 +253,12 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.BRUKERS_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort("brukers_situasjon_sist_endret", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(BRUKERS_SITUASJON_SIST_ENDRET, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort("utdanning_og_situasjon_sist_endret", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(UTDANNING_OG_SITUASJON_SIST_ENDRET, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -214,7 +273,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.HUSKELAPP_KOMMENTAR -> {
-                searchSourceBuilder.sort("huskelapp.kommentar", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$HUSKELAPP.$HUSKELAPP_KOMMENTAR", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -224,7 +283,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.FARGEKATEGORI -> {
-                searchSourceBuilder.sort("fargekategori", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(FARGEKATEGORI, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -234,12 +293,16 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TILTAKSHENDELSE_TEKST -> {
-                searchSourceBuilder.sort("tiltakshendelse.tekst", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$TILTAKSHENDELSE.$TILTAKSHENDELSE_TEKST", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
-            Sorteringsfelt.UTGATT_VARSEL_DATO -> {
-                sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+            Sorteringsfelt.FILTERHENDELSE_DATO -> {
+                if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
+                    sorterUtgattVarselHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
+                    sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                }
                 searchSourceBuilder
             }
 
@@ -249,7 +312,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE -> {
-                searchSourceBuilder.sort("aap_kelvin_rettighetstype", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(AAP_KELVIN_RETTIGHETSTYPE, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -264,7 +327,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TILTAKSPENGER_RETTIGHET -> {
-                searchSourceBuilder.sort("tiltakspenger_rettighet", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(TILTAKSPENGER_RETTIGHET, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -281,13 +344,11 @@ class OpensearchSortQueryBuilder {
         filtervalg: Filtervalg,
         searchSourceBuilder: SearchSourceBuilder
     ) {
-        val filtrertPaTiltakshendelse =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER)
-        val filtrertPaUtgatteVarsel =
-            filtervalg.ferdigfilterListe != null && filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)
+        val filtrertPaTiltakshendelse = filtervalg.ferdigfilterListe.contains(Brukerstatus.TILTAKSHENDELSER)
+        val filtrertPaUtgatteVarsel = filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)
         val filtrertPaEtGjeldendeVedtak14aFilter = filtervalg.gjeldendeVedtak14a.contains("HAR_14A_VEDTAK") ||
-                (filtervalg.innsatsgruppeGjeldendeVedtak14a != null && filtervalg.innsatsgruppeGjeldendeVedtak14a.isNotEmpty()) ||
-                (filtervalg.hovedmalGjeldendeVedtak14a != null && filtervalg.hovedmalGjeldendeVedtak14a.isNotEmpty())
+                (filtervalg.harInnsatsgruppeGjeldendeVedtak14a()) ||
+                (filtervalg.harHovedmalGjeldendeVedtak14a())
 
         if (filtrertPaTiltakshendelse) {
             sorterTiltakshendelseOpprettetDato(searchSourceBuilder, SortOrder.ASC)
@@ -296,23 +357,16 @@ class OpensearchSortQueryBuilder {
         } else if (filtrertPaEtGjeldendeVedtak14aFilter) {
             sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder, SortOrder.ASC)
         } else {
-            searchSourceBuilder.sort("aktoer_id", SortOrder.ASC)
+            searchSourceBuilder.sort(AKTOER_ID, SortOrder.ASC)
         }
     }
 
     fun sorterSisteEndringTidspunkt(builder: SearchSourceBuilder, order: SortOrder?, filtervalg: Filtervalg) {
-        if (filtervalg.sisteEndringKategori.size == 0) {
+        if (!filtervalg.harSisteEndringFilter()) {
             return
         }
-        if (filtervalg.sisteEndringKategori.size != 1) {
-            log.error(
-                "Det ble sortert på flere ulike siste endringer: {}",
-                filtervalg.sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
         val expresion =
-            "doc['siste_endringer." + filtervalg.sisteEndringKategori[0] + ".tidspunkt']?.value.toInstant().toEpochMilli()"
+            "doc['$SISTE_ENDRINGER.${filtervalg.sisteEndringKategori}.$SISTE_ENDRINGER_TIDSPUNKT']?.value.toInstant().toEpochMilli()"
 
         val script = Script(expresion)
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
@@ -321,41 +375,45 @@ class OpensearchSortQueryBuilder {
     }
 
     fun sorterFodeland(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("foedelandFulltNavn", order)
+        searchSourceBuilder.sort(FOEDELAND_FULLT_NAVN, order)
     }
 
     fun sorterStatsborgerskap(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("hovedStatsborgerskap.statsborgerskap", order)
+        searchSourceBuilder.sort("$HOVED_STATSBORGERSKAP.statsborgerskap", order)
     }
 
     fun sorterStatsborgerskapGyldigFra(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("hovedStatsborgerskap.gyldigFra", order)
+        searchSourceBuilder.sort("$HOVED_STATSBORGERSKAP.gyldigFra", order)
     }
 
     fun sorterTiltakshendelseOpprettetDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("tiltakshendelse.opprettet", order)
+        searchSourceBuilder.sort("$TILTAKSHENDELSE.$TILTAKSHENDELSE_OPPRETTET", order)
     }
 
     fun sorterUtgattVarselHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("utgatt_varsel.dato", order)
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.UTGATT_VARSEL.name}.$HENDELSER_DATO", order)
+    }
+
+    fun sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}.$HENDELSER_DATO", order)
     }
 
     fun sorterGjeldendeVedtak14aVedtaksdato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
-        searchSourceBuilder.sort("gjeldendeVedtak14a.fattetDato", order)
+        searchSourceBuilder.sort("$GJELDENDE_VEDTAK_14A.$GJELDENDE_VEDTAK_14A_FATTET_DATO", order)
     }
 
     fun sorterTolkeSpraak(filtervalg: Filtervalg, searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
         if (filtervalg.harTalespraaktolkFilter()) {
-            searchSourceBuilder.sort("talespraaktolk", order)
+            searchSourceBuilder.sort(TALESPRAAK_TOLK, order)
         }
         if (filtervalg.harTegnspraakFilter()) {
-            searchSourceBuilder.sort("tegnspraaktolk", order)
+            searchSourceBuilder.sort(TEGNSPRAAK_TOLK, order)
         }
     }
 
     fun sorterAapRettighetsPeriode(builder: SearchSourceBuilder, order: SortOrder?): SearchSourceBuilder {
         val script =
-            Script("Math.max((doc.aapmaxtiduke.size() != 0) ? doc.aapmaxtiduke.value : 0, (doc.aapunntakukerigjen.size() != 0) ? doc.aapunntakukerigjen.value : 0)")
+            Script("Math.max((doc.$AAP_MAXTID_UKE.size() != 0) ? doc.$AAP_MAXTID_UKE.value : 0, (doc.$AAP_UNNTAK_UKER_IGJEN.size() != 0) ? doc.$AAP_UNNTAK_UKER_IGJEN.value : 0)")
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
         scriptBuilder.order(order)
         builder.sort(scriptBuilder)
@@ -366,15 +424,15 @@ class OpensearchSortQueryBuilder {
         var expression = ""
         if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.size == 2) {
             expression = """
-                    if (doc.containsKey('aapunntakukerigjen') && !doc['aapunntakukerigjen'].empty && doc['aapunntakukerigjen'].value != 0) {
-                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$AAP_UNNTAK_UKER_IGJEN') && !doc['$AAP_UNNTAK_UKER_IGJEN'].empty && doc['$AAP_UNNTAK_UKER_IGJEN'].value != 0) {
+                        return doc['$UTLOPSDATO'].value.toInstant().toEpochMilli();
                     }
-                    else if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
-                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    else if (doc.containsKey('$AAP_ORDINER_UTLOPSDATO') && !doc['$AAP_ORDINER_UTLOPSDATO'].empty) {
+                        return doc['$AAP_ORDINER_UTLOPSDATO'].value.toInstant().toEpochMilli();
                     }
-                    else if (doc.containsKey('aapmaxtiduke')) {
+                    else if (doc.containsKey('$AAP_MAXTID_UKE')) {
                         // Legger til 01.01.2050 i millis for å sortere bak de som har dato
-                        return 2524653462000.0 + doc['aapmaxtiduke'].value;
+                        return 2524653462000.0 + doc['$AAP_MAXTID_UKE'].value;
                     }
                     else {
                        return 0;
@@ -383,12 +441,12 @@ class OpensearchSortQueryBuilder {
                     """.trimIndent()
         } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_ORDINAR)) {
             expression = """
-                    if (doc.containsKey('aapordinerutlopsdato') && !doc['aapordinerutlopsdato'].empty) {
-                        return doc['aapordinerutlopsdato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$AAP_ORDINER_UTLOPSDATO') && !doc['$AAP_ORDINER_UTLOPSDATO'].empty) {
+                        return doc['$AAP_ORDINER_UTLOPSDATO'].value.toInstant().toEpochMilli();
                     }
-                    else if (doc.containsKey('aapmaxtiduke') && !doc['aapmaxtiduke'].empty) {
+                    else if (doc.containsKey('$AAP_MAXTID_UKE') && !doc['$AAP_MAXTID_UKE'].empty) {
                         // Legger til 01.01.2050 i millis for å sortere bak de som har dato
-                        return 2524653462000.0 + doc['aapmaxtiduke'].value;
+                        return 2524653462000.0 + doc['$AAP_MAXTID_UKE'].value;
                     }
                     else {
                         return 0;
@@ -397,8 +455,8 @@ class OpensearchSortQueryBuilder {
                     """.trimIndent()
         } else if (filtervalg.harYtelseAapArenaFilter() && filtervalg.ytelseAapArena.contains(YtelseAapArena.HAR_AAP_UNNTAK)) {
             expression = """
-                    if (doc.containsKey('utlopsdato') && !doc['utlopsdato'].empty) {
-                        return doc['utlopsdato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$UTLOPSDATO') && !doc['$UTLOPSDATO'].empty) {
+                        return doc['$UTLOPSDATO'].value.toInstant().toEpochMilli();
                     }
                     else {
                         return 0;
@@ -414,43 +472,44 @@ class OpensearchSortQueryBuilder {
             builder.sort(scriptBuilder)
         }
     }
-fun sorterValgteAktiviteter(
-    filtervalg: Filtervalg,
-    builder: SearchSourceBuilder,
-    order: SortOrder?
-): SearchSourceBuilder {
-    val sorteringsAktiviteter: List<String> = when {
-        filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet
-        filtervalg.tiltakstyper.isNotEmpty() -> listOf("TILTAK")
-        else -> filtervalg.aktiviteter
-            .filter { it.value == AktivitetFiltervalg.JA }
-            .map { it.key ?: "" }
-            .filter { it.isNotEmpty() }
-    }
 
-    if (sorteringsAktiviteter.isEmpty()) {
+    fun sorterValgteAktiviteter(
+        filtervalg: Filtervalg,
+        builder: SearchSourceBuilder,
+        order: SortOrder?
+    ): SearchSourceBuilder {
+        val sorteringsAktiviteter: List<String> = when {
+            filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet
+            filtervalg.tiltakstyper.isNotEmpty() -> listOf("TILTAK")
+            else -> filtervalg.aktiviteter
+                .filter { it.value == AktivitetFiltervalg.JA }
+                .map { it.key ?: "" }
+                .filter { it.isNotEmpty() }
+        }
+
+        if (sorteringsAktiviteter.isEmpty()) {
+            return builder
+        }
+
+        val script = buildString {
+            append("List l = new ArrayList(); ")
+            sorteringsAktiviteter.forEach { aktivitet ->
+                append("l.add(doc['aktivitet_${aktivitet.lowercase(Locale.getDefault())}_utlopsdato']?.value.toInstant().toEpochMilli()); ")
+            }
+            append("return l.stream().sorted().findFirst().get();")
+        }
+
+        val scriptBuilder = ScriptSortBuilder(Script(script), ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
         return builder
     }
-
-    val script = buildString {
-        append("List l = new ArrayList(); ")
-        sorteringsAktiviteter.forEach { aktivitet ->
-            append("l.add(doc['aktivitet_${aktivitet.lowercase(Locale.getDefault())}_utlopsdato']?.value.toInstant().toEpochMilli()); ")
-        }
-        append("return l.stream().sorted().findFirst().get();")
-    }
-
-    val scriptBuilder = ScriptSortBuilder(Script(script), ScriptSortType.NUMBER)
-    scriptBuilder.order(order)
-    builder.sort(scriptBuilder)
-    return builder
-}
 
     private fun sorterHuskelappFrist(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = if (order === SortOrder.ASC) {
             """
-                            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                            if (doc.containsKey('$HUSKELAPP.$HUSKELAPP_FRIST') && !doc['$HUSKELAPP.$HUSKELAPP_FRIST'].empty) {
+                                return doc['$HUSKELAPP.$HUSKELAPP_FRIST'].value.toInstant().toEpochMilli();
                             } else {
                                 return 33064243200001.0;
                             }
@@ -458,8 +517,8 @@ fun sorterValgteAktiviteter(
                             """.trimIndent()
         } else {
             """
-                            if (doc.containsKey('huskelapp.frist') && !doc['huskelapp.frist'].empty) {
-                                return doc['huskelapp.frist'].value.toInstant().toEpochMilli();
+                            if (doc.containsKey('$HUSKELAPP.$HUSKELAPP_FRIST') && !doc['$HUSKELAPP.$HUSKELAPP_FRIST'].empty) {
+                                return doc['$HUSKELAPP.$HUSKELAPP_FRIST'].value.toInstant().toEpochMilli();
                             } else {
                                 return 0.0;
                             }
@@ -475,8 +534,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterHuskelappSistEndret(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = """
-                    if (doc.containsKey('huskelapp.endretDato') && !doc['huskelapp.endretDato'].empty) {
-                        return doc['huskelapp.endretDato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$HUSKELAPP.$HUSKELAPP_ENDRET_DATO') && !doc['$HUSKELAPP.$HUSKELAPP_ENDRET_DATO'].empty) {
+                        return doc['$HUSKELAPP.$HUSKELAPP_ENDRET_DATO'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }
@@ -493,11 +552,11 @@ fun sorterValgteAktiviteter(
     private fun sorterHuskelappEksistere(builder: SearchSourceBuilder, order: SortOrder) {
         val expresion = """
                 // Når man sorterer huskelapp-kolonnen (ikon-knappen), skal de som har frist sorteres først, med nærmeste utløpsdato øverst
-                if (!doc['huskelapp.frist'].empty) {
+                if (!doc['$HUSKELAPP.$HUSKELAPP_FRIST'].empty) {
                     // Trekker fra (fra DateUtils.java) FAR_IN_THE_FUTURE_DATE = "3017-10-07T00:00:00Z" i millis
-                    return doc['huskelapp.frist'].value.toInstant().toEpochMilli() - 33064243200000.0;
+                    return doc['$HUSKELAPP.$HUSKELAPP_FRIST'].value.toInstant().toEpochMilli() - 33064243200000.0;
                 }
-                else if (!doc['huskelapp.kommentar'].empty) {
+                else if (!doc['$HUSKELAPP.$HUSKELAPP_KOMMENTAR'].empty) {
                     return 0;
                 }
                 else {
@@ -514,8 +573,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterAapKelvinTomVedtaksdato(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = """
-                    if (doc.containsKey('aap_kelvin_tom_vedtaksdato') && !doc['aap_kelvin_tom_vedtaksdato'].empty) {
-                        return doc['aap_kelvin_tom_vedtaksdato'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$AAP_KELVIN_TOM_VEDTAKSDATO') && !doc['$AAP_KELVIN_TOM_VEDTAKSDATO'].empty) {
+                        return doc['$AAP_KELVIN_TOM_VEDTAKSDATO'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }
@@ -530,8 +589,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterTiltakspengerVedtaksdatoTom(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = """
-                    if (doc.containsKey('tiltakspenger_vedtaksdato_tom') && !doc['tiltakspenger_vedtaksdato_tom'].empty) {
-                        return doc['tiltakspenger_vedtaksdato_tom'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$TILTAKSPENGER_VEDTAKSDATO_TOM') && !doc['$TILTAKSPENGER_VEDTAKSDATO_TOM'].empty) {
+                        return doc['$TILTAKSPENGER_VEDTAKSDATO_TOM'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }
@@ -546,8 +605,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterTildeltTidspunkt(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = """
-                    if (doc.containsKey('tildelt_tidspunkt') && !doc['tildelt_tidspunkt'].empty) {
-                        return doc['tildelt_tidspunkt'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$TILDELT_TIDSPUNKT') && !doc['$TILDELT_TIDSPUNKT'].empty) {
+                        return doc['$TILDELT_TIDSPUNKT'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }
@@ -562,8 +621,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterEnsligeForsorgereUtlopsDato(builder: SearchSourceBuilder, order: SortOrder) {
         val expresion = """
-                if (doc.containsKey('enslige_forsorgere_overgangsstonad.utlopsDato') && !doc['enslige_forsorgere_overgangsstonad.utlopsDato'].empty) {
-                    return doc['enslige_forsorgere_overgangsstonad.utlopsDato'].value.toInstant().toEpochMilli();
+                if (doc.containsKey('$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO') && !doc['$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO'].empty) {
+                    return doc['$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO'].value.toInstant().toEpochMilli();
                 }
                 else {
                   return 0;
@@ -578,8 +637,8 @@ fun sorterValgteAktiviteter(
 
     private fun sorterEnsligeForsorgereOmBarnet(builder: SearchSourceBuilder, order: SortOrder) {
         val expresion = """
-                if (doc.containsKey('enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato') && !doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].empty) {
-                    return doc['enslige_forsorgere_overgangsstonad.yngsteBarnsFødselsdato'].value.toInstant().toEpochMilli();
+                if (doc.containsKey('$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO') && !doc['$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO'].empty) {
+                    return doc['$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO'].value.toInstant().toEpochMilli();
                 }
                 else {
                     return 0;
@@ -608,14 +667,14 @@ fun sorterValgteAktiviteter(
 
         if (filtervalg.harBarnUnder18AarFilter()) {
             val expressionTilgang6og7 = """
-                    params._source.barn_under_18_aar.size()
+                    params._source.$BARN_UNDER_18_AAR.size()
                     
                     """.trimIndent()
 
             val expression6 = """
                     int count = 0;
-                    for (item in params._source.barn_under_18_aar) {
-                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '6') || (item.diskresjonskode == '19')){ count = count + 1; }
+                    for (item in params._source.$BARN_UNDER_18_AAR) {
+                        if ((item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == null) || (item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == '6') || (item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == '19')){ count = count + 1; }
                     }
                     return count;
                     
@@ -623,8 +682,8 @@ fun sorterValgteAktiviteter(
 
             val expression7 = """
                     int count = 0;
-                    for (item in params._source.barn_under_18_aar) {
-                        if ((item.diskresjonskode == null) || (item.diskresjonskode == '7')){ count = count + 1; }
+                    for (item in params._source.$BARN_UNDER_18_AAR) {
+                        if ((item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == null) || (item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == '7')){ count = count + 1; }
                     }
                     return count;
                     
@@ -632,8 +691,8 @@ fun sorterValgteAktiviteter(
 
             val expressionIngen = """
                     int count = 0;
-                    for (item in params._source.barn_under_18_aar) {
-                        if (item.diskresjonskode == null){ count = count + 1; }
+                    for (item in params._source.$BARN_UNDER_18_AAR) {
+                        if (item.$BARN_UNDER_18_AAR_DISKRESJONSKODE == null){ count = count + 1; }
                     }
                     return count;
                     
@@ -656,14 +715,14 @@ fun sorterValgteAktiviteter(
     }
 
     private fun sorterEnsligeForsorgereVedtaksPeriode(builder: SearchSourceBuilder, order: SortOrder) {
-        builder.sort("enslige_forsorgere_overgangsstonad.vedtaksPeriodetype", order)
+        builder.sort("$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE", order)
     }
 
     private fun sorterEnsligeForsorgereAktivitetsPlikt(builder: SearchSourceBuilder, order: SortOrder) {
-        builder.sort("enslige_forsorgere_overgangsstonad.harAktivitetsplikt", order)
+        builder.sort("$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT", order)
     }
 
     private fun addSecondarySort(searchSourceBuilder: SearchSourceBuilder) {
-        searchSourceBuilder.sort("aktoer_id", SortOrder.ASC)
+        searchSourceBuilder.sort(AKTOER_ID, SortOrder.ASC)
     }
 }

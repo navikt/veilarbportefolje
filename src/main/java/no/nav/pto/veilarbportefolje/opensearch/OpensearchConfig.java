@@ -16,11 +16,6 @@ public class OpensearchConfig {
     public static final String BRUKERINDEKS_ALIAS = "brukerindeks";
 
     @Bean
-    public IndexName opensearchIndex() {
-        return new IndexName(BRUKERINDEKS_ALIAS);
-    }
-
-    @Bean
     public OpensearchClientConfig opensearchClientConfig(EnvironmentProperties environmentProperties) throws MalformedURLException {
         URL opensearchUrl = new URL(environmentProperties.getOpensearchUri());
         return OpensearchClientConfig.builder()

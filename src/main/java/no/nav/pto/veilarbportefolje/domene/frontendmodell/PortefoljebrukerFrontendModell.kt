@@ -1,96 +1,48 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
-import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtak
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
-import no.nav.pto.veilarbportefolje.persononinfo.bosted.GeografiskBosted
-import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 
 data class PortefoljebrukerFrontendModell(
+    var aktoerid: String?, // brukes ikke i frontend, kun i tester
+
     var etiketter: Etiketter,
 
-    // personaliaData
-    var fnr: String? = null,
-    var aktoerid: String? = null,
-    var fornavn: String? = null,
-    var etternavn: String? = null,
-    var barnUnder18AarData: List<BarnUnder18AarData>? = null, //kolonne
-
-    var tolkebehov: Tolkebehov? = null, // maaange nullsjekker i frontend
-
-    var foedeland: String? = null,
-    var hovedStatsborgerskap: Statsborgerskap? = null, // gyldig til brukes ikke
-
-    // Geografisk bosted
+    var fnr: String?,
+    var fornavn: String?,
+    var etternavn: String?,
+    var hovedStatsborgerskap: StatsborgerskapForBruker?,
+    var foedeland: String?,
     var geografiskBosted: GeografiskBostedForBruker,
+    var tolkebehov: Tolkebehov,
+    var barnUnder18AarData: List<BarnUnder18AarData>?,
 
-    // Oppfolgingsdata
-    val avvik14aVedtak: Avvik14aVedtak? = null,
-    val gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
-    val oppfolgingStartdato: LocalDate? = null,
-    val utkast14a: Utkast14a? = null,
-    val veilederId: String? = null,
-    val tildeltTidspunkt: LocalDate? = null,
+    val oppfolgingStartdato: LocalDate?,
+    val tildeltTidspunkt: LocalDate?,
+    val veilederId: String?,
 
-    // Arbeidssokerdata
-    val utdanningOgSituasjonSistEndret: LocalDate? = null,
+    var egenAnsatt: Boolean,
+    var skjermetTil: LocalDate?,
 
-    // AktiviterData
-    val nyesteUtlopteAktivitet: LocalDate? = null,
-    val aktivitetStart: LocalDate? = null,
-    val nesteAktivitetStart: LocalDate? = null,
-    val forrigeAktivitetStart: LocalDate? = null,
+    val tiltakshendelse: TiltakshendelseForBruker?,
+    var hendelse: HendelseInnhold?,
+    val meldingerVenterPaSvar: MeldingerVenterPaSvar,
 
-    // filtrert på "møter med nav i dag"
-    val moteStartTid: LocalDateTime? = null, // gjør en sjekk på om dato er i dag, og setter "avtalt med nav" hvis true. Er kun for avtalte møter
-    val alleMoterStartTid: LocalDateTime? = null, // Førstkommende møte. bruker klokkeslett og regner ut varighet med alleMoterSluttTid. Inkluderer både pliktige og upliktige aktiviteter
-    val alleMoterSluttTid: LocalDateTime? = null, // kun for å regne ut varighet på møtet.
+    val aktiviteterAvtaltMedNav: AktiviteterAvtaltMedNav?,
+    val moteMedNavIDag: MoteMedNavIDag?,
 
-    var aktiviteter: MutableMap<String, Timestamp> = mutableMapOf(),
-    var nesteUtlopsdatoAktivitet: LocalDateTime? = null,
+    val sisteEndringAvBruker: SisteEndringAvBruker?,
+    val utdanningOgSituasjonSistEndret: LocalDate?,
+    val nesteSvarfristCvStillingFraNav: LocalDate?,
 
-    val nesteSvarfristCvStillingFraNav: LocalDate? = null,
-    val tiltakshendelse: TiltakshendelseForBruker? = null,
-    val utgattVarsel: UtgattVarselForHendelse? = null,
+    val ytelser: YtelserForBruker,
+    val vedtak14a: Vedtak14aForBruker,
 
-    // siste endringer hendelser
-    var sisteEndringKategori: String? = null,
-    var sisteEndringTidspunkt: LocalDateTime? = null,
-    var sisteEndringAktivitetId: String? = null, // sjekk og oppslagg
-
-    // YtelseData
-    val innsatsgruppe: String? = null, // aap arena, sjekker på gruppe BATT
-    val ytelse: YtelseMapping? = null,
-    val utlopsdato: LocalDateTime? = null, // for aap og tp arena, brukes for uker igjen til utløpsdato
-    val dagputlopUke: Int? = null,
-    val permutlopUke: Int? = null,
-    val aapmaxtidUke: Int? = null,
-    val aapUnntakUkerIgjen: Int? = null,
-    val aapordinerutlopsdato: LocalDate? = null,
-    val aapKelvin: AapKelvinForBruker? = null,
-    val tiltakspenger: TiltakspengerForBruker? = null,
-    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend? = null,
-
-    // DialogData
-    val venterPaSvarFraNAV: LocalDate? = null,
-    val venterPaSvarFraBruker: LocalDate? = null,
-
-    // NavAnasattData - skjermet info
-    var egenAnsatt: Boolean = false,
-    var skjermetTil: LocalDate? = null,
-
-    // AnnetData
-    var huskelapp: HuskelappForBruker? = null,
-    var fargekategori: String? = null,
-    val fargekategoriEnhetId: String? = null,
+    var huskelapp: HuskelappForBruker?,
+    var fargekategori: String?,
+    val fargekategoriEnhetId: String?,
 )
 
 

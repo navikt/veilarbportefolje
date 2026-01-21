@@ -40,6 +40,23 @@ public class SisteEndringDTO {
         kategori = getSisteEndringsKategori(melding.getEndringsType(), melding.getAktivitetType(), melding.getAktivitetStatus());
     }
 
+    // Eksplisitte getters for kallande Kotlin-kode
+    public AktorId getAktoerId() {
+        return aktoerId;
+    }
+
+    public String getAktivtetId() {
+        return aktivtetId;
+    }
+
+    public SisteEndringsKategori getKategori() {
+        return kategori;
+    }
+
+    public ZonedDateTime getTidspunkt() {
+        return tidspunkt;
+    }
+
     public static SisteEndringsKategori getSisteEndringsKategori(KafkaAktivitetMelding.EndringsType endringsType,
                                                                  KafkaAktivitetMelding.AktivitetTypeData type,
                                                                  KafkaAktivitetMelding.AktivitetStatus status) {

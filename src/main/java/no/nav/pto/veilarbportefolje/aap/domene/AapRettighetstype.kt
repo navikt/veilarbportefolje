@@ -8,9 +8,7 @@ enum class AapRettighetstype {
     VURDERES_FOR_UFØRETRYGD;
 
     companion object {
-        fun tilFrontendtekst(rettighetstype: AapRettighetstype?): String? {
-            if (rettighetstype == null) return null
-
+        fun tilFrontendtekst(rettighetstype: AapRettighetstype): String {
             return when (rettighetstype) {
                 BISTANDSBEHOV -> "Bistandsbehov"
                 SYKEPENGEERSTATNING -> "Sykepengeerstatning"

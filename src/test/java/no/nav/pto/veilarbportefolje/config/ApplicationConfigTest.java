@@ -49,7 +49,6 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
@@ -163,7 +162,6 @@ import static org.mockito.Mockito.when;
         KodeverkService.class,
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
-        Avvik14aVedtakService.class,
         EnsligeForsorgereRepository.class,
         EnsligeForsorgereService.class,
         BarnUnder18AarRepository.class,
@@ -213,9 +211,12 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService,
-                                                     OpensearchCountService opensearchCountService, IndexName indexName) {
-        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
+    public OpensearchTestClient opensearchTestClient(
+            RestHighLevelClient restHighLevelClient,
+            OpensearchAdminService opensearchAdminService,
+            OpensearchCountService opensearchCountService
+    ) {
+        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService);
     }
 
     @Bean
@@ -226,11 +227,6 @@ public class ApplicationConfigTest {
     @Bean
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
-    }
-
-    @Bean
-    public IndexName indexName() {
-        return new IndexName(generateId());
     }
 
     @Bean

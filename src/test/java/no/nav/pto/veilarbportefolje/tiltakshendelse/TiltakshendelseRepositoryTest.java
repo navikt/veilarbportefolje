@@ -52,6 +52,25 @@ class TiltakshendelseRepositoryTest {
     }
 
     @Test
+    void kanLagreTiltakshendelseMedNyTiltakskode() {
+        UUID id = UUID.randomUUID();
+        LocalDateTime opprettet = LocalDateTime.now();
+        String tekst = "Forslag: endre varighet";
+        String lenke = "http.cat/200";
+        Fnr fnr = Fnr.of("11223312345");
+
+        KafkaTiltakshendelse kafkaData = new KafkaTiltakshendelse(id, true, opprettet, tekst, lenke, Tiltakstype.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV, fnr, Avsender.KOMET);
+        Tiltakshendelse expected = new Tiltakshendelse(id, opprettet, tekst, lenke, Tiltakstype.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV, fnr);
+
+        assertTrue(repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(kafkaData));
+
+        List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
+        assert (tiltakshendelser.size() == 1);
+        assert (tiltakshendelser.getFirst().id().equals(expected.id()));
+
+    }
+
+    @Test
     void kanOppdatereTiltakshendelse() {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
