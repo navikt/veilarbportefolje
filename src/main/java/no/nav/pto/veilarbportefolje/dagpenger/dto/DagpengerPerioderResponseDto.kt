@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 
-data class DagpengerVedtakResponseDto(
+data class DagpengerPerioderResponseDto(
     val personIdent: String,
     val perioder: List<DagpengerPeriodeDto>,
 )

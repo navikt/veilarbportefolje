@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.dagpenger.dto
 
 
-data class DagpengerVedtakRequest(
+data class DagpengerRequest(
     val personIdent: String,
     val fraOgMedDato: String,
-    val tilOgMedDato: String
+    val tilOgMedDato: String?
 )

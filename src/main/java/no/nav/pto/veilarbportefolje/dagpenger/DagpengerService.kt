@@ -86,8 +86,7 @@ class DagpengerService(
     }
 
     fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): DagpengerPeriodeDto? {
-        // todo: må vi sette en til og med dato i requesten, eller kan den være null?
-        val respons = dagpengerClient.hentDagpengerVedtak(personIdent, oppfolgingsStartdato.toString(), "")
+        val respons = dagpengerClient.hentDagpengerPerioder(personIdent, oppfolgingsStartdato.toString(), "")
         val vedtakIDPSAK = respons.perioder.filter { vedtak -> vedtak.kilde == "DP_SAK" }
 
         //Siste dato ytelsen gjelder. Hvis elementet er tomt eller ikke er angitt, er ytelsen fortsatt aktiv.
@@ -100,8 +99,6 @@ class DagpengerService(
                 )
             }
 
-        // er det riktig å ta siste perioden her, eller må vi ta den som er i dagens dato? Høre med team dagpenger.
-        // Trenger vi da å lagre flere perioder? - Ønsker kun en aktiv periode per bruker i porteføljen.
         return vedtakIOppfolgingsPeriode.maxByOrNull { it.fraOgMedDato }
     }
 
