@@ -471,4 +471,17 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class YTELSER_DAGPENGER {
+        private YTELSER_DAGPENGER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_DAGPENGER";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
+        public static final String RESTERENDE_DAGER_BEREGNET_PA_DATO = "RESTERENDE_DAGER_BEREGNET_PA_DATO";
+        public static final String RESTERENDE_DAGER_ANTALL = "RESTERENDE_DAGER_ANTALL";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }

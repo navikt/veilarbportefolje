@@ -27,6 +27,7 @@ import java.util.*
 @Service
 class DagpengerService(
     val dagpengerClient: DagpengerClient,
+    val dagpengerRespository: DagpengerRepository,
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
@@ -73,8 +74,9 @@ class DagpengerService(
             return
         }
 
-
-        val harAktivYtelse = sisteDagpengerPeriode.tilOgMedDato == null || sisteDagpengerPeriode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
+        val harAktivYtelse = sisteDagpengerPeriode.tilOgMedDato == null || sisteDagpengerPeriode.tilOgMedDato.isAfter(
+            LocalDate.now().minusDays(1)
+        )
 
         upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerPeriode)
 //        opensearchIndexerPaDatafelt.oppdaterDagpenger(
@@ -109,11 +111,11 @@ class DagpengerService(
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->
-                //dagpengerRespository.slettDagpengerForBruker(ident)
+                dagpengerRespository.slettDagpengerForBruker(ident)
             }
         }
 
-        //dagpengerRespository.upsertAap(personIdent, sisteDagpengerVedtak)
+        dagpengerRespository.upsertDagpengerPerioder(personIdent, sisteDagpengerPeriode)
     }
 
     fun slettDagpengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
@@ -135,7 +137,7 @@ class DagpengerService(
     fun slettDagpengerForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->
-            //dagpengerRespository.slettDagpengerForBruker(ident)
+            dagpengerRespository.slettDagpengerForBruker(ident)
         }
     }
 
