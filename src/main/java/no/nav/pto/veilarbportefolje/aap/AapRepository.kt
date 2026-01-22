@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class AapRepository(@Autowired private val db: JdbcTemplate) {
+class AapRepository(@param:Autowired private val db: JdbcTemplate) {
 
     fun upsertAap(norskIdent: NorskIdent, aap: AapVedtakResponseDto.Vedtak) {
         db.update(

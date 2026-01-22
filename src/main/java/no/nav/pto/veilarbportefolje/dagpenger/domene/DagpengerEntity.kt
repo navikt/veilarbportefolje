@@ -6,4 +6,6 @@ data class DagpengerEntity (
     val fom: LocalDate,
     val tom: LocalDate?,
     val rettighetstype: DagpengerRettighetstype,
+    val antallDagerResterende: Int?,
+    val datoAntallDagerBleBeregnet: LocalDate?,
 )

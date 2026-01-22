@@ -8,8 +8,10 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
@@ -44,7 +46,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -98,6 +103,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private TiltakspengerClient tiltakspengerClient;
 
+    @Autowired
+    private DagpengerClient dagpengerClient;
+
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
@@ -130,6 +138,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -146,6 +155,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -169,6 +179,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
@@ -206,6 +217,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -225,6 +237,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -244,6 +257,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -265,6 +279,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentProfileringResponse(fnr, periodeId);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -357,6 +372,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
@@ -384,6 +400,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
@@ -479,6 +496,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private void mockHentTiltakspengerResponse(Fnr fnr) {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(tiltakspengerClient.hentTiltakspenger(any(), any(), any())).thenReturn(Collections.emptyList());
+    }
+
+    private void mockHentDagpengerResponse(Fnr fnr) {
+        DagpengerPerioderResponseDto dagpengerPerioder = new DagpengerPerioderResponseDto("", Collections.emptyList());
+        when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(dagpengerClient.hentDagpengerPerioder(any(), any(), any())).thenReturn(dagpengerPerioder);
+        when(dagpengerClient.hentDagpengerBeregninger(any(), any(), any())).thenReturn(Collections.emptyList());
     }
 
     private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {

@@ -479,8 +479,8 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
-        public static final String RESTERENDE_DAGER_BEREGNET_PA_DATO = "RESTERENDE_DAGER_BEREGNET_PA_DATO";
-        public static final String RESTERENDE_DAGER_ANTALL = "RESTERENDE_DAGER_ANTALL";
+        public static final String DATO_ANTALL_DAGER_BLE_BEREGNET = "DATO_ANTALL_DAGER_BLE_BEREGNET";
+        public static final String ANTALL_RESTERENDE_DAGER = "ANTALL_RESTERENDE_DAGER";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 

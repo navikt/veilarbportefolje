@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.dagpenger
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerEntity
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_DAGPENGER
 import org.jetbrains.annotations.TestOnly
@@ -13,9 +14,13 @@ import org.springframework.stereotype.Repository
 
 
 @Repository
-class DagpengerRepository(@Autowired private val db: JdbcTemplate) {
+class DagpengerRepository(@param:Autowired private val db: JdbcTemplate) {
 
-    fun upsertDagpengerPerioder(norskIdent: NorskIdent, dagpenger: DagpengerPeriodeDto) {
+    fun upsertDagpengerPerioder(
+        norskIdent: NorskIdent,
+        dagpengerPeriode: DagpengerPeriodeDto,
+        beregning: DagpengerBeregningerResponseDto?
+    ) {
         db.update(
             """
             INSERT INTO ${YTELSER_DAGPENGER.TABLE_NAME} (
@@ -23,24 +28,32 @@ class DagpengerRepository(@Autowired private val db: JdbcTemplate) {
                 ${YTELSER_DAGPENGER.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_DAGPENGER.NYESTE_PERIODE_TOM}, 
                 ${YTELSER_DAGPENGER.RETTIGHETSTYPE}, 
+                ${YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET}, 
+                ${YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER}, 
                 ${YTELSER_DAGPENGER.RAD_SIST_ENDRET}
-            ) VALUES (?,?,?,?,current_timestamp) 
+            ) VALUES (?,?,?,?,?,?,current_timestamp) 
             ON CONFLICT (${YTELSER_DAGPENGER.NORSK_IDENT}) 
             DO UPDATE SET (
                 ${YTELSER_DAGPENGER.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_DAGPENGER.NYESTE_PERIODE_TOM}, 
                 ${YTELSER_DAGPENGER.RETTIGHETSTYPE}, 
+                ${YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET}, 
+                ${YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER}, 
                 ${YTELSER_DAGPENGER.RAD_SIST_ENDRET}
             ) = (
                 excluded.${YTELSER_DAGPENGER.NYESTE_PERIODE_FOM}, 
                 excluded.${YTELSER_DAGPENGER.NYESTE_PERIODE_TOM}, 
                 excluded.${YTELSER_DAGPENGER.RETTIGHETSTYPE}, 
+                excluded.${YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET}, 
+                excluded.${YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER}, 
                 excluded.${YTELSER_DAGPENGER.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            dagpenger.fraOgMedDato,
-            dagpenger.tilOgMedDato,
-            dagpenger.ytelseType
+            dagpengerPeriode.fraOgMedDato,
+            dagpengerPeriode.tilOgMedDato,
+            dagpengerPeriode.ytelseType.toString(),
+            beregning?.dato,
+            beregning?.gjenståendeDager,
         )
     }
 
@@ -53,6 +66,9 @@ class DagpengerRepository(@Autowired private val db: JdbcTemplate) {
                     fom = rs.getDate(YTELSER_DAGPENGER.NYESTE_PERIODE_FOM).toLocalDate(),
                     tom = rs.getDate(YTELSER_DAGPENGER.NYESTE_PERIODE_TOM).toLocalDate(),
                     rettighetstype = DagpengerRettighetstype.fraDb(rs.getString(YTELSER_DAGPENGER.RETTIGHETSTYPE)),
+                    antallDagerResterende = rs.getObject(YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER) as Int?,
+                    datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET)
+                        ?.toLocalDate()
                 )
             }, norskIdent)
         } catch (ex: EmptyResultDataAccessException) {

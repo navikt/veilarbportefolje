@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.dagpenger
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
@@ -13,6 +14,7 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.*
 
@@ -35,6 +37,7 @@ class DagpengerService(
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(DagpengerService::class.java)
 
+    @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.DPSAK) {
             logger.warn("Mottok ytelse-melding for Dagpenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet DPSAK. Ignorerer melding.")
@@ -78,7 +81,9 @@ class DagpengerService(
             LocalDate.now().minusDays(1)
         )
 
-        upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerPeriode)
+        val antallResterendeDager = hentAntallResterendeDagerFraApi(personIdent, oppfolgingsStartdato)
+
+        upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerPeriode, antallResterendeDager)
 //        opensearchIndexerPaDatafelt.oppdaterDagpenger(
 //            aktorId,
 //            harAktivYtelse,
@@ -88,11 +93,11 @@ class DagpengerService(
     }
 
     fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): DagpengerPeriodeDto? {
-        val respons = dagpengerClient.hentDagpengerPerioder(personIdent, oppfolgingsStartdato.toString(), "")
-        val vedtakIDPSAK = respons.perioder.filter { vedtak -> vedtak.kilde == "DP_SAK" }
+        val respons = dagpengerClient.hentDagpengerPerioder(personIdent, oppfolgingsStartdato.toString())
+        val perioderIDPSAK = respons.perioder.filter { vedtak -> vedtak.kilde == "DP_SAK" }
 
-        //Siste dato ytelsen gjelder. Hvis elementet er tomt eller ikke er angitt, er ytelsen fortsatt aktiv.
-        val vedtakIOppfolgingsPeriode = vedtakIDPSAK
+
+        val perioderIOppfolgingsPeriode = perioderIDPSAK
             .filter { vedtak ->
                 vedtak.tilOgMedDato == null || vedtak.tilOgMedDato.isAfter(
                     oppfolgingsStartdato.minusDays(
@@ -101,12 +106,27 @@ class DagpengerService(
                 )
             }
 
-        return vedtakIOppfolgingsPeriode.maxByOrNull { it.fraOgMedDato }
+        //Hvis tilOgMedDato er null er ytelsen fortsatt aktiv og skal prioriteres hvis fraOgMedDatoer er like
+        val nyestePeriodeMedDagpenger = perioderIOppfolgingsPeriode.maxWithOrNull(
+            compareBy<DagpengerPeriodeDto> { it.fraOgMedDato }
+                .thenBy { it.tilOgMedDato != null }
+                .thenBy { it.tilOgMedDato }
+        )
+        return nyestePeriodeMedDagpenger
+    }
+
+    fun hentAntallResterendeDagerFraApi(
+        personIdent: String,
+        oppfolgingsStartdato: LocalDate
+    ): DagpengerBeregningerResponseDto? {
+        val respons = dagpengerClient.hentDagpengerBeregninger(personIdent, oppfolgingsStartdato.toString())
+        return respons.maxByOrNull { it.dato }
     }
 
     fun upsertDagpengerForAktivIdentForBruker(
         personIdent: String,
-        sisteDagpengerPeriode: DagpengerPeriodeDto
+        sisteDagpengerPeriode: DagpengerPeriodeDto,
+        antallResterendeDager: DagpengerBeregningerResponseDto?,
     ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
@@ -115,7 +135,8 @@ class DagpengerService(
             }
         }
 
-        dagpengerRespository.upsertDagpengerPerioder(personIdent, sisteDagpengerPeriode)
+        dagpengerRespository.upsertDagpengerPerioder(personIdent, sisteDagpengerPeriode, antallResterendeDager)
+
     }
 
     fun slettDagpengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {

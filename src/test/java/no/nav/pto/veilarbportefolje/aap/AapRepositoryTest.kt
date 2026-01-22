@@ -15,8 +15,8 @@ import java.time.LocalDate
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class AapRepositoryTest(
-    @Autowired val aapRepository: AapRepository,
-    @Autowired val jdbcTemplate: JdbcTemplate
+    @param:Autowired val aapRepository: AapRepository,
+    @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
 
     @BeforeEach
