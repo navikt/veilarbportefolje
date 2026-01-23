@@ -33,7 +33,6 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.List
 
 class DagpengerServiceTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
@@ -110,7 +109,11 @@ class DagpengerServiceTest(
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-        `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(null)
+        `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(
+            mockedPerioder.copy(
+                perioder = emptyList()
+            )
+        )
         `when`(dagpengerClient.hentDagpengerBeregninger(anyString(), anyString(), any())).thenReturn(emptyList())
 
 

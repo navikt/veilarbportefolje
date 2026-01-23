@@ -12,9 +12,11 @@ import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning
 import no.nav.pto.veilarbportefolje.aap.AapClient
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto
+import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient
@@ -42,8 +44,8 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
@@ -53,21 +55,23 @@ import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as O
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class ArbeidssoekerServiceTest(
-    @Autowired private val db: JdbcTemplate,
-    @Autowired private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
-    @Autowired private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
-    @Autowired private val profileringRepository: ProfileringRepository,
-    @Autowired private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
-    @Autowired private val arbeidssoekerService: ArbeidssoekerService,
-    @Autowired private val oppfolgingPeriodeService: OppfolgingPeriodeService,
-    @Autowired private val aapClient: AapClient,
-    @Autowired private val aktorClient: AktorClient,
-) : EndToEndTest() {
+    @param:Autowired private val db: JdbcTemplate,
+    @param:Autowired private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
+    @param:Autowired private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
+    @param:Autowired private val profileringRepository: ProfileringRepository,
+    @param:Autowired private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
+    @param:Autowired private val arbeidssoekerService: ArbeidssoekerService,
+    @param:Autowired private val oppfolgingPeriodeService: OppfolgingPeriodeService,
+    @param:Autowired private val aapClient: AapClient,
+    @param:Autowired private val aktorClient: AktorClient,
+    @param:Autowired private val dagpengerClient: DagpengerClient,
 
-    @MockBean
+    ) : EndToEndTest() {
+
+    @MockitoBean
     private lateinit var pdlPortefoljeClient: PdlPortefoljeClient
 
-    @MockBean
+    @MockitoBean
     private lateinit var veilarbarenaClient: VeilarbarenaClient
 
     @BeforeEach
@@ -91,8 +95,18 @@ class ArbeidssoekerServiceTest(
                 PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)
             )
         )
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId1, fnr1.get()))
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId2, fnr2.get()))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(
+                periodeId1,
+                fnr1.get()
+            )
+        )
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(
+                periodeId2,
+                fnr2.get()
+            )
+        )
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoekerEntity(periodeId1, opplysningerOmArbeidssoekerId1)
         )
@@ -156,6 +170,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId)
         mockHentProfileringResponse(fnr, periodeId)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         val arbeidssoekerPeriodeMelding = Periode(
             periodeId,
@@ -279,6 +294,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, gammelPeriodeId)
         mockHentProfileringResponse(fnr, gammelPeriodeId)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
@@ -347,6 +363,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
@@ -404,6 +421,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
@@ -467,6 +485,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
         val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
@@ -515,6 +534,7 @@ class ArbeidssoekerServiceTest(
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
+        mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
         val lagretProfileringForKafkaMelding = getProfileringFraDb(db, periodeIdVedOppfolgingStartet)
@@ -645,12 +665,19 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    private fun mockHentAapResponse(fnr: Fnr): AapVedtakResponseDto {
+    private fun mockHentAapResponse(fnr: Fnr) {
         val aapResponse = AapVedtakResponseDto(vedtak = listOf())
         `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(aapResponse)
-        return aapResponse
     }
+
+    private fun mockHentDagpengerResponse(fnr: Fnr) {
+        val response = DagpengerPerioderResponseDto(personIdent = fnr.toString(), perioder = listOf())
+        `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
+        `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(response)
+        `when`(dagpengerClient.hentDagpengerBeregninger(anyString(), anyString(), any())).thenReturn(emptyList())
+    }
+
 
 }
 
