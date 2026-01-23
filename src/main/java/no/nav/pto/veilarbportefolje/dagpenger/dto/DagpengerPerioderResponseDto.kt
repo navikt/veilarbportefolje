@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.dagpenger.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import java.time.LocalDate
 
 
@@ -14,6 +15,6 @@ data class DagpengerPeriodeDto(
     val fraOgMedDato: LocalDate,
     @param:JsonFormat(pattern = "yyyy-MM-dd")
     val tilOgMedDato: LocalDate?,
-    val ytelseType: String,
+    val ytelseType: DagpengerRettighetstype,
     val kilde: String,
 )

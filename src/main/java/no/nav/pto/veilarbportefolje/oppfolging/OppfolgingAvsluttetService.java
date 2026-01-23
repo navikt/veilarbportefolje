@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
@@ -45,6 +46,7 @@ public class OppfolgingAvsluttetService {
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
+    private final DagpengerService dagpengerService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -64,6 +66,7 @@ public class OppfolgingAvsluttetService {
         arbeidssoekerService.slettArbeidssoekerData(aktoerId, maybeFnr);
         aapService.slettAapData(aktoerId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktoerId, maybeFnr);
+        dagpengerService.slettDagpengerData(aktoerId, maybeFnr);
 
         opensearchIndexer.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
