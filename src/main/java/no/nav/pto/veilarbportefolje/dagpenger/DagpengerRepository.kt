@@ -64,7 +64,7 @@ class DagpengerRepository(@param:Autowired private val db: JdbcTemplate) {
             db.queryForObject(sql, { rs, _ ->
                 DagpengerEntity(
                     fom = rs.getDate(YTELSER_DAGPENGER.NYESTE_PERIODE_FOM).toLocalDate(),
-                    tom = rs.getDate(YTELSER_DAGPENGER.NYESTE_PERIODE_TOM).toLocalDate(),
+                    tom = rs.getDate(YTELSER_DAGPENGER.NYESTE_PERIODE_TOM)?.toLocalDate(),
                     rettighetstype = DagpengerRettighetstype.fraDb(rs.getString(YTELSER_DAGPENGER.RETTIGHETSTYPE)),
                     antallDagerResterende = rs.getObject(YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER) as Int?,
                     datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET)

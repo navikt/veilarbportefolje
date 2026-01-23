@@ -96,7 +96,6 @@ class DagpengerService(
         val respons = dagpengerClient.hentDagpengerPerioder(personIdent, oppfolgingsStartdato.toString())
         val perioderIDPSAK = respons.perioder.filter { vedtak -> vedtak.kilde == "DP_SAK" }
 
-
         val perioderIOppfolgingsPeriode = perioderIDPSAK
             .filter { vedtak ->
                 vedtak.tilOgMedDato == null || vedtak.tilOgMedDato.isAfter(
@@ -109,7 +108,7 @@ class DagpengerService(
         //Hvis tilOgMedDato er null er ytelsen fortsatt aktiv og skal prioriteres hvis fraOgMedDatoer er like
         val nyestePeriodeMedDagpenger = perioderIOppfolgingsPeriode.maxWithOrNull(
             compareBy<DagpengerPeriodeDto> { it.fraOgMedDato }
-                .thenBy { it.tilOgMedDato != null }
+                .thenBy { it.tilOgMedDato == null }
                 .thenBy { it.tilOgMedDato }
         )
         return nyestePeriodeMedDagpenger
@@ -136,7 +135,6 @@ class DagpengerService(
         }
 
         dagpengerRespository.upsertDagpengerPerioder(personIdent, sisteDagpengerPeriode, antallResterendeDager)
-
     }
 
     fun slettDagpengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
