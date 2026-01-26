@@ -84,12 +84,13 @@ class DagpengerService(
         val antallResterendeDager = hentAntallResterendeDagerFraApi(personIdent, oppfolgingsStartdato)
 
         upsertDagpengerForAktivIdentForBruker(personIdent, sisteDagpengerPeriode, antallResterendeDager)
-//        opensearchIndexerPaDatafelt.oppdaterDagpenger(
-//            aktorId,
-//            harAktivYtelse,
-//            sisteDagpengerVedtak.tom,
-//            sisteDagpengerVedtak.rettighet
-//        )
+        opensearchIndexerPaDatafelt.oppdaterDagpenger(
+            aktorId,
+            harAktivYtelse,
+            sisteDagpengerPeriode.ytelseType,
+            antallResterendeDager?.gjenståendeDager,
+            antallResterendeDager?.dato
+        )
     }
 
     fun hentSistePeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): DagpengerPeriodeDto? {

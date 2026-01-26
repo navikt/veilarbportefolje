@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
@@ -87,7 +88,8 @@ object DatafeltKeys {
         val ALLE_AKTIVITETER = PortefoljebrukerOpensearchModell::alleAktiviteter.name
         val ALLE_AKTIVITETER_MOTE_STARTDATO = PortefoljebrukerOpensearchModell::alle_aktiviteter_mote_startdato.name
         val AKTIVITET_MOTE_STARTDATO = PortefoljebrukerOpensearchModell::aktivitet_mote_startdato.name
-        val AKTIVITET_UTLOPSDATOER = "aktivitet_utlopsdatoer" // Denne har ingen korresponderende property i PortefoljebrukerOpensearchModell
+        val AKTIVITET_UTLOPSDATOER =
+            "aktivitet_utlopsdatoer" // Denne har ingen korresponderende property i PortefoljebrukerOpensearchModell
         val NYESTE_UTLOPTE_AKTIVITET = PortefoljebrukerOpensearchModell::nyesteutlopteaktivitet.name
         val SISTE_ENDRINGER = PortefoljebrukerOpensearchModell::siste_endringer.name
         val SISTE_ENDRINGER_ER_SETT =
@@ -104,7 +106,8 @@ object DatafeltKeys {
         val AAP_ORDINER_UTLOPSDATO = PortefoljebrukerOpensearchModell::aapordinerutlopsdato.name
         val AAP_MAXTID_UKE = PortefoljebrukerOpensearchModell::aapmaxtiduke.name
         val AAP_UNNTAK_UKER_IGJEN = PortefoljebrukerOpensearchModell::aapunntakukerigjen.name
-        val ENSLIGE_FORSORGERE_OVERGANGSSTONAD = PortefoljebrukerOpensearchModell::enslige_forsorgere_overgangsstonad.name
+        val ENSLIGE_FORSORGERE_OVERGANGSSTONAD =
+            PortefoljebrukerOpensearchModell::enslige_forsorgere_overgangsstonad.name
         val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE =
             EnsligeForsorgereOvergangsstonad::vedtaksPeriodetype.name
         val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT =
@@ -118,6 +121,10 @@ object DatafeltKeys {
         val TILTAKSPENGER_RETTIGHET = PortefoljebrukerOpensearchModell::tiltakspenger_rettighet.name
         val UTLOPSDATO = PortefoljebrukerOpensearchModell::utlopsdato.name
         val YTELSE = PortefoljebrukerOpensearchModell::ytelse.name
+        val DAGPENGER = DagpengerForOpensearch::dagpenger.name
+        val DAGPENGER_RETTIGHETSTYPE = DagpengerForOpensearch::rettighetstype.name
+        val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
+        val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name
     }
 
     object Dialog {
