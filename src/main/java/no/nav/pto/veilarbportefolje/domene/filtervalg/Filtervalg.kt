@@ -44,6 +44,7 @@ data class Filtervalg(
     val ytelseAapKelvin: List<YtelseAapKelvin>,
     val ytelseTiltakspenger: List<YtelseTiltakspenger>,
     val ytelseTiltakspengerArena: List<YtelseTiltakspengerArena>,
+    val ytelseDagpenger: List<YtelseDagpenger>,
     val ytelseDagpengerArena: List<YtelseDagpengerArena>
 ) {
 
@@ -84,6 +85,7 @@ data class Filtervalg(
                 harYtelseAapKelvinFilter() ||
                 harYtelseTiltakspengerFilter() ||
                 harYtelseTiltakspengerArenaFilter() ||
+                harYtelseDagpengerFilter() ||
                 harYtelseDagpengerArenaFilter()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
@@ -118,6 +120,9 @@ data class Filtervalg(
 
     fun harYtelseDagpengerArenaFilter(): Boolean =
         ytelseDagpengerArena.isNotEmpty()
+
+    fun harYtelseDagpengerFilter(): Boolean =
+        ytelseDagpenger.isNotEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null

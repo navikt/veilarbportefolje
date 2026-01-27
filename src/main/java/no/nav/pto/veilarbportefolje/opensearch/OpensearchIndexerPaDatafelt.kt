@@ -417,10 +417,12 @@ class OpensearchIndexerPaDatafelt(
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.Ytelser.DAGPENGER, harDagpenger)
+            .startObject(DatafeltKeys.Ytelser.DAGPENGER)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER, harDagpenger)
             .field(DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE, rettighetstype)
             .field(DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER, antallResterendeDager)
             .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET, datoAntallDagerBleBeregnet)
+            .endObject()
             .endObject()
 
         update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")

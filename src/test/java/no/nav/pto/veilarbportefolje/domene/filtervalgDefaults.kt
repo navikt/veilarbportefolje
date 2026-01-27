@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.domene
 
-import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
@@ -44,6 +43,7 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ytelseAapKelvin = emptyList(),
     ytelseTiltakspenger = emptyList(),
     ytelseTiltakspengerArena = emptyList(),
+    ytelseDagpenger = emptyList(),
     ytelseDagpengerArena = emptyList()
 )
 

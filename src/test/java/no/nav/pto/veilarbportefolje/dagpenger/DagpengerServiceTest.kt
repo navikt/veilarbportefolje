@@ -7,15 +7,22 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto
+import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
 import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.VeilederId
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
+import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
@@ -33,6 +40,8 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Optional
+import java.util.concurrent.TimeUnit
 
 class DagpengerServiceTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
@@ -226,53 +235,60 @@ class DagpengerServiceTest(
         assertThat(lagretNyIdent).isNotNull()
     }
 
-//    @Test
-//    fun `Tiltakspenger skal populere og filtrere riktig i opensearch når man har ytelsen`() {
-//        val aktorId = randomAktorId()
-//        setInitialState(aktorId)
-//        val getResponse = opensearchTestClient.fetchDocument(aktorId)
-//        assertThat(getResponse.isExists).isTrue()
-//
-//        val tiltakspengerRespons = getResponse.sourceAsMap["tiltakspenger"];
-//
-//        assertThat(tiltakspengerRespons).isNotNull
-//        assertThat(tiltakspengerRespons).isEqualTo(true)
-//
-//        val filtervalg = getFiltervalgDefaults().copy(
-//            ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
-//        )
-//
-//        verifiserAsynkront(
-//            2, TimeUnit.SECONDS
-//        ) {
-//            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
-//                "1123",
-//                Optional.empty(),
-//                Sorteringsrekkefolge.STIGENDE,
-//                Sorteringsfelt.IKKE_SATT,
-//                filtervalg,
-//                null,
-//                null
-//            )
-//
-//            assertThat(responseBrukere.antall).isEqualTo(1)
-//            assertThat(responseBrukere.brukere.first().ytelser.tiltakspenger).isNotNull()
-//        }
-//    }
-//
-//    private fun setInitialState(aktorId: AktorId) {
-//        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-//        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
-//        populateOpensearch(navKontor, veilederId, aktorId.get())
-//
-//        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
-//        val mockedRespons = listOf(mockedVedtak)
-//        `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(mockedRespons)
-//
-//        tiltakspengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(personId = norskIdent.toString()))
-//
-//    }
-//
+    @Test
+    fun `Dagpenger skal populere og filtrere riktig i opensearch når man har ytelsen`() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val dagpengerMap = getResponse.sourceAsMap[DatafeltKeys.Ytelser.DAGPENGER] as Map<*, *>
+        val harDagpenger = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER]
+        val rettighetstype = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE]
+        val antallDager = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER]
+        val datoAntallDager = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET]
+
+        assertThat(dagpengerMap).isNotNull
+        assertThat(harDagpenger).isEqualTo(true)
+        assertThat(rettighetstype).isEqualTo(DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER.name)
+        assertThat(antallDager).isEqualTo(118)
+        assertThat(datoAntallDager).isEqualTo(LocalDate.of(2026, 1, 3).toString())
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER)
+        )
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().ytelser.dagpenger).isNotNull()
+        }
+    }
+
+    private fun setInitialState(aktorId: AktorId) {
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(mockedPerioder)
+        `when`(dagpengerClient.hentDagpengerBeregninger(anyString(), anyString(), any())).thenReturn(mockedBeregning)
+
+        dagpengerService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMelding.copy(personId = norskIdent.toString()))
+
+    }
+
 
     val mockedYtelseKafkaMelding = YtelserKafkaDTO(
         personId = "10108000000",

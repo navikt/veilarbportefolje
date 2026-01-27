@@ -286,8 +286,8 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void setDagpenger(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        String rettighetstypeString = rs.getString(YTELSER_DAGPENGER_RETTIGHETSTYPE);
-        DagpengerRettighetstype rettighetstype = DagpengerRettighetstype.valueOf(rettighetstypeString);
+        String rettighetstype = rs.getString(YTELSER_DAGPENGER_RETTIGHETSTYPE);
+        DagpengerRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : DagpengerRettighetstype.valueOf(rettighetstype);
         LocalDate vedtaksDatoTom = rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
         Integer antallDagerResterende = rs.getObject(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) != null ? rs.getInt(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) : null;
         LocalDate datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET) != null ? rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET).toLocalDate() : null;
@@ -295,7 +295,7 @@ public class BrukerRepositoryV2 {
 
         DagpengerForOpensearch dagpenger = new DagpengerForOpensearch(
                 vedtakErFortsattGjeldende,
-                rettighetstype,
+                rettighetstypeOrNull,
                 antallDagerResterende,
                 datoAntallDagerBleBeregnet
         );

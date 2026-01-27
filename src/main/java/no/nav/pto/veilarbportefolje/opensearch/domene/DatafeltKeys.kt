@@ -121,7 +121,8 @@ object DatafeltKeys {
         val TILTAKSPENGER_RETTIGHET = PortefoljebrukerOpensearchModell::tiltakspenger_rettighet.name
         val UTLOPSDATO = PortefoljebrukerOpensearchModell::utlopsdato.name
         val YTELSE = PortefoljebrukerOpensearchModell::ytelse.name
-        val DAGPENGER = DagpengerForOpensearch::dagpenger.name
+        val DAGPENGER = PortefoljebrukerOpensearchModell::dagpenger.name
+        val DAGPENGER_HAR_DAGPENGER = DagpengerForOpensearch::harDagpenger.name
         val DAGPENGER_RETTIGHETSTYPE = DagpengerForOpensearch::rettighetstype.name
         val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
         val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name

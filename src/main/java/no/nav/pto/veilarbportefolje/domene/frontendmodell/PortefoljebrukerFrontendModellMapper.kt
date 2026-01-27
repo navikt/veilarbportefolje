@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
@@ -133,6 +134,7 @@ object PortefoljebrukerFrontendModellMapper {
                 ),
                 aap = mapAapKelvin(opensearchBruker),
                 tiltakspenger = mapTiltakspenger(opensearchBruker),
+                dagpenger = mapDagpenger(opensearchBruker),
                 ensligeForsorgereOvergangsstonad = opensearchBruker.enslige_forsorgere_overgangsstonad?.let {
                     EnsligForsorgerOvergangsstonad(
                         vedtaksPeriodetype = it.vedtaksPeriodetype,
@@ -171,6 +173,13 @@ object PortefoljebrukerFrontendModellMapper {
         return Tiltakspenger(
             vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom!!,
             rettighet = rettighetTekst
+        )
+    }
+
+    private fun mapDagpenger(opensearchModell: PortefoljebrukerOpensearchModell): Dagpenger? {
+        val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
+        return Dagpenger(
+            rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype)
         )
     }
 

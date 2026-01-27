@@ -56,6 +56,8 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.LA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TALESPRAAK_TOLK
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TEGNSPRAAK_TOLK
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
@@ -383,33 +385,50 @@ class OpensearchFilterQueryBuilder {
         }
 
 
-        if (filtervalg.harYtelseDagpengerArenaFilter()) {
-            val subQueryArena = QueryBuilders.boolQuery()
+        if (filtervalg.harYtelseDagpengerFilter() || filtervalg.harYtelseDagpengerArenaFilter()) {
+            val subQueryDagpengerArena = QueryBuilders.boolQuery()
+            val subQueryDagpenger = QueryBuilders.boolQuery()
+            val combinedSubQuery = QueryBuilders.boolQuery()
+
+            filtervalg.ytelseDagpenger.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
+                when (ytelseDagpenger) {
+                    YtelseDagpenger.HAR_DAGPENGER -> subQueryDagpenger.should(
+                        QueryBuilders.termQuery(
+                            "$DAGPENGER.$DAGPENGER_HAR_DAGPENGER",
+                            true
+                        )
+                    )
+
+                    else -> {
+                        throw IllegalStateException("ytelseDagspenger har ugyldig verdi")
+                    }
+                }
+            })
 
             filtervalg.ytelseDagpengerArena.forEach(Consumer { ytelseArena: YtelseDagpengerArena? ->
                 when (ytelseArena) {
-                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
                             YTELSE,
                             YtelseMapping.ORDINARE_DAGPENGER
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
                             YTELSE,
                             YtelseMapping.DAGPENGER_MED_PERMITTERING
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
                             YTELSE,
                             YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
                             YTELSE,
                             YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER
@@ -422,7 +441,14 @@ class OpensearchFilterQueryBuilder {
                 }
             })
 
-            queryBuilder.must(subQueryArena)
+            if (filtervalg.harYtelseDagpengerFilter()) {
+                combinedSubQuery.should(subQueryDagpenger)
+            }
+            if (filtervalg.harYtelseDagpengerArenaFilter()) {
+                combinedSubQuery.should(subQueryDagpengerArena)
+            }
+
+            queryBuilder.must(combinedSubQuery)
         }
 
         if (filtervalg.harKjonnfilter()) {

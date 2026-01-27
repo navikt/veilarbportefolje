@@ -4,8 +4,8 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import java.time.LocalDate
 
 data class DagpengerForOpensearch(
-    val dagpenger: Boolean,
-    val rettighetstype: DagpengerRettighetstype,
-    val antallResterendeDager: Int?,
-    val datoAntallDagerBleBeregnet: LocalDate?,
+    val harDagpenger: Boolean = false,
+    val rettighetstype: DagpengerRettighetstype? = null,
+    val antallResterendeDager: Int? = null,
+    val datoAntallDagerBleBeregnet: LocalDate? = null
 )
