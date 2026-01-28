@@ -2,9 +2,11 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Dagpenger
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -289,6 +291,24 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             antallResterendeDager = 100,
             datoAntallDagerBleBeregnet = LocalDate.now()
         )
+        val dagpengerPermittering = DagpengerForOpensearch(
+            harDagpenger = true,
+            rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+            antallResterendeDager = 120,
+            datoAntallDagerBleBeregnet = LocalDate.now()
+        )
+        val dagpengerPermitteringIkkeAktivYtelse = DagpengerForOpensearch(
+            harDagpenger = false,
+            rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+            antallResterendeDager = 0,
+            datoAntallDagerBleBeregnet = LocalDate.now()
+        )
+        val dagpengerFiske = DagpengerForOpensearch(
+            harDagpenger = true,
+            rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI,
+            antallResterendeDager = 140,
+            datoAntallDagerBleBeregnet = LocalDate.now()
+        )
 
         val brukerMedDagpenger = PortefoljebrukerOpensearchModell(
             aktoer_id = randomAktorId().get(),
@@ -297,6 +317,31 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             enhet_id = TEST_ENHET,
             veileder_id = TEST_VEILEDER_0,
             dagpenger = dagpenger,
+        )
+        val brukerMedDagpengerPermittert = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            dagpenger = dagpengerPermittering,
+        )
+        val brukerMedDagpengerIkkeAktivYtelse = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            dagpenger = dagpengerPermitteringIkkeAktivYtelse,
+        )
+
+        val brukerMedDagpengerFiske = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            dagpenger = dagpengerFiske,
         )
 
         val brukerUtenDagpenger = PortefoljebrukerOpensearchModell(
@@ -308,13 +353,22 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             dagpenger = null
         )
 
-        val liste = listOf(brukerMedDagpenger, brukerUtenDagpenger)
+        val liste = listOf(
+            brukerMedDagpenger,
+            brukerMedDagpengerPermittert,
+            brukerMedDagpengerIkkeAktivYtelse,
+            brukerMedDagpengerFiske,
+            brukerUtenDagpenger
+        )
         skrivBrukereTilTestindeks(liste)
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
         val filterValg = getFiltervalgDefaults().copy(
-            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER)
+            ytelseDagpenger = listOf(
+                YtelseDagpenger.HAR_DAGPENGER_ORDINAER,
+                YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING
+            )
         )
 
         val response = opensearchService.hentBrukere(
@@ -327,8 +381,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             null
         )
 
-        Assertions.assertThat(response.antall).isEqualTo(1)
+        Assertions.assertThat(response.antall).isEqualTo(2)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpenger.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedDagpengerPermittert.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
+            .doesNotContain(brukerMedDagpengerFiske.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenDagpenger.fnr)
     }
 

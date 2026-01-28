@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
@@ -58,6 +59,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
@@ -387,17 +389,44 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harYtelseDagpengerFilter() || filtervalg.harYtelseDagpengerArenaFilter()) {
             val subQueryDagpengerArena = QueryBuilders.boolQuery()
-            val subQueryDagpenger = QueryBuilders.boolQuery()
+            val subQueryDagpenger = QueryBuilders.boolQuery().must(
+                QueryBuilders.termQuery(
+                    "$DAGPENGER.$DAGPENGER_HAR_DAGPENGER",
+                    true
+                )
+            )
+
             val combinedSubQuery = QueryBuilders.boolQuery()
 
             filtervalg.ytelseDagpenger?.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
                 when (ytelseDagpenger) {
-                    YtelseDagpenger.HAR_DAGPENGER -> subQueryDagpenger.should(
-                        QueryBuilders.termQuery(
-                            "$DAGPENGER.$DAGPENGER_HAR_DAGPENGER",
-                            true
+                    YtelseDagpenger.HAR_DAGPENGER_ORDINAER -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.termQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                                DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER
+                            )
                         )
-                    )
+                    }
+
+                    YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.termQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER
+                            )
+                        )
+
+                    }
+
+                    YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.termQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                                DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI.toString()
+                            )
+                        )
+                    }
 
                     else -> {
                         throw IllegalStateException("ytelseDagspenger har ugyldig verdi")
@@ -442,6 +471,7 @@ class OpensearchFilterQueryBuilder {
             })
 
             if (filtervalg.harYtelseDagpengerFilter()) {
+                subQueryDagpenger.minimumShouldMatch(1)
                 combinedSubQuery.should(subQueryDagpenger)
             }
             if (filtervalg.harYtelseDagpengerArenaFilter()) {
