@@ -44,7 +44,7 @@ data class Filtervalg(
     val ytelseAapKelvin: List<YtelseAapKelvin>,
     val ytelseTiltakspenger: List<YtelseTiltakspenger>,
     val ytelseTiltakspengerArena: List<YtelseTiltakspengerArena>,
-    val ytelseDagpenger: List<YtelseDagpenger>,
+    val ytelseDagpenger: List<YtelseDagpenger>? = emptyList(), // Nullable til frontenden er oppdatert
     val ytelseDagpengerArena: List<YtelseDagpengerArena>
 ) {
 
@@ -122,7 +122,7 @@ data class Filtervalg(
         ytelseDagpengerArena.isNotEmpty()
 
     fun harYtelseDagpengerFilter(): Boolean =
-        ytelseDagpenger.isNotEmpty()
+        !ytelseDagpenger.isNullOrEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null
