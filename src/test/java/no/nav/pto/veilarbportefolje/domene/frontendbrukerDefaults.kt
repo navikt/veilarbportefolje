@@ -75,6 +75,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         ),
         aap = null,
         tiltakspenger = null,
+        dagpenger = null,
         ensligeForsorgereOvergangsstonad = null,
     ),
     meldingerVenterPaSvar = MeldingerVenterPaSvar(

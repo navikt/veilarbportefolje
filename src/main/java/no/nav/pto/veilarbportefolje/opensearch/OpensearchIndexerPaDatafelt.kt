@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.VeilederId
@@ -405,6 +406,26 @@ class OpensearchIndexerPaDatafelt(
             .endObject()
 
         update(aktorId, content, "Oppdatert tiltakspenger for aktorId: $aktorId")
+    }
+
+    fun oppdaterDagpenger(
+        aktorId: AktorId,
+        harDagpenger: Boolean,
+        rettighetstype: DagpengerRettighetstype,
+        antallResterendeDager: Int?,
+        datoAntallDagerBleBeregnet: LocalDate?
+    ) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .startObject(DatafeltKeys.Ytelser.DAGPENGER)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER, harDagpenger)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER, antallResterendeDager)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET, datoAntallDagerBleBeregnet)
+            .endObject()
+            .endObject()
+
+        update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")
     }
 
     private fun updateWithScript(aktoerId: AktorId, script: Script?, logInfo: String?) {
