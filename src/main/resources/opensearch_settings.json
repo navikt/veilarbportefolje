@@ -301,6 +301,16 @@
       },
       "tiltakspenger_rettighet": {
         "type": "keyword"
+      },
+      "dagpenger": {
+        "properties": {
+          "harDagpenger": {
+            "type": "boolean"
+          },
+          "rettighetstype": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }
