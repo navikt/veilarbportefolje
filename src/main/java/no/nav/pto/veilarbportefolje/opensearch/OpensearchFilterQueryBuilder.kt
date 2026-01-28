@@ -390,7 +390,7 @@ class OpensearchFilterQueryBuilder {
             val subQueryDagpenger = QueryBuilders.boolQuery()
             val combinedSubQuery = QueryBuilders.boolQuery()
 
-            filtervalg.ytelseDagpenger.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
+            filtervalg.ytelseDagpenger?.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
                 when (ytelseDagpenger) {
                     YtelseDagpenger.HAR_DAGPENGER -> subQueryDagpenger.should(
                         QueryBuilders.termQuery(
