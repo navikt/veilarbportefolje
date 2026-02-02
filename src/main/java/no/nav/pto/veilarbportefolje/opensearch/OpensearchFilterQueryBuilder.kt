@@ -402,8 +402,8 @@ class OpensearchFilterQueryBuilder {
                 when (ytelseDagpenger) {
                     YtelseDagpenger.HAR_DAGPENGER_ORDINAER -> {
                         subQueryDagpenger.should(
-                            QueryBuilders.termQuery(
-                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
                                 DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER
                             )
                         )
@@ -411,8 +411,8 @@ class OpensearchFilterQueryBuilder {
 
                     YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING -> {
                         subQueryDagpenger.should(
-                            QueryBuilders.termQuery(
-                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
                                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER
                             )
                         )
@@ -421,8 +421,8 @@ class OpensearchFilterQueryBuilder {
 
                     YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> {
                         subQueryDagpenger.should(
-                            QueryBuilders.termQuery(
-                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword",
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
                                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI.toString()
                             )
                         )
