@@ -255,7 +255,7 @@ class DagpengerServiceTest(
         assertThat(datoAntallDager).isEqualTo(LocalDate.of(2026, 1, 3).toString())
 
         val filtervalg = getFiltervalgDefaults().copy(
-            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER)
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_ORDINAER)
         )
 
         verifiserAsynkront(
