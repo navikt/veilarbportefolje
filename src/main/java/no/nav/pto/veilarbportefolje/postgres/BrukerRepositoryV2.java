@@ -298,6 +298,7 @@ public class BrukerRepositoryV2 {
         DagpengerForOpensearch dagpenger = new DagpengerForOpensearch(
                 vedtakErFortsattGjeldende,
                 rettighetstypeOrNull,
+                vedtaksDatoTom,
                 antallDagerResterende,
                 datoAntallDagerBleBeregnet
         );

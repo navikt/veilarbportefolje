@@ -413,13 +413,15 @@ class OpensearchIndexerPaDatafelt(
         harDagpenger: Boolean,
         rettighetstype: DagpengerRettighetstype,
         antallResterendeDager: Int?,
-        datoAntallDagerBleBeregnet: LocalDate?
+        datoAntallDagerBleBeregnet: LocalDate?,
+        datoPlanlagtStans: LocalDate?
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .startObject(DatafeltKeys.Ytelser.DAGPENGER)
             .field(DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER, harDagpenger)
             .field(DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_PLANLAGT_STANS, datoPlanlagtStans)
             .field(DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER, antallResterendeDager)
             .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET, datoAntallDagerBleBeregnet)
             .endObject()

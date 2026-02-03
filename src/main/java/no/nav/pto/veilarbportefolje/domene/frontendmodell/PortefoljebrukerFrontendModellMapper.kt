@@ -163,9 +163,7 @@ object PortefoljebrukerFrontendModellMapper {
         //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
         //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
         //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
-        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
-        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
         //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
         //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
         val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet!!)
@@ -177,9 +175,13 @@ object PortefoljebrukerFrontendModellMapper {
     }
 
     private fun mapDagpenger(opensearchModell: PortefoljebrukerOpensearchModell): Dagpenger? {
+        opensearchModell.dagpenger?.harDagpenger ?: return null
         val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
         return Dagpenger(
-            rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype)
+            rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
+            datoPlanlagtStans = opensearchModell.dagpenger?.datoPlanlagtStans,
+            antallResterendeDager = opensearchModell.dagpenger?.antallResterendeDager,
+            datoAntallDagerBleBeregnet = opensearchModell.dagpenger?.datoAntallDagerBleBeregnet
         )
     }
 
@@ -193,9 +195,7 @@ object PortefoljebrukerFrontendModellMapper {
         //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
         //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
         //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
-        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
-        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
         //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
         //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
         val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet!!)
@@ -240,11 +240,9 @@ object PortefoljebrukerFrontendModellMapper {
                 //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
                 //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
                 //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
-                //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
-                //    (veilarbportefoljeflatefs bør då også oppdaterast)
-                //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-                //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
+                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
+                //     * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
+                //      puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
                 innsatsgruppe = opensearchBruker.gjeldendeVedtak14a?.innsatsgruppe!!,
                 hovedmal = opensearchBruker.gjeldendeVedtak14a?.hovedmal,
                 fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a?.fattetDato)
@@ -261,9 +259,7 @@ object PortefoljebrukerFrontendModellMapper {
                 //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
                 //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
                 //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
-                //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
-                //    (veilarbportefoljeflatefs bør då også oppdaterast)
+                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
                 //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
                 //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
                 status = opensearchBruker.utkast_14a_status!!,
@@ -301,9 +297,7 @@ object PortefoljebrukerFrontendModellMapper {
         //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
         //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
         //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor gjere ein av to ting:
-        //    * endre PortefoljebrukerFrontendModell til å gjenspegle PortefoljebrukerOpensearchModell
-        //    (veilarbportefoljeflatefs bør då også oppdaterast)
+        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
         //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
         //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
 

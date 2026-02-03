@@ -126,6 +126,7 @@ object DatafeltKeys {
         val DAGPENGER_RETTIGHETSTYPE = DagpengerForOpensearch::rettighetstype.name
         val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
         val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name
+        val DAGPENGER_DATO_PLANLAGT_STANS = DagpengerForOpensearch::datoPlanlagtStans.name
     }
 
     object Dialog {

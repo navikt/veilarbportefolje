@@ -89,7 +89,8 @@ class DagpengerService(
             harAktivYtelse,
             sisteDagpengerPeriode.ytelseType,
             antallResterendeDager?.gjenståendeDager,
-            antallResterendeDager?.dato
+            antallResterendeDager?.dato,
+            sisteDagpengerPeriode.tilOgMedDato
         )
     }
 
