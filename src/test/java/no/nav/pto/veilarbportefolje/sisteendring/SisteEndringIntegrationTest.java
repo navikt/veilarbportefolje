@@ -6,12 +6,8 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
+import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
-import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge;
-import no.nav.pto.veilarbportefolje.domene.NavKontor;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -20,6 +16,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositor
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
+import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,15 +26,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
+import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgSisteEndringForJavaTester;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -171,7 +171,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     null);
 
             assertThat(responseBrukere.getAntall()).isEqualTo(1);
-            assertThat(responseBrukere.getBrukere().get(0).getSisteEndringTidspunkt()).isEqualTo(zonedDateTime.toLocalDateTime());
+            assertThat(responseBrukere.getBrukere().get(0).getSisteEndringAvBruker().getTidspunkt())
+                    .isEqualTo(DateUtils.fromZonedDateTimeToLocalDateOrNull(zonedDateTime));
 
         });
     }
@@ -187,7 +188,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -206,7 +207,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         assertThat(responseBrukere.getAntall()).isEqualTo(0);
     }
 
-    //@Test
+    @Test
     public void sisteendring_ulestfilter() {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, fodselsnummer1, testEnhet.getValue(), null);
@@ -222,7 +223,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -310,7 +311,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                     empty(),
                     Sorteringsrekkefolge.STIGENDE,
                     Sorteringsfelt.IKKE_SATT,
-                    new Filtervalg(),
+                    getFiltervalgDefaults(),
                     null,
                     null);
 
@@ -373,8 +374,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseSortertFULLFORT_IJOBB.getAntall()).isEqualTo(2);
-        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
-        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
+        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(0).getSisteEndringAvBruker().getTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_2_i_2025.getYear());
+        assertThat(responseSortertFULLFORT_IJOBB.getBrukere().get(1).getSisteEndringAvBruker().getTidspunkt().getYear()).isEqualTo(endret_Tid_IJOBB_bruker_1_i_2024.getYear());
 
         var responseSortertFULLFORT_EGEN = opensearchService.hentBrukere(
                 testEnhet.getValue(),
@@ -386,9 +387,9 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null);
 
         assertThat(responseSortertFULLFORT_EGEN.getAntall()).isEqualTo(3);
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(0).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_2_i_2020.getYear());
-        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_1_i_2021.getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(0).getSisteEndringAvBruker().getTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_3_i_2019.getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(1).getSisteEndringAvBruker().getTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_2_i_2020.getYear());
+        assertThat(responseSortertFULLFORT_EGEN.getBrukere().get(2).getSisteEndringAvBruker().getTidspunkt().getYear()).isEqualTo(endret_Tid_EGEN_bruker_1_i_2021.getYear());
 
         var responseSortertTomRes1 = opensearchService.hentBrukere(
                 testEnhet.getValue(),
@@ -399,20 +400,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
                 null,
                 null);
         assertThat(responseSortertTomRes1.getAntall()).isEqualTo(0);
-    }
-
-    @Test
-    public void sisteendring_filterPaFlereEndringerSkalKasteError() {
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> opensearchService.hentBrukere(
-                        testEnhet.getValue(),
-                        empty(),
-                        Sorteringsrekkefolge.SYNKENDE,
-                        Sorteringsfelt.SISTE_ENDRING_DATO,
-                        getFiltervalg(FULLFORT_IJOBB, FULLFORT_EGEN),
-                        null,
-                        null));
-        assertThat(exception).isNotNull();
     }
 
     private void send_aktvitet_melding(AktorId aktoerId, ZonedDateTime endretDato, KafkaAktivitetMelding.EndringsType endringsType,
@@ -449,19 +436,10 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     }
 
     private static Filtervalg getFiltervalg(SisteEndringsKategori kategori, boolean uleste) {
-        Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.setSisteEndringKategori(List.of(kategori.name()));
+        Filtervalg filtervalg = getFiltervalgSisteEndringForJavaTester(kategori.name());
         if (uleste) {
-            filtervalg.setUlesteEndringer("ULESTE_ENDRINGER");
+            return getFiltervalgSisteEndringForJavaTester(kategori.name(), "ULESTE_ENDRINGER");
         }
-        return filtervalg;
-    }
-
-    private static Filtervalg getFiltervalg(SisteEndringsKategori kategori_1, SisteEndringsKategori kategori_2) {
-        Filtervalg filtervalg = new Filtervalg();
-        filtervalg.setFerdigfilterListe(new ArrayList<>());
-        filtervalg.setSisteEndringKategori(List.of(kategori_1.name(), kategori_2.name()));
         return filtervalg;
     }
 

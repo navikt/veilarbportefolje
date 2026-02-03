@@ -181,9 +181,9 @@ public class OpensearchAdminService {
         return nyIndex;
     }
 
-    public GetResponse fetchDocument(AktorId aktoerId, IndexName indexName) throws IOException {
+    public GetResponse fetchDocument(AktorId aktoerId, String indexName) throws IOException {
         GetRequest getRequest = new GetRequest();
-        getRequest.index(indexName.getValue());
+        getRequest.index(indexName);
         getRequest.id(aktoerId.toString());
         return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
     }

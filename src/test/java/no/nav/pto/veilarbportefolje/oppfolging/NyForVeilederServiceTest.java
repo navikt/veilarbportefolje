@@ -38,7 +38,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
         assertThat(data).isPresent();
         assertThat(data.get().getNyForVeileder()).isFalse();
 
-        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).isNy_for_veileder();
+        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).getNy_for_veileder();
         assertThat(nyForVeileder).isFalse();
     }
 
@@ -58,7 +58,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
         assertThat(data).isPresent();
         //assertThat(data.get().getNyForVeileder()).isFalse();
 
-        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).isNy_for_veileder();
+        final boolean nyForVeileder = opensearchTestClient.hentBrukerFraOpensearch(aktoerId).getNy_for_veileder();
         //assertThat(nyForVeileder).isFalse();
     }
 }

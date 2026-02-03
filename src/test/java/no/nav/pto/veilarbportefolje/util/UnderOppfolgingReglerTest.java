@@ -10,11 +10,11 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void skal_vaere_under_oppfolging() {
-        var bruker = new PortefoljebrukerOpensearchModell()
-                .setFnr("00000000000")
-                .setFormidlingsgruppekode("foo")
-                .setKvalifiseringsgruppekode("bar")
-                .setOppfolging(true);
+        var bruker = new PortefoljebrukerOpensearchModell();
+        bruker.setFnr("00000000000");
+        bruker.setFormidlingsgruppekode("foo");
+        bruker.setKvalifiseringsgruppekode("bar");
+        bruker.setOppfolging(true);
 
         var result = erUnderOppfolging(bruker);
         assertThat(result).isTrue();
@@ -22,11 +22,11 @@ public class UnderOppfolgingReglerTest {
 
     @Test
     public void skal_ikke_vaere_under_oppfolging() {
-        var bruker = new PortefoljebrukerOpensearchModell()
-                .setFnr("00000000000")
-                .setFormidlingsgruppekode("foo")
-                .setKvalifiseringsgruppekode("bar")
-                .setOppfolging(false);
+        var bruker = new PortefoljebrukerOpensearchModell();
+        bruker.setFnr("00000000000");
+        bruker.setFormidlingsgruppekode("foo");
+        bruker.setKvalifiseringsgruppekode("bar");
+        bruker.setOppfolging(false);
 
         var result = erUnderOppfolging(bruker);
         assertThat(result).isFalse();

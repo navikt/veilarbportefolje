@@ -16,10 +16,12 @@ enum class YTELSE_MELDINGSTYPE {
 
 enum class YTELSE_KILDESYSTEM {
     KELVIN,
-    TPSAK
+    TPSAK,
+    DPSAK
 }
 
 enum class YTELSE_TYPE {
     AAP,
-    TILTAKSPENGER
+    TILTAKSPENGER,
+    DAGPENGER
 }

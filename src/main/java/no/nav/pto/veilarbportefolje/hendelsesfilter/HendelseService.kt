@@ -25,9 +25,9 @@ import java.util.*
  */
 @Service
 class HendelseService(
-    @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+    @param:Autowired private val hendelseRepository: HendelseRepository,
+    @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
+    @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 

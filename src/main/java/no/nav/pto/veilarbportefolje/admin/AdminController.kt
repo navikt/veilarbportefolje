@@ -194,7 +194,6 @@ class AdminController(
         return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført")
     }
 
-
     @GetMapping("hentData/hentDataForBruker/muligeValg")
     @Operation(
         summary = "Henter mulige valg for datahenting",

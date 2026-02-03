@@ -7,7 +7,8 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.common.utils.fn.UnsafeSupplier
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
-import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.Statustall
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.util.DateUtils
@@ -32,7 +33,7 @@ import java.util.*
 class OpensearchServiceIntStatustallTest @Autowired constructor(
     private val opensearchService: OpensearchService,
     private val authContextHolder: AuthContextHolder
-) : EndToEndTest(){
+) : EndToEndTest() {
     @Autowired
     private lateinit var veilarbVeilederClient: VeilarbVeilederClient
     private lateinit var TEST_ENHET: String
@@ -40,6 +41,7 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
     private lateinit var TEST_VEILEDER_1: String
     private lateinit var TEST_VEILEDER_2: String
     private lateinit var TEST_VEILEDER_3: String
+
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
@@ -81,9 +83,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             "6",
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        kode6BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val kode7Bruker = genererRandomBruker(
             TEST_ENHET,
@@ -102,9 +103,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             "7",
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        kode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val egenAnsattBruker = genererRandomBruker(
             TEST_ENHET,
@@ -123,9 +123,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             null,
             true
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        egenAnsattBrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val egenAnsattOgKode7Bruker = genererRandomBruker(
             TEST_ENHET,
@@ -145,9 +144,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
                 TEST_VEILEDER_1,
                 "7",
                 true
-            ).setVenterpasvarfranav(
-                DateUtils.toIsoUTC(LocalDateTime.now())
             )
+        egenAnsattOgKode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val tilfeldigFordeltBruker = genererRandomBruker(
             TEST_ENHET,
@@ -166,9 +164,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_0,
             null,
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        tilfeldigBrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val brukere = listOf(
             kode6Bruker,
@@ -232,9 +229,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             "6",
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        kode6BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val kode7Bruker = genererRandomBruker(
             TEST_ENHET,
@@ -253,9 +249,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             "7",
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        kode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val egenAnsattBruker = genererRandomBruker(
             TEST_ENHET,
@@ -274,9 +269,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_1,
             null,
             true
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        egenAnsattBrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val egenAnsattOgKode7Bruker = genererRandomBruker(
             TEST_ENHET,
@@ -296,9 +290,8 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
                 TEST_VEILEDER_1,
                 "7",
                 true
-            ).setVenterpasvarfranav(
-                DateUtils.toIsoUTC(LocalDateTime.now())
             )
+        egenAnsattOgKode7BrukerSomVenterPaSvarFraNav.venterpasvarfranav = DateUtils.toIsoUTC(LocalDateTime.now())
 
         val tilfeldigFordeltBruker = genererRandomBruker(
             TEST_ENHET,
@@ -317,9 +310,10 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
             TEST_VEILEDER_0,
             null,
             false
-        ).setVenterpasvarfranav(
-            DateUtils.toIsoUTC(LocalDateTime.now())
         )
+        tilfeldigBrukerSomVenterPaSvarFraNav.venterpasvarfranav =
+            DateUtils.toIsoUTC(LocalDateTime.now())
+
 
         val brukere = listOf(
             kode6Bruker,
@@ -369,18 +363,20 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
 
     @Test
     fun skal_hente_riktige_statustall_for_enhet() {
-        val brukerUtenVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().get())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
+        val brukerUtenVeileder = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+        )
 
-        val brukerMedVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().get())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
+        val brukerMedVeileder = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+        )
 
         val liste = listOf(brukerMedVeileder, brukerUtenVeileder)
 
@@ -406,18 +402,20 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
 
     @Test
     fun skal_mappe_statustall_for_samtlige_aggregation_keys() {
-        val brukerUtenVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().get())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
+        val brukerUtenVeileder = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+        )
 
-        val brukerMedVeileder = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().get())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
+        val brukerMedVeileder = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+        )
 
         val liste = listOf(brukerMedVeileder, brukerUtenVeileder)
 
@@ -458,28 +456,33 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
                 })
             }
     }
+
     private fun genererRandomBruker(
         enhet: String, veilederId: String?, diskresjonskode: String?, egenAnsatt: Boolean
     ): PortefoljebrukerOpensearchModell {
-        val bruker =
-            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
-                .setEnhet_id(enhet)
+        val bruker = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().toString(),
+            fnr = randomFnr().get(),
+            oppfolging = true,
+            enhet_id = enhet,
+        )
 
         if (veilederId != null) {
-            bruker.setVeileder_id(veilederId)
+            bruker.veileder_id = veilederId
         }
 
         if (diskresjonskode != null) {
-            bruker.setDiskresjonskode(diskresjonskode)
+            bruker.diskresjonskode = diskresjonskode
         }
 
         if (egenAnsatt) {
-            bruker.setEgen_ansatt(true)
+            bruker.egen_ansatt = true
         }
 
         return bruker
     }
+
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 }

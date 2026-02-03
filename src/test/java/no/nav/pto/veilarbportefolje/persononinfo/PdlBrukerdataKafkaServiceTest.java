@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
@@ -68,8 +67,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 , pdlIdentRepository,
                 new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2),
                 barnUnder18AarService,
-                Mockito.mock(OpensearchIndexer.class),
-                Mockito.mock(OpensearchIndexerPaDatafelt.class)
+                Mockito.mock(OpensearchIndexer.class)
         );
     }
 

@@ -38,10 +38,12 @@ class TestDataClient(
     private val pdlPersonRepository: PdlPersonRepository,
 ) {
     fun upsertBrukerregistreringV1(aktorId: AktorId) {
-        jdbcTemplatePostgres.update("""
+        jdbcTemplatePostgres.update(
+            """
                         INSERT INTO BRUKER_REGISTRERING (AKTOERID) VALUES (?)
                         ON CONFLICT (AKTOERID) DO NOTHING
-        """.trimIndent(), aktorId.get())
+        """.trimIndent(), aktorId.get()
+        )
     }
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
@@ -84,6 +86,10 @@ class TestDataClient(
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, navKontor: NavKontor, veilederId: VeilederId) {
         lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now(), null)
+    }
+
+    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, startDato: ZonedDateTime) {
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), randomVeilederId(), startDato, null)
     }
 
     private fun lagreBrukerUnderOppfolging(

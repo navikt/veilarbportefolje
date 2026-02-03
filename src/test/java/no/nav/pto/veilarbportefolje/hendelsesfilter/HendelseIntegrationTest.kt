@@ -6,8 +6,8 @@ import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil
@@ -247,12 +247,14 @@ class HendelseIntegrationTest(
 
         // Then
         pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
-        val brukereMedUtgåttVarsel  = opensearchService.hentBrukere(
+        val brukereMedUtgåttVarsel = opensearchService.hentBrukere(
             brukerOppfolgingsEnhet.value,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL)),
+            getFiltervalgDefaults().copy(
+                ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+            ),
             null,
             null
         ).brukere
@@ -486,7 +488,9 @@ class HendelseIntegrationTest(
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            Filtervalg().setFerdigfilterListe(filter),
+            getFiltervalgDefaults().copy(
+                ferdigfilterListe = filter
+            ),
             null,
             null
         ).brukere.first()

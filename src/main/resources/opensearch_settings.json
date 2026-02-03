@@ -183,9 +183,6 @@
       "bostedSistOppdatert": {
         "type": "date"
       },
-      "avvik14aVedtak": {
-        "type": "keyword"
-      },
       "neste_svarfrist_stilling_fra_nav": {
         "type": "date"
       },
@@ -304,6 +301,16 @@
       },
       "tiltakspenger_rettighet": {
         "type": "keyword"
+      },
+      "dagpenger": {
+        "properties": {
+          "harDagpenger": {
+            "type": "boolean"
+          },
+          "rettighetstype": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }

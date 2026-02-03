@@ -1,8 +1,12 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
-import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.Kjonn
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient
@@ -32,26 +36,27 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_returnere_brukere_basert_paa_fodselsdag_i_maaneden() {
-        val testBrukerFodselsdagSyvende = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setFodselsdag_i_mnd(7)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
+        val testBrukerFodselsdagSyvende = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            fodselsdag_i_mnd = 7,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+        )
 
-        val testBrukerFodselsdagNiende = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setFodselsdag_i_mnd(9)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
+        val testBrukerFodselsdagNiende = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            fodselsdag_i_mnd = 9,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+        )
 
-
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setFodselsdagIMnd(listOf("7"))
+        val filterValg = getFiltervalgDefaults().copy(
+            fodselsdagIMnd = listOf("7")
+        )
 
         val liste = listOf(testBrukerFodselsdagSyvende, testBrukerFodselsdagNiende)
         skrivBrukereTilTestindeks(liste)
@@ -78,30 +83,32 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun skal_hente_ut_brukere_basert_paa_kjonn() {
-        val mann = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setKjonn("M")
+        val mann = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            kjonn = "M",
+        )
 
-        val kvinne = PortefoljebrukerOpensearchModell()
-            .setAktoer_id(randomAktorId().get())
-            .setFnr(randomFnr().toString())
-            .setOppfolging(true)
-            .setEnhet_id(TEST_ENHET)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setKjonn("K")
+        val kvinne = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            kjonn = "K",
+        )
 
         val liste = listOf(kvinne, mann)
         skrivBrukereTilTestindeks(liste)
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(emptyList())
-            .setKjonn(Kjonn.K)
+        val filterValg = getFiltervalgDefaults().copy(
+            kjonn = Kjonn.K
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -128,39 +135,40 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             TEST_ENHET,
             TEST_VEILEDER_0
         )
-            .setTalespraaktolk(tolkesprakJapansk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTalespraktolkBehovSistOppdatert))
+        trengerTalespraktolk.talespraaktolk = tolkesprakJapansk
+        trengerTalespraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTalespraktolkBehovSistOppdatert)
 
         val trengerTaleOgTegnspraktolkBehovSistOppdatert = "2021-03-23"
         val trengerTaleOgTegnspraktolk = genererRandomBruker(
             TEST_ENHET,
             TEST_VEILEDER_0
         )
-            .setTalespraaktolk(tolkesprakSvensk)
-            .setTegnspraaktolk(tolkesprakSvensk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert))
+        trengerTaleOgTegnspraktolk.talespraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tegnspraaktolk = tolkesprakSvensk
+        trengerTaleOgTegnspraktolk.tolkBehovSistOppdatert =
+            LocalDate.parse(trengerTaleOgTegnspraktolkBehovSistOppdatert)
 
         val trengerTegnspraktolkBehovSistOppdatert = "2023-03-24"
         val trengerTegnspraktolk = genererRandomBruker(
             TEST_ENHET,
             TEST_VEILEDER_0
         )
-            .setTegnspraaktolk(tolkesprakNorsk)
-            .setTolkBehovSistOppdatert(LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert))
+        trengerTegnspraktolk.tegnspraaktolk = tolkesprakNorsk
+        trengerTegnspraktolk.tolkBehovSistOppdatert = LocalDate.parse(trengerTegnspraktolkBehovSistOppdatert)
 
         val brukerUtenTolkebehov1 = genererRandomBruker(
             TEST_ENHET,
             TEST_VEILEDER_0
         )
-            .setTalespraaktolk(null)
-            .setTegnspraaktolk(null)
+        brukerUtenTolkebehov1.talespraaktolk = null
+        brukerUtenTolkebehov1.tegnspraaktolk = null
 
         val brukerUtenTolkebehov2 = genererRandomBruker(
             TEST_ENHET,
             TEST_VEILEDER_0
         )
-            .setTalespraaktolk("")
-            .setTegnspraaktolk("")
+        brukerUtenTolkebehov2.talespraaktolk = ""
+        brukerUtenTolkebehov2.tegnspraaktolk = ""
 
         val liste = listOf(
             trengerTalespraktolk,
@@ -176,63 +184,67 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med talespråktolk */
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TALESPRAAKTOLK"))
+        val filterValgTalespraaktolk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TALESPRAAKTOLK")
+        )
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgTalespraaktolk,
             null,
             null
         )
 
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakSvensk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakSvensk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegnspråktolk */
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK"))
+        val filterValgTegnspraaktolk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgTegnspraaktolk,
             null,
             null
         )
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakSvensk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakSvensk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTaleOgTegnspraktolkBehovSistOppdatert })
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakNorsk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.tegnspraaktolk == tolkesprakNorsk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTegnspraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med tegn- eller talespråktolk */
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
+        val filtervalgBegge = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filtervalgBegge,
             null,
             null
         )
@@ -250,104 +262,111 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk */
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"))
-            .setTolkBehovSpraak(listOf(tolkesprakJapansk))
+        val filterValgBeggeJapansk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"),
+            tolkBehovSpraak = listOf(tolkesprakJapansk)
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgBeggeJapansk,
             null,
             null
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
 
 
         /* Skal hente alle med japansk som tegn- eller talespråk, også når ingen tolkebehov er valgt */
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setTolkebehov(listOf())
-            .setTolkBehovSpraak(listOf(tolkesprakJapansk))
+        val filterValgIngenJapansk = getFiltervalgDefaults().copy(
+            tolkebehov = listOf("TEGNSPRAAKTOLK", "TALESPRAAKTOLK"),
+            tolkBehovSpraak = listOf(tolkesprakJapansk)
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgIngenJapansk,
             null,
             null
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.talespraaktolk == tolkesprakJapansk }
                 .anyMatch { x: PortefoljebrukerFrontendModell -> x.tolkebehov?.sistOppdatert.toString() == trengerTalespraktolkBehovSistOppdatert })
     }
 
     @Test
     fun skal_hente_alle_brukere_fra_landgruppe() {
-        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedeland("NOR")
-            .setFoedelandFulltNavn("Norge")
-            .setLandgruppe("1")
+        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedeland = "NOR",
+            foedelandFulltNavn = "Norge",
+            landgruppe = "1",
+        )
 
-        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedeland("EST")
-            .setFoedelandFulltNavn("Estland")
-            .setLandgruppe("2")
-            .setHovedStatsborgerskap(Statsborgerskap("Estland", LocalDate.now(), null))
+        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedeland = "EST",
+            foedelandFulltNavn = "Estland",
+            landgruppe = "2",
+            hovedStatsborgerskap = Statsborgerskap("Estland", LocalDate.now(), null),
+        )
 
-        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedeland("AZE")
-            .setFoedelandFulltNavn("Aserbajdsjan")
-            .setLandgruppe("3")
-            .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
+        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedeland = "AZE",
+            foedelandFulltNavn = "Aserbajdsjan",
+            landgruppe = "3",
+            hovedStatsborgerskap = Statsborgerskap("Norge", LocalDate.now(), null),
+        )
 
-        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedeland("SGP")
-            .setFoedelandFulltNavn("Singapore")
-            .setLandgruppe("3")
-            .setHovedStatsborgerskap(Statsborgerskap("Singapore", LocalDate.now(), null))
+        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedeland = "SGP",
+            foedelandFulltNavn = "Singapore",
+            landgruppe = "3",
+            hovedStatsborgerskap = Statsborgerskap("Singapore", LocalDate.now(), null),
+        )
 
-        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
+        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hovedStatsborgerskap = Statsborgerskap("Norge", LocalDate.now(), null),
+        )
 
         val liste = listOf(
             brukerFraLandGruppe1,
@@ -361,16 +380,16 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setLandgruppe(listOf("LANDGRUPPE_3"))
+        val filterValgGr3 = getFiltervalgDefaults().copy(
+            landgruppe = listOf("LANDGRUPPE_3")
+        )
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgGr3,
             null,
             null
         )
@@ -382,17 +401,16 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
             (response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.foedeland == "Singapore" })
         )
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setFoedeland(listOf("NOR"))
+        val filterValgFoedelandNorge = getFiltervalgDefaults().copy(
+            foedeland = listOf("NOR")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgFoedelandNorge,
             null,
             null
         )
@@ -400,17 +418,16 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.foedeland == "Norge" })
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setLandgruppe(listOf("LANDGRUPPE_UKJENT"))
+        val filterValgLandgruppeUkjent = getFiltervalgDefaults().copy(
+            landgruppe = listOf("LANDGRUPPE_UKJENT")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgLandgruppeUkjent,
             null,
             null
         )
@@ -418,16 +435,16 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertTrue(
             response.brukere.stream().noneMatch { x: PortefoljebrukerFrontendModell -> x.foedeland != null })
 
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setLandgruppe(listOf("LANDGRUPPE_UKJENT", "LANDGRUPPE_3"))
+        val filterValgLandgruppeUkjentOgTre = getFiltervalgDefaults().copy(
+            landgruppe = listOf("LANDGRUPPE_UKJENT", "LANDGRUPPE_3")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgLandgruppeUkjentOgTre,
             null,
             null
         )
@@ -444,69 +461,75 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
     @Test
     fun test_sortering_landgruppe() {
-        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedeland("NOR")
-            .setFoedelandFulltNavn("Norge")
-            .setLandgruppe("1")
+        val brukerFraLandGruppe1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedeland = "NOR",
+            foedelandFulltNavn = "Norge",
+            landgruppe = "1",
+        )
 
-        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedelandFulltNavn("Estland")
-            .setLandgruppe("2")
-            .setHovedStatsborgerskap(Statsborgerskap("Estland", LocalDate.now(), null))
+        val brukerFraLandGruppe2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedelandFulltNavn = "Estland",
+            landgruppe = "2",
+            hovedStatsborgerskap = Statsborgerskap("Estland", LocalDate.now(), null),
+        )
 
-        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedelandFulltNavn("Aserbajdsjan")
-            .setLandgruppe("3")
-            .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
+        val brukerfralandgruppe31 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedelandFulltNavn = "Aserbajdsjan",
+            landgruppe = "3",
+            hovedStatsborgerskap = Statsborgerskap("Norge", LocalDate.now(), null),
+        )
 
-        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedelandFulltNavn("Singapore")
-            .setLandgruppe("3")
-            .setHovedStatsborgerskap(Statsborgerskap("Singapore", LocalDate.now(), null))
+        val brukerfralandgruppe32 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedelandFulltNavn = "Singapore",
+            landgruppe = "3",
+            hovedStatsborgerskap = Statsborgerskap("Singapore", LocalDate.now(), null),
+        )
 
-        val brukerfralandgruppe33 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFoedelandFulltNavn("Botswana")
-            .setLandgruppe("3")
-            .setHovedStatsborgerskap(Statsborgerskap("Botswana", LocalDate.now(), null))
+        val brukerfralandgruppe33 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            foedelandFulltNavn = "Botswana",
+            landgruppe = "3",
+            hovedStatsborgerskap = Statsborgerskap("Botswana", LocalDate.now(), null),
+        )
 
-        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHovedStatsborgerskap(Statsborgerskap("Norge", LocalDate.now(), null))
+        val brukerUkjentLandGruppe = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hovedStatsborgerskap = Statsborgerskap("Norge", LocalDate.now(), null),
+        )
 
         val liste = listOf(
             brukerFraLandGruppe1,
@@ -521,9 +544,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
+        val filterValg = getFiltervalgDefaults()
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -574,67 +595,72 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         Assertions.assertThat(response.antall).isEqualTo(6)
         org.junit.jupiter.api.Assertions.assertEquals(
             "Botswana",
-            response.brukere[0].hovedStatsborgerskap?.getStatsborgerskap()
+            response.brukere[0].hovedStatsborgerskap!!.statsborgerskap
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Estland",
-            response.brukere[1].hovedStatsborgerskap?.getStatsborgerskap()
+            response.brukere[1].hovedStatsborgerskap!!.statsborgerskap
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             "Norge",
-            response.brukere[2].hovedStatsborgerskap?.getStatsborgerskap()
+            response.brukere[2].hovedStatsborgerskap!!.statsborgerskap
         )
     }
 
     @Test
     fun skal_hente_alle_brukere_med_bosted() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("10")
-            .setBydelsnummer("1222")
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "10",
+            bydelsnummer = "1222",
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("12")
-            .setBydelsnummer("1233")
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "12",
+            bydelsnummer = "1233",
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("12")
-            .setBydelsnummer("1234")
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "12",
+            bydelsnummer = "1234",
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("10")
-            .setBydelsnummer("1010")
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "10",
+            bydelsnummer = "1010",
+        )
 
-        val brukerUkjentBosted = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
+        val brukerUkjentBosted = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, brukerUkjentBosted)
 
@@ -642,113 +668,130 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setGeografiskBosted(listOf("10"))
+        val filterValgGeo10 = getFiltervalgDefaults().copy(
+            geografiskBosted = listOf("10")
+        )
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgGeo10,
             null,
             null
         )
 
         Assertions.assertThat(response.antall).isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune == "10" })
+            response.brukere.stream()
+                .allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune == "10" })
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setGeografiskBosted(listOf("1233"))
+        val filterValgGeo1233 = getFiltervalgDefaults().copy(
+            geografiskBosted = listOf("1233")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgGeo1233,
             null,
             null
         )
         Assertions.assertThat(response.antall).isEqualTo(1)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel == "1233" })
+            response.brukere.stream()
+                .allMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel == "1233" })
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setGeografiskBosted(listOf("10", "1233"))
+        val filterValgGeoBegge = getFiltervalgDefaults().copy(
+            geografiskBosted = listOf("10", "1233")
+        )
 
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            filterValgGeoBegge,
             null,
             null
         )
         Assertions.assertThat(response.antall).isEqualTo(3)
         Assertions.assertThat(
-            response.brukere.stream().filter { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedKommune.equals("10", ignoreCase = true) }.count()
+            response.brukere.stream()
+                .filter { x: PortefoljebrukerFrontendModell ->
+                    x.geografiskBosted.bostedKommune.equals(
+                        "10",
+                        ignoreCase = true
+                    )
+                }.count()
         )
             .isEqualTo(2)
         org.junit.jupiter.api.Assertions.assertTrue(
-            response.brukere.stream().anyMatch { x: PortefoljebrukerFrontendModell -> x.geografiskBosted.bostedBydel.equals("1233", ignoreCase = true) })
+            response.brukere.stream()
+                .anyMatch { x: PortefoljebrukerFrontendModell ->
+                    x.geografiskBosted.bostedBydel.equals(
+                        "1233",
+                        ignoreCase = true
+                    )
+                })
     }
 
     @Test
     fun test_sortering_bostedkommune() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("10")
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "10",
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("12")
-            .setBydelsnummer("1233")
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "12",
+            bydelsnummer = "1233",
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("12")
-            .setBydelsnummer("1234")
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "12",
+            bydelsnummer = "1234",
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setKommunenummer("10")
-            .setBydelsnummer("1010")
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            kommunenummer = "10",
+            bydelsnummer = "1010",
+        )
 
-        val brukerUkjentBosted = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
+        val brukerUkjentBosted = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+        )
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, brukerUkjentBosted)
 
@@ -756,9 +799,7 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
+        val filterValg = getFiltervalgDefaults()
 
         var response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -799,16 +840,22 @@ class OpensearchServiceIntFilterGeoAlderKjonnTest @Autowired constructor(
         enhet: String, veilederId: String?
     ): PortefoljebrukerOpensearchModell {
         val bruker =
-            PortefoljebrukerOpensearchModell().setAktoer_id(randomAktorId().toString()).setFnr(randomFnr().get()).setOppfolging(true)
-                .setEnhet_id(enhet).setEgen_ansatt(false).setDiskresjonskode(null)
+            PortefoljebrukerOpensearchModell(
+                aktoer_id = randomAktorId().toString(),
+                fnr = randomFnr().get(),
+                oppfolging = true,
+                enhet_id = enhet,
+                egen_ansatt = false,
+                diskresjonskode = null,
+            )
 
         if (veilederId != null) {
-            bruker.setVeileder_id(veilederId)
+            bruker.veileder_id = veilederId
         }
         return bruker
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 }
