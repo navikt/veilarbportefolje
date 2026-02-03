@@ -11,11 +11,10 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
-import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aap.AapRepository;
+import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -23,12 +22,15 @@ import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.dialog.DialogRepositoryV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
-import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
@@ -44,12 +46,10 @@ import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.avvik14aVedtak.Avvik14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
@@ -103,7 +103,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
@@ -163,7 +162,6 @@ import static org.mockito.Mockito.when;
         KodeverkService.class,
         PersonOpprinnelseService.class,
         PersonOpprinnelseRepository.class,
-        Avvik14aVedtakService.class,
         EnsligeForsorgereRepository.class,
         EnsligeForsorgereService.class,
         BarnUnder18AarRepository.class,
@@ -187,6 +185,8 @@ import static org.mockito.Mockito.when;
         AapRepository.class,
         TiltakspengerRespository.class,
         TiltakspengerService.class,
+        DagpengerRepository.class,
+        DagpengerService.class
 })
 public class ApplicationConfigTest {
 
@@ -213,9 +213,12 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public OpensearchTestClient opensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService,
-                                                     OpensearchCountService opensearchCountService, IndexName indexName) {
-        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService, indexName);
+    public OpensearchTestClient opensearchTestClient(
+            RestHighLevelClient restHighLevelClient,
+            OpensearchAdminService opensearchAdminService,
+            OpensearchCountService opensearchCountService
+    ) {
+        return new OpensearchTestClient(restHighLevelClient, opensearchAdminService, opensearchCountService);
     }
 
     @Bean
@@ -226,11 +229,6 @@ public class ApplicationConfigTest {
     @Bean
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
-    }
-
-    @Bean
-    public IndexName indexName() {
-        return new IndexName(generateId());
     }
 
     @Bean
@@ -381,6 +379,11 @@ public class ApplicationConfigTest {
     @Bean
     public TiltakspengerClient tiltakspengerClient() {
         return mock(TiltakspengerClient.class);
+    }
+
+    @Bean
+    public DagpengerClient dagpengerClient() {
+        return mock(DagpengerClient.class);
     }
 
     @Bean

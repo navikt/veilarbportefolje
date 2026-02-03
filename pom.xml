@@ -32,7 +32,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.13</version>
+                    <version>0.8.14</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -281,7 +281,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2025.09.15_11.12-54be8ac278c0</version>
+            <version>2025.10.16_11.29-aaf8578da14c</version>
         </dependency>
         <!--Logging-->
         <dependency>
@@ -318,7 +318,7 @@
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler</artifactId>
-            <version>16.4.1</version>
+            <version>16.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>

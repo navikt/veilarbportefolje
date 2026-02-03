@@ -3,10 +3,12 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.poao_tilgang.client.Decision.Deny
 import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
-import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
+import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.BarnUnder18Aar
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
@@ -111,9 +113,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -228,9 +230,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -315,10 +317,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg().apply {
-            ferdigfilterListe = emptyList()
+        val filterValg = getFiltervalgDefaults().copy(
             barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
-        }
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -429,9 +430,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -482,9 +483,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -542,9 +543,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -602,9 +603,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
 
@@ -679,9 +680,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
 
@@ -755,9 +756,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18Aar(listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18Aar = listOf(BarnUnder18Aar.HAR_BARN_UNDER_18_AAR)
+        )
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
@@ -845,9 +846,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18AarAlder(listOf("1-5"))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18AarAlder = listOf("1-5")
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -905,9 +906,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setBarnUnder18AarAlder(listOf("1-5"))
+        val filterValg = getFiltervalgDefaults().copy(
+            barnUnder18AarAlder = listOf("1-5")
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -926,18 +927,19 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 
 
     fun brukerMed1BarnUtenDiskresjonskode(): PortefoljebrukerOpensearchModell {
-        return PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(randomVeilederId().toString())
-            .setEnhet_id(TEST_ENHET)
-            .setBarn_under_18_aar(listOf(BarnUnder18AarData(8, null)))
+        return PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = randomVeilederId().toString(),
+            enhet_id = TEST_ENHET,
+            barn_under_18_aar = listOf(BarnUnder18AarData(8, null)),
+        )
     }
 
     fun brukerMed2Barn6og7(): PortefoljebrukerOpensearchModell {
@@ -1005,13 +1007,14 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         barn: List<BarnUnder18AarData>? = null,
         nyForVeileder: Boolean = false
     ): PortefoljebrukerOpensearchModell {
-        return PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setNy_for_veileder(nyForVeileder)
-            .setBarn_under_18_aar(barn)
+        return PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            ny_for_veileder = nyForVeileder,
+            barn_under_18_aar = barn,
+        )
     }
 }

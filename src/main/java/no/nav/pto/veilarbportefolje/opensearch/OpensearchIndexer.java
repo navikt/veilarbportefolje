@@ -7,11 +7,14 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import org.opensearch.OpenSearchException;
 import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.core.rest.RestStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,6 +24,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.utils.CollectionUtils.partition;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 
@@ -33,28 +37,17 @@ public class OpensearchIndexer {
 
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepositoryV2 brukerRepositoryV2;
-    private final IndexName alias;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
-    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
 
     public void indekser(AktorId aktoerId) {
         Optional<PortefoljebrukerOpensearchModell> brukerOpensearchModell;
         brukerOpensearchModell = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktoerId)).stream().findAny();
-        brukerOpensearchModell.ifPresentOrElse(this::indekserBruker, () -> opensearchIndexerPaDatafelt.slettDokumenter(List.of(aktoerId)));
-    }
-
-    private void indekserBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
-        if (erUnderOppfolging(brukerOpensearchModell)) {
-            flettInnNodvendigData(List.of(brukerOpensearchModell));
-            syncronIndekseringsRequest(brukerOpensearchModell);
-        } else {
-            opensearchIndexerPaDatafelt.slettDokumenter(List.of(AktorId.of(brukerOpensearchModell.getAktoer_id())));
-        }
+        brukerOpensearchModell.ifPresentOrElse(this::indekserBruker, () -> slettDokumenter(List.of(aktoerId)));
     }
 
     @SneakyThrows
     public void syncronIndekseringsRequest(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
-        IndexRequest indexRequest = new IndexRequest(alias.getValue()).id(brukerOpensearchModell.getAktoer_id());
+        IndexRequest indexRequest = new IndexRequest(BRUKERINDEKS_ALIAS).id(brukerOpensearchModell.getAktoer_id());
         indexRequest.source(toJson(brukerOpensearchModell), XContentType.JSON);
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
@@ -76,12 +69,6 @@ public class OpensearchIndexer {
         } catch (IOException e) {
             secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
             throw e;
-        }
-    }
-
-    private void validateBatchSize(List<?> brukere) {
-        if (brukere.size() > BATCH_SIZE_LIMIT) {
-            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i Postgres db", BATCH_SIZE_LIMIT));
         }
     }
 
@@ -110,12 +97,49 @@ public class OpensearchIndexer {
 
         if (brukere != null && !brukere.isEmpty()) {
             flettInnNodvendigData(brukere);
-            this.skrivBulkTilIndeks(alias.getValue(), brukere);
+            this.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, brukere);
+        }
+    }
+
+    @SneakyThrows
+    public void slettDokumenter(List<AktorId> aktorIds) {
+        secureLog.info("Sletter gamle aktorIder {}", aktorIds);
+        for (AktorId aktorId : aktorIds) {
+            if (aktorId != null) {
+                delete(aktorId);
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void delete(AktorId aktoerId) {
+        DeleteRequest deleteRequest = new DeleteRequest();
+        deleteRequest.index(BRUKERINDEKS_ALIAS);
+        deleteRequest.id(aktoerId.get());
+
+        try {
+            restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
+            secureLog.info("Slettet dokument for {} ", aktoerId);
+        } catch (OpenSearchException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                secureLog.info("Kunne ikke finne dokument for bruker {} ved sletting av indeks", aktoerId.get());
+            } else {
+                final String message = format("Det skjedde en feil ved sletting i opensearch for bruker %s", aktoerId.get());
+                secureLog.error(message, e);
+            }
+        }
+    }
+
+    private void indekserBruker(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
+        if (erUnderOppfolging(brukerOpensearchModell)) {
+            flettInnNodvendigData(List.of(brukerOpensearchModell));
+            syncronIndekseringsRequest(brukerOpensearchModell);
+        } else {
+            slettDokumenter(List.of(AktorId.of(brukerOpensearchModell.getAktoer_id())));
         }
     }
 
     private void flettInnNodvendigData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModell) {
-        postgresOpensearchMapper.flettInnAvvik14aVedtak(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnAktivitetsData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukerOpensearchModell);
@@ -128,6 +152,12 @@ public class OpensearchIndexer {
 
         if (brukerOpensearchModell.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");
+        }
+    }
+
+    private void validateBatchSize(List<?> brukere) {
+        if (brukere.size() > BATCH_SIZE_LIMIT) {
+            throw new IllegalStateException(format("Kan ikke prossessere flere enn %s brukere av gangen pga begrensninger i Postgres db", BATCH_SIZE_LIMIT));
         }
     }
 }

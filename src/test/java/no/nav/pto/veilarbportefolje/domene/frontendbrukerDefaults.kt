@@ -20,7 +20,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
     etternavn = null,
     barnUnder18AarData = null,
 
-    tolkebehov = null,
+    tolkebehov = Tolkebehov("", "",null),
 
     foedeland = null,
     hovedStatsborgerskap = StatsborgerskapForBruker(
@@ -35,35 +35,32 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         bostedSistOppdatert = null
     ),
 
-    avvik14aVedtak = null,
-    gjeldendeVedtak14a = null,
+    vedtak14a = Vedtak14aForBruker(
+        gjeldendeVedtak14a = null,
+        utkast14a = null
+    ),
+
     oppfolgingStartdato = null,
-    utkast14a = null,
     veilederId = null,
     tildeltTidspunkt = null,
 
     utdanningOgSituasjonSistEndret = null,
 
-    nyesteUtlopteAktivitet = null,
-    aktivitetStart = null,
-    nesteAktivitetStart = null,
-    forrigeAktivitetStart = null,
-
-    moteStartTid = null,
-    alleMoterStartTid = null,
-    alleMoterSluttTid = null,
-
-    aktiviteter = mutableMapOf(),
-    nesteUtlopsdatoAktivitet = null,
+    moteMedNavIDag = null,
+    aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
+        nesteUtlopsdatoForAlleAktiviteter = null,
+        nyesteUtlopteAktivitet = null,
+        nesteUtlopsdatoForFiltrerteAktiviteter = null,
+        aktivitetStart = null,
+        nesteAktivitetStart = null,
+        forrigeAktivitetStart = null
+    ),
 
     nesteSvarfristCvStillingFraNav = null,
     tiltakshendelse = null,
     hendelse = null,
 
-    sisteEndringKategori = null,
-    sisteEndringTidspunkt = null,
-    sisteEndringAktivitetId = null,
-
+    sisteEndringAvBruker = null,
 
     ytelser = YtelserForBruker(
         ytelserArena = YtelserArena(
@@ -78,6 +75,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         ),
         aap = null,
         tiltakspenger = null,
+        dagpenger = null,
         ensligeForsorgereOvergangsstonad = null,
     ),
     meldingerVenterPaSvar = MeldingerVenterPaSvar(

@@ -7,9 +7,10 @@ import java.time.LocalDateTime
 
 data class YtelserForBruker(
     val ytelserArena : YtelserArena,
-    val aap: AapKelvinForBruker?,
-    val tiltakspenger: TiltakspengerForBruker?,
-    val ensligeForsorgereOvergangsstonad: EnsligeForsorgereOvergangsstonadFrontend?,
+    val aap: AapKelvin?,
+    val tiltakspenger: Tiltakspenger?,
+    val dagpenger: Dagpenger?,
+    val ensligeForsorgereOvergangsstonad: EnsligForsorgerOvergangsstonad?,
 )
 
 

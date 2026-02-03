@@ -4,19 +4,15 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseTiltakspenger
-import no.nav.pto.veilarbportefolje.domene.NavKontor
-import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
-import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNorskIdent
@@ -47,7 +43,7 @@ class TiltakspengerServiceTest(
     @Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
     @Autowired private val opensearchService: OpensearchService,
-    ) : EndToEndTest() {
+) : EndToEndTest() {
 
     private lateinit var tiltakspengerService: TiltakspengerService
     private val tiltakspengerClient: TiltakspengerClient = mock()
@@ -199,9 +195,9 @@ class TiltakspengerServiceTest(
         assertThat(tiltakspengerRespons).isNotNull
         assertThat(tiltakspengerRespons).isEqualTo(true)
 
-        val filtervalg = Filtervalg()
-        filtervalg.setYtelseTiltakspenger(listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER))
-        filtervalg.setFerdigfilterListe(listOf())
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseTiltakspenger = listOf(YtelseTiltakspenger.HAR_TILTAKSPENGER)
+        )
 
         verifiserAsynkront(
             2, TimeUnit.SECONDS

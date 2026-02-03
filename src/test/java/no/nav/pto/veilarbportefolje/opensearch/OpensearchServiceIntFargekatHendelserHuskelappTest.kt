@@ -7,11 +7,12 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
@@ -34,7 +35,7 @@ import java.util.*
 
 class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
     private val opensearchService: OpensearchService,
-) : EndToEndTest(){
+) : EndToEndTest() {
 
     private lateinit var TEST_ENHET: String
     private lateinit var TEST_VEILEDER_0: String
@@ -80,52 +81,64 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
             TEST_ENHET
         )
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHuskelapp(huskelapp1)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            huskelapp = huskelapp1,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHuskelapp(huskelapp2)
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHuskelapp(huskelapp3)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            huskelapp = huskelapp2,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHuskelapp(huskelapp4)
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            huskelapp = huskelapp3,
+        )
 
-        val bruker6 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
+
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            huskelapp = huskelapp4,
+        )
+
+
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+        )
+
+
+        val bruker6 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+        )
+
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6)
 
@@ -134,8 +147,7 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
+        val filterValg = getFiltervalgDefaults()
 
         var response: BrukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -205,56 +217,68 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtering_og_sortering_fargekategori() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_D.name)
-            .setFargekategori_enhetId(TEST_ENHET)
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_D.name,
+            fargekategori_enhetId = TEST_ENHET,
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
-            .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_A.name)
-            .setFargekategori_enhetId(TEST_ENHET)
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name,
+            fargekategori_enhetId = TEST_ENHET,
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setFargekategori(FargekategoriVerdi.FARGEKATEGORI_B.name)
-            .setFargekategori_enhetId(TEST_ENHET)
 
-        val bruker5 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_A.name,
+            fargekategori_enhetId = TEST_ENHET,
+        )
 
-        val bruker6 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
+
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            fargekategori = FargekategoriVerdi.FARGEKATEGORI_B.name,
+            fargekategori_enhetId = TEST_ENHET,
+        )
+
+
+        val bruker5 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+        )
+
+
+        val bruker6 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+        )
+
 
         val liste = listOf(bruker1, bruker2, bruker3, bruker4, bruker5, bruker6)
 
@@ -262,14 +286,12 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
-        var filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setFargekategorier(
-                listOf(
-                    FargekategoriVerdi.FARGEKATEGORI_B.name,
-                    FargekategoriVerdi.FARGEKATEGORI_A.name
-                )
+        val filterValg = getFiltervalgDefaults().copy(
+            fargekategorier = listOf(
+                FargekategoriVerdi.FARGEKATEGORI_B.name,
+                FargekategoriVerdi.FARGEKATEGORI_A.name
             )
+        )
 
         var response: BrukereMedAntall = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -289,16 +311,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
         )
 
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-            .setFargekategorier(listOf("INGEN_KATEGORI"))
-
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            getFiltervalgDefaults().copy(
+                fargekategorier = listOf("INGEN_KATEGORI")
+            ),
             null,
             null
         )
@@ -311,16 +331,12 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
                 )
         )
 
-
-        filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf())
-
         response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FARGEKATEGORI,
-            filterValg,
+            getFiltervalgDefaults(),
             null,
             null
         )
@@ -336,14 +352,14 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtrering_og_statustall_tiltakshendelser() {
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(null)
-
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = null,
+        )
 
         val bruker2Fnr = Fnr.of("02020222222")
         val bruker2UUID = UUID.randomUUID()
@@ -352,24 +368,22 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val bruker2Lenke = "http.cat/200"
         val bruker2Tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(bruker2Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(
-                Tiltakshendelse(
-                    bruker2UUID,
-                    bruker2Opprettet,
-                    bruker2Tekst,
-                    bruker2Lenke,
-                    bruker2Tiltakstype,
-                    bruker2Fnr
-                )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = bruker2Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = Tiltakshendelse(
+                bruker2UUID,
+                bruker2Opprettet,
+                bruker2Tekst,
+                bruker2Lenke,
+                bruker2Tiltakstype,
+                bruker2Fnr
             )
-
+        )
 
         val bruker3Fnr = Fnr.of("03030333333")
         val bruker3UUID = UUID.randomUUID()
@@ -378,39 +392,36 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val bruker3Lenke = "http.cat/200"
         val bruker3Tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(bruker3Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(
-                Tiltakshendelse(
-                    bruker3UUID,
-                    bruker3Opprettet,
-                    bruker3Tekst,
-                    bruker3Lenke,
-                    bruker3Tiltakstype,
-                    bruker3Fnr
-                )
-            )
-
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = bruker3Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = Tiltakshendelse(
+                bruker3UUID,
+                bruker3Opprettet,
+                bruker3Tekst,
+                bruker3Lenke,
+                bruker3Tiltakstype,
+                bruker3Fnr
+            ),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.TILTAKSHENDELSER))
-
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.IKKE_SATT,
-            filterValg,
+            getFiltervalgDefaults().copy(
+                ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
+            ),
             null,
             null
         )
@@ -441,68 +452,65 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val lenke = "http.cat/200"
         val tiltakstype = Tiltakstype.ARBFORB
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(bruker1Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(
-                Tiltakshendelse(
-                    UUID.randomUUID(),
-                    bruker1Opprettet,
-                    bruker1tekst,
-                    lenke,
-                    tiltakstype,
-                    bruker1Fnr
-                )
-            )
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = bruker1Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = Tiltakshendelse(
+                UUID.randomUUID(),
+                bruker1Opprettet,
+                bruker1tekst,
+                lenke,
+                tiltakstype,
+                bruker1Fnr
+            ),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(bruker2Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(
-                Tiltakshendelse(
-                    UUID.randomUUID(),
-                    bruker2Opprettet,
-                    bruker2Tekst,
-                    lenke,
-                    tiltakstype,
-                    bruker2Fnr
-                )
-            )
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = bruker2Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = Tiltakshendelse(
+                UUID.randomUUID(),
+                bruker2Opprettet,
+                bruker2Tekst,
+                lenke,
+                tiltakstype,
+                bruker2Fnr
+            ),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(bruker3Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setTiltakshendelse(
-                Tiltakshendelse(
-                    UUID.randomUUID(),
-                    bruker3Opprettet,
-                    bruker3Tekst,
-                    lenke,
-                    tiltakstype,
-                    bruker3Fnr
-                )
-            )
-
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = bruker3Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            tiltakshendelse = Tiltakshendelse(
+                UUID.randomUUID(),
+                bruker3Opprettet,
+                bruker3Tekst,
+                lenke,
+                tiltakstype,
+                bruker3Fnr
+            ),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.TILTAKSHENDELSER))
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.TILTAKSHENDELSER)
+        )
 
         /* Om ein filtrerer på tiltakshendelse og ikkje har valgt sortering: sorter på opprettet-tidspunkt stigande. */
         val responseDefaultSortering = opensearchService.hentBrukere(
@@ -556,48 +564,49 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
 
     @Test
     fun test_filtrering_og_statustall_utgatte_varsel() {
-        val oppfolgingsBruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mutableMapOf())
-
+        val oppfolgingsBruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = emptyMap()
+        )
 
         val oppfolgingsBruker2Fnr = Fnr.of("02020222222")
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
 
-        val oppfolgingsBruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(oppfolgingsBruker2Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
-
+        val oppfolgingsBruker2 = PortefoljebrukerOpensearchModell(
+            fnr = oppfolgingsBruker2Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2),
+        )
 
         val oppfolgingsBruker3Fnr = Fnr.of("03030333333")
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(oppfolgingsBruker3Fnr.toString())
-            .setAktoer_id(randomAktorId().toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
-
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = oppfolgingsBruker3Fnr.toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3),
+        )
 
         val brukere = listOf(oppfolgingsBruker1, oppfolgingsBruker2, bruker3)
 
         skrivBrukereTilTestindeks(brukere)
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
-        val filterValg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
@@ -641,31 +650,34 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker1.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1))
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker1.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker2.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker2.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker3.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker3.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
@@ -673,15 +685,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.IKKE_SATT,
             Sorteringsfelt.IKKE_SATT,
-            filtervalg,
+            filterValg,
             null,
             null
         )
@@ -707,32 +720,34 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val utgattVarselBruker2 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker1.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1))
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker1.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker1),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker2.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2))
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker2.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker2),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker3.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
-
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker3.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3)
 
@@ -740,15 +755,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UTGATTE_VARSEL))
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.UTGATTE_VARSEL)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FILTERHENDELSE_DATO,
-            filtervalg,
+            filterValg,
             null,
             null
         )
@@ -773,47 +789,53 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         val hendelsedatoBruker3 = ZonedDateTime.of(2023, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
         val hendelsedatoBruker4 = ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
 
-        val udeltSamtalereferatBruker1 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker1).hendelse
-        val udeltSamtalereferatBruker2 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker2).hendelse
+        val udeltSamtalereferatBruker1 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker1).hendelse
+        val udeltSamtalereferatBruker2 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker2).hendelse
         val utgattVarselBruker3 = genererRandomHendelse(Kategori.UTGATT_VARSEL, hendelsedatoBruker3).hendelse
-        val udeltSamtalereferatBruker4 = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4 ).hendelse
+        val udeltSamtalereferatBruker4 =
+            genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT, hendelsedatoBruker4).hendelse
 
 
-        val bruker1 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker1.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1))
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker1.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker1),
+        )
 
-        val bruker2 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker2.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2))
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker2.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker2),
+        )
 
-        val bruker3 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker3.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3))
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker3.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UTGATT_VARSEL to utgattVarselBruker3),
+        )
 
-        val bruker4 = PortefoljebrukerOpensearchModell()
-            .setFnr(randomFnr().toString())
-            .setAktoer_id(aktoridBruker4.toString())
-            .setOppfolging(true)
-            .setVeileder_id(TEST_VEILEDER_0)
-            .setNy_for_veileder(false)
-            .setEnhet_id(TEST_ENHET)
-            .setHendelser(mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4))
-
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker4.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatBruker4),
+        )
 
         val brukere = listOf(bruker1, bruker2, bruker3, bruker4)
 
@@ -821,15 +843,16 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
 
         // When
-        val filtervalg = Filtervalg()
-            .setFerdigfilterListe(listOf(Brukerstatus.UDELT_SAMTALEREFERAT))
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.UDELT_SAMTALEREFERAT)
+        )
 
         val response = opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.FILTERHENDELSE_DATO,
-            filtervalg,
+            filterValg,
             null,
             null
         )
@@ -845,6 +868,6 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 }

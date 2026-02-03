@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -59,43 +58,6 @@ public class OppfolgingsbrukerRepositoryV3 {
                 String.format("DELETE FROM %s WHERE fodselsnr = ?", PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME),
                 fnr.get()
         );
-    }
-
-    private record OppfolgingsbrukerEntityMedOppslagFnr(
-            Fnr oppslagFnr,
-            OppfolgingsbrukerEntity oppfolgingsbrukerEntity
-    ) {
-    }
-
-    public Map<Fnr, OppfolgingsbrukerEntity> hentOppfolgingsBrukere(Set<Fnr> fnrs) {
-        String fnrsCondition = fnrs.stream().map(Fnr::toString).collect(Collectors.joining(",", "{", "}"));
-        String sql = """
-                                SELECT DISTINCT ON (bi1.ident)
-                                     bi1.ident as oppslag_fnr, ob.*
-                                FROM OPPFOLGINGSBRUKER_ARENA_V2 ob
-                                INNER JOIN BRUKER_IDENTER bi1 on bi1.ident = any (?::varchar[])
-                                INNER JOIN BRUKER_IDENTER bi2 on bi2.person = bi1.person
-                                WHERE ob.fodselsnr = bi2.ident
-                                AND bi2.gruppe = ?
-                """;
-
-        return db.query(sql,
-                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbrukerMedOppslagFnr,
-                        fnrsCondition,
-                        PDLIdent.Gruppe.FOLKEREGISTERIDENT.name())
-                .stream().filter(Objects::nonNull).collect(Collectors.toMap(
-                        OppfolgingsbrukerEntityMedOppslagFnr::oppslagFnr,
-                        OppfolgingsbrukerEntityMedOppslagFnr::oppfolgingsbrukerEntity)
-                );
-    }
-
-    @SneakyThrows
-    private static OppfolgingsbrukerEntityMedOppslagFnr mapTilOppfolgingsbrukerMedOppslagFnr(ResultSet rs, int row) {
-        OppfolgingsbrukerEntity oppfolgingsbrukerEntity = mapTilOppfolgingsbruker(rs, row);
-
-        return oppfolgingsbrukerEntity != null
-                ? new OppfolgingsbrukerEntityMedOppslagFnr(Fnr.of(rs.getString("oppslag_fnr")), oppfolgingsbrukerEntity)
-                : null;
     }
 
     public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {

@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
@@ -27,6 +26,8 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
+
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -45,9 +46,6 @@ public abstract class EndToEndTest {
     protected PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    protected IndexName indexName;
-
-    @Autowired
     protected DefaultUnleash defaultUnleash;
 
     @Autowired
@@ -60,28 +58,29 @@ public abstract class EndToEndTest {
     void setUp() {
         try {
             TimeZone.setDefault(TimeZone.getTimeZone(Optional.ofNullable(System.getenv("TZ")).orElse("Europe/Oslo")));
-            opensearchAdminService.opprettNyIndeks(indexName.getValue());
+            opensearchAdminService.opprettNyIndeks(BRUKERINDEKS_ALIAS);
         } catch (Exception e) {
-            opensearchAdminService.slettIndex(indexName.getValue());
-            opensearchAdminService.opprettNyIndeks(indexName.getValue());
+            opensearchAdminService.slettIndex(BRUKERINDEKS_ALIAS);
+            opensearchAdminService.opprettNyIndeks(BRUKERINDEKS_ALIAS);
         }
     }
 
     @AfterEach
     void tearDown() {
-        opensearchAdminService.slettIndex(indexName.getValue());
+        opensearchAdminService.slettIndex(BRUKERINDEKS_ALIAS);
     }
 
     public void populateOpensearch(NavKontor enhetId, VeilederId veilederId, String... aktoerIder) {
         List<PortefoljebrukerOpensearchModell> brukere = new ArrayList<>();
         for (String aktoerId : aktoerIder) {
 
-            brukere.add(new PortefoljebrukerOpensearchModell()
-                    .setAktoer_id(aktoerId)
-                    .setOppfolging(true)
-                    .setEnhet_id(enhetId.getValue())
-                    .setVeileder_id(veilederId.getValue())
-            );
+            PortefoljebrukerOpensearchModell bruker = new PortefoljebrukerOpensearchModell();
+            bruker.setAktoer_id(aktoerId);
+            bruker.setOppfolging(true);
+            bruker.setEnhet_id(enhetId.getValue());
+            bruker.setVeileder_id(veilederId.getValue());
+
+            brukere.add(bruker);
         }
         brukere.forEach(bruker -> opensearchTestClient.createUserInOpensearch(bruker));
     }
