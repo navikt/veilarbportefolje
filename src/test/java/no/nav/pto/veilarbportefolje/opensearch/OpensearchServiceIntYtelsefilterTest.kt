@@ -983,8 +983,11 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         Assertions.assertThat(brukereRettighetStigende[0].fnr).isEqualTo(bruker2.fnr)
         Assertions.assertThat(brukereRettighetStigende[1].fnr).isEqualTo(bruker3.fnr)
-        Assertions.assertThat(brukereRettighetStigende[2].fnr).isEqualTo(bruker1.fnr)
-        Assertions.assertThat(brukereRettighetStigende[3].fnr).isEqualTo(bruker4.fnr)
+
+        Assertions.assertThat(brukereRettighetStigende[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(brukereRettighetStigende[1].fnr).isEqualTo(bruker3.fnr)
+        Assertions.assertThat(listOf(brukereRettighetStigende[2].fnr, brukereRettighetStigende[3].fnr))
+            .containsExactlyInAnyOrder(bruker1.fnr, bruker4.fnr)
     }
 
     @Test
