@@ -9,6 +9,7 @@ data class YtelserForBruker(
     val ytelserArena : YtelserArena,
     val aap: AapKelvin?,
     val tiltakspenger: Tiltakspenger?,
+    val dagpenger: Dagpenger?,
     val ensligeForsorgereOvergangsstonad: EnsligForsorgerOvergangsstonad?,
 )
 

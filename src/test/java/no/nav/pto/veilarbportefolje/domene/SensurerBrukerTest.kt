@@ -6,7 +6,6 @@ import no.nav.poao_tilgang.client.Decision.Deny
 import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Etiketter
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import org.assertj.core.api.Assertions.assertThat

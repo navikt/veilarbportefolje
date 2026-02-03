@@ -111,6 +111,12 @@ public class PostgresTable {
         public static final String YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM = "YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM";
         public static final String YTELSER_TILTAKSPENGER_RETTIGHET = "YTELSER_TILTAKSPENGER_RETTIGHET";
 
+        // YTELSER DAGPENGER
+        public static final String YTELSER_DAGPENGER_NYESTE_PERIODE_TOM = "YTELSER_DAGPENGER_NYESTE_PERIODE_TOM";
+        public static final String YTELSER_DAGPENGER_RETTIGHETSTYPE = "YTELSER_DAGPENGER_RETTIGHETSTYPE";
+        public static final String YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = "YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET";
+        public static final String YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER = "YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER";
+
     }
 
     public static final class OPPFOLGING_DATA {
@@ -468,6 +474,19 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String RETTIGHET = "RETTIGHET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class YTELSER_DAGPENGER {
+        private YTELSER_DAGPENGER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_DAGPENGER";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
+        public static final String DATO_ANTALL_DAGER_BLE_BEREGNET = "DATO_ANTALL_DAGER_BLE_BEREGNET";
+        public static final String ANTALL_RESTERENDE_DAGER = "ANTALL_RESTERENDE_DAGER";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 

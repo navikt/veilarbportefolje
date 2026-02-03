@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtakEntity
+import org.jetbrains.annotations.TestOnly
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
@@ -47,6 +48,7 @@ class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
         )
     }
 
+    @TestOnly
     fun hentTiltakspenger(norskIdent: NorskIdent): TiltakspengerVedtakEntity? {
         val sql = "SELECT * FROM ${YTELSER_TILTAKSPENGER.TABLE_NAME} WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?"
         return try {

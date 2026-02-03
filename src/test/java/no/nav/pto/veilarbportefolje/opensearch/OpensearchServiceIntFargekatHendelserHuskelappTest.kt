@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFronte
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype
@@ -867,6 +868,6 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
     }
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
-        opensearchIndexer.skrivBulkTilIndeks(indexName.value, listOf(*brukere.toTypedArray()))
+        opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }
 }

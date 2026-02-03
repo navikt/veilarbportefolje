@@ -4,10 +4,13 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -43,7 +46,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
 
         // When
         val opensearchResponse =
-            opensearchService.search(SearchSourceBuilder(), indexName.value, OpensearchResponse::class.java)
+            opensearchService.search(SearchSourceBuilder(), BRUKERINDEKS_ALIAS, OpensearchResponse::class.java)
 
         // Then
         assertThat(opensearchResponse.hits.hits.first()._source)
@@ -156,6 +159,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             tiltakspenger_vedtaksdato_tom = PortefoljebrukerOpensearchModell.TILTAKSPENGER_VEDTAKSDATO_TOM,
             utlopsdato = PortefoljebrukerOpensearchModell.UTLOPSDATO,
             ytelse = PortefoljebrukerOpensearchModell.YTELSE,
+            dagpenger = PortefoljebrukerOpensearchModell.DAGPENGER,
 
             // Dialog
             venterpasvarfrabruker = PortefoljebrukerOpensearchModell.VENTER_PA_SVAR_FRA_BRUKER,
@@ -379,6 +383,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val TILTAKSPENGER_VEDTAKSDATO_TOM: LocalDate = LocalDate.parse("2025-10-01")
             val UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
             val YTELSE: String = "DAGPENGER_MED_PERMITTERING"
+            val DAGPENGER: DagpengerForOpensearch = DagpengerForOpensearch(
+                harDagpenger = true,
+                rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
+                antallResterendeDager = null,
+                datoAntallDagerBleBeregnet = null
+            )
 
             // Dialog
             val VENTER_PA_SVAR_FRA_BRUKER: String = "2025-10-10T10:00:00.000Z"

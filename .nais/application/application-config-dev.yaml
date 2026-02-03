@@ -107,6 +107,8 @@ spec:
           namespace: aap
         - application: tiltakspenger-datadeling
           namespace: tpts
+        - application: dp-datadeling
+          namespace: teamdagpenger
         - application: logging
           namespace: nais-system
       external:
@@ -167,3 +169,8 @@ spec:
       value: "http://tiltakspenger-datadeling.tpts"
     - name: TILTAKSPENGER_SCOPE
       value: "api://dev-gcp.tpts.tiltakspenger-datadeling/.default"
+    - name: DAGPENGER_URL
+      value: "http://dp-datadeling.teamdagpenger"
+    - name: DAGPENGER_SCOPE
+      value: "api://dev-gcp.teamdagpenger.dp-datadeling/.default"
+

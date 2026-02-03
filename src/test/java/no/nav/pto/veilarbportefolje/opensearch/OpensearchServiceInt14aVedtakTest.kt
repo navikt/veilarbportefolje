@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker
@@ -876,7 +877,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(
-            indexName.value,
+            BRUKERINDEKS_ALIAS,
             listOf(*brukere.toTypedArray())
         )
     }

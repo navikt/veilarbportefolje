@@ -120,7 +120,7 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -281,7 +281,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2025.09.15_11.12-54be8ac278c0</version>
+            <version>2025.10.16_11.29-aaf8578da14c</version>
         </dependency>
         <!--Logging-->
         <dependency>

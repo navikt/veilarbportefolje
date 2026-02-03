@@ -4,10 +4,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.util.DateUtils.fromZonedDateTimeToLocalDateOrNull
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,9 +25,9 @@ import java.util.*
  */
 @Service
 class HendelseService(
-    @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+    @param:Autowired private val hendelseRepository: HendelseRepository,
+    @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
+    @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
