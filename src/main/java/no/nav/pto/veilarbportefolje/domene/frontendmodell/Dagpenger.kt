@@ -5,6 +5,5 @@ import java.time.LocalDate
 data class Dagpenger(
     val rettighetstype: String,
     val datoPlanlagtStans: LocalDate?,
-    val antallResterendeDager: Int?,
-    val datoAntallDagerBleBeregnet: LocalDate?
+    val resterendeDager: String?,
 )

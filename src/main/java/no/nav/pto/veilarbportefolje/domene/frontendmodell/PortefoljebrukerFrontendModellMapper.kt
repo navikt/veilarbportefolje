@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter.ofPattern
 import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
@@ -177,11 +178,25 @@ object PortefoljebrukerFrontendModellMapper {
     private fun mapDagpenger(opensearchModell: PortefoljebrukerOpensearchModell): Dagpenger? {
         opensearchModell.dagpenger?.harDagpenger ?: return null
         val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
+        val antallDager = opensearchModell.dagpenger?.antallResterendeDager
+        val datoAntallDagerBleBeregnet =
+            opensearchModell.dagpenger?.datoAntallDagerBleBeregnet?.format(ofPattern("dd.MM.yyyy"))
+
+        val resterendeDager = if (antallDager != null) {
+            if (antallDager == 1) {
+                "$antallDager dag"
+            } else {
+                "$antallDager dager"
+            }
+        } else ""
+
+        val resterendeDagerMedDato = "$resterendeDager (per ${datoAntallDagerBleBeregnet.toString()})"
+
         return Dagpenger(
             rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
             datoPlanlagtStans = opensearchModell.dagpenger?.datoPlanlagtStans,
-            antallResterendeDager = opensearchModell.dagpenger?.antallResterendeDager,
-            datoAntallDagerBleBeregnet = opensearchModell.dagpenger?.datoAntallDagerBleBeregnet
+            resterendeDager = resterendeDagerMedDato
+
         )
     }
 

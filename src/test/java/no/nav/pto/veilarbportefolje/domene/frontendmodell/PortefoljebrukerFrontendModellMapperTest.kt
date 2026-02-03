@@ -354,7 +354,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 156,
-                LocalDate.now(),
+                LocalDate.of(2026, 1, 1),
             )
         )
 
@@ -382,9 +382,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
         Assertions.assertEquals("Dagpenger under permittering", ytelser.dagpenger!!.rettighetstype)
         Assertions.assertEquals(null, ytelser.dagpenger.datoPlanlagtStans)
-        Assertions.assertEquals(156, ytelser.dagpenger.antallResterendeDager)
-        Assertions.assertEquals(LocalDate.now(), ytelser.dagpenger.datoAntallDagerBleBeregnet)
-
+        Assertions.assertEquals("156 dager (per 01.01.2026)", ytelser.dagpenger.resterendeDager)
     }
 
     @Test
