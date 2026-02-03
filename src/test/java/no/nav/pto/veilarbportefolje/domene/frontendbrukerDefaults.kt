@@ -46,10 +46,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
 
     utdanningOgSituasjonSistEndret = null,
 
-    moteStartTid = null,
-    alleMoterStartTid = null,
-    alleMoterSluttTid = null,
-
+    moteMedNavIDag = null,
     aktiviteterAvtaltMedNav = AktiviteterAvtaltMedNav(
         nesteUtlopsdatoForAlleAktiviteter = null,
         nyesteUtlopteAktivitet = null,
@@ -78,6 +75,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         ),
         aap = null,
         tiltakspenger = null,
+        dagpenger = null,
         ensligeForsorgereOvergangsstonad = null,
     ),
     meldingerVenterPaSvar = MeldingerVenterPaSvar(

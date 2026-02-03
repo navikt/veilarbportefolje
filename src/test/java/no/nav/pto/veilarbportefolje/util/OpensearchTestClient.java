@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.opensearch.IndexName;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
@@ -23,6 +22,7 @@ import java.util.function.Supplier;
 
 import static java.lang.System.currentTimeMillis;
 import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
@@ -31,14 +31,16 @@ public class OpensearchTestClient {
     private final RestHighLevelClient restHighLevelClient;
     private final OpensearchAdminService opensearchAdminService;
     private final OpensearchCountService opensearchCountService;
-    private final IndexName indexName;
 
     @Autowired
-    public OpensearchTestClient(RestHighLevelClient restHighLevelClient, OpensearchAdminService opensearchAdminService, OpensearchCountService opensearchCountService, IndexName indexName) {
+    public OpensearchTestClient(
+            RestHighLevelClient restHighLevelClient, 
+            OpensearchAdminService opensearchAdminService, 
+            OpensearchCountService opensearchCountService 
+    ) {
         this.restHighLevelClient = restHighLevelClient;
         this.opensearchAdminService = opensearchAdminService;
         this.opensearchCountService = opensearchCountService;
-        this.indexName = indexName;
     }
 
     public PortefoljebrukerOpensearchModell hentBrukerFraOpensearch(AktorId aktoerId) {
@@ -49,12 +51,12 @@ public class OpensearchTestClient {
 
     @SneakyThrows
     public GetResponse fetchDocument(AktorId aktoerId) {
-        return opensearchAdminService.fetchDocument(aktoerId, indexName);
+        return opensearchAdminService.fetchDocument(aktoerId, BRUKERINDEKS_ALIAS);
     }
 
     public Optional<GetResponse> getDocument(AktorId aktoerId) {
         try {
-            return Optional.of(opensearchAdminService.fetchDocument(aktoerId, indexName));
+            return Optional.of(opensearchAdminService.fetchDocument(aktoerId, BRUKERINDEKS_ALIAS));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,7 +66,7 @@ public class OpensearchTestClient {
     @SneakyThrows
     public IndexResponse createDocument(AktorId aktoerId, String json) {
         IndexRequest indexRequest = new IndexRequest();
-        indexRequest.index(indexName.getValue());
+        indexRequest.index(BRUKERINDEKS_ALIAS);
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
         return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
@@ -83,7 +85,7 @@ public class OpensearchTestClient {
 
         //create document
         IndexRequest indexRequest = new IndexRequest();
-        indexRequest.index(indexName.getValue());
+        indexRequest.index(BRUKERINDEKS_ALIAS);
         indexRequest.id(aktoerId.toString());
         indexRequest.source(document, XContentType.JSON);
 
@@ -102,7 +104,7 @@ public class OpensearchTestClient {
     public void createUserInOpensearch(PortefoljebrukerOpensearchModell bruker) {
         //create document
         IndexRequest indexRequest = new IndexRequest();
-        indexRequest.index(indexName.getValue());
+        indexRequest.index(BRUKERINDEKS_ALIAS);
         indexRequest.id(bruker.getAktoer_id());
         indexRequest.source(toJson(bruker), XContentType.JSON);
 

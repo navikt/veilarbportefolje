@@ -3,9 +3,67 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITETER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.ALLE_AKTIVITETER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.ALLE_AKTIVITETER_MOTE_STARTDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.NYESTE_UTLOPTE_AKTIVITET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.SISTE_ENDRINGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_ER_SETT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.TILTAK
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FARGEKATEGORI
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FORMIDLINGSGRUPPE_KODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidsforhold.ER_SYKMELDT_MED_ARBEIDSGIVER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.CV_EKSISTERE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.HAR_DELT_CV
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.NESTE_CV_KAN_DELES_STATUS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_BRUKER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_NAV
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.NavAnsatt.EGEN_ANSATT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.ENHET_ID
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.KVALIFISERINGSGRUPPE_KODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.MANUELL_BRUKER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.NY_FOR_VEILEDER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.OPPFOLGING
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.UTKAST_14A_STATUS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.VEILEDER_ID
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BARN_UNDER_18_AAR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BARN_UNDER_18_AAR_ALDER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BARN_UNDER_18_AAR_DISKRESJONSKODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.BYDELSNUMMER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.DISKRESJONSKODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FNR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FODSELSDAG_I_MND
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FODSELSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FOEDELAND
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.FULLT_NAVN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.KJONN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.KOMMUNENUMMER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.LANDGRUPPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TALESPRAAK_TOLK
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TEGNSPRAAK_TOLK
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
@@ -44,7 +102,7 @@ class OpensearchFilterQueryBuilder {
                 if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig) {
                     boolQuery.mustNot(
                         QueryBuilders.matchQuery(
-                            "diskresjonskode",
+                            DISKRESJONSKODE,
                             Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode
                         )
                     )
@@ -53,14 +111,14 @@ class OpensearchFilterQueryBuilder {
                 if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig) {
                     boolQuery.mustNot(
                         QueryBuilders.matchQuery(
-                            "diskresjonskode",
+                            DISKRESJONSKODE,
                             Adressebeskyttelse.FORTROLIG.diskresjonskode
                         )
                     )
                 }
 
                 if (!brukerInnsynTilganger.tilgangTilSkjerming) {
-                    boolQuery.mustNot(QueryBuilders.matchQuery("egen_ansatt", true))
+                    boolQuery.mustNot(QueryBuilders.matchQuery(EGEN_ANSATT, true))
                 }
 
                 boolQuery
@@ -72,7 +130,7 @@ class OpensearchFilterQueryBuilder {
                 if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig) {
                     shouldBoolQuery.should(
                         QueryBuilders.matchQuery(
-                            "diskresjonskode",
+                            DISKRESJONSKODE,
                             Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode
                         )
                     )
@@ -81,14 +139,14 @@ class OpensearchFilterQueryBuilder {
                 if (!brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig) {
                     shouldBoolQuery.should(
                         QueryBuilders.matchQuery(
-                            "diskresjonskode",
+                            DISKRESJONSKODE,
                             Adressebeskyttelse.FORTROLIG.diskresjonskode
                         )
                     )
                 }
 
                 if (!brukerInnsynTilganger.tilgangTilSkjerming) {
-                    shouldBoolQuery.should(QueryBuilders.matchQuery("egen_ansatt", true))
+                    shouldBoolQuery.should(QueryBuilders.matchQuery(EGEN_ANSATT, true))
                 }
 
                 boolQuery.must(shouldBoolQuery)
@@ -135,32 +193,40 @@ class OpensearchFilterQueryBuilder {
         val barnUnder18aarQueryBuilder = BoolQueryBuilder()
         if (tilgangTil6og7) {
             barnUnder18aarQueryBuilder
-                .must(QueryBuilders.existsQuery("barn_under_18_aar"))
-                .must(QueryBuilders.rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder))
+                .must(QueryBuilders.existsQuery(BARN_UNDER_18_AAR))
+                .must(
+                    QueryBuilders.rangeQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_ALDER").gte(fraAlder).lte(tilAlder)
+                )
         } else if (tilgangTilKun6) {
             barnUnder18aarQueryBuilder
                 .must(
                     QueryBuilders.boolQuery()
-                        .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                        .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "6"))
-                        .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "19"))
+                        .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "-1"))
+                        .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "6"))
+                        .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "19"))
                 )
-                .must(QueryBuilders.rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder))
+                .must(
+                    QueryBuilders.rangeQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_ALDER").gte(fraAlder).lte(tilAlder)
+                )
         } else if (tilgangTil7) {
             barnUnder18aarQueryBuilder
                 .must(
                     QueryBuilders.boolQuery()
-                        .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                        .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "7"))
+                        .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "-1"))
+                        .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "7"))
                 )
-                .must(QueryBuilders.rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder))
+                .must(
+                    QueryBuilders.rangeQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_ALDER").gte(fraAlder).lte(tilAlder)
+                )
         } else {
             barnUnder18aarQueryBuilder
-                .must(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                .must(QueryBuilders.rangeQuery("barn_under_18_aar.alder").gte(fraAlder).lte(tilAlder))
+                .must(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "-1"))
+                .must(
+                    QueryBuilders.rangeQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_ALDER").gte(fraAlder).lte(tilAlder)
+                )
         }
         val barnUnder18AarNested =
-            QueryBuilders.nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Avg)
+            QueryBuilders.nestedQuery(BARN_UNDER_18_AAR, barnUnder18aarQueryBuilder, ScoreMode.Avg)
         boolQuery.must(barnUnder18AarNested)
     }
 
@@ -172,24 +238,29 @@ class OpensearchFilterQueryBuilder {
     ) {
         val barnUnder18aarQueryBuilder = BoolQueryBuilder()
         if (tilgangTil6og7) {
-            barnUnder18aarQueryBuilder.must(QueryBuilders.existsQuery("barn_under_18_aar"))
+            barnUnder18aarQueryBuilder.must(QueryBuilders.existsQuery(BARN_UNDER_18_AAR))
         } else if (tilgangTilKun6) {
             barnUnder18aarQueryBuilder.must(
                 QueryBuilders.boolQuery()
-                    .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "6"))
-                    .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "19"))
+                    .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "-1"))
+                    .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "6"))
+                    .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "19"))
             )
         } else if (tilgangTil7) {
             barnUnder18aarQueryBuilder.must(
                 QueryBuilders.boolQuery()
-                    .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
-                    .should(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "7"))
+                    .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "-1"))
+                    .should(QueryBuilders.matchQuery("$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE", "7"))
             )
         } else {
-            barnUnder18aarQueryBuilder.must(QueryBuilders.matchQuery("barn_under_18_aar.diskresjonskode", "-1"))
+            barnUnder18aarQueryBuilder.must(
+                QueryBuilders.matchQuery(
+                    "$BARN_UNDER_18_AAR.$BARN_UNDER_18_AAR_DISKRESJONSKODE",
+                    "-1"
+                )
+            )
         }
-        val barnUnder18Aar = QueryBuilders.nestedQuery("barn_under_18_aar", barnUnder18aarQueryBuilder, ScoreMode.Avg)
+        val barnUnder18Aar = QueryBuilders.nestedQuery(BARN_UNDER_18_AAR, barnUnder18aarQueryBuilder, ScoreMode.Avg)
         boolQuery.must(barnUnder18Aar)
     }
 
@@ -204,17 +275,24 @@ class OpensearchFilterQueryBuilder {
         val fodseldagIMndQuery =
             filtervalg.fodselsdagIMnd.stream().map { s: String -> s.toInt() }.collect(Collectors.toList())
 
-        byggManuellFilter(fodseldagIMndQuery, queryBuilder, "fodselsdag_i_mnd")
-        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, "formidlingsgruppekode")
-        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, "kvalifiseringsgruppekode")
-        byggManuellFilter(filtervalg.veiledere, queryBuilder, "veileder_id")
-        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, "manuell_bruker")
-        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, "tiltak")
-        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, "rettighetsgruppekode")
-        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, "aktiviteter")
-        byggManuellFilter(filtervalg.alleAktiviteter, queryBuilder, "alleAktiviteter")
-        byggManuellFilter(filtervalg.innsatsgruppeGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.innsatsgruppe")
-        byggManuellFilter(filtervalg.hovedmalGjeldendeVedtak14a, queryBuilder, "gjeldendeVedtak14a.hovedmal")
+        byggManuellFilter(fodseldagIMndQuery, queryBuilder, FODSELSDAG_I_MND)
+        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, FORMIDLINGSGRUPPE_KODE)
+        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, KVALIFISERINGSGRUPPE_KODE)
+        byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
+        byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
+        byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
+        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, RETTIGHETSGRUPPE_KODE)
+        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, AKTIVITETER)
+        byggManuellFilter(
+            filtervalg.innsatsgruppeGjeldendeVedtak14a,
+            queryBuilder,
+            "$GJELDENDE_VEDTAK_14A.$GJELDENDE_VEDTAK_14A_INNSATSGRUPPE"
+        )
+        byggManuellFilter(
+            filtervalg.hovedmalGjeldendeVedtak14a,
+            queryBuilder,
+            "$GJELDENDE_VEDTAK_14A.$GJELDENDE_VEDTAK_14A_HOVEDMAL"
+        )
 
         if (filtervalg.harYtelseAapArenaFilter() || filtervalg.harYtelseAapKelvinFilter()) {
             val subQueryKelvin = QueryBuilders.boolQuery()
@@ -225,14 +303,14 @@ class OpensearchFilterQueryBuilder {
                 when (ytelseArena) {
                     YtelseAapArena.HAR_AAP_ORDINAR -> subQueryArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.AAP_MAXTID
                         )
                     )
 
                     YtelseAapArena.HAR_AAP_UNNTAK -> subQueryArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.AAP_UNNTAK
                         )
                     )
@@ -245,7 +323,7 @@ class OpensearchFilterQueryBuilder {
 
             filtervalg.ytelseAapKelvin.forEach(Consumer { ytelseKelvin: YtelseAapKelvin? ->
                 when (ytelseKelvin) {
-                    YtelseAapKelvin.HAR_AAP -> subQueryKelvin.should(QueryBuilders.termQuery("aap_kelvin", true))
+                    YtelseAapKelvin.HAR_AAP -> subQueryKelvin.should(QueryBuilders.termQuery(AAP_KELVIN, true))
                     else -> {
                         throw IllegalStateException("ytelseKelvin har ugyldig verdi")
                     }
@@ -272,12 +350,14 @@ class OpensearchFilterQueryBuilder {
                 when (ytelseTiltakspenger) {
                     YtelseTiltakspenger.HAR_TILTAKSPENGER -> subQueryTiltakspenger.should(
                         QueryBuilders.termQuery(
-                            "tiltakspenger",
+                            TILTAKSPENGER,
                             true
                         )
                     )
 
-                    else -> {throw IllegalStateException("ytelseTiltakspenger har ugyldig verdi")}
+                    else -> {
+                        throw IllegalStateException("ytelseTiltakspenger har ugyldig verdi")
+                    }
                 }
             })
 
@@ -285,12 +365,14 @@ class OpensearchFilterQueryBuilder {
                 when (ytelseTiltakspenger) {
                     YtelseTiltakspengerArena.HAR_TILTAKSPENGER -> subQueryTiltakspengerArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.TILTAKSPENGER
                         )
                     )
 
-                    else -> {throw IllegalStateException("ytelseTiltakspengerArena har ugyldig verdi")}
+                    else -> {
+                        throw IllegalStateException("ytelseTiltakspengerArena har ugyldig verdi")
+                    }
                 }
             })
 
@@ -305,35 +387,79 @@ class OpensearchFilterQueryBuilder {
         }
 
 
-        if (filtervalg.harYtelseDagpengerArenaFilter()) {
-            val subQueryArena = QueryBuilders.boolQuery()
+        if (filtervalg.harYtelseDagpengerFilter() || filtervalg.harYtelseDagpengerArenaFilter()) {
+            val subQueryDagpengerArena = QueryBuilders.boolQuery()
+            val subQueryDagpenger = QueryBuilders.boolQuery().must(
+                QueryBuilders.termQuery(
+                    "$DAGPENGER.$DAGPENGER_HAR_DAGPENGER",
+                    true
+                )
+            )
+
+            val combinedSubQuery = QueryBuilders.boolQuery()
+
+            filtervalg.ytelseDagpenger?.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
+                when (ytelseDagpenger) {
+                    YtelseDagpenger.HAR_DAGPENGER_ORDINAER -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
+                                DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER
+                            )
+                        )
+                    }
+
+                    YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
+                                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER
+                            )
+                        )
+
+                    }
+
+                    YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> {
+                        subQueryDagpenger.should(
+                            QueryBuilders.matchQuery(
+                                "$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE",
+                                DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI.toString()
+                            )
+                        )
+                    }
+
+                    else -> {
+                        throw IllegalStateException("ytelseDagspenger har ugyldig verdi")
+                    }
+                }
+            })
 
             filtervalg.ytelseDagpengerArena.forEach(Consumer { ytelseArena: YtelseDagpengerArena? ->
                 when (ytelseArena) {
-                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.ORDINARE_DAGPENGER
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.DAGPENGER_MED_PERMITTERING
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI
                         )
                     )
 
-                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryArena.should(
+                    YtelseDagpengerArena.HAR_DAGPENGER_LONNSGARANTIMIDLER -> subQueryDagpengerArena.should(
                         QueryBuilders.matchQuery(
-                            "ytelse",
+                            YTELSE,
                             YtelseMapping.LONNSGARANTIMIDLER_DAGPENGER
                         )
                     )
@@ -344,21 +470,29 @@ class OpensearchFilterQueryBuilder {
                 }
             })
 
-            queryBuilder.must(subQueryArena)
+            if (filtervalg.harYtelseDagpengerFilter()) {
+                subQueryDagpenger.minimumShouldMatch(1)
+                combinedSubQuery.should(subQueryDagpenger)
+            }
+            if (filtervalg.harYtelseDagpengerArenaFilter()) {
+                combinedSubQuery.should(subQueryDagpengerArena)
+            }
+
+            queryBuilder.must(combinedSubQuery)
         }
 
         if (filtervalg.harKjonnfilter()) {
-            queryBuilder.must(QueryBuilders.matchQuery("kjonn", filtervalg.kjonn.name))
+            queryBuilder.must(QueryBuilders.matchQuery(KJONN, filtervalg.kjonn?.name))
         }
 
         if (filtervalg.harCvFilter()) {
             if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_DELT_CV) {
-                queryBuilder.must(QueryBuilders.matchQuery("har_delt_cv", true))
-                queryBuilder.must(QueryBuilders.matchQuery("cv_eksistere", true))
+                queryBuilder.must(QueryBuilders.matchQuery(HAR_DELT_CV, true))
+                queryBuilder.must(QueryBuilders.matchQuery(CV_EKSISTERE, true))
             } else {
                 val orQuery = QueryBuilders.boolQuery()
-                orQuery.should(QueryBuilders.matchQuery("har_delt_cv", false))
-                orQuery.should(QueryBuilders.matchQuery("cv_eksistere", false))
+                orQuery.should(QueryBuilders.matchQuery(HAR_DELT_CV, false))
+                orQuery.should(QueryBuilders.matchQuery(CV_EKSISTERE, false))
                 queryBuilder.must(orQuery)
             }
         }
@@ -369,7 +503,7 @@ class OpensearchFilterQueryBuilder {
                     when (stillingFraNAVFilter) {
                         StillingFraNAVFilter.CV_KAN_DELES_STATUS_JA -> queryBuilder.must(
                             QueryBuilders.matchQuery(
-                                "neste_cv_kan_deles_status",
+                                NESTE_CV_KAN_DELES_STATUS,
                                 "JA"
                             )
                         )
@@ -379,8 +513,8 @@ class OpensearchFilterQueryBuilder {
                 })
         }
 
-        if (filtervalg.harAktivitetFilter()) {
-            byggAktivitetFilterQuery(filtervalg, queryBuilder)
+        if (filtervalg.harAktiviteterAvansert()) {
+            byggAvansertAktivitetFilterQuery(filtervalg, queryBuilder)
         }
 
         if (filtervalg.harUlesteEndringerFilter()) {
@@ -394,9 +528,9 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harNavnEllerFnrQuery()) {
             val query = filtervalg.navnEllerFnrQuery.trim { it <= ' ' }.lowercase(Locale.getDefault())
             if (StringUtils.isNumeric(query)) {
-                queryBuilder.must(QueryBuilders.termQuery("fnr", query))
+                queryBuilder.must(QueryBuilders.termQuery(FNR, query))
             } else {
-                queryBuilder.must(QueryBuilders.termQuery("fullt_navn", query))
+                queryBuilder.must(QueryBuilders.termQuery(FULLT_NAVN, query))
             }
         }
 
@@ -407,7 +541,7 @@ class OpensearchFilterQueryBuilder {
                     queryBuilder.must(
                         subQuery.should(
                             QueryBuilders.matchQuery(
-                                "foedeland",
+                                FOEDELAND,
                                 foedeLand
                             )
                         )
@@ -422,10 +556,10 @@ class OpensearchFilterQueryBuilder {
                 Consumer { landGruppe: String ->
                     val landgruppeCode = landGruppe.replace("LANDGRUPPE_", "")
                     if (landgruppeCode.equals("UKJENT", ignoreCase = true)) {
-                        subQueryUnkjent.mustNot(QueryBuilders.existsQuery("landgruppe"))
+                        subQueryUnkjent.mustNot(QueryBuilders.existsQuery(LANDGRUPPE))
                         subQuery.should(subQueryUnkjent)
                     } else {
-                        subQuery.should(QueryBuilders.matchQuery("landgruppe", landgruppeCode))
+                        subQuery.should(QueryBuilders.matchQuery(LANDGRUPPE, landgruppeCode))
                     }
                 }
             )
@@ -437,10 +571,10 @@ class OpensearchFilterQueryBuilder {
             filtervalg.fargekategorier.forEach(
                 Consumer { fargeKategori: String ->
                     if (FargekategoriVerdi.INGEN_KATEGORI.name == fargeKategori) {
-                        subQueryUnkjent.mustNot(QueryBuilders.existsQuery("fargekategori"))
+                        subQueryUnkjent.mustNot(QueryBuilders.existsQuery(FARGEKATEGORI))
                         subQuery.should(subQueryUnkjent)
                     } else {
-                        subQuery.should(QueryBuilders.matchQuery("fargekategori", fargeKategori))
+                        subQuery.should(QueryBuilders.matchQuery(FARGEKATEGORI, fargeKategori))
                     }
                 }
             )
@@ -458,13 +592,13 @@ class OpensearchFilterQueryBuilder {
             val tolkBehovTegnSubQuery = QueryBuilders.boolQuery()
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                taletolkbehovSubQuery.must(QueryBuilders.existsQuery("talespraaktolk"))
-                    .mustNot(QueryBuilders.matchQuery("talespraaktolk", ""))
+                taletolkbehovSubQuery.must(QueryBuilders.existsQuery(TALESPRAAK_TOLK))
+                    .mustNot(QueryBuilders.matchQuery(TALESPRAAK_TOLK, ""))
                 tolkebehovSubQuery.should(taletolkbehovSubQuery)
             }
             if (filtervalg.harTegnspraakFilter()) {
-                tolkBehovTegnSubQuery.must(QueryBuilders.existsQuery("tegnspraaktolk"))
-                    .mustNot(QueryBuilders.matchQuery("tegnspraaktolk", ""))
+                tolkBehovTegnSubQuery.must(QueryBuilders.existsQuery(TEGNSPRAAK_TOLK))
+                    .mustNot(QueryBuilders.matchQuery(TEGNSPRAAK_TOLK, ""))
                 tolkebehovSubQuery.should(tolkBehovTegnSubQuery)
             }
 
@@ -477,11 +611,11 @@ class OpensearchFilterQueryBuilder {
             val tolkBehovSubquery = QueryBuilders.boolQuery()
 
             if (filtervalg.harTalespraaktolkFilter()) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
                             QueryBuilders.matchQuery(
-                                "talespraaktolk",
+                                TALESPRAAK_TOLK,
                                 tolkbehovSpraak
                             )
                         )
@@ -490,10 +624,10 @@ class OpensearchFilterQueryBuilder {
                 tolkbehovSelected = true
             }
             if (filtervalg.harTegnspraakFilter()) {
-                filtervalg.tolkBehovSpraak.forEach(Consumer { tolkbehovSpraak: String? ->
+                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
-                            "tegnspraaktolk",
+                            TEGNSPRAAK_TOLK,
                             tolkbehovSpraak
                         )
                     )
@@ -503,20 +637,20 @@ class OpensearchFilterQueryBuilder {
             }
 
             if (!tolkbehovSelected) {
-                filtervalg.tolkBehovSpraak.forEach(
+                filtervalg.tolkBehovSpraak?.forEach(
                     Consumer { tolkbehovSpraak: String? ->
                         tolkBehovSubquery.should(
                             QueryBuilders.matchQuery(
-                                "talespraaktolk",
+                                TALESPRAAK_TOLK,
                                 tolkbehovSpraak
                             )
                         )
                     }
                 )
-                filtervalg.tolkBehovSpraak.forEach(Consumer { tolkbehovSpraak: String? ->
+                filtervalg.tolkBehovSpraak?.forEach(Consumer { tolkbehovSpraak: String? ->
                     tolkBehovSubquery.should(
                         QueryBuilders.matchQuery(
-                            "tegnspraaktolk",
+                            TEGNSPRAAK_TOLK,
                             tolkbehovSpraak
                         )
                     )
@@ -529,17 +663,16 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harBostedFilter()) {
             val bostedSubquery = QueryBuilders.boolQuery()
             filtervalg.geografiskBosted.forEach(Consumer { geografiskBosted: String? ->
-                bostedSubquery.should(QueryBuilders.matchQuery("kommunenummer", geografiskBosted))
-                bostedSubquery.should(QueryBuilders.matchQuery("bydelsnummer", geografiskBosted))
+                bostedSubquery.should(QueryBuilders.matchQuery(KOMMUNENUMMER, geografiskBosted))
+                bostedSubquery.should(QueryBuilders.matchQuery(BYDELSNUMMER, geografiskBosted))
             }
             )
             queryBuilder.must(bostedSubquery)
         }
 
-        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere
-                .contains(EnsligeForsorgere.OVERGANGSSTONAD)
+        if (filtervalg.harEnsligeForsorgereFilter() && filtervalg.ensligeForsorgere.contains(EnsligeForsorgere.OVERGANGSSTONAD)
         ) {
-            queryBuilder.must(QueryBuilders.existsQuery("enslige_forsorgere_overgangsstonad"))
+            queryBuilder.must(QueryBuilders.existsQuery(ENSLIGE_FORSORGERE_OVERGANGSSTONAD))
         }
 
         if (filtervalg.harDinSituasjonSvar()) {
@@ -547,14 +680,14 @@ class OpensearchFilterQueryBuilder {
             filtervalg.registreringstype.forEach(Consumer { jobbSituasjonBeskrivelse: JobbSituasjonBeskrivelse ->
                 if (jobbSituasjonBeskrivelse == JobbSituasjonBeskrivelse.INGEN_DATA) {
                     brukerensSituasjonSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("brukers_situasjoner"))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(BRUKERS_SITUASJONER))
                     )
                 } else {
                     inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering(jobbSituasjonBeskrivelse).forEach(
                         Consumer { sokerOrd: String? ->
                             brukerensSituasjonSubQuery.should(
                                 QueryBuilders.matchQuery(
-                                    "brukers_situasjoner",
+                                    BRUKERS_SITUASJONER,
                                     sokerOrd
                                 )
                             )
@@ -570,11 +703,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanning.forEach(Consumer { utdanningSvar: UtdanningSvar ->
                 if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("utdanning"))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning", "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning", utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)
@@ -585,11 +718,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanningBestatt.forEach(Consumer { utdanningSvar: UtdanningBestattSvar ->
                 if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("utdanning_bestatt"))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING_BESTATT))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning_bestatt", "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_BESTATT, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning_bestatt", utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_BESTATT, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)
@@ -600,11 +733,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanningGodkjent.forEach(Consumer { utdanningSvar: UtdanningGodkjentSvar ->
                 if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("utdanning_godkjent"))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING_GODKJENT))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning_godkjent", "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_GODKJENT, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery("utdanning_godkjent", utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_GODKJENT, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)
@@ -621,31 +754,34 @@ class OpensearchFilterQueryBuilder {
             if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
                 && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
             ) {
-                subQuery.must(QueryBuilders.existsQuery("gjeldendeVedtak14a"))
+                subQuery.must(QueryBuilders.existsQuery(GJELDENDE_VEDTAK_14A))
                 queryBuilder.must(subQuery)
             } else if (valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_IKKE_14A_VEDTAK)
                 && !valgteGjeldendeVedtak14aFilter.contains(GjeldendeVedtak14aFilter.HAR_14A_VEDTAK)
             ) {
-                subQuery.mustNot(QueryBuilders.existsQuery("gjeldendeVedtak14a"))
+                subQuery.mustNot(QueryBuilders.existsQuery(GJELDENDE_VEDTAK_14A))
                 queryBuilder.must(subQuery)
             }
         }
     }
 
-    fun byggAktivitetFilterQuery(filtervalg: Filtervalg, queryBuilder: BoolQueryBuilder): List<BoolQueryBuilder> {
+    fun byggAvansertAktivitetFilterQuery(
+        filtervalg: Filtervalg,
+        queryBuilder: BoolQueryBuilder
+    ): List<BoolQueryBuilder> {
         return filtervalg.aktiviteter.entries.stream()
             .map { entry: Map.Entry<String, AktivitetFiltervalg> ->
                 val navnPaaAktivitet = entry.key
                 val valg = entry.value
                 if (AktivitetFiltervalg.JA == valg) {
-                    return@map queryBuilder.filter(QueryBuilders.matchQuery("aktiviteter", navnPaaAktivitet))
+                    return@map queryBuilder.filter(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
                 } else if (AktivitetFiltervalg.NEI == valg && "TILTAK" == navnPaaAktivitet) {
                     return@map queryBuilder.filter(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery("tiltak"))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(TILTAK))
                     )
                 } else if (AktivitetFiltervalg.NEI == valg) {
                     return@map queryBuilder.filter(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery("aktiviteter", navnPaaAktivitet))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
                     )
                 } else {
                     return@map queryBuilder
@@ -657,23 +793,23 @@ class OpensearchFilterQueryBuilder {
         val queryBuilder = when (brukerStatus) {
             Brukerstatus.UFORDELTE_BRUKERE -> byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet)
             Brukerstatus.TRENGER_OPPFOLGINGSVEDTAK -> byggTrengerOppfolgingsvedtakFilter()
-            Brukerstatus.INAKTIVE_BRUKERE -> QueryBuilders.matchQuery("formidlingsgruppekode", "ISERV")
-            Brukerstatus.VENTER_PA_SVAR_FRA_NAV -> QueryBuilders.existsQuery("venterpasvarfranav")
-            Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER -> QueryBuilders.existsQuery("venterpasvarfrabruker")
-            Brukerstatus.I_AVTALT_AKTIVITET -> QueryBuilders.existsQuery("aktiviteter")
-            Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery("alleAktiviteter")
+            Brukerstatus.INAKTIVE_BRUKERE -> QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV")
+            Brukerstatus.VENTER_PA_SVAR_FRA_NAV -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_NAV)
+            Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_BRUKER)
+            Brukerstatus.I_AVTALT_AKTIVITET -> QueryBuilders.existsQuery(AKTIVITETER)
+            Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
-                .mustNot(QueryBuilders.existsQuery("aktiviteter"))
+                .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
 
-            Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery("nyesteutlopteaktivitet")
-            Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery("huskelapp")
-            Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery("ny_for_veileder", true)
+            Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
+            Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
+            Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
             Brukerstatus.MOTER_IDAG -> byggMoteMedNavIdag()
             Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER -> byggErSykmeldtMedArbeidsgiverFilter()
-            Brukerstatus.UNDER_VURDERING -> QueryBuilders.existsQuery("utkast_14a_status")
-            Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery("tiltakshendelse")
-            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("hendelser.UTGATT_VARSEL")
-            Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("hendelser.UDELT_SAMTALEREFERAT")
+            Brukerstatus.UNDER_VURDERING -> QueryBuilders.existsQuery(UTKAST_14A_STATUS)
+            Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery(TILTAKSHENDELSE)
+            Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
+            Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}")
 
         }
         return queryBuilder
@@ -681,13 +817,13 @@ class OpensearchFilterQueryBuilder {
 
     fun byggTrengerOppfolgingsvedtakFilter(): QueryBuilder {
         return QueryBuilders.boolQuery()
-            .mustNot(QueryBuilders.existsQuery("gjeldendeVedtak14a"))
+            .mustNot(QueryBuilders.existsQuery(GJELDENDE_VEDTAK_14A))
     }
 
     fun byggErSykmeldtMedArbeidsgiverFilter(): QueryBuilder {
         return QueryBuilders.boolQuery()
-            .must(QueryBuilders.matchQuery("er_sykmeldt_med_arbeidsgiver", true))
-            .mustNot(QueryBuilders.existsQuery("utkast_14a_status"))
+            .must(QueryBuilders.matchQuery(ER_SYKMELDT_MED_ARBEIDSGIVER, true))
+            .mustNot(QueryBuilders.existsQuery(UTKAST_14A_STATUS))
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
@@ -696,7 +832,7 @@ class OpensearchFilterQueryBuilder {
         veiledereMedTilgangTilEnhet.forEach(Consumer { id: String? ->
             boolQuery.mustNot(
                 QueryBuilders.matchQuery(
-                    "veileder_id",
+                    VEILEDER_ID,
                     id
                 )
             )
@@ -746,7 +882,7 @@ class OpensearchFilterQueryBuilder {
     fun byggAlderQuery(alder: String, queryBuilder: BoolQueryBuilder) {
         if ("19-og-under" == alder) {
             queryBuilder.should(
-                QueryBuilders.rangeQuery("fodselsdato")
+                QueryBuilders.rangeQuery(FODSELSDATO)
                     .lte("now")
                     .gt("now-20y-1d")
             )
@@ -756,7 +892,7 @@ class OpensearchFilterQueryBuilder {
             val tilAlder = fraTilAlder[1].toInt()
 
             queryBuilder.should(
-                QueryBuilders.rangeQuery("fodselsdato")
+                QueryBuilders.rangeQuery(FODSELSDATO)
                     .lte(String.format("now-%sy/d", fraAlder))
                     .gt(String.format("now-%sy-1d", tilAlder + 1))
             )
@@ -768,16 +904,16 @@ class OpensearchFilterQueryBuilder {
 
         return SearchSourceBuilder()
             .size(0)
-            .query(QueryBuilders.termQuery("oppfolging", true))
+            .query(QueryBuilders.termQuery(OPPFOLGING, true))
             .aggregation(
                 AggregationBuilders.filter(
                     name,
-                    QueryBuilders.termQuery("enhet_id", enhetId)
+                    QueryBuilders.termQuery(ENHET_ID, enhetId)
                 )
                     .subAggregation(
                         AggregationBuilders
                             .terms(name)
-                            .field("veileder_id")
+                            .field(VEILEDER_ID)
                             .size(9999)
                             .order(BucketOrder.key(true))
                     )
@@ -790,7 +926,7 @@ class OpensearchFilterQueryBuilder {
     ): SearchSourceBuilder {
         val filtre = arrayOf(
             erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, "aktiviteter"),
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, AKTIVITETER),
             ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
             inaktiveBrukere(filtrereVeilederOgEnhet),
             mustBeTrueFilter(
@@ -801,26 +937,26 @@ class OpensearchFilterQueryBuilder {
             mustNotExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.TRENGER_OPPFOLGINGSVEDTAK.key,
-                "gjeldendeVedtak14a"
+                GJELDENDE_VEDTAK_14A
             ),
             mustExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.VENTER_PA_SVAR_FRA_NAV.key,
-                "venterpasvarfranav"
+                VENTER_PA_SVAR_FRA_NAV
             ),
             mustExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.VENTER_PA_SVAR_FRA_BRUKER.key,
-                "venterpasvarfrabruker"
+                VENTER_PA_SVAR_FRA_BRUKER
             ),
             ufordelteBrukere(filtrereVeilederOgEnhet, veiledereMedTilgangTilEnhet),
             mustExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.UTLOPTE_AKTIVITETER.key,
-                "nyesteutlopteaktivitet"
+                NYESTE_UTLOPTE_AKTIVITET
             ),
             moterMedNavIdag(filtrereVeilederOgEnhet),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UNDER_VURDERING.key, "utkast_14a_status"),
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UNDER_VURDERING.key, UTKAST_14A_STATUS),
             mustMatchQuery(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.FARGEKATEGORI_A.key,
@@ -854,12 +990,20 @@ class OpensearchFilterQueryBuilder {
             mustNotExistFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.FARGEKATEGORI_INGEN_KATEGORI.key,
-                "fargekategori"
+                FARGEKATEGORI
             ),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, "huskelapp"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, "tiltakshendelse"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UTGATTE_VARSEL.key, "hendelser.UTGATT_VARSEL"),
-            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key, "hendelser.UDELT_SAMTALEREFERAT")
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.MINE_HUSKELAPPER.key, HUSKELAPP),
+            mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.TILTAKSHENDELSER.key, TILTAKSHENDELSE),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UTGATTE_VARSEL.key,
+                "$HENDELSER.${Kategori.UTGATT_VARSEL.name}"
+            ),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
+                "$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}"
+            )
         )
 
         return SearchSourceBuilder()
@@ -867,48 +1011,32 @@ class OpensearchFilterQueryBuilder {
             .aggregation(AggregationBuilders.filters("statustall", *filtre))
     }
 
-    private fun byggUlestEndringsFilter(sisteEndringKategori: List<String>?, queryBuilder: BoolQueryBuilder) {
-        if (sisteEndringKategori != null && sisteEndringKategori.size > 1) {
-            log.error(
-                "Det ble filtrert på flere ulike siste endringer (ulest): {}",
-                sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
-        var relvanteKategorier = sisteEndringKategori
-        if (sisteEndringKategori.isNullOrEmpty()) {
-            relvanteKategorier = (Arrays.stream(SisteEndringsKategori.entries.toTypedArray())
-                .map { obj: SisteEndringsKategori -> obj.name }).collect(
-                    Collectors.toList()
-                )
-        }
+    private fun byggUlestEndringsFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
+        val relevanteKategorier: List<String> =
+            if (sisteEndringKategori.isNullOrBlank()) {
+                SisteEndringsKategori.entries.map { it.name }
+            } else {
+                listOf(sisteEndringKategori)
+            }
 
         val orQuery = QueryBuilders.boolQuery()
-        relvanteKategorier!!.forEach(Consumer { kategori: String ->
+
+        relevanteKategorier.forEach { kategori ->
             orQuery.should(
-                QueryBuilders.matchQuery("siste_endringer.$kategori.erSett", "N")
+                QueryBuilders.matchQuery("$SISTE_ENDRINGER.$kategori.$SISTE_ENDRINGER_ER_SETT", "N")
             )
-        })
+        }
+
         queryBuilder.must(orQuery)
     }
 
-    private fun byggSisteEndringFilter(sisteEndringKategori: List<String>, queryBuilder: BoolQueryBuilder) {
-        if (sisteEndringKategori.isEmpty()) {
-            return
-        }
-        if (sisteEndringKategori.size != 1) {
-            log.error(
-                "Det ble filtrert på flere ulike siste endringer: {}",
-                sisteEndringKategori.size
-            )
-            throw IllegalStateException("Filtrering på flere siste_endringer er ikke tilatt.")
-        }
-        queryBuilder.must(QueryBuilders.existsQuery("siste_endringer." + sisteEndringKategori[0]))
+    private fun byggSisteEndringFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
+        queryBuilder.must(QueryBuilders.existsQuery("$SISTE_ENDRINGER.$sisteEndringKategori"))
     }
 
     private fun byggMoteMedNavIdag(): RangeQueryBuilder {
         val localDate = LocalDate.now()
-        return QueryBuilders.rangeQuery("alle_aktiviteter_mote_startdato")
+        return QueryBuilders.rangeQuery(ALLE_AKTIVITETER_MOTE_STARTDATO)
             .gte(DateUtils.toIsoUTC(localDate.atStartOfDay()))
             .lt(DateUtils.toIsoUTC(localDate.plusDays(1).atStartOfDay()))
     }
@@ -916,8 +1044,8 @@ class OpensearchFilterQueryBuilder {
     private fun erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet: BoolQueryBuilder): FiltersAggregator.KeyedFilter {
         val boolQueryBuilder = QueryBuilders.boolQuery()
             .must(filtrereVeilederOgEnhet)
-            .must(QueryBuilders.termQuery("er_sykmeldt_med_arbeidsgiver", true))
-            .mustNot(QueryBuilders.existsQuery("utkast_14a_status"))
+            .must(QueryBuilders.termQuery(ER_SYKMELDT_MED_ARBEIDSGIVER, true))
+            .mustNot(QueryBuilders.existsQuery(UTKAST_14A_STATUS))
 
         return FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder)
     }
@@ -959,7 +1087,7 @@ class OpensearchFilterQueryBuilder {
             key,
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(QueryBuilders.termQuery("ny_for_veileder", true))
+                .must(QueryBuilders.termQuery(NY_FOR_VEILEDER, true))
 
         )
     }
@@ -969,7 +1097,7 @@ class OpensearchFilterQueryBuilder {
             StatustallAggregationKey.INAKTIVE_BRUKERE.key,
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(QueryBuilders.matchQuery("formidlingsgruppekode", "ISERV"))
+                .must(QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV"))
 
         )
     }
@@ -983,7 +1111,7 @@ class OpensearchFilterQueryBuilder {
             key,
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .must(QueryBuilders.matchQuery("fargekategori", value))
+                .must(QueryBuilders.matchQuery(FARGEKATEGORI, value))
         )
     }
 
@@ -992,7 +1120,7 @@ class OpensearchFilterQueryBuilder {
             StatustallAggregationKey.IKKE_I_AVTALT_AKTIVITET.key,
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
-                .mustNot(QueryBuilders.existsQuery("aktiviteter"))
+                .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
 
         )
     }

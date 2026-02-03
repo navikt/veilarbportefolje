@@ -5,17 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
-import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class OppfolgingAvsluttetService {
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final CVRepositoryV2 cvRepositoryV2;
     private final PdlService pdlService;
-    private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
+    private final OpensearchIndexer opensearchIndexer;
     private final SisteEndringService sisteEndringService;
     private final Siste14aVedtakService siste14aVedtakService;
     private final EnsligeForsorgereService ensligeForsorgereService;
@@ -45,6 +46,7 @@ public class OppfolgingAvsluttetService {
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
+    private final DagpengerService dagpengerService;
 
     public void avsluttOppfolging(AktorId aktoerId) {
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktoerId));
@@ -64,8 +66,9 @@ public class OppfolgingAvsluttetService {
         arbeidssoekerService.slettArbeidssoekerData(aktoerId, maybeFnr);
         aapService.slettAapData(aktoerId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktoerId, maybeFnr);
+        dagpengerService.slettDagpengerData(aktoerId, maybeFnr);
 
-        opensearchIndexerPaDatafelt.slettDokumenter(List.of(aktoerId));
+        opensearchIndexer.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }
 }

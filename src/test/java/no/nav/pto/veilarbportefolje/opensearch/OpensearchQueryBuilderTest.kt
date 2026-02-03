@@ -2,13 +2,15 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
+import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.TestUtil
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat
 import org.opensearch.index.query.BoolQueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.opensearch.search.builder.SearchSourceBuilder
@@ -32,7 +34,7 @@ class OpensearchQueryBuilderTest {
             Sorteringsrekkefolge.STIGENDE,
             Sorteringsfelt.ETTERNAVN,
             SearchSourceBuilder(),
-            Filtervalg(),
+            getFiltervalgDefaults(),
             BrukerinnsynTilganger(true, true, true)
         )
         val fieldName: String = searchSourceBuilder.sorts()[0].toString()
@@ -51,8 +53,8 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
         val navnPaAktivitet = "behandling"
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
+        val filtervalg = getFiltervalgDefaults().copy(
+            aktiviteter = mapOf(
                 navnPaAktivitet to AktivitetFiltervalg.JA,
                 "egen" to AktivitetFiltervalg.NEI
             )
@@ -73,13 +75,11 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
-                "tiltak" to
-                        AktivitetFiltervalg.NEI
-            )
+        val filtervalg = getFiltervalgDefaults().copy(
+            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.NEI)
         )
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/nei_paa_tiltak.json", javaClass)
         val actualJson: String = builders[0].toString()
@@ -89,13 +89,10 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
-        val filtervalg: Filtervalg = Filtervalg().setAktiviteter(
-            mapOf(
-                "behandling" to
-                        AktivitetFiltervalg.JA
-            )
+        val filtervalg = getFiltervalgDefaults().copy(
+            aktiviteter = mapOf("behandling" to AktivitetFiltervalg.JA)
         )
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_behandling.json", javaClass)
         val actualJson: String = builders[0].toString()
@@ -105,9 +102,10 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
-        val filtervalg: Filtervalg =
-            Filtervalg().setAktiviteter(mapOf("tiltak" to AktivitetFiltervalg.JA))
-        val builders = filterQueryBuilder.byggAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
+        val filtervalg = getFiltervalgDefaults().copy(
+            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.JA)
+        )
+        val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
         val expectedJson: String = TestUtil.readFileAsJsonString("/ja_paa_tiltak.json", javaClass)
         val actualJson: String = builders[0].toString()
@@ -148,19 +146,36 @@ class OpensearchQueryBuilderTest {
     }
 
     @Test
-    fun `byggUlestEndringsFilter should add orQuery for single category`() {
+    fun `byggUlestEndringsFilter skal bruke orQuery for endringskategorien når den finnes`() {
         val boolQuery = BoolQueryBuilder()
-        val categories = listOf("AKTIVITET")
         val method = OpensearchFilterQueryBuilder::class.java.getDeclaredMethod(
-            "byggUlestEndringsFilter", List::class.java, BoolQueryBuilder::class.java
+            "byggUlestEndringsFilter", String::class.java, BoolQueryBuilder::class.java
         )
         method.isAccessible = true
-
-        method.invoke(filterQueryBuilder, categories, boolQuery)
+        method.invoke(filterQueryBuilder, "AKTIVITET", boolQuery)
 
         val queryString = boolQuery.toString()
-        assertThat(queryString).contains("siste_endringer.AKTIVITET.erSett")
+        assertThat(queryString)
+            .contains("siste_endringer.AKTIVITET.erSett")
     }
+
+    @Test
+    fun `byggUlestEndringsFilter skal bruke orQuery for alle de mulige kategoriene når endringskategorien er null`() {
+        val boolQuery = BoolQueryBuilder()
+        val method = OpensearchFilterQueryBuilder::class.java.getDeclaredMethod(
+            "byggUlestEndringsFilter", String::class.java, BoolQueryBuilder::class.java
+        )
+        method.isAccessible = true
+        method.invoke(filterQueryBuilder, null, boolQuery)
+
+        val queryString = boolQuery.toString()
+
+        SisteEndringsKategori.entries.forEach {
+            assertThat(queryString)
+                .contains("siste_endringer.${it.name}.erSett")
+        }
+    }
+
 
     companion object {
         @JvmStatic
