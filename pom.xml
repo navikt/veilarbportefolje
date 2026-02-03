@@ -23,7 +23,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
-        <unleash.version>11.1.0</unleash.version>
+        <unleash.version>12.1.0</unleash.version>
     </properties>
 
     <build>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -281,7 +281,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2025.09.15_11.12-54be8ac278c0</version>
+            <version>2025.10.16_11.29-aaf8578da14c</version>
         </dependency>
         <!--Logging-->
         <dependency>
@@ -344,7 +344,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.20.0</version>
+            <version>2.21.0</version>
         </dependency>
 
         <!-- Prometheus -->
