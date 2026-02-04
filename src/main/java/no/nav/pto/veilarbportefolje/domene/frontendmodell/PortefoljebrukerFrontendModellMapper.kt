@@ -192,7 +192,7 @@ object PortefoljebrukerFrontendModellMapper {
 
         return Dagpenger(
             rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
-            datoPlanlagtStans = opensearchModell.dagpenger?.datoPlanlagtStans,
+            datoStans = opensearchModell.dagpenger?.datoStans,
             resterendeDager = resterendeDagerMedDato
 
         )

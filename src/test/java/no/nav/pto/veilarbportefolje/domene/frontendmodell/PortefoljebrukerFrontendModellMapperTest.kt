@@ -381,7 +381,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
         Assertions.assertEquals("Dagpenger under permittering", ytelser.dagpenger!!.rettighetstype)
-        Assertions.assertEquals(null, ytelser.dagpenger.datoPlanlagtStans)
+        Assertions.assertEquals(null, ytelser.dagpenger.datoStans)
         Assertions.assertEquals("156 dager (per 01.01.2026)", ytelser.dagpenger.resterendeDager)
     }
 

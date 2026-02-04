@@ -6,7 +6,7 @@ import java.time.LocalDate
 data class DagpengerForOpensearch(
     val harDagpenger: Boolean = false,
     val rettighetstype: DagpengerRettighetstype? = null,
-    val datoPlanlagtStans: LocalDate? = null,
+    val datoStans: LocalDate? = null,
     val antallResterendeDager: Int? = null,
     val datoAntallDagerBleBeregnet: LocalDate? = null
 )

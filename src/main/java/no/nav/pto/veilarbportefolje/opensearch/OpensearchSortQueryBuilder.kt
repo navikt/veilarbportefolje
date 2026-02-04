@@ -48,7 +48,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_O
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_UNNTAK_UKER_IGJEN
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_DATO_PLANLAGT_STANS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_DATO_STANS
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
@@ -349,8 +349,8 @@ class OpensearchSortQueryBuilder {
                 searchSourceBuilder
             }
 
-            Sorteringsfelt.DAGPENGER_PLANGLAGT_STANS -> {
-                sorterDagpengerPlanlagtStansDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+            Sorteringsfelt.DAGPENGER_STANS -> {
+                sorterDagpengerStansDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -626,11 +626,11 @@ class OpensearchSortQueryBuilder {
         builder.sort(scriptBuilder)
     }
 
-    private fun sorterDagpengerPlanlagtStansDato(builder: SearchSourceBuilder, order: SortOrder) {
+    private fun sorterDagpengerStansDato(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = if (order === SortOrder.ASC) {
             """
-                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].empty) {
-                        return doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].empty) {
+                        return doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].value.toInstant().toEpochMilli();
                     } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
                     && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
                     && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {
@@ -641,8 +641,8 @@ class OpensearchSortQueryBuilder {
                     """.trimIndent()
         } else {
             """
-                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].empty) {
-                        return doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].value.toInstant().toEpochMilli();
+                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].empty) {
+                        return doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].value.toInstant().toEpochMilli();
                     } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
                     && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
                     && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {

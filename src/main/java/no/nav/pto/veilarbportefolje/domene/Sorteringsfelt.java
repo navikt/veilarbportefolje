@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.domene;
 
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys;
-
 /**
  * "Sorteringsfelt" tilsvarer (med få unntak) kolonner ein kan sortere på i frontend (veilarbportefoljeflatefs).
  * <p>
@@ -42,7 +40,7 @@ public enum Sorteringsfelt {
     TILTAKSPENGER_VEDTAKSDATO_TOM("tiltakspenger_vedtaksdato_tom"),
     TILTAKSPENGER_RETTIGHET("tiltakspenger_rettighet"),
 
-    DAGPENGER_PLANGLAGT_STANS("dagpenger_planglagt_stans"),
+    DAGPENGER_STANS("dagpenger_stans"),
     DAGPENGER_ANTALL_RESTERENDE_DAGER("dagpenger_antall_resterende_dager"),
     DAGPENGER_RETTIGHETSTYPE("dagpenger_rettighetstype"),
 

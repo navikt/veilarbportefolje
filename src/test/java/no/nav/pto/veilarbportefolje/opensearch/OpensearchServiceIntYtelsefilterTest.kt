@@ -757,7 +757,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     }
 
     @Test
-    fun skal_sortere_brukere_pa_dagpenger_planlagt_slutt_dato() {
+    fun skal_sortere_brukere_pa_dagpenger_slutt_dato() {
         val tidspunkt1 = LocalDate.now()
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
@@ -841,7 +841,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.STIGENDE,
-            Sorteringsfelt.DAGPENGER_PLANGLAGT_STANS,
+            Sorteringsfelt.DAGPENGER_STANS,
             filtervalg,
             null,
             null
@@ -850,7 +850,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             TEST_ENHET,
             Optional.empty(),
             Sorteringsrekkefolge.SYNKENDE,
-            Sorteringsfelt.DAGPENGER_PLANGLAGT_STANS,
+            Sorteringsfelt.DAGPENGER_STANS,
             filtervalg,
             null,
             null
