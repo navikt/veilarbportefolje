@@ -77,19 +77,19 @@ class DagpengerClientTest {
         val responseBody = """
                     [
                       {
-                        "dato": "2026-01-20",
+                        "fraOgMed": "2026-01-20",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 519
                       },
                       {
-                        "dato": "2026-01-21",
+                        "fraOgMed": "2026-01-21",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 518
                       },
                       {
-                        "dato": "2026-01-22",
+                        "fraOgMed": "2026-01-22",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 517
