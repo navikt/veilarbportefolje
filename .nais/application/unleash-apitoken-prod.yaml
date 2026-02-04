@@ -9,7 +9,7 @@ spec:
   unleashInstance:
     apiVersion: unleash.nais.io/v1
     kind: RemoteUnleash
-    name: team-obo
+    name: obo
   secretName: veilarbportefolje-unleash-api-token
 
   environment: production
