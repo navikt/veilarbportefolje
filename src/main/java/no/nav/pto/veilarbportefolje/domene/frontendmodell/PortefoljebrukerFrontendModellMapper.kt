@@ -182,15 +182,13 @@ object PortefoljebrukerFrontendModellMapper {
         val datoAntallDagerBleBeregnet =
             opensearchModell.dagpenger?.datoAntallDagerBleBeregnet?.format(ofPattern("dd.MM.yyyy"))
 
-        val resterendeDager = if (antallDager != null) {
+        val resterendeDagerMedDato = if (antallDager != null) {
             if (antallDager == 1) {
-                "$antallDager dag"
+                "$antallDager dag (per ${datoAntallDagerBleBeregnet.toString()}"
             } else {
-                "$antallDager dager"
+                "$antallDager dager (per ${datoAntallDagerBleBeregnet.toString()}"
             }
-        } else ""
-
-        val resterendeDagerMedDato = "$resterendeDager (per ${datoAntallDagerBleBeregnet.toString()})"
+        } else null
 
         return Dagpenger(
             rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
