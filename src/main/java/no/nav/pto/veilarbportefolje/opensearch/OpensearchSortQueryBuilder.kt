@@ -46,6 +46,11 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_K
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_MAXTID_UKE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_ORDINER_UTLOPSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_UNNTAK_UKER_IGJEN
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_DATO_STANS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO
@@ -331,6 +336,24 @@ class OpensearchSortQueryBuilder {
                 searchSourceBuilder
             }
 
+            Sorteringsfelt.DAGPENGER_RETTIGHETSTYPE -> {
+                searchSourceBuilder.sort("$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.DAGPENGER_ANTALL_RESTERENDE_DAGER -> {
+                searchSourceBuilder.sort(
+                    "$DAGPENGER.$DAGPENGER_ANTALL_RESTERENDE_DAGER",
+                    sorteringsrekkefolgeOpenSearch
+                )
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.DAGPENGER_STANS -> {
+                sorterDagpengerStansDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
             Sorteringsfelt.ETTERNAVN, Sorteringsfelt.CV_SVARFRIST, Sorteringsfelt.AAP_MAXTID_UKE, Sorteringsfelt.AAP_UNNTAK_UKER_IGJEN, Sorteringsfelt.VENTER_PA_SVAR_FRA_NAV, Sorteringsfelt.VENTER_PA_SVAR_FRA_BRUKER, Sorteringsfelt.STARTDATO_FOR_AVTALT_AKTIVITET, Sorteringsfelt.NESTE_STARTDATO_FOR_AVTALT_AKTIVITET, Sorteringsfelt.FORRIGE_DATO_FOR_AVTALT_AKTIVITET, Sorteringsfelt.UTKAST_14A_STATUS_ENDRET, Sorteringsfelt.UTKAST_14A_ANSVARLIG_VEILEDER, Sorteringsfelt.BOSTED_KOMMUNE, Sorteringsfelt.BOSTED_BYDEL, Sorteringsfelt.BOSTED_SIST_OPPDATERT, Sorteringsfelt.OPPFOLGING_STARTET, Sorteringsfelt.UTLOPSDATO, Sorteringsfelt.VEILEDER_IDENT, Sorteringsfelt.DAGPENGER_UTLOP_UKE, Sorteringsfelt.DAGPENGER_PERM_UTLOP_UKE -> {
                 searchSourceBuilder.sort(sorteringsfelt.sorteringsverdi, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
@@ -603,6 +626,39 @@ class OpensearchSortQueryBuilder {
         builder.sort(scriptBuilder)
     }
 
+    private fun sorterDagpengerStansDato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = if (order === SortOrder.ASC) {
+            """
+                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].empty) {
+                        return doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
+                    && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
+                    && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {
+                        return 33064243200001.0;
+                    } else {
+                         return 43064243200001.0;
+                    }
+                    """.trimIndent()
+        } else {
+            """
+                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].empty) {
+                        return doc['$DAGPENGER.$DAGPENGER_DATO_STANS'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
+                    && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
+                    && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {
+                        return 33064243200001.0;
+                    } else {
+                         return 0;
+                    }
+                    """.trimIndent()
+        }
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
     private fun sorterTildeltTidspunkt(builder: SearchSourceBuilder, order: SortOrder) {
         val expression = """
                     if (doc.containsKey('$TILDELT_TIDSPUNKT') && !doc['$TILDELT_TIDSPUNKT'].empty) {
@@ -715,11 +771,17 @@ class OpensearchSortQueryBuilder {
     }
 
     private fun sorterEnsligeForsorgereVedtaksPeriode(builder: SearchSourceBuilder, order: SortOrder) {
-        builder.sort("$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE", order)
+        builder.sort(
+            "$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE",
+            order
+        )
     }
 
     private fun sorterEnsligeForsorgereAktivitetsPlikt(builder: SearchSourceBuilder, order: SortOrder) {
-        builder.sort("$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT", order)
+        builder.sort(
+            "$ENSLIGE_FORSORGERE_OVERGANGSSTONAD.$ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT",
+            order
+        )
     }
 
     private fun addSecondarySort(searchSourceBuilder: SearchSourceBuilder) {

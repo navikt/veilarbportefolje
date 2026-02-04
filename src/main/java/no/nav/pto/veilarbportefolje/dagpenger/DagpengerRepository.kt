@@ -52,7 +52,7 @@ class DagpengerRepository(@param:Autowired private val db: JdbcTemplate) {
             dagpengerPeriode.fraOgMedDato,
             dagpengerPeriode.tilOgMedDato,
             dagpengerPeriode.ytelseType.toString(),
-            beregning?.dato,
+            beregning?.fraOgMed,
             beregning?.gjenståendeDager,
         )
     }

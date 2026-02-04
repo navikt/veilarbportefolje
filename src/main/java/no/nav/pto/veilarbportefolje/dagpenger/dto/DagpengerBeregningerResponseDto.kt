@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 data class DagpengerBeregningerResponseDto(
     @param:JsonFormat(pattern = "yyyy-MM-dd")
-    val dato: LocalDate,
+    val fraOgMed: LocalDate,
     val sats: Int,
     val utbetaltBeløp: Int,
     val gjenståendeDager: Int

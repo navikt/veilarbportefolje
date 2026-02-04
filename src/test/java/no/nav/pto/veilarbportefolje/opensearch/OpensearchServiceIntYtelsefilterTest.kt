@@ -757,6 +757,252 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     }
 
     @Test
+    fun skal_sortere_brukere_pa_dagpenger_slutt_dato() {
+        val tidspunkt1 = LocalDate.now()
+        val tidspunkt2 = LocalDate.now().plusDays(2)
+        val tidspunkt3 = LocalDate.now().plusDays(3)
+
+        val arenaDagpengerBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ytelse = YtelseMapping.ORDINARE_DAGPENGER.name
+        )
+
+        val ingenSluttdatoBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                null,
+                150,
+                null
+            )
+        )
+
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                tidspunkt1,
+                1,
+                null
+            )
+        )
+
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                tidspunkt2,
+                2,
+                null
+            )
+        )
+
+        val senestTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                tidspunkt3,
+                3,
+                null
+            )
+        )
+
+
+        val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, ingenSluttdatoBruker, arenaDagpengerBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING),
+            ytelseDagpengerArena = listOf(YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER)
+        )
+
+        val brukereMedAntall = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.DAGPENGER_STANS,
+            filtervalg,
+            null,
+            null
+        )
+        val brukereMedAntall2 = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.DAGPENGER_STANS,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereStigende = brukereMedAntall.brukere
+        val brukereSynkende = brukereMedAntall2.brukere
+
+        Assertions.assertThat(brukereStigende.size).isEqualTo(5)
+        Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(midtImellomBruker.fnr)
+        Assertions.assertThat(brukereStigende[2].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(ingenSluttdatoBruker.fnr)
+        Assertions.assertThat(brukereStigende[4].fnr).isEqualTo(arenaDagpengerBruker.fnr)
+
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(ingenSluttdatoBruker.fnr)
+        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(midtImellomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereStigende[4].fnr).isEqualTo(arenaDagpengerBruker.fnr)
+
+    }
+
+
+    @Test
+    fun skal_sortere_brukere_pa_dagpenger_antall_dager_og_rettighetstype() {
+        val tidspunkt1 = LocalDate.now()
+        val tidspunkt2 = LocalDate.now().plusDays(2)
+        val tidspunkt3 = LocalDate.now().plusDays(3)
+
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                null,
+                null,
+                null
+            )
+        )
+
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
+                tidspunkt1,
+                2,
+                null
+            )
+        )
+
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI,
+                tidspunkt2,
+                3,
+                null
+            )
+        )
+
+        val bruker4 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            dagpenger = DagpengerForOpensearch(
+                true,
+                DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
+                tidspunkt3,
+                4,
+                null
+            )
+        )
+
+
+        val liste = listOf(bruker1, bruker2, bruker3, bruker4)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(
+                YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING,
+                YtelseDagpenger.HAR_DAGPENGER_ORDINAER,
+                YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING_FISKEINDUSTRI
+            )
+        )
+
+        val brukereMedAntall = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.DAGPENGER_ANTALL_RESTERENDE_DAGER,
+            filtervalg,
+            null,
+            null
+        )
+        val brukereMedAntall2 = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.DAGPENGER_ANTALL_RESTERENDE_DAGER,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereMedAntallRettighet = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.DAGPENGER_RETTIGHETSTYPE,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereStigende = brukereMedAntall.brukere
+        val brukereSynkende = brukereMedAntall2.brukere
+        val brukereRettighetStigende = brukereMedAntallRettighet.brukere
+
+        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(bruker3.fnr)
+        Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(bruker1.fnr)
+
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(bruker4.fnr)
+        Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(bruker3.fnr)
+        Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(bruker1.fnr)
+
+        Assertions.assertThat(brukereRettighetStigende[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(brukereRettighetStigende[1].fnr).isEqualTo(bruker3.fnr)
+
+        Assertions.assertThat(brukereRettighetStigende[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(brukereRettighetStigende[1].fnr).isEqualTo(bruker3.fnr)
+        Assertions.assertThat(listOf(brukereRettighetStigende[2].fnr, brukereRettighetStigende[3].fnr))
+            .containsExactlyInAnyOrder(bruker1.fnr, bruker4.fnr)
+    }
+
+    @Test
     fun skal_sortere_brukere_pa_aap_rettighetstype() {
         val bistandsbehovBruker = PortefoljebrukerOpensearchModell(
             fnr = randomFnr().toString(),
@@ -836,6 +1082,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(sykepengeerstatningBruker.fnr)
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(bistandsbehovBruker.fnr)
     }
+
 
     @Test
     fun skal_sortere_brukere_pa_tiltakspenger_rettighet() {

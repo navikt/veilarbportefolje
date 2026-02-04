@@ -77,19 +77,19 @@ class DagpengerClientTest {
         val responseBody = """
                     [
                       {
-                        "dato": "2026-01-20",
+                        "fraOgMed": "2026-01-20",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 519
                       },
                       {
-                        "dato": "2026-01-21",
+                        "fraOgMed": "2026-01-21",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 518
                       },
                       {
-                        "dato": "2026-01-22",
+                        "fraOgMed": "2026-01-22",
                         "sats": 686,
                         "utbetaltBeløp": 457,
                         "gjenståendeDager": 517
@@ -107,19 +107,19 @@ class DagpengerClientTest {
 
         val response = client.hentDagpengerBeregninger(fnr.get(), "2024-01-01", "2026-12-31")
         val forventet = listOf(DagpengerBeregningerResponseDto(
-            dato = LocalDate.of(2026, 1, 20),
+            fraOgMed = LocalDate.of(2026, 1, 20),
             sats = 686,
             utbetaltBeløp = 457,
             gjenståendeDager = 519
         ),
             DagpengerBeregningerResponseDto(
-                dato = LocalDate.of(2026, 1, 21),
+                fraOgMed = LocalDate.of(2026, 1, 21),
                 sats = 686,
                 utbetaltBeløp = 457,
                 gjenståendeDager = 518
             ),
             DagpengerBeregningerResponseDto(
-                dato = LocalDate.of(2026, 1, 22),
+                fraOgMed = LocalDate.of(2026, 1, 22),
                 sats = 686,
                 utbetaltBeløp = 457,
                 gjenståendeDager = 517

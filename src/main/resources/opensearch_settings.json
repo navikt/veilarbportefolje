@@ -309,6 +309,15 @@
           },
           "rettighetstype": {
             "type": "keyword"
+          },
+          "antallResterendeDager": {
+            "type": "integer"
+          },
+          "datoAntallDagerBleBeregnet": {
+            "type": "date"
+          },
+          "datoStans": {
+            "type": "date"
           }
         }
       }
