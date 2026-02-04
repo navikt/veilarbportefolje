@@ -184,9 +184,9 @@ object PortefoljebrukerFrontendModellMapper {
 
         val resterendeDagerMedDato = if (antallDager != null) {
             if (antallDager == 1) {
-                "$antallDager dag (per ${datoAntallDagerBleBeregnet.toString()}"
+                "$antallDager dag (per ${datoAntallDagerBleBeregnet.toString()})"
             } else {
-                "$antallDager dager (per ${datoAntallDagerBleBeregnet.toString()}"
+                "$antallDager dager (per ${datoAntallDagerBleBeregnet.toString()})"
             }
         } else null
 
