@@ -107,7 +107,7 @@ spec:
         - application: logging
           namespace: nais-system
       external:
-        - host: team-obo-unleash-api.nav.cloud.nais.io
+        - host: obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
   resources:
