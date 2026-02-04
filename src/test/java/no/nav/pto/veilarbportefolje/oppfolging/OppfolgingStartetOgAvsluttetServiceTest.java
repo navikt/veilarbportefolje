@@ -153,9 +153,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         var oppfølgingsperiodeId = UUID.randomUUID();
         var førsteKontor = "1234";
         var andreKontor = "4321";
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, førsteKontor));
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, førsteKontor, fnr));
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, andreKontor));
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, andreKontor, fnr));
 
         var oppfølgingsbruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr).get();
         assertThat(oppfølgingsbruker.nav_kontor()).isEqualTo(andreKontor);
