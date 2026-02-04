@@ -97,7 +97,7 @@ class DagpengerRepositoryTest(
     )
 
     val dagpengerBeregningDto = DagpengerBeregningerResponseDto(
-        dato = LocalDate.of(2025, 1, 1),
+        fraOgMed = LocalDate.of(2025, 1, 1),
         gjenståendeDager = 100,
         sats = 600,
         utbetaltBeløp = 400

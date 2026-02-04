@@ -200,7 +200,7 @@ class DagpengerServiceTest(
             dagpengerService.hentAntallResterendeDagerFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
         assertThat(resultat).isNotNull
         assertThat(resultat!!.gjenståendeDager).isEqualTo(118)
-        assertThat(resultat.dato).isEqualTo(LocalDate.of(2026, 1, 3))
+        assertThat(resultat.fraOgMed).isEqualTo(LocalDate.of(2026, 1, 3))
     }
 
     @Test
@@ -345,19 +345,19 @@ class DagpengerServiceTest(
 
     val mockedBeregning = listOf(
         DagpengerBeregningerResponseDto(
-            dato = LocalDate.of(2026, 1, 1),
+            fraOgMed = LocalDate.of(2026, 1, 1),
             sats = 500,
             utbetaltBeløp = 15000,
             gjenståendeDager = 120
         ),
         DagpengerBeregningerResponseDto(
-            dato = LocalDate.of(2026, 1, 2),
+            fraOgMed = LocalDate.of(2026, 1, 2),
             sats = 500,
             utbetaltBeløp = 15000,
             gjenståendeDager = 119
         ),
         DagpengerBeregningerResponseDto(
-            dato = LocalDate.of(2026, 1, 3),
+            fraOgMed = LocalDate.of(2026, 1, 3),
             sats = 500,
             utbetaltBeløp = 15000,
             gjenståendeDager = 118

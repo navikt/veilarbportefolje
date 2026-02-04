@@ -49,6 +49,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_U
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_DATO_PLANLAGT_STANS
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT
@@ -349,7 +350,7 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.DAGPENGER_PLANGLAGT_STANS -> {
-                sorterDagpengerSluttDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                sorterDagpengerPlanlagtStansDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -625,15 +626,32 @@ class OpensearchSortQueryBuilder {
         builder.sort(scriptBuilder)
     }
 
-    private fun sorterDagpengerSluttDato(builder: SearchSourceBuilder, order: SortOrder) {
-        val expression = """
+    private fun sorterDagpengerPlanlagtStansDato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = if (order === SortOrder.ASC) {
+            """
                     if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].empty) {
                         return doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].value.toInstant().toEpochMilli();
-                    } else {
+                    } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
+                    && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
+                    && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {
                         return 33064243200001.0;
+                    } else {
+                         return 43064243200001.0;
                     }
-                    
                     """.trimIndent()
+        } else {
+            """
+                    if (doc.containsKey('$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS') && !doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].empty) {
+                        return doc['$DAGPENGER.$DAGPENGER_DATO_PLANLAGT_STANS'].value.toInstant().toEpochMilli();
+                    } else if (doc.containsKey('$DAGPENGER.$DAGPENGER_HAR_DAGPENGER') 
+                    && !doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].empty
+                    && doc['$DAGPENGER.$DAGPENGER_HAR_DAGPENGER'].value == true) {
+                        return 33064243200001.0;
+                    } else {
+                         return 0;
+                    }
+                    """.trimIndent()
+        }
 
         val script = Script(expression)
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)

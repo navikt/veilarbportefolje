@@ -89,7 +89,7 @@ class DagpengerService(
             harAktivYtelse,
             sisteDagpengerPeriode.ytelseType,
             antallResterendeDager?.gjenståendeDager,
-            antallResterendeDager?.dato,
+            antallResterendeDager?.fraOgMed,
             sisteDagpengerPeriode.tilOgMedDato
         )
     }
@@ -121,7 +121,7 @@ class DagpengerService(
         oppfolgingsStartdato: LocalDate
     ): DagpengerBeregningerResponseDto? {
         val respons = dagpengerClient.hentDagpengerBeregninger(personIdent, oppfolgingsStartdato.toString())
-        return respons.maxByOrNull { it.dato }
+        return respons.maxByOrNull { it.fraOgMed }
     }
 
     fun upsertDagpengerForAktivIdentForBruker(

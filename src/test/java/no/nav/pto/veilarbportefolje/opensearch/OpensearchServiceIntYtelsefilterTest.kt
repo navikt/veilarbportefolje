@@ -762,6 +762,14 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val tidspunkt2 = LocalDate.now().plusDays(2)
         val tidspunkt3 = LocalDate.now().plusDays(3)
 
+        val arenaDagpengerBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ytelse = YtelseMapping.ORDINARE_DAGPENGER.name
+        )
+
         val ingenSluttdatoBruker = PortefoljebrukerOpensearchModell(
             fnr = randomFnr().toString(),
             aktoer_id = randomAktorId().toString(),
@@ -819,13 +827,14 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         )
 
 
-        val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, ingenSluttdatoBruker)
+        val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, ingenSluttdatoBruker, arenaDagpengerBruker)
         skrivBrukereTilTestindeks(liste)
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
         val filtervalg = getFiltervalgDefaults().copy(
-            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING)
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_MED_PERMITTERING),
+            ytelseDagpengerArena = listOf(YtelseDagpengerArena.HAR_DAGPENGER_ORDINAER)
         )
 
         val brukereMedAntall = opensearchService.hentBrukere(
@@ -850,16 +859,19 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         val brukereStigende = brukereMedAntall.brukere
         val brukereSynkende = brukereMedAntall2.brukere
 
-        Assertions.assertThat(brukereStigende.size).isEqualTo(4)
+        Assertions.assertThat(brukereStigende.size).isEqualTo(5)
         Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(midtImellomBruker.fnr)
         Assertions.assertThat(brukereStigende[2].fnr).isEqualTo(senestTomBruker.fnr)
         Assertions.assertThat(brukereStigende[3].fnr).isEqualTo(ingenSluttdatoBruker.fnr)
+        Assertions.assertThat(brukereStigende[4].fnr).isEqualTo(arenaDagpengerBruker.fnr)
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(ingenSluttdatoBruker.fnr)
         Assertions.assertThat(brukereSynkende[1].fnr).isEqualTo(senestTomBruker.fnr)
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(midtImellomBruker.fnr)
         Assertions.assertThat(brukereSynkende[3].fnr).isEqualTo(tidligstTomBruker.fnr)
+        Assertions.assertThat(brukereStigende[4].fnr).isEqualTo(arenaDagpengerBruker.fnr)
+
     }
 
 
