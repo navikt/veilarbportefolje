@@ -4,8 +4,6 @@ import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
-import no.nav.pto.veilarbportefolje.cv.dto.Ressurs;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -43,16 +41,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    public void testCVHjemmel() {
-        createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-        assertHarDeltCVAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-
-        populateCVHjemmelKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        pollOpensearchUntil(() -> harDeltCv(aktoerId1, aktoerId2, aktoerId3));
-        assertHarDeltCVAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-    }
-
-    @Test
     public void testCVEksistere() {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
@@ -60,12 +48,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
         pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
         assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-    }
-
-    private boolean harDeltCv(AktorId... aktoerIds) {
-        return stream(aktoerIds)
-                .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
-                .allMatch(CvServiceKafkaConsumerTest::harDeltCv);
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
@@ -77,20 +59,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     private void createCvDocumentsInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             createCvDocument(aktoerId);
-        }
-    }
-
-    private void assertHarDeltCVAreTrueInOpensearch(AktorId... aktoerIds) {
-        for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
-            Assertions.assertTrue(harDeltCv(getResponse));
-        }
-    }
-
-    private void assertHarDeltCVAreFalseInOpensearch(AktorId... aktoerIds) {
-        for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
-            Assertions.assertFalse(harDeltCv(getResponse));
         }
     }
 
@@ -108,10 +76,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         }
     }
 
-    private static boolean harDeltCv(GetResponse get1) {
-        return (boolean) get1.getSourceAsMap().get("har_delt_cv");
-    }
-
     private static boolean cvEksistere(GetResponse get1) {
         return (boolean) get1.getSourceAsMap().get("cv_eksistere");
     }
@@ -119,21 +83,10 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     private void createCvDocument(AktorId aktoerId) {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.get())
-                .put("har_delt_cv", false)
                 .put("cv_eksistere", false)
                 .toString();
 
         opensearchTestClient.createDocument(aktoerId, document);
-    }
-
-    private void populateCVHjemmelKafkaTopic(AktorId... aktoerIds) {
-        for (AktorId aktoerId : aktoerIds) {
-            CVMelding cvMelding = new CVMelding();
-            cvMelding.setAktoerId(aktoerId);
-            cvMelding.setRessurs(Ressurs.CV_HJEMMEL);
-
-            cvService.behandleCVHjemmelMelding(cvMelding);
-        }
     }
 
     private void populateCVEksistereKafkaTopic(AktorId... aktoerIds) {

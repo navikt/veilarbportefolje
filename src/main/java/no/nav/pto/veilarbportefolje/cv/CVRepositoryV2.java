@@ -29,13 +29,6 @@ public class CVRepositoryV2 {
                 aktoerId.get(), cvEksisterer, Timestamp.from(now()));
     }
 
-    public boolean harDeltCv(AktorId aktoerId) {
-        String sql = String.format("SELECT %s FROM %s WHERE %s = ?", HAR_DELT_CV, TABLE_NAME, AKTOERID);
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(HAR_DELT_CV), aktoerId.get()))
-        ).orElse(false);
-    }
-
     public boolean cvEksisterer(AktorId aktoerId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s = ?", CV_EKSISTERER, TABLE_NAME, AKTOERID);
         return Optional.ofNullable(

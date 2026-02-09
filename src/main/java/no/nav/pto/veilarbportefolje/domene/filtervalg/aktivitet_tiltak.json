@@ -1,0 +1,16 @@
+{
+  "aktivitetId": "23814886",
+  "version": 127867128,
+  "aktorId": "1000094169209",
+  "fraDato": "2025-03-17T00:00:00+01:00",
+  "tilDato": "2025-04-28T00:00:00+02:00",
+  "endretDato": "2026-01-02T10:01:13.303+01:00",
+  "aktivitetType": "TILTAK",
+  "aktivitetStatus": "FULLFORT",
+  "endringsType": "HISTORISK",
+  "lagtInnAv": "SYSTEM",
+  "stillingFraNavData": null,
+  "avtalt": true,
+  "historisk": true,
+  "tiltakskode": "ARBTREN"
+}
