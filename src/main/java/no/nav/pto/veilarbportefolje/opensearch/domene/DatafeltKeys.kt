@@ -140,7 +140,6 @@ object DatafeltKeys {
     }
 
     object CV {
-        val HAR_DELT_CV = PortefoljebrukerOpensearchModell::har_delt_cv.name
         val CV_EKSISTERE = PortefoljebrukerOpensearchModell::cv_eksistere.name
         val NESTE_CV_KAN_DELES_STATUS = PortefoljebrukerOpensearchModell::neste_cv_kan_deles_status.name
     }

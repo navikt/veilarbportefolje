@@ -32,17 +32,6 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
-    public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
-        secureLog.info(
-                "Behandler kafka-melding med key {} og offset {} på topic {}",
-                kafkaMelding.key(),
-                kafkaMelding.offset(),
-                kafkaMelding.topic()
-        );
-        CVMelding cvMelding = kafkaMelding.value();
-        behandleCVHjemmelMelding(cvMelding);
-    }
-
     public void behandleCVHjemmelMelding(CVMelding cvMelding) {
         AktorId aktoerId = cvMelding.getAktoerId();
         boolean harDeltCv = (cvMelding.getSlettetDato() == null);

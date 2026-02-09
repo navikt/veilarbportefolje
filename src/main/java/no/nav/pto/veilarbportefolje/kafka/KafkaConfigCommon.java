@@ -107,8 +107,6 @@ public class KafkaConfigCommon {
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
-        CV_TOPIC("teampam.samtykke-status-1"),
-
         OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
 
         // Arbeidssøkerregisteret
@@ -174,17 +172,7 @@ public class KafkaConfigCommon {
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(CVMelding.class),
-                                        cvService::behandleKafkaMeldingCVHjemmel
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)

@@ -162,15 +162,6 @@ class OpensearchIndexerPaDatafelt(
         update(aktorId, content, "Oppdaterte siste endring, kategori ${kategori.name} er nå sett")
     }
 
-    fun updateHarDeltCv(aktoerId: AktorId, harDeltCv: Boolean) {
-        val content = XContentFactory.jsonBuilder()
-            .startObject()
-            .field(DatafeltKeys.CV.HAR_DELT_CV, harDeltCv)
-            .endObject()
-
-        update(aktoerId, content, "Har delt cv: $harDeltCv")
-    }
-
     fun updateCvEksistere(aktoerId: AktorId, cvEksistere: Boolean) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
