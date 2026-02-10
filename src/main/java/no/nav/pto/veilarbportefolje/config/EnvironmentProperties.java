@@ -38,5 +38,7 @@ public class EnvironmentProperties {
     private String aapScope;
     private String tiltakspengerUrl;
     private String tiltakspengerScope;
+    private String dagpengerUrl;
+    private String dagpengerScope;
 }
 

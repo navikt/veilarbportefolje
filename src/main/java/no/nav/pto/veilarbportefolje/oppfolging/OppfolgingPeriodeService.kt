@@ -31,7 +31,7 @@ class OppfolgingPeriodeService(
         when (sisteOppfolgingsperiode) {
            is GjeldendeOppfolgingsperiodeV2Dto -> {
                SecureLog.secureLog.info("Starter oppfolging for: " + sisteOppfolgingsperiode.aktorId)
-               oppfolgingStartetService.behandleOppfølgingStartetEllerKontorEndret(
+               oppfolgingStartetService.behandleOppfolgingStartetEllerKontorEndret(
                    Fnr.of(sisteOppfolgingsperiode.ident),
                    AktorId.of(sisteOppfolgingsperiode.aktorId),
                    sisteOppfolgingsperiode.startTidspunkt,

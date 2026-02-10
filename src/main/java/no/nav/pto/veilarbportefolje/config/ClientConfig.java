@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
@@ -70,6 +71,17 @@ public class ClientConfig {
         return new TiltakspengerClient(
                 environmentProperties.getTiltakspengerUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getTiltakspengerScope())
+        );
+    }
+
+    @Bean
+    public DagpengerClient dagpengerClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new DagpengerClient(
+                environmentProperties.getDagpengerUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getDagpengerScope())
         );
     }
 

@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -123,7 +125,11 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
                                YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
                                YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
                                YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
-                               YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET
+                               YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
+                               YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
+                               YTELSER_DAGPENGER.RETTIGHETSTYPE                         as YTELSER_DAGPENGER_RETTIGHETSTYPE,
+                               YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER                as YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER,
+                               YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET         as YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET
                         from OPPFOLGING_DATA
                                  inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -140,6 +146,7 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
                                  left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """,
@@ -235,6 +242,7 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
         setBrukersSituasjon(brukerOpensearchModell, rs);
         setAapKelvin(brukerOpensearchModell, rs);
         setTiltakspenger(brukerOpensearchModell, rs);
+        setDagpenger(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
@@ -275,6 +283,28 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
         brukerOpensearchModell.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
         brukerOpensearchModell.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
         brukerOpensearchModell.setTiltakspenger_rettighet(rettighetstypeOrNull);
+    }
+
+    @SneakyThrows
+    private void setDagpenger(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
+        String rettighetstype = rs.getString(YTELSER_DAGPENGER_RETTIGHETSTYPE);
+        DagpengerRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : DagpengerRettighetstype.valueOf(rettighetstype);
+        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        Integer antallDagerResterende = rs.getObject(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) != null ? rs.getInt(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) : null;
+        LocalDate datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET) != null ? rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET).toLocalDate() : null;
+
+        boolean harEnDagpengeperiodeIDatabasen = rettighetstype != null;
+        boolean vedtakErFortsattGjeldende = harEnDagpengeperiodeIDatabasen && (vedtaksDatoTom == null || vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1)));
+
+        DagpengerForOpensearch dagpenger = new DagpengerForOpensearch(
+                vedtakErFortsattGjeldende,
+                rettighetstypeOrNull,
+                vedtaksDatoTom,
+                antallDagerResterende,
+                datoAntallDagerBleBeregnet
+        );
+
+        brukerOpensearchModell.setDagpenger(dagpenger);
     }
 
     @SneakyThrows

@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -129,6 +130,7 @@ data class PortefoljebrukerOpensearchModell(
     var tiltakspenger_vedtaksdato_tom: LocalDate? = null,
     var utlopsdato: String? = null,
     var ytelse: String? = null,
+    var dagpenger: DagpengerForOpensearch? = null,
 
     // Dialog
     var venterpasvarfrabruker: String? = null,

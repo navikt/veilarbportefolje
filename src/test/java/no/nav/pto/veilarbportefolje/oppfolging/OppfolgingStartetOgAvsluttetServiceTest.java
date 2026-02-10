@@ -7,12 +7,27 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerperiodeResponse;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerResponse;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringResponse;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakApiDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
@@ -50,12 +65,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererAvsluttetOppfolgingsperiode;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererSluttdatoForOppfolgingsperiode;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.tilfeldigDatoTilbakeITid;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.tilfeldigSenereDato;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_INNSATS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +124,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private TiltakspengerClient tiltakspengerClient;
 
+    @Autowired
+    private DagpengerClient dagpengerClient;
+
     @MockBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
@@ -133,6 +159,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -169,6 +196,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -192,6 +220,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         var sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
@@ -229,6 +258,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -248,6 +278,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -267,6 +298,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -288,6 +320,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentProfileringResponse(fnr, periodeId);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
@@ -380,6 +413,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
@@ -407,6 +441,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
 
         var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
@@ -502,6 +537,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private void mockHentTiltakspengerResponse(Fnr fnr) {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(tiltakspengerClient.hentTiltakspenger(any(), any(), any())).thenReturn(Collections.emptyList());
+    }
+
+    private void mockHentDagpengerResponse(Fnr fnr) {
+        DagpengerPerioderResponseDto dagpengerPerioder = new DagpengerPerioderResponseDto("", Collections.emptyList());
+        when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(dagpengerClient.hentDagpengerPerioder(any(), any(), any())).thenReturn(dagpengerPerioder);
+        when(dagpengerClient.hentDagpengerBeregninger(any(), any(), any())).thenReturn(Collections.emptyList());
     }
 
     private void insertOppfolgingsbrukerEntity(ZonedDateTime endret_dato) {

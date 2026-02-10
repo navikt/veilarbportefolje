@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
@@ -15,8 +16,8 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,14 @@ public class OppfolgingStartetService {
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
+    private final DagpengerService dagpengerService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final BrukerServiceV2 brukerServiceV2;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
 
-    public void behandleOppfølgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
+    public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
         var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), navKontor);
@@ -95,6 +97,7 @@ public class OppfolgingStartetService {
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
         aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
         tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
+        dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
 
         opensearchIndexer.indekser(aktorId);
 
