@@ -5,11 +5,12 @@ import java.util.UUID
 
 class AvsluttetOppfolgingsperiodeV2(
     oppfolgingsperiodeUuid: UUID,
-    startTidspunkt: ZonedDateTime,
-    val sluttTidspunkt: ZonedDateTime,
+    sisteEndringsType: SisteEndringsType,
     aktorId: String,
     ident: String,
-    producerTimestamp: ZonedDateTime,
+    startTidspunkt: ZonedDateTime,
+    sluttTidspunkt: ZonedDateTime,
+    producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
 ) : SisteOppfolgingsperiodeV2Dto(
-    oppfolgingsperiodeUuid, startTidspunkt, SisteEndringsType.OPPFOLGING_AVSLUTTET, aktorId, ident, producerTimestamp,
+    oppfolgingsperiodeUuid, sisteEndringsType, aktorId, ident, startTidspunkt, sluttTidspunkt, null, producerTimestamp,
 )

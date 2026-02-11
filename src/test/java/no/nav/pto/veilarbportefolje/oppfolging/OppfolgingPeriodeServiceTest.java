@@ -33,8 +33,8 @@ public class OppfolgingPeriodeServiceTest {
         GjeldendeOppfolgingsperiodeV2Dto sisteOppfolgingsperiode = genererStartetOppfolgingsperiode(AktorId.of(aktorId), startOppfolgingDate);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
-        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).behandleOppfolgingStartetEllerKontorEndret(Fnr.of(sisteOppfolgingsperiode.getIdent()), AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontorId()));
-        Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontorId()));
+        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).behandleOppfolgingStartetEllerKontorEndret(Fnr.of(sisteOppfolgingsperiode.getIdent()), AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontor().getKontorId()));
+        Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontor().getKontorId()));
         Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(AktorId.of(aktorId));
     }
 

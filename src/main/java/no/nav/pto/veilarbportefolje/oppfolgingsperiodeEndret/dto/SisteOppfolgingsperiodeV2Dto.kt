@@ -1,32 +1,28 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto
 
-import com.fasterxml.jackson.module.kotlin.treeToValue
-import no.nav.pto.veilarbportefolje.util.objectMapper
-import org.apache.kafka.common.serialization.Deserializer
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.ZonedDateTime
 import java.util.UUID
 
-abstract class SisteOppfolgingsperiodeV2Dto constructor(
+data class KontorDto(
+    val kontorNavn: String,
+    val kontorId: String,
+)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "hendelseType")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "OPPFOLGING_STARTET"),
+    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
+    JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV2::class, name = "OPPFOLGING_AVSLUTTET")
+)
+abstract class SisteOppfolgingsperiodeV2Dto(
     val oppfolgingsperiodeUuid: UUID,
-    val startTidspunkt: ZonedDateTime,
     val sisteEndringsType: SisteEndringsType,
     val aktorId: String,
     val ident: String,
-    val producerTimestamp: ZonedDateTime,
-) {
-    companion object {
-        fun jsonDeserializer(): Deserializer<SisteOppfolgingsperiodeV2Dto> {
-            return object : Deserializer<SisteOppfolgingsperiodeV2Dto> {
-                override fun deserialize(topic: String?, data: ByteArray?): SisteOppfolgingsperiodeV2Dto? {
-                    if (data == null) return null
-                    val jsonTree = objectMapper.readTree(data)
-                    val sisteEndringsType = jsonTree.get("sisteEndringsType").asText().let { SisteEndringsType.valueOf(it) }
-                    return when (sisteEndringsType) {
-                        SisteEndringsType.OPPFOLGING_STARTET, SisteEndringsType.ARBEIDSOPPFOLGINGSKONTOR_ENDRET -> objectMapper.treeToValue<GjeldendeOppfolgingsperiodeV2Dto>(jsonTree)
-                        SisteEndringsType.OPPFOLGING_AVSLUTTET -> objectMapper.treeToValue<AvsluttetOppfolgingsperiodeV2>(jsonTree)
-                    }
-                }
-            }
-        }
-    }
-}
+    val startTidspunkt: ZonedDateTime,
+    val sluttTidspunkt: ZonedDateTime?,
+    val kontor: KontorDto?,
+    val producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
+)

@@ -14,6 +14,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.KontorDto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteEndringsType
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId
@@ -90,12 +91,11 @@ object TestDataUtils {
         ): GjeldendeOppfolgingsperiodeV2Dto {
         return GjeldendeOppfolgingsperiodeV2Dto(
             oppfolgingsperiodeUuid,
-            startDato!!,
-            kontorId,
-            "Nav Obo",
+            SisteEndringsType.OPPFOLGING_STARTET,
             aktorId.get(),
             fnr.get(),
-            SisteEndringsType.OPPFOLGING_STARTET,
+            startDato!!,
+            KontorDto("Nav Obo", kontorId),
             ZonedDateTime.now()
         )
     }
@@ -112,10 +112,11 @@ object TestDataUtils {
         val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeUuid = oppfolgingsperiodeId)
         return AvsluttetOppfolgingsperiodeV2(
             oppfolgingsperiodeId,
-            periode.startTidspunkt,
-            tilfeldigSenereDato(periode.startTidspunkt),
+            SisteEndringsType.OPPFOLGING_AVSLUTTET,
             aktorId.get(),
             periode.ident,
+            periode.startTidspunkt,
+            tilfeldigSenereDato(periode.startTidspunkt),
             ZonedDateTime.now()
         )
     }
@@ -124,14 +125,15 @@ object TestDataUtils {
     @JvmOverloads
     fun genererSluttdatoForOppfolgingsperiode(
         periode: GjeldendeOppfolgingsperiodeV2Dto,
-        sluttDato: ZonedDateTime? = tilfeldigSenereDato(periode.startTidspunkt)
+        sluttDato: ZonedDateTime = tilfeldigSenereDato(periode.startTidspunkt)
     ): AvsluttetOppfolgingsperiodeV2 {
         return AvsluttetOppfolgingsperiodeV2(
             periode.oppfolgingsperiodeUuid,
-            periode.startTidspunkt,
-            sluttDato!!,
+            SisteEndringsType.OPPFOLGING_AVSLUTTET,
             periode.aktorId,
             periode.ident,
+            periode.startTidspunkt,
+            sluttDato,
             ZonedDateTime.now()
         )
     }

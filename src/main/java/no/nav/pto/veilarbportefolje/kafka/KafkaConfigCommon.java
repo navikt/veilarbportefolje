@@ -368,7 +368,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.SISTE_OPPFOLGINGS_PERIODE_V2.topicName,
                                         Deserializers.stringDeserializer(),
-                                        SisteOppfolgingsperiodeV2Dto.Companion.jsonDeserializer(),
+                                        new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV2Dto.class),
                                         oppfolgingPeriodeService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()

@@ -5,13 +5,12 @@ import java.util.UUID
 
 class GjeldendeOppfolgingsperiodeV2Dto(
     oppfolgingsperiodeUuid: UUID,
-    startTidspunkt: ZonedDateTime,
-    val kontorId: String,
-    val kontorNavn: String,
+    sisteEndringsType: SisteEndringsType,
     aktorId: String,
     ident: String,
-    sisteEndringsType: SisteEndringsType,
-    producerTimestamp: ZonedDateTime,
+    startTidspunkt: ZonedDateTime,
+    kontor: KontorDto,
+    producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
 ) : SisteOppfolgingsperiodeV2Dto(
-    oppfolgingsperiodeUuid, startTidspunkt, sisteEndringsType, aktorId, ident, producerTimestamp,
+    oppfolgingsperiodeUuid, sisteEndringsType, aktorId, ident, startTidspunkt, null, kontor, producerTimestamp,
 )

@@ -35,7 +35,7 @@ class OppfolgingPeriodeService(
                    Fnr.of(sisteOppfolgingsperiode.ident),
                    AktorId.of(sisteOppfolgingsperiode.aktorId),
                    sisteOppfolgingsperiode.startTidspunkt,
-                   NavKontor(sisteOppfolgingsperiode.kontorId)
+                   NavKontor(sisteOppfolgingsperiode.kontor!!.kontorId)
                )
            }
            is AvsluttetOppfolgingsperiodeV2 -> {
