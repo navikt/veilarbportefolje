@@ -45,7 +45,16 @@ public class CVRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(HAR_DELT_CV), aktoerId.get()))
         ).orElse(false);
-    }
+
+   public int upsertCVEksistererINyTabell(AktorId aktoerId, boolean cvEksisterer) {
+        return db.update("""
+                        INSERT INTO bruker_registrert_cv
+                        (AKTOERID, CV_EKSISTERER, SISTE_MELDING_MOTTATT) VALUES (?, ?, ?)
+                        ON CONFLICT (AKTOERID) DO UPDATE SET (CV_EKSISTERER, SISTE_MELDING_MOTTATT)
+                        = (excluded.cv_eksisterer, excluded.siste_melding_mottatt)
+                        """,
+                aktoerId.get(), cvEksisterer, Timestamp.from(now()));
+   }
 
     public boolean cvEksisterer(AktorId aktoerId) {
         String sql = String.format("SELECT %s FROM %s WHERE %s = ?", CV_EKSISTERER, TABLE_NAME, AKTOERID);
@@ -62,5 +71,4 @@ public class CVRepositoryV2 {
         );
         return db.update(updateSql, false, aktoerId.get());
     }
-
 }

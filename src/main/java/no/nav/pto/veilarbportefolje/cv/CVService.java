@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,6 +23,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final CVRepositoryV2 cvRepositoryV2;
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
@@ -28,6 +31,10 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         boolean cvEksisterer = cvEksistere(kafkaMelding);
         secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
 
+        if (FeatureToggle.brukNyCvFilter(defaultUnleash)) {
+            secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabellen for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
+            cvRepositoryV2.upsertCVEksistererINyTabell(aktoerId, cvEksisterer);
+        }
         cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }

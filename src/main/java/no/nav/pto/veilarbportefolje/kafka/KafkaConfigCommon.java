@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_NY_CV_TABELL;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
@@ -154,6 +155,7 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(CVService cvService,
@@ -309,16 +311,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
                                         utkast14aStatusendringService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_ENDRET_V2.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                        cvService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()
@@ -494,9 +486,28 @@ public class KafkaConfigCommon {
                 .withToggle(() -> defaultUnleash.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
+        KafkaConsumerClientBuilder.TopicConfig<String, Melding> cvTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.CV_ENDRET_V2.topicName,
+                                Deserializers.stringDeserializer(),
+                                new AivenAvroDeserializer<Melding>().getDeserializer(),
+                                cvService::behandleKafkaRecord
+                        );
+
+        consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
+                .withTopicConfig(cvTopicConfig)
+                .withToggle(() -> defaultUnleash.isEnabled(BRUK_NY_CV_TABELL) || kafkaAivenUnleash.get())
+                .build();
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
         allTopicConfigs.add(siste14aTopicConfig);
+        allTopicConfigs.add(cvTopicConfig);
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -513,6 +524,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
+        consumerClientAivenCv.start();
     }
 
 
