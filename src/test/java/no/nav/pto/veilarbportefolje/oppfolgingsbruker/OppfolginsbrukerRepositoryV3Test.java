@@ -25,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class OppfolginsbrukerRepositoryV3Test {
     private JdbcTemplate db;
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
+    private OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository;
 
     private SkjermingRepository skjermingRepository;
 
@@ -35,9 +36,10 @@ public class OppfolginsbrukerRepositoryV3Test {
     private PdlIdentRepository pdlIdentRepository;
 
     @Autowired
-    public void OppfolginsbrukerRepositoryTestV2(JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository) {
+    public void OppfolginsbrukerRepositoryTestV2(JdbcTemplate db, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository) {
         this.db = db;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
+        this.oppfolgingsbrukerTestRepository = oppfolgingsbrukerTestRepository;
         skjermingRepository = new SkjermingRepository(db);
     }
 
@@ -62,10 +64,10 @@ public class OppfolginsbrukerRepositoryV3Test {
         );
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg, new NavKontor(msg.nav_kontor()));
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
+        assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(old_msg,  new NavKontor(old_msg.nav_kontor()));
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isNotEqualTo(old_msg);
+        assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get()).isNotEqualTo(old_msg);
     }
 
 
@@ -82,10 +84,10 @@ public class OppfolginsbrukerRepositoryV3Test {
         );
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(msg, new NavKontor(msg.nav_kontor()));
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
+        assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(msg);
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(new_msg, new NavKontor(new_msg.nav_kontor()));
-        assertThat(oppfolgingsbrukerRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(new_msg);
+        assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(new_msg);
     }
 
     @Test

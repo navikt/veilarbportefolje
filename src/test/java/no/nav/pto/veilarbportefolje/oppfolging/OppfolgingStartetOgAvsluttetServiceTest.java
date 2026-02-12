@@ -27,6 +27,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerEntity;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerTestRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakApiDto;
@@ -113,6 +114,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
 
     @Autowired
+    private OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository;
+
+    @Autowired
     private OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
 
     @Autowired
@@ -184,7 +188,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfølgingsperiodeId, andreKontor, fnr));
 
-        var oppfølgingsbruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr).get();
+        var oppfølgingsbruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get();
         assertThat(oppfølgingsbruker.nav_kontor()).isEqualTo(andreKontor);
     }
 
@@ -262,7 +266,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
 
     }
@@ -282,7 +286,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
         assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00"));
     }
@@ -302,7 +306,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
         assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2));
     }
@@ -368,12 +372,12 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId, new NavKontor("0101"));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityFørAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityFørAvsluttet = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityFørAvsluttet).isPresent();
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityEtterAvsluttet).isEmpty();
     }
 

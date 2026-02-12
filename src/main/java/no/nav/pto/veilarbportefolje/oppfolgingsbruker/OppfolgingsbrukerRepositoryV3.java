@@ -22,13 +22,6 @@ import java.util.stream.Collectors;
 
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -61,26 +54,6 @@ public class OppfolgingsbrukerRepositoryV3 {
         return db.update(
                 String.format("DELETE FROM %s WHERE fodselsnr = ?", PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME),
                 fnr.get()
-        );
-    }
-
-    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
-        String sql = """
-            SELECT 
-                OPPFOLGINGSBRUKER_ARENA_V2.*,
-                coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.nav_kontor) as kontor_id
-            FROM BRUKER_IDENTER initiellIdent
-            INNER JOIN BRUKER_IDENTER alleIdenter on alleIdenter.person = initiellIdent.person
-            JOIN OPPFOLGINGSBRUKER_ARENA_V2 on alleIdenter.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
-            LEFT JOIN ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.fodselsnr
-            WHERE initiellIdent.ident = :ident
-        """;
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> dbNamed.queryForObject(
-                        sql,
-                        new MapSqlParameterSource().addValue("ident", fnr.get()),
-                        OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker
-                ))
         );
     }
 
@@ -130,22 +103,6 @@ public class OppfolgingsbrukerRepositoryV3 {
     @SneakyThrows
     private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
         return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
-    }
-
-    @SneakyThrows
-    public static OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
-        if (rs == null || rs.getString(FODSELSNR) == null) {
-            return null;
-        }
-        return new OppfolgingsbrukerEntity(
-                rs.getString(FODSELSNR),
-                rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
-                rs.getString(NAV_KONTOR),
-                rs.getString(KVALIFISERINGSGRUPPEKODE),
-                rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE),
-                toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
