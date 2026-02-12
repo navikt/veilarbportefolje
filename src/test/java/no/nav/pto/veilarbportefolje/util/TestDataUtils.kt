@@ -12,7 +12,7 @@ import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
-import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.KontorDto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteEndringsType
@@ -108,9 +108,9 @@ object TestDataUtils {
     fun genererAvsluttetOppfolgingsperiode(
         aktorId: AktorId,
         oppfolgingsperiodeId: UUID = UUID.randomUUID(),
-    ): AvsluttetOppfolgingsperiodeV2 {
+    ): AvsluttetOppfolgingsperiodeV2Dto {
         val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeUuid = oppfolgingsperiodeId)
-        return AvsluttetOppfolgingsperiodeV2(
+        return AvsluttetOppfolgingsperiodeV2Dto(
             oppfolgingsperiodeId,
             SisteEndringsType.OPPFOLGING_AVSLUTTET,
             aktorId.get(),
@@ -126,8 +126,8 @@ object TestDataUtils {
     fun genererSluttdatoForOppfolgingsperiode(
         periode: GjeldendeOppfolgingsperiodeV2Dto,
         sluttDato: ZonedDateTime = tilfeldigSenereDato(periode.startTidspunkt)
-    ): AvsluttetOppfolgingsperiodeV2 {
-        return AvsluttetOppfolgingsperiodeV2(
+    ): AvsluttetOppfolgingsperiodeV2Dto {
+        return AvsluttetOppfolgingsperiodeV2Dto(
             periode.oppfolgingsperiodeUuid,
             SisteEndringsType.OPPFOLGING_AVSLUTTET,
             periode.aktorId,

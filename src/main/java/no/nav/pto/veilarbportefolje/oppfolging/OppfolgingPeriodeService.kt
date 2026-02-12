@@ -6,7 +6,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
-import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto
 import no.nav.pto.veilarbportefolje.util.SecureLog
@@ -39,7 +39,7 @@ class OppfolgingPeriodeService(
                    NavKontor(sisteOppfolgingsperiode.kontor!!.kontorId)
                )
            }
-           is AvsluttetOppfolgingsperiodeV2 -> {
+           is AvsluttetOppfolgingsperiodeV2Dto -> {
                if (sisteOppfolgingsperiode.startTidspunkt.isAfter(sisteOppfolgingsperiode.sluttTidspunkt)) {
                    log.error("Ugyldig start/slutt dato for siste oppfolging periode på bruker: " + sisteOppfolgingsperiode.aktorId)
                    return

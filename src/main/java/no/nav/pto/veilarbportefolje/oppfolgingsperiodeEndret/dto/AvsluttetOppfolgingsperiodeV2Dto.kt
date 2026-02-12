@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class AvsluttetOppfolgingsperiodeV2(
+class AvsluttetOppfolgingsperiodeV2Dto(
     oppfolgingsperiodeUuid: UUID,
     sisteEndringsType: SisteEndringsType,
     aktorId: String,

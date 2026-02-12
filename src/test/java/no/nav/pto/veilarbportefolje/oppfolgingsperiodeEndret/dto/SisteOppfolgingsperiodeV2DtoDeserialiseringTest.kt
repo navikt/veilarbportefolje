@@ -77,8 +77,8 @@ class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
 
         val result = deserialize(json)
 
-        assertThat(result).isInstanceOf(AvsluttetOppfolgingsperiodeV2::class.java)
-        val avsluttet = result as AvsluttetOppfolgingsperiodeV2
+        assertThat(result).isInstanceOf(AvsluttetOppfolgingsperiodeV2Dto::class.java)
+        val avsluttet = result as AvsluttetOppfolgingsperiodeV2Dto
         assertThat(avsluttet.aktorId).isEqualTo("987654321")
         assertThat(avsluttet.sluttTidspunkt).isNotNull()
         assertThat(avsluttet.kontor).isNull()

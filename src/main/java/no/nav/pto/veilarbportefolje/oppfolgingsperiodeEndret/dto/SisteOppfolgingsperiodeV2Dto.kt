@@ -14,7 +14,7 @@ data class KontorDto(
 @JsonSubTypes(
     JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "OPPFOLGING_STARTET"),
     JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
-    JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV2::class, name = "OPPFOLGING_AVSLUTTET")
+    JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV2Dto::class, name = "OPPFOLGING_AVSLUTTET")
 )
 abstract class SisteOppfolgingsperiodeV2Dto(
     val oppfolgingsperiodeUuid: UUID,

@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
-import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV2Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV2Dto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class OppfolgingPeriodeServiceTest {
     public void testOppfolgingAvslutt() {
         String aktorId = "111111";
 
-        AvsluttetOppfolgingsperiodeV2 sisteOppfolgingsperiode = genererAvsluttetOppfolgingsperiode(AktorId.of(aktorId));
+        AvsluttetOppfolgingsperiodeV2Dto sisteOppfolgingsperiode = genererAvsluttetOppfolgingsperiode(AktorId.of(aktorId));
         ZonedDateTime startOppfolgingDate = sisteOppfolgingsperiode.getStartTidspunkt();
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
