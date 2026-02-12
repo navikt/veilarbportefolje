@@ -30,6 +30,7 @@ class OppfolgingPeriodeService(
 
         when (sisteOppfolgingsperiode) {
            is GjeldendeOppfolgingsperiodeV2Dto -> {
+               // TODO: fiks loggmeldinger, nå logges samme melding selv om det kun er kontorendring
                SecureLog.secureLog.info("Starter oppfolging for: " + sisteOppfolgingsperiode.aktorId)
                oppfolgingStartetService.behandleOppfolgingStartetEllerKontorEndret(
                    Fnr.of(sisteOppfolgingsperiode.ident),
