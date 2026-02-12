@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -54,9 +54,9 @@ public class BarnUnder18AarMisterForeldreansvarTest {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
 
-    @MockBean
+    @MockitoBean
     private OpensearchIndexer opensearchIndexer;
-    @MockBean
+    @MockitoBean
     private OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
 

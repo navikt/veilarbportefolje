@@ -13,8 +13,8 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,9 +31,9 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     private TiltakshendelseService service;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @MockBean
+    @MockitoBean
     private BrukerServiceV2 brukerServiceV2;
-    @MockBean
+    @MockitoBean
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @BeforeEach

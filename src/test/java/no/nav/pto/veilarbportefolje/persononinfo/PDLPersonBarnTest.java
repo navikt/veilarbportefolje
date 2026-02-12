@@ -13,8 +13,8 @@ import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -33,7 +33,7 @@ public class PDLPersonBarnTest {
     private final JdbcTemplate db;
     private final PdlPersonRepository pdlPersonRepository;
 
-    @MockBean
+    @MockitoBean
     private PdlPortefoljeClient mockedPdlPortefoljeClient;
 
     private PdlService pdlService;

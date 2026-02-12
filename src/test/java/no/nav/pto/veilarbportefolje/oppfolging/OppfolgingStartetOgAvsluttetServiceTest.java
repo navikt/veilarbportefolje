@@ -42,8 +42,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -106,16 +106,16 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private DagpengerClient dagpengerClient;
 
-    @MockBean
+    @MockitoBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
-    @MockBean
+    @MockitoBean
     private VedtaksstotteClient vedtaksstotteClient;
 
-    @MockBean
+    @MockitoBean
     private VeilarbarenaClient veilarbarenaClient;
 
-    @MockBean
+    @MockitoBean
     private OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient;
 
     private final Fnr fnr = Fnr.of("17858998980");
