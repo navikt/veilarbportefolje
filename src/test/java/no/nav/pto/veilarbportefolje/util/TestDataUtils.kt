@@ -84,7 +84,7 @@ object TestDataUtils {
     @JvmOverloads
     fun genererStartetOppfolgingsperiode(
         aktorId: AktorId,
-        startDato: ZonedDateTime? = tilfeldigDatoTilbakeITid(),
+        startDato: ZonedDateTime = tilfeldigDatoTilbakeITid(),
         oppfolgingsperiodeUuid: UUID = UUID.randomUUID(),
         kontorId: String = "2020",
         fnr: Fnr = randomFnr(),
@@ -94,7 +94,7 @@ object TestDataUtils {
             SisteEndringsType.OPPFOLGING_STARTET,
             aktorId.get(),
             fnr.get(),
-            startDato!!,
+            startDato,
             KontorDto("Nav Obo", kontorId),
             ZonedDateTime.now()
         )
