@@ -53,30 +53,28 @@ public class OppfolgingStartetService {
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
         var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
+            // Kontor endret
+            Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
             oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), navKontor);
-            oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, EnhetId.of(navKontor.getValue()));
+            oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
             opensearchIndexer.indekser(aktorId);
         } else {
             startOppfolging(aktorId, oppfolgingStartetDate, navKontor);
         }
     }
 
-    private void oppdaterEnhetVedKontorbytteHuskelappFargekategori(Fnr fnr, EnhetId enhetForBruker) {
+    private void oppdaterEnhetVedKontorbytteHuskelappFargekategori(Fnr fnr, AktorId aktorId, Optional<NavKontor> gammeltNavKontor, NavKontor nyttNavKontor) {
         try {
-            Optional<AktorId> aktorIdForBruker = brukerServiceV2.hentAktorId(fnr);
-            aktorIdForBruker.ifPresent(aktorId -> {
-                Optional<NavKontor> navKontorForBruker = brukerServiceV2.hentNavKontor(fnr);
-                if (navKontorForBruker.isPresent() && !Objects.equals(navKontorForBruker.get().getValue(), enhetForBruker.get())) {
+                if (gammeltNavKontor.isPresent() && !Objects.equals(gammeltNavKontor.get(), nyttNavKontor)) {
                     brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent(veilederForBruker -> {
-                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(enhetForBruker);
+                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(EnhetId.of(nyttNavKontor.getValue()));
                         boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(veilederForBruker.getValue());
                         if (brukerBlirAutomatiskTilordnetVeileder) {
-                            fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, enhetForBruker, veilederForBruker);
-                            huskelappService.oppdaterEnhetPaaHuskelapp(fnr, enhetForBruker, veilederForBruker);
+                            fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, EnhetId.of(nyttNavKontor.getValue()), veilederForBruker);
+                            huskelappService.oppdaterEnhetPaaHuskelapp(fnr, EnhetId.of(nyttNavKontor.getValue()), veilederForBruker);
                         }
                     });
-                }
-            });
+            };
         } catch (Exception e) {
             secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontrobytte for bruker: " + fnr, e);
         }
