@@ -15,7 +15,7 @@ Følgende data aggregeres:
 * Veiledertilordninger fra `veilarboppfolging` via Kafka
 * Dialoger fra `veilarbdialog` (aktivitetsplan) via Kafka
 * Aktiviteter fra `veilarbaktivitet` (aktivitetsplan) via Kafka
-* Informasjon om delt cv fra arbeidsplassen via Kafka
+* Informasjon om cv registrert hos Nav fra team-cv via Kafka
 * Informasjon om endring av mål fra `veilarboppfolging` via Kafka
 
 ### Swagger-dokumentasjon

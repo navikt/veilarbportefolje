@@ -5,7 +5,6 @@ import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CVRepositoryV2Test {
@@ -20,17 +19,6 @@ public class CVRepositoryV2Test {
     }
 
     @Test
-    public void skal_teste_om_bruker_har_delt_CV_i_database() {
-        AktorId aktoerId = AktorId.of("0");
-
-        cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isTrue();
-
-        cvRepositoryV2.upsertHarDeltCv(aktoerId, false);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isFalse();
-    }
-
-    @Test
     public void skal_teste_om_bruker_CV_eksisterer_i_database() {
         AktorId aktoerId = AktorId.of("0");
 
@@ -41,14 +29,14 @@ public class CVRepositoryV2Test {
         assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isFalse();
     }
 
-
     @Test
-    public void skal_resette_CV_for_aktoer() {
-        AktorId aktoerId = AktorId.of("1");
-        cvRepositoryV2.upsertHarDeltCv(aktoerId, true);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isTrue();
+    public void skal_teste_om_bruker_ble_slettet_fra_cv_databasen() {
+        AktorId aktoerId = AktorId.of("0");
 
-        cvRepositoryV2.resetHarDeltCV(aktoerId);
-        assertThat(cvRepositoryV2.harDeltCv(aktoerId)).isFalse();
+        cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isTrue();
+
+        cvRepositoryV2.slettCvEksisterer(aktoerId);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isFalse();
     }
 }

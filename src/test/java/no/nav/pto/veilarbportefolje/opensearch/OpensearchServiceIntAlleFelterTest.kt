@@ -171,7 +171,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
 
             // CV
             cv_eksistere = PortefoljebrukerOpensearchModell.CV_EKSISTERE,
-            har_delt_cv = PortefoljebrukerOpensearchModell.HAR_DELT_CV,
             neste_cv_kan_deles_status = PortefoljebrukerOpensearchModell.NESTE_CV_KAN_DELES_STATUS,
             neste_svarfrist_stilling_fra_nav = PortefoljebrukerOpensearchModell.NESTE_SVARFRIST_STILLING_FRA_NAV,
 
@@ -400,7 +399,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
 
             // CV
             val CV_EKSISTERE: Boolean = true
-            val HAR_DELT_CV: Boolean = true
             val NESTE_CV_KAN_DELES_STATUS: String = "JA"
             val NESTE_SVARFRIST_STILLING_FRA_NAV: LocalDate = LocalDate.parse("2023-01-01")
 
