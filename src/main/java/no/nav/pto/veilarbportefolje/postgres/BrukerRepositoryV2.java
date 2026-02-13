@@ -173,11 +173,12 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                            NAV_KONTOR as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                            coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR) as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                             ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                             RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                             HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
+                        left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
                                 (select PERSON from BRUKER_IDENTER where IDENT = ?)
