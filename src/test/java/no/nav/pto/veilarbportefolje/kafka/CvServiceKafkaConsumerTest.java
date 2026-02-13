@@ -50,6 +50,19 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
+    private void slettCvEksistererOmBrukerGorUtAvOppfolging() {
+        testDataClient.slettBrukerUnderOppfolging(aktoerId3);
+        populateSlettMeldingFraCVKafkaTopic(aktoerId3);
+
+    }
+
+    private void slettCvEksisterer() {
+
+        testCVEksistere();
+        populateSlettMeldingFraCVKafkaTopic(aktoerId3);
+
+    }
+
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
         return stream(aktoerIds)
                 .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
@@ -97,5 +110,13 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
 
             cvService.behandleKafkaMeldingLogikk(cvMelding);
         }
+    }
+
+    private void populateSlettMeldingFraCVKafkaTopic(AktorId aktoerId) {
+            Melding cvMelding = new Melding();
+            cvMelding.setAktoerId(aktoerId.toString());
+            cvMelding.setMeldingstype(Meldingstype.SLETT);
+
+            cvService.behandleKafkaMeldingLogikk(cvMelding);
     }
 }

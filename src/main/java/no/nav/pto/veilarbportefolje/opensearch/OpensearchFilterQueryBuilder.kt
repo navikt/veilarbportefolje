@@ -485,7 +485,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_CV_HOS_NAV) {
+            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_DELT_CV) {
                 queryBuilder.must(QueryBuilders.matchQuery(CV_EKSISTERE, true))
             } else {
                 val orQuery = QueryBuilders.boolQuery()

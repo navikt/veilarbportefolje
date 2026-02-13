@@ -12,6 +12,7 @@ import java.util.Optional;
 import static java.time.Instant.now;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.BRUKER_CV.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -34,6 +35,11 @@ public class CVRepositoryV2 {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(CV_EKSISTERER), aktoerId.get()))
         ).orElse(false);
+    }
+
+    public void slettCvEksisterer(AktorId aktoerId) {
+        secureLog.info("Sletter data om cv-eksisterer for bruker med aktoerid {}", aktoerId);
+        db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
 }

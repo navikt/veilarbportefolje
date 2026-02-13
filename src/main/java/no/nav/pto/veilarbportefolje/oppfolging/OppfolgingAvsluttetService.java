@@ -66,7 +66,7 @@ public class OppfolgingAvsluttetService {
         aapService.slettAapData(aktoerId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktoerId, maybeFnr);
         dagpengerService.slettDagpengerData(aktoerId, maybeFnr);
-
+        cvRepositoryV2.slettCvEksisterer(aktoerId);
         opensearchIndexer.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }

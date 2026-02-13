@@ -28,4 +28,15 @@ public class CVRepositoryV2Test {
         cvRepositoryV2.upsertCVEksisterer(aktoerId, false);
         assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isFalse();
     }
+
+    @Test
+    public void skal_teste_om_bruker_ble_slettet_fra_cv_databasen() {
+        AktorId aktoerId = AktorId.of("0");
+
+        cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isTrue();
+
+        cvRepositoryV2.slettCvEksisterer(aktoerId);
+        assertThat(cvRepositoryV2.cvEksisterer(aktoerId)).isFalse();
+    }
 }
