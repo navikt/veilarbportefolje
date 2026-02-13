@@ -36,9 +36,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
     private final OpensearchIndexer opensearchIndexer;
     private final VeilarbarenaClient veilarbarenaClient;
     private final PdlIdentRepository pdlIdentRepository;
-    private final VeilarbVeilederClient veilarbVeilederClient;
-    private final HuskelappService huskelappService;
-    private final FargekategoriService fargekategoriService;
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -54,10 +51,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 .map(dato -> ZonedDateTime.of(dato.atStartOfDay(), ZoneId.systemDefault()))
                 .orElse(null);
 
-        Fnr fnr = Fnr.of(fodselsnummer);
-        EnhetId enhetForBruker = EnhetId.of(kafkaMelding.getOppfolgingsenhet());
-        oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, enhetForBruker);
-
         OppfolgingsbrukerEntity oppfolgingsbruker = new OppfolgingsbrukerEntity(
                 fodselsnummer,
                 kafkaMelding.getFormidlingsgruppe().name(),
@@ -67,39 +60,16 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 Optional.ofNullable(kafkaMelding.getRettighetsgruppe()).map(Rettighetsgruppe::name).orElse(null),
                 Optional.ofNullable(kafkaMelding.getHovedmaal()).map(Hovedmaal::name).orElse(null),
                 kafkaMelding.getSistEndretDato());
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker, null);
 
         brukerServiceV2.hentAktorId(Fnr.of(fodselsnummer))
                 .ifPresent(id -> {
                     secureLog.info("Fikk endring pa oppfolgingsbruker (V2): {}, topic: aapen-fo-endringPaaOppfoelgingsBruker-v2", id);
-
                     opensearchIndexer.indekser(id);
-
                 });
     }
 
-    private void oppdaterEnhetVedKontorbytteHuskelappFargekategori(Fnr fnr, EnhetId enhetForBruker) {
-        try {
-            Optional<AktorId> aktorIdForBruker = brukerServiceV2.hentAktorId(fnr);
-            aktorIdForBruker.ifPresent(aktorId -> {
-                Optional<NavKontor> navKontorForBruker = brukerServiceV2.hentNavKontor(fnr);
-                if (navKontorForBruker.isPresent() && !Objects.equals(navKontorForBruker.get().getValue(), enhetForBruker.get())) {
-                    brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent(veilederForBruker -> {
-                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(enhetForBruker);
-                        boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(veilederForBruker.getValue());
-                        if (brukerBlirAutomatiskTilordnetVeileder) {
-                            fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, enhetForBruker, veilederForBruker);
-                            huskelappService.oppdaterEnhetPaaHuskelapp(fnr, enhetForBruker, veilederForBruker);
-                        }
-                    });
-                }
-            });
-        } catch (Exception e) {
-            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontrobytte for bruker: " + fnr, e);
-        }
-    }
-
-    public void hentOgLagreOppfolgingsbruker(AktorId aktorId) {
+    public void hentOgLagreOppfolgingsbruker(AktorId aktorId, NavKontor navKontor) {
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktorId);
 
         Optional<OppfolgingsbrukerDTO> oppfolgingsbrukerDTO = veilarbarenaClient.hentOppfolgingsbruker(fnr);
@@ -113,14 +83,14 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 oppfolgingsbrukerDTO.get().getFodselsnr(),
                 oppfolgingsbrukerDTO.get().getFormidlingsgruppekode(),
                 oppfolgingsbrukerDTO.get().getIservFraDato(),
-                oppfolgingsbrukerDTO.get().getNavKontor(),
+                navKontor.getValue(),
                 oppfolgingsbrukerDTO.get().getKvalifiseringsgruppekode(),
                 oppfolgingsbrukerDTO.get().getRettighetsgruppekode(),
                 oppfolgingsbrukerDTO.get().getHovedmaalkode(),
                 oppfolgingsbrukerDTO.get().getSistEndretDato()
         );
 
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbrukerEntity, navKontor);
         secureLog.info("Oppfolgingsbruker hentet og lagret for aktorId: {} / fnr: {}.", aktorId, fnr);
     }
 

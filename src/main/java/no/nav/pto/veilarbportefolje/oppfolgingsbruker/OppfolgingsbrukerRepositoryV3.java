@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -21,13 +22,6 @@ import java.util.stream.Collectors;
 
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -41,7 +35,7 @@ public class OppfolgingsbrukerRepositoryV3 {
     private final NamedParameterJdbcTemplate dbNamed;
 
     @Transactional
-    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
+    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker, NavKontor navKontor) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.fodselsnr() == null) {
             return 0;
         }
@@ -50,20 +44,16 @@ public class OppfolgingsbrukerRepositoryV3 {
         if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
             return 0;
         }
-        return upsert(oppfolgingsbruker);
+
+        var rowsChanged = upsert(oppfolgingsbruker);
+        if (navKontor != null) settNavKontor(oppfolgingsbruker.fodselsnr(), navKontor);
+        return rowsChanged;
     }
 
     public int slettOppfolgingsbruker(Fnr fnr) {
         return db.update(
                 String.format("DELETE FROM %s WHERE fodselsnr = ?", PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME),
                 fnr.get()
-        );
-    }
-
-    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
-        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, fnr.get()))
         );
     }
 
@@ -75,29 +65,35 @@ public class OppfolgingsbrukerRepositoryV3 {
         );
     }
 
+    public int settNavKontor(String fodselsnr, NavKontor navKontor) {
+        var params = new MapSqlParameterSource()
+                .addValue("ident", fodselsnr)
+                .addValue("navKontor", navKontor.getValue());
+        return dbNamed.update("""
+                    INSERT INTO ao_kontor (ident, kontor_id) VALUES (:ident, :navKontor)
+                    ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id
+                """, params);
+    }
+
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
         return db.update("""
                         INSERT INTO oppfolgingsbruker_arena_v2(
                         fodselsnr, formidlingsgruppekode, iserv_fra_dato,
-                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
                         hovedmaalkode,
                         endret_dato)
-                        VALUES(?,?,?,?,?,?,?,?)
+                        VALUES(?,?,?,?,?,?,?)
                         ON CONFLICT (fodselsnr) DO UPDATE SET(
                         formidlingsgruppekode, iserv_fra_dato,
-                        nav_kontor,
                         kvalifiseringsgruppekode, rettighetsgruppekode,
                         hovedmaalkode,
                         endret_dato)
                         = (excluded.formidlingsgruppekode, excluded.iserv_fra_dato,
-                        excluded.nav_kontor,
                         excluded.kvalifiseringsgruppekode, excluded.rettighetsgruppekode,
                         excluded.hovedmaalkode,
                         excluded.endret_dato)
                         """,
                 oppfolgingsbruker.fodselsnr(), oppfolgingsbruker.formidlingsgruppekode(), toTimestamp(oppfolgingsbruker.iserv_fra_dato()),
-                oppfolgingsbruker.nav_kontor(),
                 oppfolgingsbruker.kvalifiseringsgruppekode(), oppfolgingsbruker.rettighetsgruppekode(),
                 oppfolgingsbruker.hovedmaalkode(),
                 toTimestamp(oppfolgingsbruker.endret_dato())
@@ -107,18 +103,6 @@ public class OppfolgingsbrukerRepositoryV3 {
     @SneakyThrows
     private ZonedDateTime mapTilZonedDateTime(ResultSet rs, int row) {
         return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
-    }
-
-    @SneakyThrows
-    public static OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
-        if (rs == null || rs.getString(FODSELSNR) == null) {
-            return null;
-        }
-        return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
-                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE),
-                toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
     }
 
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
@@ -142,10 +126,18 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+        val sql = """
+                select coalesce(ao.kontor_id, ob.nav_kontor) as kontor_id
+                from oppfolgingsbruker_arena_v2 ob
+                left join ao_kontor ao on ob.fodselsnr = ao.ident
+                where ob.fodselsnr = :ident
+                """;
+        val params = new MapSqlParameterSource()
+                .addValue("ident", fnr.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
-                        () -> db.queryForObject("select nav_kontor from oppfolgingsbruker_arena_v2 where fodselsnr = ?",
-                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("nav_kontor")), fnr.get())
+                        () -> dbNamed.queryForObject(sql, params, (rs, i) ->
+                                NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
     }
 }
