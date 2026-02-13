@@ -29,13 +29,14 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
         AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         boolean cvEksisterer = cvEksistere(kafkaMelding);
-        secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
 
-        if (FeatureToggle.brukNyCvFilter(defaultUnleash)) {
+        if (FeatureToggle.brukNyCvTabell(defaultUnleash)) {
             secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabellen for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
             cvRepositoryV2.upsertCVEksistererINyTabell(aktoerId, cvEksisterer);
+        } else {
+            secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
+            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         }
-        cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
         opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 

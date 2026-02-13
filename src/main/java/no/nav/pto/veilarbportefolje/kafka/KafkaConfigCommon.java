@@ -79,8 +79,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_NY_CV_TABELL;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -501,7 +500,7 @@ public class KafkaConfigCommon {
         consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CLIENT_ID_CONFIG))
                 .withTopicConfig(cvTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(BRUK_NY_CV_TABELL) || kafkaAivenUnleash.get())
+                .withToggle(() -> defaultUnleash.isEnabled(STOPP_LESE_CV_TOPIC) || kafkaAivenUnleash.get())
                 .build();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
