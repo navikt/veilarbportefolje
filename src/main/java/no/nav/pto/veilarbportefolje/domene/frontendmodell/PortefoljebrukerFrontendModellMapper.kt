@@ -179,14 +179,15 @@ object PortefoljebrukerFrontendModellMapper {
         opensearchModell.dagpenger?.harDagpenger ?: return null
         val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
         val antallDager = opensearchModell.dagpenger?.antallResterendeDager
+        // Avventer tilbakemeldinger på hvordan denne skal vises i frontend, lar den derfor stå enn så lenge.
         val datoAntallDagerBleBeregnet =
             opensearchModell.dagpenger?.datoAntallDagerBleBeregnet?.format(ofPattern("dd.MM.yyyy"))
 
         val resterendeDagerMedDato = if (antallDager != null) {
             if (antallDager == 1) {
-                "$antallDager dag (per ${datoAntallDagerBleBeregnet.toString()})"
+                "$antallDager dag"
             } else {
-                "$antallDager dager (per ${datoAntallDagerBleBeregnet.toString()})"
+                "$antallDager dager"
             }
         } else null
 
