@@ -56,7 +56,7 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
         populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        assertCvEksistereAreNullInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
@@ -71,10 +71,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         }
     }
 
-    private static Object cvEksistereIkke(GetResponse get1) {
-        return get1.getSourceAsMap().get("cv_eksistere");
-    }
-
     private void assertCvEksistereAreTrueInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
@@ -86,13 +82,6 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         for (AktorId aktoerId : aktoerIds) {
             GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
             Assertions.assertFalse(cvEksistere(getResponse));
-        }
-    }
-
-    private void assertCvEksistereAreNullInOpensearch(AktorId... aktoerIds) {
-        for (AktorId aktoerId : aktoerIds) {
-            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
-            Assertions.assertNull(cvEksistereIkke(getResponse));
         }
     }
 

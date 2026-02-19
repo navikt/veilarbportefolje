@@ -5,12 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -29,12 +26,11 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         if (cvEksisterer) {
             secureLog.info("Oppdater CV eksisterer for bruker: {}", aktoerId.get());
             cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
-            opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
         } else {
             secureLog.info("Slett CV eksisterer for bruker: {}", aktoerId.get());
             cvRepositoryV2.slettCvEksisterer(aktoerId);
-            opensearchIndexerPaDatafelt.slettCV(aktoerId);
         }
+            opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     private boolean cvEksistere(Melding melding) {

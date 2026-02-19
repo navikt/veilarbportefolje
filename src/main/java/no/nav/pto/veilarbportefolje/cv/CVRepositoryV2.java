@@ -38,7 +38,7 @@ public class CVRepositoryV2 {
     }
 
     public void slettCvEksisterer(AktorId aktoerId) {
-        secureLog.info("Sletter info om cv-eksisterer for bruker med aktoerid {}", aktoerId);
+        secureLog.info("Sletter informasjon om at CV finnes for bruker med aktoerid {}", aktoerId);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 
