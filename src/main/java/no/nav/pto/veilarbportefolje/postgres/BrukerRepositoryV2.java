@@ -96,7 +96,6 @@ public class BrukerRepositoryV2 {
                                UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                                UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
                                BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
-                               BRUKER_CV.HAR_DELT_CV                                    as BRUKER_CV_HAR_DELT_CV,
                                BRUKER_CV.CV_EKSISTERER                                  as BRUKER_CV_CV_EKSISTERER,
                                BRUKER_REGISTRERING.BRUKERS_SITUASJON                    as BRUKER_REGISTRERING_BRUKERS_SITUASJON,
                                BRUKER_REGISTRERING.REGISTRERING_OPPRETTET               as BRUKER_REGISTRERING_REGISTRERING_OPPRETTET,
@@ -211,7 +210,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT));
         brukerOpensearchModell.setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT));
         brukerOpensearchModell.setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)));
-        brukerOpensearchModell.setHar_delt_cv(rs.getBoolean(BRUKER_CV_HAR_DELT_CV));
         brukerOpensearchModell.setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER));
         brukerOpensearchModell.setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING));
         brukerOpensearchModell.setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER));

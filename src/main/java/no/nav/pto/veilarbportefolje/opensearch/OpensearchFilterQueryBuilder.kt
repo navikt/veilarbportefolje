@@ -26,7 +26,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.CV_EKSISTERE
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.HAR_DELT_CV
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.NESTE_CV_KAN_DELES_STATUS
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_BRUKER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_NAV
@@ -487,11 +486,9 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harCvFilter()) {
             if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_DELT_CV) {
-                queryBuilder.must(QueryBuilders.matchQuery(HAR_DELT_CV, true))
                 queryBuilder.must(QueryBuilders.matchQuery(CV_EKSISTERE, true))
             } else {
                 val orQuery = QueryBuilders.boolQuery()
-                orQuery.should(QueryBuilders.matchQuery(HAR_DELT_CV, false))
                 orQuery.should(QueryBuilders.matchQuery(CV_EKSISTERE, false))
                 queryBuilder.must(orQuery)
             }

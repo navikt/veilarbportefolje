@@ -142,7 +142,6 @@ data class PortefoljebrukerOpensearchModell(
 
     // CV
     var cv_eksistere: Boolean = false,
-    var har_delt_cv: Boolean = false,
     var neste_cv_kan_deles_status: String? = null,
     var neste_svarfrist_stilling_fra_nav: LocalDate? = null,
 
