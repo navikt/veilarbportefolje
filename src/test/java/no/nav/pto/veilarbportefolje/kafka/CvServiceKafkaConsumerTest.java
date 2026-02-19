@@ -50,17 +50,13 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
-    private void slettCvEksistererOmBrukerGorUtAvOppfolging() {
-        testDataClient.slettBrukerUnderOppfolging(aktoerId3);
-        populateSlettMeldingFraCVKafkaTopic(aktoerId3);
+    @Test
+    public void testCvEksistererIkke() {
+        populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
-    }
-
-    private void slettCvEksisterer() {
-
-        testCVEksistere();
-        populateSlettMeldingFraCVKafkaTopic(aktoerId3);
-
+        populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreNullInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
@@ -75,6 +71,10 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         }
     }
 
+    private static Object cvEksistereIkke(GetResponse get1) {
+        return get1.getSourceAsMap().get("cv_eksistere");
+    }
+
     private void assertCvEksistereAreTrueInOpensearch(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
@@ -86,6 +86,13 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         for (AktorId aktoerId : aktoerIds) {
             GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
             Assertions.assertFalse(cvEksistere(getResponse));
+        }
+    }
+
+    private void assertCvEksistereAreNullInOpensearch(AktorId... aktoerIds) {
+        for (AktorId aktoerId : aktoerIds) {
+            GetResponse getResponse = opensearchTestClient.fetchDocument(aktoerId);
+            Assertions.assertNull(cvEksistereIkke(getResponse));
         }
     }
 
@@ -112,11 +119,13 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         }
     }
 
-    private void populateSlettMeldingFraCVKafkaTopic(AktorId aktoerId) {
+    private void populateSlettMeldingFraCVKafkaTopic(AktorId... aktoerIds) {
+        for (AktorId aktoerId : aktoerIds) {
             Melding cvMelding = new Melding();
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.SLETT);
 
             cvService.behandleKafkaMeldingLogikk(cvMelding);
+        }
     }
 }
