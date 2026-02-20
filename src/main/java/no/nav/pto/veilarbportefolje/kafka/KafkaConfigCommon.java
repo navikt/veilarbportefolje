@@ -32,7 +32,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -107,8 +106,6 @@ public class KafkaConfigCommon {
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
-        CV_TOPIC("teampam.samtykke-status-1"),
-
 //        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
         SISTE_OPPFOLGINGS_PERIODE_V2("poao.siste-oppfolgingsperiode-v2"),
 
@@ -175,17 +172,7 @@ public class KafkaConfigCommon {
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigsAiven =
-                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, CVMelding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(CVMelding.class),
-                                        cvService::behandleKafkaMeldingCVHjemmel
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
+                List.of(new KafkaConsumerClientBuilder.TopicConfig<String, UtdanningsAktivitetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)

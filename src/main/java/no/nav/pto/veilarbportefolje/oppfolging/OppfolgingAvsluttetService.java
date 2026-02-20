@@ -57,7 +57,6 @@ public class OppfolgingAvsluttetService {
         arbeidssokerRegistreringRepositoryV2.slettEndringIRegistrering(aktoerId);
         huskelappService.sletteAlleHuskelapperPaaBruker(aktoerId, maybeFnr);
         sisteEndringService.slettSisteEndringer(aktoerId);
-        cvRepositoryV2.resetHarDeltCV(aktoerId);
         siste14aVedtakService.slettSiste14aVedtak(aktoerId.get());
         pdlService.slettPdlData(aktoerId);
         ensligeForsorgereService.slettEnsligeForsorgereData(aktoerId);
@@ -67,7 +66,7 @@ public class OppfolgingAvsluttetService {
         aapService.slettAapData(aktoerId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktoerId, maybeFnr);
         dagpengerService.slettDagpengerData(aktoerId, maybeFnr);
-
+        cvRepositoryV2.slettCvEksisterer(aktoerId);
         opensearchIndexer.slettDokumenter(List.of(aktoerId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktoerId);
     }

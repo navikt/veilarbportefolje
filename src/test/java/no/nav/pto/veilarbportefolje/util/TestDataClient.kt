@@ -62,6 +62,10 @@ class TestDataClient(
         )
     }
 
+    fun slettBrukerUnderOppfolging(aktoerId: AktorId) {
+        oppfolgingRepositoryV2.slettOppfolgingData(aktoerId);
+    }
+
     fun lagreBrukerUnderOppfolging(
         aktoerId: AktorId,
         navKontor: NavKontor,
