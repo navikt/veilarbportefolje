@@ -66,7 +66,6 @@ public class PostgresTable {
         public static final String BRUKER_PROFILERING_PROFILERING_RESULTAT = "BRUKER_PROFILERING_PROFILERING_RESULTAT";
 
         // BRUKER_CV
-        public static final String BRUKER_CV_HAR_DELT_CV = "BRUKER_CV_HAR_DELT_CV";
         public static final String BRUKER_CV_CV_EKSISTERER = "BRUKER_CV_CV_EKSISTERER";
 
         // BRUKER_REGISTRERING
@@ -316,8 +315,11 @@ public class PostgresTable {
 
         public static final String TABLE_NAME = "BRUKER_CV";
 
+        public static final String NY_TABLE_NAME = "BRUKER_REGISTRERT_CV";
+
         public static final String AKTOERID = "AKTOERID";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
+
+        public static final String FNR = "FNR";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
     }

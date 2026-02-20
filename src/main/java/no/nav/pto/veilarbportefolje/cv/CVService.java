@@ -6,16 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.cv.dto.CVMelding;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
-
-import static no.nav.pto.veilarbportefolje.cv.dto.Ressurs.CV_HJEMMEL;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import java.sql.Timestamp;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
-
 
 @RequiredArgsConstructor
 @Service
@@ -23,47 +21,36 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final CVRepositoryV2 cvRepositoryV2;
+    private final PdlIdentRepository pdlIdentRepository;
     private final DefaultUnleash defaultUnleash;
 
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
         AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
+        Timestamp sistEndret = Timestamp.from(kafkaMelding.getEndreCv().getCv().getSistEndret());
+        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
+
         boolean cvEksisterer = cvEksistere(kafkaMelding);
 
         if (FeatureToggle.brukNyCvTabell(defaultUnleash)) {
-            secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabellen for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
-            cvRepositoryV2.upsertCVEksistererINyTabell(aktoerId, cvEksisterer);
-        } else {
-            secureLog.info("Oppdater CV eksisterer for bruker: {}, eksisterer: {}", aktoerId.get(), cvEksisterer);
-            cvRepositoryV2.upsertCVEksisterer(aktoerId, cvEksisterer);
+            if (cvEksisterer) {
+                secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabell for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), true);
+                cvRepositoryV2.upsertCVEksistererINyTabell(fnr, sistEndret, true);
+            } else {
+                secureLog.info("Slett CV eksisterer fra BRUKER_REGISTRERT_CV for bruker med aktoerid: {}", aktoerId.get());
+                cvRepositoryV2.slettCvEksistererFraNyTabell(fnr);
+            }
         }
-        opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
-    }
-
-    public void behandleKafkaMeldingCVHjemmel(ConsumerRecord<String, CVMelding> kafkaMelding) {
-        secureLog.info(
-                "Behandler kafka-melding med key {} og offset {} på topic {}",
-                kafkaMelding.key(),
-                kafkaMelding.offset(),
-                kafkaMelding.topic()
-        );
-        CVMelding cvMelding = kafkaMelding.value();
-        behandleCVHjemmelMelding(cvMelding);
-    }
-
-    public void behandleCVHjemmelMelding(CVMelding cvMelding) {
-        AktorId aktoerId = cvMelding.getAktoerId();
-        boolean harDeltCv = (cvMelding.getSlettetDato() == null);
-
-        if (cvMelding.getRessurs() != CV_HJEMMEL) {
-            secureLog.info("Ignorer melding for ressurs {} for bruker {}", cvMelding.getRessurs(), aktoerId);
-            return;
+        else {
+            if (cvEksisterer) {
+                secureLog.info("Oppdater CV eksisterer for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), true);
+                cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
+            } else {
+                secureLog.info("Slett CV eksisterer for bruker med aktoerid: {}", aktoerId.get());
+                cvRepositoryV2.slettCvEksisterer(aktoerId);
+            }
         }
-
-        secureLog.info("Oppdaterte bruker: {}. Har delt cv: {}", aktoerId, harDeltCv);
-        cvRepositoryV2.upsertHarDeltCv(aktoerId, harDeltCv);
-
-        opensearchIndexerPaDatafelt.updateHarDeltCv(aktoerId, harDeltCv);
+            opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     private boolean cvEksistere(Melding melding) {
