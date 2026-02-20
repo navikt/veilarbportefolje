@@ -94,16 +94,20 @@ public class TiltakRepositoryV3 {
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = """
-                SELECT * FROM tiltakkodeverket WHERE
-                kode IN (SELECT DISTINCT tiltakskode FROM
-                (
-                    SELECT tiltakskode, aktoerid FROM brukertiltak
-                    UNION
-                    SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
-                ) BT
-                INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
-                INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
-                WHERE OP.nav_kontor = ?)
+                SELECT *
+                FROM tiltakkodeverket WHERE
+                kode IN (
+                    SELECT DISTINCT tiltakskode FROM
+                    (
+                        SELECT tiltakskode, aktoerid FROM brukertiltak
+                        UNION
+                        SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
+                    ) BT
+                    INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
+                    INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
+                    LEFT JOIN ao_kontor ON ao_kontor.ident = ai.fnr
+                    WHERE coalesce(ao_kontor.kontor_id, OP.nav_kontor) = ?
+                )
                 """;
         return new EnhetTiltak().setTiltak(
                 dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, enhetId.get())
