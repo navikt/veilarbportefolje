@@ -53,12 +53,13 @@ public class OppfolgingStartetService {
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
         var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
-            // Kontor endret
+            secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
             Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
             oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), navKontor);
             oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
             opensearchIndexer.indekser(aktorId);
         } else {
+            secureLog.info("Starter oppfølging for bruker med aktør-ID: " + aktorId);
             startOppfolging(aktorId, oppfolgingStartetDate, navKontor);
         }
     }
@@ -74,9 +75,9 @@ public class OppfolgingStartetService {
                             huskelappService.oppdaterEnhetPaaHuskelapp(fnr, EnhetId.of(nyttNavKontor.getValue()), veilederForBruker);
                         }
                     });
-            };
+            }
         } catch (Exception e) {
-            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontrobytte for bruker: " + fnr, e);
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontorbytte for bruker: " + fnr, e);
         }
     }
 

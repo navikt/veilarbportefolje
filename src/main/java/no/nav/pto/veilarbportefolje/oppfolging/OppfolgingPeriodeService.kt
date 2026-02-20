@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.oppfolging
 
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.NavKontor
@@ -13,9 +11,7 @@ import no.nav.pto.veilarbportefolje.util.SecureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 class OppfolgingPeriodeService(
     val oppfolgingStartetService: OppfolgingStartetService,
     val oppfolgingAvsluttetService: OppfolgingAvsluttetService
@@ -30,8 +26,6 @@ class OppfolgingPeriodeService(
 
         when (sisteOppfolgingsperiode) {
            is GjeldendeOppfolgingsperiodeV2Dto -> {
-               // TODO: fiks loggmeldinger, nå logges samme melding selv om det kun er kontorendring
-               SecureLog.secureLog.info("Starter oppfolging for: " + sisteOppfolgingsperiode.aktorId)
                oppfolgingStartetService.behandleOppfolgingStartetEllerKontorEndret(
                    Fnr.of(sisteOppfolgingsperiode.ident),
                    AktorId.of(sisteOppfolgingsperiode.aktorId),
