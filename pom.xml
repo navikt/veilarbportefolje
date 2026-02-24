@@ -17,7 +17,7 @@
     <properties>
         <java.version>21</java.version>
         <common.version>3.2025.11.10_14.07-a9f44944d7bc</common.version>
-        <kotlin.version>2.2.20</kotlin.version>
+        <kotlin.version>2.3.10</kotlin.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.21.4</testcontainers.version>
         <maven.compiler.source>21</maven.compiler.source>
