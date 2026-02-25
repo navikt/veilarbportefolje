@@ -108,7 +108,8 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
             Cv cv = new Cv();
 
             endreCv.setCv(cv);
-            cv.setSistEndret(Instant.now());
+            cv.setSistEndret(Instant.ofEpochMilli(Instant.now().toEpochMilli()));
+
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
             cvMelding.setEndreCv(endreCv);

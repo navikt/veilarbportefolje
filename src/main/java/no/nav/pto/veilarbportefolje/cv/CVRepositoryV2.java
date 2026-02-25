@@ -29,7 +29,7 @@ public class CVRepositoryV2 {
                 aktoerId.get(), cvEksisterer, Timestamp.from(now()));
     }
 
-    public int upsertCVEksistererINyTabell(Fnr fnr, Timestamp cvSistEndret, boolean cvEksisterer) {
+    public int upsertCVEksistererINyTabell(Fnr fnr,  Timestamp cvSistEndret, boolean cvEksisterer) {
         return db.update("""
                         INSERT INTO bruker_registrert_cv
                         (FNR, CV_EKSISTERER, CV_SIST_ENDRET, SISTE_MELDING_MOTTATT) VALUES (?, ?, ?, ?)
@@ -53,7 +53,7 @@ public class CVRepositoryV2 {
     }
 
     public void slettCvEksisterer(AktorId aktoerId) {
-        secureLog.info("Sletter informasjon om at CV finnes for bruker med aktoerid {}", aktoerId);
+        secureLog.info("Sletter informasjon om at CV finnes for bruker {}", aktoerId);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, AKTOERID), aktoerId.get());
     }
 }
