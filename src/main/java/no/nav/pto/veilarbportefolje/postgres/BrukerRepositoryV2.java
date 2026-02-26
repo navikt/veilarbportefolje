@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
@@ -43,14 +45,14 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class BrukerRepositoryV2 {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
-
     private final KodeverkService kodeverkService;
+    private final DefaultUnleash defaultUnleash;
 
     public List<PortefoljebrukerOpensearchModell> hentPortefoljeBrukereTilOpensearchModell(List<AktorId> aktorIds) {
         List<PortefoljebrukerOpensearchModell> result = new ArrayList<>();
-
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
-        return db.query("""
+
+        String sqlMedGammelCvTabell = """
                         SELECT
                                OPPFOLGING_DATA.AKTOERID                                 as OPPFOLGING_DATA_AKTOERID,
                                OPPFOLGING_DATA.STARTDATO                                as OPPFOLGING_DATA_STARTDATO,
@@ -147,7 +149,108 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
-                        """,
+                        """;
+
+        String sqlMedNyCvTabell = """
+                        SELECT
+                               OPPFOLGING_DATA.AKTOERID                                 as OPPFOLGING_DATA_AKTOERID,
+                               OPPFOLGING_DATA.STARTDATO                                as OPPFOLGING_DATA_STARTDATO,
+                               OPPFOLGING_DATA.NY_FOR_VEILEDER                          as OPPFOLGING_DATA_NY_FOR_VEILEDER,
+                               OPPFOLGING_DATA.VEILEDERID                               as OPPFOLGING_DATA_VEILEDERID,
+                               OPPFOLGING_DATA.MANUELL                                  as OPPFOLGING_DATA_MANUELL,
+                               OPPFOLGING_DATA.OPPFOLGING                               as OPPFOLGING_DATA_OPPFOLGING,
+                               OPPFOLGING_DATA.TILDELT_TIDSPUNKT                        as OPPFOLGING_DATA_TILDELT_TIDSPUNKT,
+                               AKTIVE_IDENTER.FNR                                       as AKTIVE_IDENTER_FNR,
+                               OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
+                               OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
+                               OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
+                               OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR                    as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                               OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
+                               OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
+                               OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
+                               OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO                   as OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO,
+                               NOM_SKJERMING.ER_SKJERMET                                as NOM_SKJERMING_ER_SKJERMET,
+                               NOM_SKJERMING.SKJERMET_TIL                               as NOM_SKJERMING_SKJERMET_TIL,
+                               BRUKER_DATA.FOEDSELSDATO                                 as BRUKER_DATA_FOEDSELSDATO,
+                               BRUKER_DATA.FORNAVN                                      as BRUKER_DATA_FORNAVN,
+                               BRUKER_DATA.ETTERNAVN                                    as BRUKER_DATA_ETTERNAVN,
+                               BRUKER_DATA.MELLOMNAVN                                   as BRUKER_DATA_MELLOMNAVN,
+                               BRUKER_DATA.ER_DOED                                      as BRUKER_DATA_ER_DOED,
+                               BRUKER_DATA.KJOENN                                       as BRUKER_DATA_KJOENN,
+                               BRUKER_DATA.FOEDELAND                                    as BRUKER_DATA_FOEDELAND,
+                               BRUKER_DATA.TALESPRAAKTOLK                               as BRUKER_DATA_TALESPRAAKTOLK,
+                               BRUKER_DATA.TEGNSPRAAKTOLK                               as BRUKER_DATA_TEGNSPRAAKTOLK,
+                               BRUKER_DATA.TOLKBEHOVSISTOPPDATERT                       as BRUKER_DATA_TOLKBEHOVSISTOPPDATERT,
+                               BRUKER_DATA.DISKRESJONKODE                               as BRUKER_DATA_DISKRESJONKODE,
+                               BRUKER_DATA.SIKKERHETSTILTAK_TYPE                        as BRUKER_DATA_SIKKERHETSTILTAK_TYPE,
+                               BRUKER_DATA.SIKKERHETSTILTAK_GYLDIGFRA                   as BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA,
+                               BRUKER_DATA.SIKKERHETSTILTAK_GYLDIGTIL                   as BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL,
+                               BRUKER_DATA.SIKKERHETSTILTAK_BESKRIVELSE                 as BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE,
+                               BRUKER_DATA.BYDELSNUMMER                                 as BRUKER_DATA_BYDELSNUMMER,
+                               BRUKER_DATA.KOMMUNENUMMER                                as BRUKER_DATA_KOMMUNENUMMER,
+                               BRUKER_DATA.BOSTEDSISTOPPDATERT                          as BRUKER_DATA_BOSTEDSISTOPPDATERT,
+                               BRUKER_DATA.UTENLANDSKADRESSE                            as BRUKER_DATA_UTENLANDSKADRESSE,
+                               BRUKER_DATA.HARUKJENTBOSTED                              as BRUKER_DATA_HARUKJENTBOSTED,
+                               DIALOG.VENTER_PA_BRUKER                                  as DIALOG_VENTER_PA_BRUKER,
+                               DIALOG.VENTER_PA_NAV                                     as DIALOG_VENTER_PA_NAV,
+                               UTKAST_14A_STATUS.VEDTAKSTATUS                           as UTKAST_14A_STATUS_VEDTAKSTATUS,
+                               UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
+                               UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
+                               BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
+                               BRUKER_REGISTRERT_CV.CV_EKSISTERER                       as BRUKER_CV_CV_EKSISTERER,
+                               BRUKER_REGISTRERING.BRUKERS_SITUASJON                    as BRUKER_REGISTRERING_BRUKERS_SITUASJON,
+                               BRUKER_REGISTRERING.REGISTRERING_OPPRETTET               as BRUKER_REGISTRERING_REGISTRERING_OPPRETTET,
+                               BRUKER_REGISTRERING.UTDANNING                            as BRUKER_REGISTRERING_UTDANNING,
+                               BRUKER_REGISTRERING.UTDANNING_BESTATT                    as BRUKER_REGISTRERING_UTDANNING_BESTATT,
+                               BRUKER_REGISTRERING.UTDANNING_GODKJENT                   as BRUKER_REGISTRERING_UTDANNING_GODKJENT,
+                               YTELSE_STATUS_FOR_BRUKER.YTELSE                          as YTELSE_STATUS_FOR_BRUKER_YTELSE,
+                               YTELSE_STATUS_FOR_BRUKER.AAPMAXTIDUKE                    as YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE,
+                               YTELSE_STATUS_FOR_BRUKER.AAPUNNTAKDAGERIGJEN             as YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN,
+                               YTELSE_STATUS_FOR_BRUKER.DAGPUTLOPUKE                    as YTELSE_STATUS_FOR_BRUKER_DAGPUTLOPUKE,
+                               YTELSE_STATUS_FOR_BRUKER.PERMUTLOPUKE                    as YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE,
+                               YTELSE_STATUS_FOR_BRUKER.UTLOPSDATO                      as YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO,
+                               YTELSE_STATUS_FOR_BRUKER.ANTALLDAGERIGJEN                as YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN,
+                               YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO,
+                               ENDRING_I_REGISTRERING.BRUKERS_SITUASJON                 as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON,
+                               ENDRING_I_REGISTRERING.BRUKERS_SITUASJON_SIST_ENDRET     as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET,
+                               FARGEKATEGORI.VERDI                                      as FARGEKATEGORI_VERDI,
+                               FARGEKATEGORI.ENHET_ID                                   as FARGEKATEGORI_ENHET_ID,
+                               HUSKELAPP.FRIST                                          as HUSKELAPP_FRIST,
+                               HUSKELAPP.KOMMENTAR                                      as HUSKELAPP_KOMMENTAR,
+                               HUSKELAPP.ENDRET_DATO                                    as HUSKELAPP_ENDRET_DATO,
+                               HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
+                               HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
+                               HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
+                               YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
+                               YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
+                               YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
+                               YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
+                               YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
+                               YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
+                               YTELSER_DAGPENGER.RETTIGHETSTYPE                         as YTELSER_DAGPENGER_RETTIGHETSTYPE,
+                               YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER                as YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER,
+                               YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET         as YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET
+                        from OPPFOLGING_DATA
+                                 inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
+                                 left join NOM_SKJERMING                                on NOM_SKJERMING.FODSELSNR = AKTIVE_IDENTER.FNR
+                                 left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
+                                 left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join BRUKER_PROFILERING                           on BRUKER_PROFILERING.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join BRUKER_REGISTRERT_CV                         on BRUKER_REGISTRERT_CV.FNR = AKTIVE_IDENTER.FNR
+                                 left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join YTELSE_STATUS_FOR_BRUKER                     on YTELSE_STATUS_FOR_BRUKER.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
+                                 left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
+                                 left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
+                                 left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
+                        """;
+
+        return db.query(FeatureToggle.brukNyCvTabell(defaultUnleash) ? sqlMedNyCvTabell : sqlMedGammelCvTabell,
                 (ResultSet rs) -> {
                     while (rs.next()) {
                         PortefoljebrukerOpensearchModell brukerOpensearchModell = mapTilPortefoljebrukerOpensearchModell(rs);
