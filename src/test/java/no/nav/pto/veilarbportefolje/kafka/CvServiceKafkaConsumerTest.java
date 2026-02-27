@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.arbeid.cv.avro.Cv;
+import no.nav.arbeid.cv.avro.EndreCv;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
@@ -13,6 +15,7 @@ import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 import static java.util.Arrays.stream;
@@ -101,8 +104,15 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     private void populateCVEksistereKafkaTopic(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             Melding cvMelding = new Melding();
+            EndreCv endreCv = new EndreCv();
+            Cv cv = new Cv();
+
+            endreCv.setCv(cv);
+            cv.setSistEndret(Instant.ofEpochMilli(Instant.now().toEpochMilli()));
+
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
+            cvMelding.setEndreCv(endreCv);
 
             cvService.behandleKafkaMeldingLogikk(cvMelding);
         }

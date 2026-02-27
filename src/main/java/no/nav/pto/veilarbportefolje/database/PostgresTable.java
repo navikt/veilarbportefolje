@@ -315,7 +315,11 @@ public class PostgresTable {
 
         public static final String TABLE_NAME = "BRUKER_CV";
 
+        public static final String NY_TABLE_NAME = "BRUKER_REGISTRERT_CV";
+
         public static final String AKTOERID = "AKTOERID";
+
+        public static final String FNR = "FNR";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
     }
