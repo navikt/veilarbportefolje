@@ -33,8 +33,6 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         AktorId aktoerId = AktorId.of(String.valueOf(kafkaMelding.getAktoerId()));
         Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
         boolean cvEksisterer = cvEksistere(kafkaMelding);
-        log.info("FeatureToggle.brukNyCvTabell(defaultUnleash): {}", FeatureToggle.brukNyCvTabell(defaultUnleash));
-        log.info("cvEksisterer: {} for aktoerId :  {}", cvEksisterer, aktoerId);
 
         if (FeatureToggle.brukNyCvTabell(defaultUnleash)) {
             if (cvEksisterer) {
