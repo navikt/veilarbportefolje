@@ -49,6 +49,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerTestRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
@@ -186,7 +187,8 @@ import static org.mockito.Mockito.when;
         TiltakspengerRespository.class,
         TiltakspengerService.class,
         DagpengerRepository.class,
-        DagpengerService.class
+        DagpengerService.class,
+        OppfolgingsbrukerTestRepository.class
 })
 public class ApplicationConfigTest {
 

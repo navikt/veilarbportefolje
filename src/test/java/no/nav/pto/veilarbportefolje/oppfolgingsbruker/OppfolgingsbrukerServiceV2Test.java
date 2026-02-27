@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
@@ -28,14 +29,16 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
     private final JdbcTemplate db;
     private final OppfolgingsbrukerServiceV2 oppfolginsbrukerService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
+    private final OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository;
     private final Fnr fnr = randomFnr();
     private final AktorId aktorId = randomAktorId();
 
     @Autowired
-    public OppfolgingsbrukerServiceV2Test(JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3) {
+    public OppfolgingsbrukerServiceV2Test(JdbcTemplate db, OppfolgingsbrukerServiceV2 oppfolginsbrukerService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3, OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository) {
         this.db = db;
         this.oppfolginsbrukerService = oppfolginsbrukerService;
         this.oppfolgingsbrukerRepositoryV3 = oppfolgingsbrukerRepositoryV3;
+        this.oppfolgingsbrukerTestRepository = oppfolgingsbrukerTestRepository;
     }
 
     @BeforeEach
@@ -69,7 +72,8 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .sperretAnsatt(false).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), new NavKontor("007"));
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);
     }
@@ -84,7 +88,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .sperretAnsatt(false).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isEmpty());
     }
 
@@ -99,7 +103,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .diskresjonskode(null).harOppfolgingssak(false).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
     }
 
@@ -112,7 +116,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .diskresjonskode(null).harOppfolgingssak(false).sperretAnsatt(false).erDoed(false).doedFraDato(null).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isEmpty());
     }
 }

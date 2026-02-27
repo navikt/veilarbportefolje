@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -39,7 +40,7 @@ public class HuskelappServiceTest {
     public HuskelappServiceTest() {
         jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
         this.pdlIdentRepository = new PdlIdentRepository(jdbcTemplate);
-        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, null);
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate));
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(jdbcTemplate);
         BrukerServiceV2 brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2);
         huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate));

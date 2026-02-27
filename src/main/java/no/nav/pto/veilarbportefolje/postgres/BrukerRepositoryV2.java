@@ -65,7 +65,7 @@ public class BrukerRepositoryV2 {
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-                               OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR                    as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)                   as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                                OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
@@ -148,6 +148,7 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;
 
@@ -274,11 +275,12 @@ public class BrukerRepositoryV2 {
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                            NAV_KONTOR as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                            coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR) as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                             ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                             RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                             HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
+                        left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
                                 (select PERSON from BRUKER_IDENTER where IDENT = ?)

@@ -148,6 +148,15 @@ public class PostgresTable {
         public static final String ENDRET_DATO = "ENDRET_DATO";
     }
 
+    public static final class AO_KONTOR {
+
+        private AO_KONTOR() { /* no-op */ }
+
+        public static final String TABLE_NAME = "ao_kontor";
+        public static final String IDENT = "ident";
+        public static final String KONTOR_ID = "kontor_id";
+    }
+
     public static final class DIALOG {
 
         private DIALOG() { /* no-op */ }
