@@ -35,14 +35,18 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         boolean cvEksisterer = cvEksistere(kafkaMelding);
 
         if (FeatureToggle.brukNyCvTabell(defaultUnleash)) {
-            if (cvEksisterer) {
-                Optional<Instant> sistEndret = Optional.ofNullable(kafkaMelding.getEndreCv()).map(EndreCv::getCv).map(Cv::getSistEndret);
-                Timestamp cvSistEndret = sistEndret.map(Timestamp::from).orElse(null);
-                secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabell for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), true);
-                cvRepositoryV2.upsertCVEksistererINyTabell(fnr, cvSistEndret, true);
-            } else {
-                secureLog.info("Slett CV eksisterer fra BRUKER_REGISTRERT_CV for bruker med aktoerid: {}", aktoerId.get());
-                cvRepositoryV2.slettCvEksistererFraNyTabell(fnr);
+            if (fnr != null) {
+                if (cvEksisterer) {
+                    Optional<Instant> sistEndret = Optional.ofNullable(kafkaMelding.getEndreCv()).map(EndreCv::getCv).map(Cv::getSistEndret);
+                    Timestamp cvSistEndret = sistEndret.map(Timestamp::from).orElse(null);
+                    secureLog.info("Oppdater CV eksisterer i BRUKER_REGISTRERT_CV tabell for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), true);
+                    cvRepositoryV2.upsertCVEksistererINyTabell(fnr, cvSistEndret, true);
+                } else {
+                    secureLog.info("Slett CV eksisterer fra BRUKER_REGISTRERT_CV for bruker med aktoerid: {}", aktoerId.get());
+                    cvRepositoryV2.slettCvEksistererFraNyTabell(fnr);
+                }
+            }else {
+                 secureLog.error("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet", aktoerId);
             }
         }
         else {
