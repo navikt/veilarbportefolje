@@ -84,7 +84,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-1";
+    public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-2";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
