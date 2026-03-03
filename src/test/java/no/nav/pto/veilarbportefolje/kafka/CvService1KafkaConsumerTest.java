@@ -1,9 +1,12 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import no.nav.arbeid.cv.avro.Cv;
+import no.nav.arbeid.cv.avro.EndreCv;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVService1;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -13,15 +16,16 @@ import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 
-public class CvServiceKafkaConsumerTest extends EndToEndTest {
+public class CvService1KafkaConsumerTest extends EndToEndTest {
 
     @Autowired
-    private CVService cvService;
+    private CVService1 cvService1;
 
     @Autowired
     private JdbcTemplate postgres;
@@ -62,7 +66,7 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
         return stream(aktoerIds)
                 .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
-                .allMatch(CvServiceKafkaConsumerTest::cvEksistere);
+                .allMatch(CvService1KafkaConsumerTest::cvEksistere);
     }
 
     private void createCvDocumentsInOpensearch(AktorId... aktoerIds) {
@@ -101,10 +105,17 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
     private void populateCVEksistereKafkaTopic(AktorId... aktoerIds) {
         for (AktorId aktoerId : aktoerIds) {
             Melding cvMelding = new Melding();
+            EndreCv endreCv = new EndreCv();
+            Cv cv = new Cv();
+
+            endreCv.setCv(cv);
+            cv.setSistEndret(Instant.ofEpochMilli(Instant.now().toEpochMilli()));
+
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
+            cvMelding.setEndreCv(endreCv);
 
-            cvService.behandleKafkaMeldingLogikk(cvMelding);
+            cvService1.behandleKafkaMeldingLogikk(cvMelding);
         }
     }
 
@@ -114,7 +125,8 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.SLETT);
 
-            cvService.behandleKafkaMeldingLogikk(cvMelding);
+            cvService1.behandleKafkaMeldingLogikk(cvMelding);
         }
     }
 }
+

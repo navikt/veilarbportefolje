@@ -26,6 +26,7 @@ import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
 import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVService1;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
@@ -134,6 +135,7 @@ import static org.mockito.Mockito.when;
         DialogRepositoryV2.class,
         CVRepositoryV2.class,
         CVService.class,
+        CVService1.class,
         ArbeidssokerRegistreringRepositoryV2.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
