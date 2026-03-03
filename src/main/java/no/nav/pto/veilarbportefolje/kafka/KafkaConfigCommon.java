@@ -84,7 +84,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
-    public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-2";
+    public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
@@ -155,7 +155,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService,
+    public KafkaConfigCommon(CVService cvService, CVService1 cvService1,
                              SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -298,6 +298,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
                                         utkast14aStatusendringService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.CV_ENDRET_V2.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
+                                        cvService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()
@@ -482,7 +492,7 @@ public class KafkaConfigCommon {
                                 Topic.CV_ENDRET_V2.topicName,
                                 Deserializers.stringDeserializer(),
                                 new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                cvService::behandleKafkaRecord
+                                cvService1::behandleKafkaRecord
                         );
 
         consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
