@@ -22,7 +22,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class CVService1 extends KafkaCommonNonKeyedConsumerService<Melding> {
+public class CVServiceV2 extends KafkaCommonNonKeyedConsumerService<Melding> {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final CVRepositoryV2 cvRepositoryV2;
     private final PdlIdentRepository pdlIdentRepository;
@@ -47,7 +47,7 @@ public class CVService1 extends KafkaCommonNonKeyedConsumerService<Melding> {
             secureLog.error("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet", aktoerId);
         }
 
-        opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
+        //opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
     }
 
     private boolean cvEksistere(Melding melding) {

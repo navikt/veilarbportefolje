@@ -5,8 +5,7 @@ import no.nav.arbeid.cv.avro.EndreCv;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.CVService1;
+import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -22,10 +21,10 @@ import java.time.ZonedDateTime;
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 
-public class CvService1KafkaConsumerTest extends EndToEndTest {
+public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
 
     @Autowired
-    private CVService1 cvService1;
+    private CVServiceV2 cvServiceV2;
 
     @Autowired
     private JdbcTemplate postgres;
@@ -66,7 +65,7 @@ public class CvService1KafkaConsumerTest extends EndToEndTest {
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
         return stream(aktoerIds)
                 .map(aktoerId -> opensearchTestClient.fetchDocument(aktoerId))
-                .allMatch(CvService1KafkaConsumerTest::cvEksistere);
+                .allMatch(CvServiceV2KafkaConsumerTest::cvEksistere);
     }
 
     private void createCvDocumentsInOpensearch(AktorId... aktoerIds) {
@@ -115,7 +114,7 @@ public class CvService1KafkaConsumerTest extends EndToEndTest {
             cvMelding.setMeldingstype(Meldingstype.ENDRE);
             cvMelding.setEndreCv(endreCv);
 
-            cvService1.behandleKafkaMeldingLogikk(cvMelding);
+            cvServiceV2.behandleKafkaMeldingLogikk(cvMelding);
         }
     }
 
@@ -125,7 +124,7 @@ public class CvService1KafkaConsumerTest extends EndToEndTest {
             cvMelding.setAktoerId(aktoerId.toString());
             cvMelding.setMeldingstype(Meldingstype.SLETT);
 
-            cvService1.behandleKafkaMeldingLogikk(cvMelding);
+            cvServiceV2.behandleKafkaMeldingLogikk(cvMelding);
         }
     }
 }

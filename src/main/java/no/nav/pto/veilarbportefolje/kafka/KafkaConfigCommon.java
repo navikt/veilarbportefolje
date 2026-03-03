@@ -32,7 +32,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
-import no.nav.pto.veilarbportefolje.cv.CVService1;
+import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -156,7 +156,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService, CVService1 cvService1,
+    public KafkaConfigCommon(CVService cvService, CVServiceV2 cvServiceV2,
                              SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -493,7 +493,7 @@ public class KafkaConfigCommon {
                                 Topic.CV_ENDRET_V2.topicName,
                                 Deserializers.stringDeserializer(),
                                 new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                cvService1::behandleKafkaRecord
+                                cvServiceV2::behandleKafkaRecord
                         );
 
         consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
