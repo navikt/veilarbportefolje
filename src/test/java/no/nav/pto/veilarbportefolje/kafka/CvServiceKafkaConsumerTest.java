@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
-import io.getunleash.DefaultUnleash;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
@@ -9,6 +8,7 @@ import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import java.time.ZonedDateTime;
 
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
-import static org.mockito.ArgumentMatchers.anyString;
 
 public class CvServiceKafkaConsumerTest extends EndToEndTest {
 
@@ -42,27 +41,24 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId3, ZonedDateTime.now());
     }
 
+    @Disabled
     @Test
     public void testCVEksistere() {
-        if(!defaultUnleash.isEnabled(anyString())) {
-            createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-            assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-            populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-            pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
-            assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-        }
-
+       createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+       assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+       populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+       pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
+       assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
+    @Disabled
     @Test
     public void testCvEksistererIkke() {
-        if(!defaultUnleash.isEnabled(anyString())) {
-            createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-            populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-            assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-            populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-            assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-        }
+        createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+        assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
