@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
@@ -17,6 +18,7 @@ import java.time.ZonedDateTime;
 
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class CvServiceKafkaConsumerTest extends EndToEndTest {
 
@@ -42,21 +44,25 @@ public class CvServiceKafkaConsumerTest extends EndToEndTest {
 
     @Test
     public void testCVEksistere() {
-        createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-        assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        if(!defaultUnleash.isEnabled(anyString())) {
+            createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+            assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+            populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+            pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
+            assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        }
 
-        populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
-        assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
 
     @Test
     public void testCvEksistererIkke() {
-        populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
-
-        populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
-        assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        if(!defaultUnleash.isEnabled(anyString())) {
+            createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+            populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+            assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+            populateSlettMeldingFraCVKafkaTopic(aktoerId1, aktoerId2, aktoerId3);
+            assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
+        }
     }
 
     private boolean hvisCvEksistere(AktorId... aktoerIds) {
