@@ -32,6 +32,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.cv.CVService;
+import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -78,12 +79,13 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
+    public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
@@ -152,9 +154,10 @@ public class KafkaConfigCommon {
 
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService,
+    public KafkaConfigCommon(CVService cvService, CVServiceV2 cvServiceV2,
                              SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -482,9 +485,28 @@ public class KafkaConfigCommon {
                 .withToggle(() -> defaultUnleash.isEnabled(KAFKA_SISTE_14A_STOP) || kafkaAivenUnleash.get())
                 .build();
 
+        KafkaConsumerClientBuilder.TopicConfig<String, Melding> cvTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.CV_ENDRET_V2.topicName,
+                                Deserializers.stringDeserializer(),
+                                new AivenAvroDeserializer<Melding>().getDeserializer(),
+                                cvServiceV2::behandleKafkaRecord
+                        );
+
+        consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CV_CLIENT_ID_CONFIG))
+                .withTopicConfig(cvTopicConfig)
+                .withToggle(() -> defaultUnleash.isEnabled(STOPP_LESE_CV_TOPIC) || kafkaAivenUnleash.get())
+                .build();
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
         allTopicConfigs.add(siste14aTopicConfig);
+        allTopicConfigs.add(cvTopicConfig);
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -501,6 +523,7 @@ public class KafkaConfigCommon {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
+        consumerClientAivenCv.start();
     }
 
 

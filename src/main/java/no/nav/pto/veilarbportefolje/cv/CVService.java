@@ -1,14 +1,15 @@
 package no.nav.pto.veilarbportefolje.cv;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import org.springframework.stereotype.Service;
-
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final CVRepositoryV2 cvRepositoryV2;
+    private final DefaultUnleash defaultUnleash;
 
     @Override
     public void behandleKafkaMeldingLogikk(Melding kafkaMelding) {
@@ -24,13 +26,16 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
         boolean cvEksisterer = cvEksistere(kafkaMelding);
 
         if (cvEksisterer) {
-            secureLog.info("Oppdater CV eksisterer for bruker: {}", aktoerId.get());
+            secureLog.info("Oppdater CV eksisterer for bruker med aktoerid: {}, eksisterer: {}", aktoerId.get(), true);
             cvRepositoryV2.upsertCVEksisterer(aktoerId, true);
         } else {
-            secureLog.info("Slett CV eksisterer for bruker: {}", aktoerId.get());
+            secureLog.info("Slett CV eksisterer for bruker med aktoerid: {}", aktoerId.get());
             cvRepositoryV2.slettCvEksisterer(aktoerId);
         }
+
+        if (!FeatureToggle.brukNyCvTabell(defaultUnleash)) {
             opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
+        }
     }
 
     private boolean cvEksistere(Melding melding) {
