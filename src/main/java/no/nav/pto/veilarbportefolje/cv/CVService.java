@@ -35,6 +35,7 @@ public class CVService extends KafkaCommonNonKeyedConsumerService<Melding> {
 
         if (!FeatureToggle.brukNyCvTabell(defaultUnleash)) {
             opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, cvEksisterer);
+            secureLog.error("CVService: Brukeren med aktoerid {} er indeksert", aktoerId);
         }
     }
 
