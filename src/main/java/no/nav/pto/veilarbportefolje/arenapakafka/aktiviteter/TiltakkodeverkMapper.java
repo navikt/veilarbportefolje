@@ -13,7 +13,12 @@ public class TiltakkodeverkMapper {
     public static final Map<String, String> tiltakskodeTiltaksnavnMap = new HashMap<>(
             Map.ofEntries(
                     entry("MIDLONTIL", "Midlertidig lønnstilskudd"),
-                    entry("VARLONTIL", "Varig lønnstilskudd")
+                    entry("VARLONTIL", "Varig lønnstilskudd"),
+                    entry("ARBEIDSMARKEDSOPPLAERING", "Arbeidsmarkedsopplæring"),
+                    entry("NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV", "Norskopplæring, grunnleggende ferdigheter og FOV"),
+                    entry("STUDIESPESIALISERING", "'Studiespesialisering'"),
+                    entry("FAG_OG_YRKESOPPLAERING", "Fag- og yrkesopplæring"),
+                    entry("HOYERE_YRKESFAGLIG_UTDANNING", "Høyere yrkesfaglig utdanning")
             )
     );
 
