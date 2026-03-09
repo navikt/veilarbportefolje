@@ -31,7 +31,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
@@ -156,7 +155,7 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService, CVServiceV2 cvServiceV2,
+    public KafkaConfigCommon(CVServiceV2 cvServiceV2,
                              SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -299,16 +298,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
                                         utkast14aStatusendringService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_ENDRET_V2.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                        cvService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()

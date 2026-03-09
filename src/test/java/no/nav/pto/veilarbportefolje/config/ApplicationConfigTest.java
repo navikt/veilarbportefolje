@@ -15,8 +15,18 @@ import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerDataRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.SisteArbeidssoekerPeriodeRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
@@ -25,7 +35,6 @@ import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
-import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository;
@@ -44,9 +53,23 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
-import no.nav.pto.veilarbportefolje.opensearch.*;
+import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchFilterQueryBuilder;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchSortQueryBuilder;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
-import no.nav.pto.veilarbportefolje.oppfolging.*;
+import no.nav.pto.veilarbportefolje.oppfolging.ManuellStatusService;
+import no.nav.pto.veilarbportefolje.oppfolging.NyForVeilederService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingAvsluttetService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingStartetService;
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
@@ -106,7 +129,9 @@ import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchUtils.createClient;
-import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -134,7 +159,6 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepositoryV2.class,
         CVRepositoryV2.class,
-        CVService.class,
         CVServiceV2.class,
         ArbeidssokerRegistreringRepositoryV2.class,
         NyForVeilederService.class,
