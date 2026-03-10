@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
@@ -44,10 +46,18 @@ public class BrukerRepositoryV2 {
     @Qualifier("PostgresJdbcReadOnly")
     private final JdbcTemplate db;
     private final KodeverkService kodeverkService;
+    private final DefaultUnleash defaultUnleash;
 
     public List<PortefoljebrukerOpensearchModell> hentPortefoljeBrukereTilOpensearchModell(List<AktorId> aktorIds) {
         List<PortefoljebrukerOpensearchModell> result = new ArrayList<>();
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
+        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
+        String kontorKolonne = brukAoKontor
+                ? "coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)"
+                : "OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR";
+        String aoKontorJoin = brukAoKontor
+                ? "left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR"
+                : "";
 
         String sql = """
                         SELECT
@@ -62,7 +72,8 @@ public class BrukerRepositoryV2 {
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)                   as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+""" + kontorKolonne + """
+                                                                                        as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                                OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
@@ -145,7 +156,7 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
-                                 left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
+""" + aoKontorJoin + """
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;
 
@@ -167,18 +178,27 @@ coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)           
 
     private void leggTilHistoriskArenaDataHvisTilgjengelig(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         long startTime = System.currentTimeMillis();
+        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
+        String kontorKolonne = brukAoKontor
+                ? "coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)"
+                : "OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR";
+        String aoKontorJoin = brukAoKontor
+                ? "left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR"
+                : "";
         PortefoljebrukerOpensearchModell brukerMedHistoriskData = queryForObjectOrNull(() ->
                 db.queryForObject("""
                         select
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                            coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR) as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                        """ + kontorKolonne + """
+                         as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                             ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                             RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                             HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
-                        left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
+                        """ + aoKontorJoin + """
+                        
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
                                 (select PERSON from BRUKER_IDENTER where IDENT = ?)

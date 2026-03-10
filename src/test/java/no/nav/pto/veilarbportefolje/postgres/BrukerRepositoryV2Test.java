@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPersonRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
+import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,9 @@ import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BrukerRepositoryV2Test {
     private BrukerRepositoryV2 brukerRepositoryV2;
@@ -41,11 +44,13 @@ public class BrukerRepositoryV2Test {
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         final KodeverkService kodeverkService = mock(KodeverkService.class);
-        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService);
+        final DefaultUnleash mockUnleash = mock(DefaultUnleash.class);
+        when(mockUnleash.isEnabled(anyString())).thenReturn(true);
+        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService, mockUnleash);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         this.pdlPersonRepository = new PdlPersonRepository(db, db);
-        this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, new NamedParameterJdbcTemplate(db));
+        this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, new NamedParameterJdbcTemplate(db), mockUnleash);
     }
 
     @Test

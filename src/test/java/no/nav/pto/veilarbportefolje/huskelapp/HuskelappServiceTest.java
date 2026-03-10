@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -40,7 +41,7 @@ public class HuskelappServiceTest {
     public HuskelappServiceTest() {
         jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
         this.pdlIdentRepository = new PdlIdentRepository(jdbcTemplate);
-        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate));
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate), Mockito.mock(DefaultUnleash.class));
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(jdbcTemplate);
         BrukerServiceV2 brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2);
         huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate));

@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +35,7 @@ public class OppfolgingsbrukerRepositoryV3 {
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;
+    private final DefaultUnleash defaultUnleash;
 
     @Transactional
     public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker, NavKontor navKontor) {
@@ -126,12 +129,14 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
-        val sql = """
-                select coalesce(ao.kontor_id, ob.nav_kontor) as kontor_id
-                from oppfolgingsbruker_arena_v2 ob
-                left join ao_kontor ao on ob.fodselsnr = ao.ident
-                where ob.fodselsnr = :ident
-                """;
+        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
+        String kontorKolonne = brukAoKontor
+                ? "coalesce(ao.kontor_id, ob.nav_kontor)"
+                : "ob.nav_kontor";
+        val sql = "select " + kontorKolonne + " as kontor_id"
+                + " from oppfolgingsbruker_arena_v2 ob"
+                + (brukAoKontor ? " left join ao_kontor ao on ob.fodselsnr = ao.ident" : "")
+                + " where ob.fodselsnr = :ident";
         val params = new MapSqlParameterSource()
                 .addValue("ident", fnr.get());
         return Optional.ofNullable(
