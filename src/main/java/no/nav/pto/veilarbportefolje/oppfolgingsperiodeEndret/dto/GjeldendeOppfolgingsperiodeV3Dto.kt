@@ -3,14 +3,14 @@ package no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class AvsluttetOppfolgingsperiodeV2Dto(
+class GjeldendeOppfolgingsperiodeV3Dto(
     oppfolgingsperiodeUuid: UUID,
     sisteEndringsType: SisteEndringsType,
     aktorId: String,
     ident: String,
     startTidspunkt: ZonedDateTime,
-    sluttTidspunkt: ZonedDateTime,
+    kontor: KontorDto,
     producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
-) : SisteOppfolgingsperiodeV2Dto(
-    oppfolgingsperiodeUuid, sisteEndringsType, aktorId, ident, startTidspunkt, sluttTidspunkt, null, producerTimestamp,
+) : SisteOppfolgingsperiodeV3Dto(
+    oppfolgingsperiodeUuid, sisteEndringsType, aktorId, ident, startTidspunkt, null, kontor, producerTimestamp,
 )

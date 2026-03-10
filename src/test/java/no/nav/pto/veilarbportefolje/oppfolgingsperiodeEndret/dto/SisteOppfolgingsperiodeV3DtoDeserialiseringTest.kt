@@ -5,14 +5,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
+class SisteOppfolgingsperiodeV3DtoDeserialiseringTest {
 
-    private fun deserialize(json: String): SisteOppfolgingsperiodeV2Dto {
-        return objectMapper.readValue(json, SisteOppfolgingsperiodeV2Dto::class.java)
+    private fun deserialize(json: String): SisteOppfolgingsperiodeV3Dto {
+        return objectMapper.readValue(json, SisteOppfolgingsperiodeV3Dto::class.java)
     }
 
     @Test
-    fun `deserialiserer OPPFOLGING_STARTET til GjeldendeOppfolgingsperiodeV2Dto`() {
+    fun `deserialiserer OPPFOLGING_STARTET til GjeldendeOppfolgingsperiodeV3Dto`() {
         val json = """
         {
             "oppfolgingsperiodeUuid": "11111111-1111-1111-1111-111111111111",
@@ -28,8 +28,8 @@ class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
 
         val result = deserialize(json)
 
-        assertThat(result).isInstanceOf(GjeldendeOppfolgingsperiodeV2Dto::class.java)
-        val gjeldende = result as GjeldendeOppfolgingsperiodeV2Dto
+        assertThat(result).isInstanceOf(GjeldendeOppfolgingsperiodeV3Dto::class.java)
+        val gjeldende = result as GjeldendeOppfolgingsperiodeV3Dto
         assertThat(gjeldende.aktorId).isEqualTo("123456789")
         assertThat(gjeldende.ident).isEqualTo("01010112345")
         assertThat(gjeldende.kontor!!.kontorId).isEqualTo("1234")
@@ -38,7 +38,7 @@ class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
     }
 
     @Test
-    fun `deserialiserer ARBEIDSOPPFOLGINGSKONTOR_ENDRET til GjeldendeOppfolgingsperiodeV2Dto`() {
+    fun `deserialiserer ARBEIDSOPPFOLGINGSKONTOR_ENDRET til GjeldendeOppfolgingsperiodeV3Dto`() {
         val json = """
         {
             "oppfolgingsperiodeUuid": "11111111-1111-1111-1111-111111111111",
@@ -54,14 +54,14 @@ class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
 
         val result = deserialize(json)
 
-        assertThat(result).isInstanceOf(GjeldendeOppfolgingsperiodeV2Dto::class.java)
-        val gjeldende = result as GjeldendeOppfolgingsperiodeV2Dto
+        assertThat(result).isInstanceOf(GjeldendeOppfolgingsperiodeV3Dto::class.java)
+        val gjeldende = result as GjeldendeOppfolgingsperiodeV3Dto
         assertThat(gjeldende.sisteEndringsType).isEqualTo(SisteEndringsType.ARBEIDSOPPFOLGINGSKONTOR_ENDRET)
         assertThat(gjeldende.kontor!!.kontorId).isEqualTo("5678")
     }
 
     @Test
-    fun `deserialiserer OPPFOLGING_AVSLUTTET til AvsluttetOppfolgingsperiodeV2`() {
+    fun `deserialiserer OPPFOLGING_AVSLUTTET til AvsluttetOppfolgingsperiodeV3`() {
         val json = """
         {
             "oppfolgingsperiodeUuid": "22222222-2222-2222-2222-222222222222",
@@ -77,8 +77,8 @@ class SisteOppfolgingsperiodeV2DtoDeserialiseringTest {
 
         val result = deserialize(json)
 
-        assertThat(result).isInstanceOf(AvsluttetOppfolgingsperiodeV2Dto::class.java)
-        val avsluttet = result as AvsluttetOppfolgingsperiodeV2Dto
+        assertThat(result).isInstanceOf(AvsluttetOppfolgingsperiodeV3Dto::class.java)
+        val avsluttet = result as AvsluttetOppfolgingsperiodeV3Dto
         assertThat(avsluttet.aktorId).isEqualTo("987654321")
         assertThat(avsluttet.sluttTidspunkt).isNotNull()
         assertThat(avsluttet.kontor).isNull()

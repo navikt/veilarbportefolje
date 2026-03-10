@@ -52,7 +52,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV2Dto;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV3Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
@@ -340,14 +340,14 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<Long, SisteOppfolgingsperiodeV2Dto>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, SisteOppfolgingsperiodeV3Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.SISTE_OPPFOLGINGS_PERIODE_V3.topicName,
                                         Deserializers.longDeserializer(),
-                                        new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV2Dto.class),
+                                        new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV3Dto.class),
                                         oppfolgingPeriodeService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()

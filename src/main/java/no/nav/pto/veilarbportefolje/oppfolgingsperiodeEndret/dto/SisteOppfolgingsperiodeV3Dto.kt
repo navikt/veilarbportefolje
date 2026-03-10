@@ -12,11 +12,11 @@ data class KontorDto(
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "sisteEndringsType", visible = true)
 @JsonSubTypes(
-    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "OPPFOLGING_STARTET"),
-    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV2Dto::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
-    JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV2Dto::class, name = "OPPFOLGING_AVSLUTTET")
+    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV3Dto::class, name = "OPPFOLGING_STARTET"),
+    JsonSubTypes.Type(value = GjeldendeOppfolgingsperiodeV3Dto::class, name = "ARBEIDSOPPFOLGINGSKONTOR_ENDRET"),
+    JsonSubTypes.Type(value = AvsluttetOppfolgingsperiodeV3Dto::class, name = "OPPFOLGING_AVSLUTTET")
 )
-abstract class SisteOppfolgingsperiodeV2Dto(
+abstract class SisteOppfolgingsperiodeV3Dto(
     val oppfolgingsperiodeUuid: UUID,
     val sisteEndringsType: SisteEndringsType,
     val aktorId: String,
