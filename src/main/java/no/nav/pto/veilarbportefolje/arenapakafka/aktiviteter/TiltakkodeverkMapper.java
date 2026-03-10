@@ -18,7 +18,8 @@ public class TiltakkodeverkMapper {
                     entry("NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV", "Norskopplæring, grunnleggende ferdigheter og FOV"),
                     entry("STUDIESPESIALISERING", "'Studiespesialisering'"),
                     entry("FAG_OG_YRKESOPPLAERING", "Fag- og yrkesopplæring"),
-                    entry("HOYERE_YRKESFAGLIG_UTDANNING", "Høyere yrkesfaglig utdanning")
+                    entry("HOYERE_YRKESFAGLIG_UTDANNING", "Høyere yrkesfaglig utdanning"),
+                    entry("FIREARIG_LONNSTILSKUDD", "Fireårig lønnstilskudd for unge")
             )
     );
 
