@@ -488,7 +488,7 @@ public class KafkaConfigCommon {
         consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CV_CLIENT_ID_CONFIG))
                 .withTopicConfig(cvTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(STOPP_LESE_CV_TOPIC) || kafkaAivenUnleash.get())
+                .withToggle(kafkaAivenUnleash)
                 .build();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
