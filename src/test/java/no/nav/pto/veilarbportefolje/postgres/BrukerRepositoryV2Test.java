@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
-import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -26,9 +25,7 @@ import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class BrukerRepositoryV2Test {
     private BrukerRepositoryV2 brukerRepositoryV2;
@@ -41,10 +38,8 @@ public class BrukerRepositoryV2Test {
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        final DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
         final KodeverkService kodeverkService = mock(KodeverkService.class);
-        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
-        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService, defaultUnleash);
+        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         this.pdlPersonRepository = new PdlPersonRepository(db, db);
