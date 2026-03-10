@@ -108,7 +108,7 @@ public class KafkaConfigCommon {
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
 //        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
-        SISTE_OPPFOLGINGS_PERIODE_V2("poao.siste-oppfolgingsperiode-v2"),
+        SISTE_OPPFOLGINGS_PERIODE_V3("poao.siste-oppfolgingsperiode-v3"),
 
         // Arbeidssøkerregisteret
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
@@ -340,15 +340,15 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV2Dto>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, SisteOppfolgingsperiodeV2Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V2.topicName,
-                                        Deserializers.stringDeserializer(),
+                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V3.topicName,
+                                        Deserializers.longDeserializer(),
                                         new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV2Dto.class),
-                                        oppfolgingPeriodeService::behandleKafkaRecord
+                                        oppfolgingPeriodeService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
