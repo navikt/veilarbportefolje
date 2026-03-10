@@ -109,15 +109,6 @@ class OpensearchIndexerPaDatafelt(
         update(aktoerId, content, "Sletter huskelapp")
     }
 
-    fun slettCV(aktoerId: AktorId) {
-        val content = XContentFactory.jsonBuilder()
-            .startObject()
-            .nullField(DatafeltKeys.CV.CV_EKSISTERE)
-            .endObject()
-
-        update(aktoerId, content, "Sletter CV eksisterer")
-    }
-
     fun updateFargekategori(aktoerId: AktorId, fargekategori: String?, enhetId: String?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()

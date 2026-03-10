@@ -115,11 +115,9 @@ public class PostgresTable {
         public static final String YTELSER_DAGPENGER_RETTIGHETSTYPE = "YTELSER_DAGPENGER_RETTIGHETSTYPE";
         public static final String YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = "YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET";
         public static final String YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER = "YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER";
-
     }
 
     public static final class OPPFOLGING_DATA {
-
         private OPPFOLGING_DATA() { /* no-op */ }
 
         public static final String TABLE_NAME = "OPPFOLGING_DATA";
@@ -134,7 +132,6 @@ public class PostgresTable {
     }
 
     public static final class OPPFOLGINGSBRUKER_ARENA_V2 {
-
         private OPPFOLGINGSBRUKER_ARENA_V2() { /* no-op */ }
 
         public static final String TABLE_NAME = "OPPFOLGINGSBRUKER_ARENA_V2";
@@ -158,7 +155,6 @@ public class PostgresTable {
     }
 
     public static final class DIALOG {
-
         private DIALOG() { /* no-op */ }
 
         public static final String TABLE_NAME = "DIALOG";
@@ -169,7 +165,6 @@ public class PostgresTable {
     }
 
     public static final class FARGEKATEGORI {
-
         private FARGEKATEGORI() { /* no-op */ }
 
         public static final String ID = "ID";
@@ -181,7 +176,6 @@ public class PostgresTable {
     }
 
     public static final class HUSKELAPP {
-
         private HUSKELAPP() { /* no-op */ }
 
         public static final String TABLE_NAME = "HUSKELAPP";
@@ -197,7 +191,6 @@ public class PostgresTable {
     }
 
     public static final class UTKAST_14A_STATUS {
-
         private UTKAST_14A_STATUS() { /* no-op */ }
 
         public static final String TABLE_NAME = "UTKAST_14A_STATUS";
@@ -213,7 +206,6 @@ public class PostgresTable {
     }
 
     public static final class LEST_ARENA_HENDELSE_AKTIVITETER {
-
         private LEST_ARENA_HENDELSE_AKTIVITETER() { /* no-op */ }
 
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_AKTIVITET";
@@ -222,7 +214,6 @@ public class PostgresTable {
     }
 
     public static final class YTELSESVEDTAK {
-
         private YTELSESVEDTAK() { /* no-op */ }
 
         public static final String TABLE_NAME = "YTELSESVEDTAK";
@@ -244,7 +235,6 @@ public class PostgresTable {
     }
 
     public static final class LEST_ARENA_HENDELSE_YTELSER {
-
         private LEST_ARENA_HENDELSE_YTELSER() { /* no-op */ }
 
         public static final String TABLE_NAME = "LEST_ARENA_HENDELSE_YTELSE";
@@ -253,7 +243,6 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_PROFILERING {
-
         private BRUKER_PROFILERING() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKER_PROFILERING";
@@ -264,7 +253,6 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_REGISTRERING {
-
         private BRUKER_REGISTRERING() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKER_REGISTRERING";
@@ -287,7 +275,6 @@ public class PostgresTable {
         public static final String UTDANNING_NUS_KODE = "UTDANNING_NUS_KODE";
         public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-
     }
 
     public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON {
@@ -296,7 +283,6 @@ public class PostgresTable {
         public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON";
         public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
         public static final String JOBBSITUASJON = "JOBBSITUASJON";
-
     }
 
     public static final class SISTE_ARBEIDSSOEKER_PERIODE {
@@ -305,7 +291,6 @@ public class PostgresTable {
         public static final String TABLE_NAME = "SISTE_ARBEIDSSOEKER_PERIODE";
         public static final String ARBEIDSSOKER_PERIODE_ID = "ARBEIDSSOKER_PERIODE_ID";
         public static final String FNR = "FNR";
-
     }
 
     public static final class PROFILERING {
@@ -315,26 +300,31 @@ public class PostgresTable {
         public static final String PERIODE_ID = "PERIODE_ID";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
-
     }
 
     public static final class BRUKER_CV {
-
         private BRUKER_CV() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKER_CV";
 
-        public static final String NY_TABLE_NAME = "BRUKER_REGISTRERT_CV";
-
         public static final String AKTOERID = "AKTOERID";
-
-        public static final String FNR = "FNR";
         public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
         public static final String CV_EKSISTERER = "CV_EKSISTERER";
+        public static final String HAR_DELT_CV = "HAR_DELT_CV";
+    }
+
+    public static final class BRUKER_REGISTRERT_CV {
+        private BRUKER_REGISTRERT_CV() { /* no-op */ }
+
+        public static final String TABLE_NAME = "BRUKER_REGISTRERT_CV";
+
+        public static final String FNR = "FNR";
+        public static final String CV_EKSISTERER = "CV_EKSISTERER";
+        public static final String CV_SIST_ENDRET = "CV_SIST_ENDRET";
+        public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
     }
 
     public static final class GRUPPE_AKTIVITER {
-
         private GRUPPE_AKTIVITER() { /* no-op */ }
 
         public static final String TABLE_NAME = "GRUPPE_AKTIVITER";
@@ -349,7 +339,6 @@ public class PostgresTable {
     }
 
     public static final class AKTIVITETER {
-
         private AKTIVITETER() { /* no-op */ }
 
         public static final String TABLE_NAME = "AKTIVITETER";
@@ -364,7 +353,6 @@ public class PostgresTable {
     }
 
     public static final class BRUKERTILTAK {
-
         private BRUKERTILTAK() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKERTILTAK";
@@ -377,7 +365,6 @@ public class PostgresTable {
     }
 
     public static final class BRUKERTILTAK_V2 {
-
         private BRUKERTILTAK_V2() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKERTILTAK_V2";
@@ -390,7 +377,6 @@ public class PostgresTable {
     }
 
     public static final class TILTAKKODEVERK {
-
         private TILTAKKODEVERK() { /* no-op */ }
 
         public static final String TABLE_NAME = "TILTAKKODEVERKET";
@@ -399,7 +385,6 @@ public class PostgresTable {
     }
 
     public static final class NOM_SKJERMING {
-
         private NOM_SKJERMING() { /* no-op */ }
 
         public static final String TABLE_NAME = "NOM_SKJERMING";
@@ -410,7 +395,6 @@ public class PostgresTable {
     }
 
     public static final class SISTE_ENDRING {
-
         private SISTE_ENDRING() { /* no-op */ }
 
         public static final String TABLE_NAME = "SISTE_ENDRING";
@@ -423,7 +407,6 @@ public class PostgresTable {
     }
 
     public static final class BRUKER_STATSBORGERSKAP {
-
         private BRUKER_STATSBORGERSKAP() { /* no-op */ }
 
         public static final String TABLE_NAME = "BRUKER_STATSBORGERSKAP";
