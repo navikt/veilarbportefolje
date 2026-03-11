@@ -14,6 +14,8 @@ public class TiltakkodeverkMapper {
             Map.ofEntries(
                     entry("MIDLONTIL", "Midlertidig lønnstilskudd"),
                     entry("VARLONTIL", "Varig lønnstilskudd"),
+                    entry("GRUPPEAMO", "Gruppe AMO"),
+                    entry("GRUFAGYRKE", "Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning"),
                     entry("ARBEIDSMARKEDSOPPLAERING", "Arbeidsmarkedsopplæring"),
                     entry("NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV", "Norskopplæring, grunnleggende ferdigheter og FOV"),
                     entry("STUDIESPESIALISERING", "'Studiespesialisering'"),
