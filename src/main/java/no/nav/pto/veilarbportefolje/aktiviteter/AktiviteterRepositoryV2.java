@@ -127,25 +127,20 @@ public class AktiviteterRepositoryV2 {
     public List<Moteplan> hentFremtidigeMoter(VeilederId veilederIdent, EnhetId enhet) {
         List<Moteplan> result = new ArrayList<>();
         boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
-        String aoKontorJoin = brukAoKontor
-                ? " left join ao_kontor on ao_kontor.ident = op.fodselsnr"
-                : "";
-        String kontorFilter = brukAoKontor
-                ? "coalesce(ao_kontor.kontor_id, op.nav_kontor) = :enhet::varchar"
-                : "op.nav_kontor = :enhet::varchar";
 
         var params = new MapSqlParameterSource();
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
+        params.addValue("brukAoKontor", brukAoKontor);
         String sql = "SELECT op.fodselsnr, a.fradato, a.tildato, a.avtalt, bd.fornavn, bd.etternavn"
                 + " from oppfolgingsbruker_arena_v2 op"
                 + " left join bruker_data bd on bd.freg_ident = op.fodselsnr"
                 + " inner join aktive_identer ai on op.fodselsnr = ai.fnr"
                 + " inner join oppfolging_data od on od.aktoerid = ai.aktorid"
                 + " inner join aktiviteter a on a.aktoerid = ai.aktorid"
-                + aoKontorJoin
-                + " where " + kontorFilter
+                + " left join ao_kontor on ao_kontor.ident = op.fodselsnr"
+                + " where coalesce(CASE WHEN :brukAoKontor::boolean THEN ao_kontor.kontor_id ELSE NULL END, op.nav_kontor) = :enhet::varchar"
                 + " AND od.veilederid = :veilederIdent::varchar"
                 + " AND a.aktivitettype = 'mote'"
                 + " AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)"

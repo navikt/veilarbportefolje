@@ -138,15 +138,13 @@ public class OppfolgingsbrukerRepositoryV3 {
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
         boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
-        String kontorKolonne = brukAoKontor
-                ? "coalesce(ao.kontor_id, ob.nav_kontor)"
-                : "ob.nav_kontor";
-        val sql = "select " + kontorKolonne + " as kontor_id"
+        val sql = "select coalesce(CASE WHEN :brukAoKontor::boolean THEN ao.kontor_id ELSE NULL END, ob.nav_kontor) as kontor_id"
                 + " from oppfolgingsbruker_arena_v2 ob"
-                + (brukAoKontor ? " left join ao_kontor ao on ob.fodselsnr = ao.ident" : "")
+                + " left join ao_kontor ao on ob.fodselsnr = ao.ident"
                 + " where ob.fodselsnr = :ident";
         val params = new MapSqlParameterSource()
-                .addValue("ident", fnr.get());
+                .addValue("ident", fnr.get())
+                .addValue("brukAoKontor", brukAoKontor);
         return Optional.ofNullable(
                 queryForObjectOrNull(
                         () -> dbNamed.queryForObject(sql, params, (rs, i) ->

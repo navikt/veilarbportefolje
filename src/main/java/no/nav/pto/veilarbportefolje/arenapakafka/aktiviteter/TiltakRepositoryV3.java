@@ -97,12 +97,6 @@ public class TiltakRepositoryV3 {
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
-        String aoKontorJoin = brukAoKontor
-                ? "LEFT JOIN ao_kontor ON ao_kontor.ident = ai.fnr"
-                : "";
-        String kontorFilter = brukAoKontor
-                ? "coalesce(ao_kontor.kontor_id, OP.nav_kontor) = ?"
-                : "OP.nav_kontor = ?";
         final String hentTiltakPaEnhetSql = """
                 SELECT *
                 FROM tiltakkodeverket WHERE
@@ -115,12 +109,12 @@ public class TiltakRepositoryV3 {
                     ) BT
                     INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
                     INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
-                """
-                + aoKontorJoin
-                + " WHERE " + kontorFilter
-                + "\n)";
+                    LEFT JOIN ao_kontor ON ao_kontor.ident = ai.fnr
+                    WHERE coalesce(CASE WHEN ?::boolean THEN ao_kontor.kontor_id ELSE NULL END, OP.nav_kontor) = ?
+                )
+                """;
         return new EnhetTiltak().setTiltak(
-                dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, enhetId.get())
+                dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, brukAoKontor, enhetId.get())
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );

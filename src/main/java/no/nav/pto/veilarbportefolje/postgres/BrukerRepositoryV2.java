@@ -52,12 +52,6 @@ public class BrukerRepositoryV2 {
         List<PortefoljebrukerOpensearchModell> result = new ArrayList<>();
         var params = aktorIds.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
-        String kontorKolonne = brukAoKontor
-                ? "coalesce(ao_kontor.kontor_id , OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)"
-                : "OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR";
-        String aoKontorJoin = brukAoKontor
-                ? "left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR"
-                : "";
 
         String sql = """
                         SELECT
@@ -72,7 +66,7 @@ public class BrukerRepositoryV2 {
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-""" + kontorKolonne + """
+                               coalesce(CASE WHEN ?::boolean THEN ao_kontor.kontor_id ELSE NULL END, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)
                                                                                         as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                                OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
@@ -156,7 +150,7 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
-""" + aoKontorJoin + """
+                                 left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;
 
@@ -173,39 +167,32 @@ public class BrukerRepositoryV2 {
                         result.add(brukerOpensearchModell);
                     }
                     return result;
-                }, params);
+                }, brukAoKontor, params);
     }
 
     private void leggTilHistoriskArenaDataHvisTilgjengelig(PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         long startTime = System.currentTimeMillis();
         boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
-        String kontorKolonne = brukAoKontor
-                ? "coalesce(ao_kontor.kontor_id, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)"
-                : "OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR";
-        String aoKontorJoin = brukAoKontor
-                ? "left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR"
-                : "";
         PortefoljebrukerOpensearchModell brukerMedHistoriskData = queryForObjectOrNull(() ->
                 db.queryForObject("""
                         select
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                        """ + kontorKolonne + """
-                         as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                            coalesce(CASE WHEN ?::boolean THEN ao_kontor.kontor_id ELSE NULL END, OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR)
+                             as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                             ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                             RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                             HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
-                        """ + aoKontorJoin + """
-                        
+                        left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
                                 (select PERSON from BRUKER_IDENTER where IDENT = ?)
                             )
                         order by ENDRET_DATO desc
                         limit 1
-                        """, (rs, i) -> flettInnOppfolgingsbruker(brukerOpensearchModell, rs), brukerOpensearchModell.getFnr())
+                        """, (rs, i) -> flettInnOppfolgingsbruker(brukerOpensearchModell, rs), brukAoKontor, brukerOpensearchModell.getFnr())
         );
         long endTime = System.currentTimeMillis();
         log.info("Ytelse, søkte opp historisk arena data på: {}ms", endTime - startTime);
