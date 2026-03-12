@@ -72,7 +72,7 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
                 .sperretAnsatt(false).sistEndretDato(endret_dato)
                 .build();
         oppfolginsbrukerService.behandleKafkaMeldingLogikk(kafkaMelding);
-        oppfolgingsbrukerRepositoryV3.settNavKontor(fnr.get(), new NavKontor("007"));
+        oppfolgingsbrukerRepositoryV3.upsertNavKontor(fnr, new NavKontor("007"));
         Optional<OppfolgingsbrukerEntity> oppfolgingsBruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertTrue(oppfolgingsBruker.isPresent());
         assertThat(oppfolgingsBruker.get()).isEqualTo(forventetResultat);

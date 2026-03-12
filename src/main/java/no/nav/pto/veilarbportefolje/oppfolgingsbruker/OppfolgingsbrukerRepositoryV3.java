@@ -49,7 +49,7 @@ public class OppfolgingsbrukerRepositoryV3 {
         }
 
         var rowsChanged = upsert(oppfolgingsbruker);
-        if (navKontor != null) settNavKontor(oppfolgingsbruker.fodselsnr(), navKontor);
+        if (navKontor != null) upsertNavKontor(Fnr.of(oppfolgingsbruker.fodselsnr()), navKontor);
         return rowsChanged;
     }
 
@@ -68,13 +68,21 @@ public class OppfolgingsbrukerRepositoryV3 {
         );
     }
 
-    public void settNavKontor(String fodselsnr, NavKontor navKontor) {
+    public void upsertNavKontor(Fnr fnr, NavKontor navKontor) {
         var params = new MapSqlParameterSource()
-                .addValue("ident", fodselsnr)
+                .addValue("ident", fnr.get())
                 .addValue("navKontor", navKontor.getValue());
         dbNamed.update("""
                     INSERT INTO ao_kontor (ident, kontor_id) VALUES (:ident, :navKontor)
                     ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id, updated_at = CURRENT_TIMESTAMP
+                """, params);
+    }
+
+    public void slettNavKontor(Fnr fnr) {
+        var params = new MapSqlParameterSource()
+                .addValue("ident", fnr.get());
+        dbNamed.update("""
+                    DELETE FROM ao_kontor WHERE ident = :ident
                 """, params);
     }
 
