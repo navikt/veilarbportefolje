@@ -7,6 +7,8 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV3Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV3Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV3Dto
+import no.nav.common.utils.EnvironmentUtils
+import no.nav.pto.veilarbportefolje.persononinfo.PdlHentBrukerDataException
 import no.nav.pto.veilarbportefolje.util.SecureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -26,12 +28,20 @@ class OppfolgingPeriodeService(
 
         when (sisteOppfolgingsperiode) {
            is GjeldendeOppfolgingsperiodeV3Dto -> {
-               oppfolgingStartetService.behandleOppfolgingStartetEllerKontorEndret(
-                   Fnr.of(sisteOppfolgingsperiode.ident),
-                   AktorId.of(sisteOppfolgingsperiode.aktorId),
-                   sisteOppfolgingsperiode.startTidspunkt,
-                   NavKontor(sisteOppfolgingsperiode.kontor!!.kontorId)
-               )
+               try {
+                   oppfolgingStartetService.behandleOppfolgingStartetEllerKontorEndret(
+                       Fnr.of(sisteOppfolgingsperiode.ident),
+                       AktorId.of(sisteOppfolgingsperiode.aktorId),
+                       sisteOppfolgingsperiode.startTidspunkt,
+                       NavKontor(sisteOppfolgingsperiode.kontor!!.kontorId)
+                   )
+               } catch (e: PdlHentBrukerDataException) {
+                   if (EnvironmentUtils.isDevelopment().orElse(false)) {
+                       SecureLog.secureLog.error("Kunne ikke hente brukerdata fra PDL for bruker: ${sisteOppfolgingsperiode.aktorId}", e)
+                   } else {
+                       throw e
+                   }
+               }
            }
            is AvsluttetOppfolgingsperiodeV3Dto -> {
                if (sisteOppfolgingsperiode.startTidspunkt.isAfter(sisteOppfolgingsperiode.sluttTidspunkt)) {
