@@ -68,13 +68,13 @@ public class OppfolgingsbrukerRepositoryV3 {
         );
     }
 
-    public int settNavKontor(String fodselsnr, NavKontor navKontor) {
+    public void settNavKontor(String fodselsnr, NavKontor navKontor) {
         var params = new MapSqlParameterSource()
                 .addValue("ident", fodselsnr)
                 .addValue("navKontor", navKontor.getValue());
-        return dbNamed.update("""
+        dbNamed.update("""
                     INSERT INTO ao_kontor (ident, kontor_id) VALUES (:ident, :navKontor)
-                    ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id
+                    ON CONFLICT (ident) DO UPDATE SET kontor_id = EXCLUDED.kontor_id, updated_at = CURRENT_TIMESTAMP
                 """, params);
     }
 
