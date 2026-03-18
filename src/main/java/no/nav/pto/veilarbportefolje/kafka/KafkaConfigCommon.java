@@ -107,7 +107,6 @@ public class KafkaConfigCommon {
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
-//        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
         SISTE_OPPFOLGINGS_PERIODE_V3("poao.siste-oppfolgingsperiode-v3"),
 
         // Arbeidssøkerregisteret

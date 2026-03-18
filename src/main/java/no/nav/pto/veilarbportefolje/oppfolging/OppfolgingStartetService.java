@@ -66,18 +66,25 @@ public class OppfolgingStartetService {
 
     private void oppdaterEnhetVedKontorbytteHuskelappFargekategori(Fnr fnr, AktorId aktorId, Optional<NavKontor> gammeltNavKontor, NavKontor nyttNavKontor) {
         try {
-                if (gammeltNavKontor.isPresent() && !Objects.equals(gammeltNavKontor.get(), nyttNavKontor)) {
-                    brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent(veilederForBruker -> {
-                        List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(EnhetId.of(nyttNavKontor.getValue()));
-                        boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(veilederForBruker.getValue());
-                        if (brukerBlirAutomatiskTilordnetVeileder) {
-                            fargekategoriService.oppdaterEnhetPaaFargekategori(fnr, EnhetId.of(nyttNavKontor.getValue()), veilederForBruker);
-                            huskelappService.oppdaterEnhetPaaHuskelapp(fnr, EnhetId.of(nyttNavKontor.getValue()), veilederForBruker);
-                        }
-                    });
+            if (gammeltNavKontor.isPresent() && !Objects.equals(gammeltNavKontor.get(), nyttNavKontor)) {
+                brukerServiceV2.hentVeilederForBruker(aktorId).ifPresent(veilederForBruker -> {
+                    List<String> veiledereMedTilgangTilEnhet = veilarbVeilederClient.hentVeilederePaaEnhetMachineToMachine(
+                            EnhetId.of(nyttNavKontor.getValue()));
+                    boolean brukerBlirAutomatiskTilordnetVeileder = veiledereMedTilgangTilEnhet.contains(
+                            veilederForBruker.getValue());
+                    if (brukerBlirAutomatiskTilordnetVeileder) {
+                        fargekategoriService.oppdaterEnhetPaaFargekategori(fnr,
+                                EnhetId.of(nyttNavKontor.getValue()),
+                                veilederForBruker);
+                        huskelappService.oppdaterEnhetPaaHuskelapp(fnr,
+                                EnhetId.of(nyttNavKontor.getValue()),
+                                veilederForBruker);
+                    }
+                });
             }
         } catch (Exception e) {
-            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontorbytte for bruker: " + fnr, e);
+            secureLog.error("Kunne ikke oppdatere enhet på huskelapp eller fargekategori ved kontorbytte for bruker: " + fnr,
+                    e);
         }
     }
 

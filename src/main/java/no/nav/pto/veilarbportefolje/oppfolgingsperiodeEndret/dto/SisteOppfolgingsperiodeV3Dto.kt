@@ -22,7 +22,7 @@ abstract class SisteOppfolgingsperiodeV3Dto(
     val aktorId: String,
     val ident: String,
     val startTidspunkt: ZonedDateTime,
-    val sluttTidspunkt: ZonedDateTime?,
+    open val sluttTidspunkt: ZonedDateTime?,
     open val kontor: KontorDto?,
     val producerTimestamp: ZonedDateTime = ZonedDateTime.now(),
 )
