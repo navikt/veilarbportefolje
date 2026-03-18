@@ -3,9 +3,9 @@ package no.nav.pto.veilarbportefolje.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.common.rest.client.RestUtils
 import okhttp3.Response
+import org.apache.kafka.common.serialization.Deserializer
 
 // Objectmapperen i common-java-modules har p.t ikke mulighet til å konfigureres. Vi trenger å registrere jackson-kotlin-module for at deserialisering skal fungere med kotlin.
 val objectMapper: ObjectMapper =
@@ -27,4 +27,13 @@ inline fun <reified T> Response.deserializeJson(): T {
 inline fun <reified T> Response.deserializeJsonOrThrow(): T {
     return this.deserializeJson()
         ?: throw IllegalStateException("Unable to parse JSON object from response body")
+}
+
+fun <T> jsonDeserializer(jsonClass: Class<T>): Deserializer<T> {
+    return object : Deserializer<T> {
+        override fun deserialize(topic: String?, data: ByteArray?): T? {
+            if (data == null) return null
+            return objectMapper.readValue(data, jsonClass)
+        }
+    }
 }
