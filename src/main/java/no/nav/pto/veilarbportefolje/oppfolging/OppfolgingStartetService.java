@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -49,15 +51,18 @@ public class OppfolgingStartetService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
+    private final DefaultUnleash defaultUnleash;
 
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
         var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
-            Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
             oppfolgingsbrukerRepositoryV3.upsertNavKontor(aktorId, fnr, navKontor);
-            oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
-            opensearchIndexer.indekser(aktorId);
+            if (FeatureToggle.brukKontorFraAoKontor(defaultUnleash)) {
+                Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
+                oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
+                opensearchIndexer.indekser(aktorId);
+            }
         } else {
             secureLog.info("Starter oppfølging for bruker med aktør-ID: " + aktorId);
             startOppfolging(aktorId, oppfolgingStartetDate, navKontor);
