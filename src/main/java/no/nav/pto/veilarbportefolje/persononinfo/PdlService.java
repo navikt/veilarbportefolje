@@ -40,7 +40,7 @@ public class PdlService {
             lagreBrukerData(fnrPerson, personData);
         } catch (Exception e) {
             secureLog.error("Kan ikke lagre bruker data for person: " + fnrPerson, e);
-            throw new RuntimeException("Kunne ikke hente data fra PDL", e);
+            throw new PdlHentBrukerDataException(fnrPerson, e);
         }
     }
 

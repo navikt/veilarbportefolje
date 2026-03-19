@@ -52,6 +52,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV3Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
@@ -66,7 +67,6 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -107,7 +107,7 @@ public class KafkaConfigCommon {
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
-        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+        SISTE_OPPFOLGINGS_PERIODE_V3("poao.siste-oppfolgingsperiode-v3"),
 
         // Arbeidssøkerregisteret
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
@@ -339,15 +339,15 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV1>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, SisteOppfolgingsperiodeV3Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.OPPFOLGING_PERIODE.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
-                                        oppfolgingPeriodeService::behandleKafkaRecord
+                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V3.topicName,
+                                        Deserializers.longDeserializer(),
+                                        new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV3Dto.class),
+                                        oppfolgingPeriodeService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()

@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
@@ -33,6 +34,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -72,7 +76,9 @@ public class BarnUnder18AarKafkaTest {
         barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
-        oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
+        DefaultUnleash mockUnleash = mock(DefaultUnleash.class);
+        when(mockUnleash.isEnabled(anyString())).thenReturn(true);
+        oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null, mockUnleash);
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
     }
 
