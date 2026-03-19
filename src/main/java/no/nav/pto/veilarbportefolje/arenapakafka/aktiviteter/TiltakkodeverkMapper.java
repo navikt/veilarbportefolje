@@ -16,11 +16,11 @@ public class TiltakkodeverkMapper {
                     entry("VARLONTIL", "Varig lønnstilskudd"),
                     entry("GRUPPEAMO", "Gruppe AMO"),
                     entry("GRUFAGYRKE", "Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning"),
-                    entry("ARBEIDSMARKEDSOPPLAERING", "Arbeidsmarkedsopplæring"),
+                    entry("ARBEIDSMARKEDSOPPLAERING", "Arbeidsmarkedsopplæring (AMO)"),
                     entry("NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV", "Norskopplæring, grunnleggende ferdigheter og FOV"),
                     entry("STUDIESPESIALISERING", "Studiespesialisering"),
                     entry("FAG_OG_YRKESOPPLAERING", "Fag- og yrkesopplæring"),
-                    entry("HOYERE_YRKESFAGLIG_UTDANNING", "Høyere yrkesfaglig utdanning"),
+                    entry("HOYERE_YRKESFAGLIG_UTDANNING", "Fagskole (høyere yrkesfaglig utdanning)"),
                     entry("FIREARIG_LONNSTILSKUDD", "Fireårig lønnstilskudd for unge")
             )
     );

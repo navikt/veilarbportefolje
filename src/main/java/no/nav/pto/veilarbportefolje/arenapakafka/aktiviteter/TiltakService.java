@@ -82,7 +82,7 @@ public class TiltakService {
                 tiltakRepositoryV3.upsert(innhold, aktorId);
             }
         } else {
-            secureLog.info("kafka melding om arena-tiltak for aktorId: {} med tiltakstype: {} ignorert fordi den skal leses fra Dab", aktorId, innhold.getTiltakstype());
+            secureLog.info("kafka melding om arena-tiltak for aktorId: {} med tiltakstype: {} ignorert fordi den skal leses fra Dab sit kafka topic aktivitet-portefolje-v1", aktorId, innhold.getTiltakstype());
         }
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
