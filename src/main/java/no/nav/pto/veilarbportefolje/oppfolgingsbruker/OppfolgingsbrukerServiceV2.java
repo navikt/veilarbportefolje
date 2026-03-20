@@ -77,7 +77,7 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
                 oppfolgingsbrukerDTO.get().getFodselsnr(),
                 oppfolgingsbrukerDTO.get().getFormidlingsgruppekode(),
                 oppfolgingsbrukerDTO.get().getIservFraDato(),
-                navKontor.getValue(),
+                oppfolgingsbrukerDTO.get().getNavKontor(),
                 oppfolgingsbrukerDTO.get().getKvalifiseringsgruppekode(),
                 oppfolgingsbrukerDTO.get().getRettighetsgruppekode(),
                 oppfolgingsbrukerDTO.get().getHovedmaalkode(),
