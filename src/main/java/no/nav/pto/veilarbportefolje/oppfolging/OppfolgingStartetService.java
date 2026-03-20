@@ -57,11 +57,13 @@ public class OppfolgingStartetService {
         var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
-            oppfolgingsbrukerRepositoryV3.upsertNavKontor(aktorId, fnr, navKontor);
             if (FeatureToggle.brukKontorFraAoKontor(defaultUnleash)) {
                 Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
+                oppfolgingsbrukerRepositoryV3.upsertNavKontor(aktorId, fnr, navKontor);
                 oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
                 opensearchIndexer.indekser(aktorId);
+            } else {
+                oppfolgingsbrukerRepositoryV3.upsertNavKontor(aktorId, fnr, navKontor);
             }
         } else {
             secureLog.info("Starter oppfølging for bruker med aktør-ID: " + aktorId);
