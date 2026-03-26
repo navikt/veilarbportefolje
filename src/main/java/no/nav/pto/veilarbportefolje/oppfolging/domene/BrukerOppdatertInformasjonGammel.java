@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
-public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInformasjon> {
+public class BrukerOppdatertInformasjonGammel implements Comparable<BrukerOppdatertInformasjonGammel> {
     private String aktoerid;
     private String veileder;
     private Boolean oppfolging;
@@ -20,7 +20,7 @@ public class BrukerOppdatertInformasjon implements Comparable<BrukerOppdatertInf
     private Timestamp tildeltTidspunkt;
 
     @Override
-    public int compareTo(BrukerOppdatertInformasjon o) {
+    public int compareTo(BrukerOppdatertInformasjonGammel o) {
         return endretTimestamp.compareTo(o.getEndretTimestamp());
     }
 }
