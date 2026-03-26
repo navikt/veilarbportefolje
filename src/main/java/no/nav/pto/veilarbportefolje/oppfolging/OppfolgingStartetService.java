@@ -16,6 +16,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
@@ -54,7 +55,7 @@ public class OppfolgingStartetService {
     private final DefaultUnleash defaultUnleash;
 
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
-        var oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
+        Optional<BrukerOppdatertInformasjon> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
             if (FeatureToggle.brukKontorFraAoKontor(defaultUnleash)) {
