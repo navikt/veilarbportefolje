@@ -60,14 +60,14 @@ public class OppfolgingAvsluttetService {
             return;
         }
 
-        ZonedDateTime startdatoNåværendeOppfølgingsdata = toZonedDateTime(oppfolgingsbruker.get().getStartDato());
-        if (avsluttetDato.isBefore(startdatoNåværendeOppfølgingsdata)) {
+        ZonedDateTime startdatoNåværendeOppfølging = toZonedDateTime(oppfolgingsbruker.get().getStartDato());
+        if (avsluttetDato.isBefore(startdatoNåværendeOppfølging)) {
             // Dersom avsluttet dato er før nåværende startdato skal vi ikke prosessere meldingen,
             // da det mest trolig er en "utdatert" melding. Dette kan eksempelvis skje ved replaying av topic
             // hvor det ligger igjen gamle meldinger som ikke har blitt compactet ennå.
             secureLog.info("Fikk avslutt melding for Aktør-ID {} men personen har en nyere startdato i oppfølgingsdata. " +
-                    "Sluttdato i mottatt melding: {}, startdato i oppfølgingsdata: {}. " +
-                    "Ignorerer melding.", aktorId.get(), avsluttetDato, startdatoNåværendeOppfølgingsdata);
+                    "Sluttdato i mottatt melding: {}, startdato i nåværende oppfølgingsdata: {}. " +
+                    "Ignorerer melding.", aktorId.get(), avsluttetDato, startdatoNåværendeOppfølging);
             return;
         }
 
