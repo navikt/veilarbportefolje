@@ -115,7 +115,7 @@ public class PdlIdentRepositoryTest {
         );
         pdlIdentRepository.upsertIdenter(identer);
         var opfolgingStart = genererStartetOppfolgingsperiode(ident);
-        var opfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, opfolgingStart.getOppfolgingsperiodeUuid());
+        var opfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, opfolgingStart.getOppfolgingsperiodeUuid(), opfolgingStart);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);

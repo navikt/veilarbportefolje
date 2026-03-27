@@ -13,6 +13,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererAvsluttetOppfolgingsperiode;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode;
+import static org.mockito.ArgumentMatchers.any;
 
 public class OppfolgingPeriodeServiceTest {
     private OppfolgingStartetService oppfolgingStartetService;
@@ -35,7 +36,7 @@ public class OppfolgingPeriodeServiceTest {
 
         Mockito.verify(oppfolgingStartetService, Mockito.times(1)).behandleOppfolgingStartetEllerKontorEndret(Fnr.of(sisteOppfolgingsperiode.getIdent()), AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontor().getKontorId()));
         Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontor().getKontorId()));
-        Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(AktorId.of(aktorId));
+        Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(any(), any());
     }
 
     @Test
@@ -47,6 +48,6 @@ public class OppfolgingPeriodeServiceTest {
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(sisteOppfolgingsperiode);
 
         Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, null);
-        Mockito.verify(oppfolgingAvsluttetService, Mockito.times(1)).avsluttOppfolging(AktorId.of(aktorId));
+        Mockito.verify(oppfolgingAvsluttetService, Mockito.times(1)).avsluttOppfolging(AktorId.of(aktorId), sisteOppfolgingsperiode.getSluttTidspunkt());
     }
 }
