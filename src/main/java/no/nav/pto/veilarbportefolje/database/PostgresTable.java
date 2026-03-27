@@ -377,6 +377,26 @@ public class PostgresTable {
         public static final String VERSION = "VERSION";
     }
 
+    public static final class TILTAKSAKTIVITET {
+        private TILTAKSAKTIVITET() { /* no-op */ }
+
+        public static final String TABLE_NAME = "TILTAKSAKTIVITET";
+        public static final String AKTIVITETID = "AKTIVITETID";
+        public static final String AKTOERID = "AKTOERID";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+        public static final String TILDATO = "TILDATO";
+        public static final String FRADATO = "FRADATO";
+        public static final String VERSION = "VERSION";
+    }
+
+    public static final class TILTAKSKODEVERK {
+        private TILTAKSKODEVERK() { /* no-op */ }
+
+        public static final String TABLE_NAME = "TILTAKSKODEVERK";
+        public static final String KODE = "KODE";
+        public static final String VERDI = "VERDI";
+    }
+
     public static final class TILTAKKODEVERK {
         private TILTAKKODEVERK() { /* no-op */ }
 
