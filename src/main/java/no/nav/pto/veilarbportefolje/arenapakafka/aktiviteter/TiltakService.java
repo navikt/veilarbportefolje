@@ -73,12 +73,16 @@ public class TiltakService {
             );
         }
 
-        if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
-            secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(innhold.getAktivitetid());
+        if(!(innhold.getTiltakstype().equals("GRUPPEAMO") || innhold.getTiltakstype().equals("GRUFAGYRKE"))) {
+            if (skalSlettesGoldenGate(kafkaMelding) || skalSlettesTiltak(innhold)) {
+                secureLog.info("Sletter tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
+                tiltakRepositoryV3.deleteTiltaksaktivitetFraArena(innhold.getAktivitetid());
+            } else {
+                secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
+                tiltakRepositoryV3.upsert(innhold, aktorId);
+            }
         } else {
-            secureLog.info("Lagrer tiltaksaktivitet fra Arena: {} med tiltakskode: {} pa aktoer: {}", innhold.getAktivitetid(), innhold.getTiltakstype(), aktorId);
-            tiltakRepositoryV3.upsert(innhold, aktorId);
+            secureLog.info("kafka melding om arena-tiltak for aktorId: {} med tiltakstype: {} ignorert fordi den skal leses fra Dab sit kafka topic aktivitet-portefolje-v1", aktorId, innhold.getTiltakstype());
         }
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
