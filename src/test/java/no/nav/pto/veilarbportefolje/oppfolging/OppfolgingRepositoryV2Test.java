@@ -40,12 +40,12 @@ public class OppfolgingRepositoryV2Test {
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
-        OppfolgingData brukerOppdatertInformasjonGammel = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
+        OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
 
         assertThat(aktorIds.isEmpty()).isFalse();
         assertThat(aktorIds.get(0)).isEqualTo(aktoerId);
-        assertThat(VeilederId.of(brukerOppdatertInformasjonGammel.getVeilederId())).isEqualTo(veilederId);
+        assertThat(VeilederId.of(oppfolgingData.getVeilederId())).isEqualTo(veilederId);
     }
 
 }
