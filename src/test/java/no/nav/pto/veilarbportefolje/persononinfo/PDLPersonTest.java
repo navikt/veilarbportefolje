@@ -1,14 +1,19 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import no.nav.pto.veilarbportefolje.domene.Kjonn;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Endringer;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.PdlMaster;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PdlPersonValideringException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson.kontrollerResponseOgHentKjonn;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson.kontrollerResponseOgHentNavn;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PDLPersonTest {
 
@@ -61,6 +66,67 @@ public class PDLPersonTest {
         );
 
         assertThat(kontrollerResponseOgHentNavn(navn).getFornavn()).isEqualTo(pdlNavn1);
+    }
+
+    @Test
+    public void enkelKjonnFraPdl_returnererRiktigKjonn() {
+        var kjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
+        assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.M);
+    }
+
+    @Test
+    public void enkelKjonnFraFreg_returnererRiktigKjonn() {
+        var kjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
+        assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.K);
+    }
+
+    @Test
+    public void flerKjonn_pdlOgFreg_velgerPdlNaarPdlErNyest() {
+        var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-06-01");
+        var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
+        assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.M);
+    }
+
+    @Test
+    public void flerKjonn_pdlOgFreg_velgerFregNaarFregErNyere() {
+        var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
+        var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-06-01");
+        assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.K);
+    }
+
+    @Test
+    public void flerKjonn_sammeDato_velgerPdl() {
+        var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
+        var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
+        assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.M);
+    }
+
+    @Test
+    public void ingenAktiveKjonn_kasterException() {
+        var historisk = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
+        historisk.getMetadata().setHistorisk(true);
+        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(List.of(historisk)))
+                .isInstanceOf(PdlPersonValideringException.class);
+    }
+
+    @Test
+    public void ukjentKjonn_kasterException() {
+        var kjoenn = lagKjoenn("ANNET", PdlMaster.PDL, "2024-01-01");
+        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(List.of(kjoenn)))
+                .isInstanceOf(PdlPersonValideringException.class);
+    }
+
+    private PdlPersonResponse.PdlPersonResponseData.Kjoenn lagKjoenn(String kjonn, PdlMaster master, String registrert) {
+        var endring = new Endringer();
+        endring.setRegistrert(registrert);
+        var metadata = new Metadata()
+                .setHistorisk(false)
+                .setMaster(master)
+                .setEndringer(List.of(endring));
+        var kjoenn = new PdlPersonResponse.PdlPersonResponseData.Kjoenn();
+        kjoenn.setKjoenn(kjonn);
+        kjoenn.setMetadata(metadata);
+        return kjoenn;
     }
 
 

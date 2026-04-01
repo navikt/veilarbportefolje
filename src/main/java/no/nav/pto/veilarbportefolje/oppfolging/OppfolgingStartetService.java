@@ -67,6 +67,7 @@ public class OppfolgingStartetService {
             }
         } else {
             secureLog.info("Starter oppfølging for bruker med aktør-ID: " + aktorId);
+            // upsertNavKontor, altså oppdatering av den nye ao_kontor-tabellen kalles dypere ned
             startOppfolging(aktorId, oppfolgingStartetDate, navKontor);
         }
     }

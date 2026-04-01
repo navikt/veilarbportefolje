@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.AdressebeskyttelseDto;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.PdlMaster;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
@@ -92,14 +93,31 @@ public class PDLPerson {
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
+    public static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
         var kjonnListe = response.stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
+            log.warn("Fant flere kjønn ({}), velger basert på master og registreringstidspunkt", kjonnListe.size());
         }
-        var kjonn = kjonnListe.stream().findAny()
-                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
-                .getKjoenn();
+
+        // Vi ønsker å prioritere PDL, fordi det kan tyde på at det er gjort endringer av veileder, 
+        // men hvis det er nyere informasjon i FREG, så ønsker vi å heller bruke det.
+        var hoyestPrioritet = kjonnListe.stream()
+                .min(Comparator.comparing(k -> k.getMetadata().getMaster().prioritet))
+                .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"));
+
+        var valgt = hoyestPrioritet;
+        if (hoyestPrioritet.getMetadata().getMaster() == PdlMaster.PDL) {
+            var nyereFregKjonn = kjonnListe.stream()
+                    .filter(k -> k.getMetadata().getMaster() == PdlMaster.FREG)
+                    .filter(k -> hentSistRegistrert(k.getMetadata()).orElse(LocalDate.MIN)
+                            .isAfter(hentSistRegistrert(hoyestPrioritet.getMetadata()).orElse(LocalDate.MIN)))
+                    .findFirst();
+            if (nyereFregKjonn.isPresent()) {
+                valgt = nyereFregKjonn.get();
+            }
+        }
+
+        var kjonn = valgt.getKjoenn();
 
         if ("KVINNE".equals(kjonn)) {
             return Kjonn.K;
@@ -108,6 +126,16 @@ public class PDLPerson {
         }
         log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
+    }
+
+    private static Optional<LocalDate> hentSistRegistrert(Metadata metadata) {
+        if (metadata.getEndringer() == null || metadata.getEndringer().isEmpty()) {
+            return Optional.empty();
+        }
+        return metadata.getEndringer().stream()
+                .map(e -> DateUtils.toLocalDateOrNull(e.getRegistrert()))
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo);
     }
 
     private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
