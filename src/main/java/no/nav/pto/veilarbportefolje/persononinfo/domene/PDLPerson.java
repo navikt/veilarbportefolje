@@ -92,12 +92,14 @@ public class PDLPerson {
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
+    public static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
         var kjonnListe = response.stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
+            log.warn("Fant flere kjønn ({}), velger nyeste basert på registreringstidspunkt", kjonnListe.size());
         }
-        var kjonn = kjonnListe.stream().findAny()
+
+        var kjonn = kjonnListe.stream()
+                .max(Comparator.comparing(k -> hentSistRegistrert(k.getMetadata()).orElse(LocalDate.MIN)))
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
@@ -108,6 +110,16 @@ public class PDLPerson {
         }
         log.error("Ikke implementert støtte for kjønn: {} ", kjonn);
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
+    }
+
+    private static Optional<LocalDate> hentSistRegistrert(Metadata metadata) {
+        if (metadata.getEndringer() == null || metadata.getEndringer().isEmpty()) {
+            return Optional.empty();
+        }
+        return metadata.getEndringer().stream()
+                .map(e -> DateUtils.toLocalDateOrNull(e.getRegistrert()))
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo);
     }
 
     private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
