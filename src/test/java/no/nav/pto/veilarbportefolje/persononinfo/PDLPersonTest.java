@@ -15,10 +15,10 @@ import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson.kontrol
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class PDLPersonTest {
+class PDLPersonTest {
 
     @Test
-    public void prioriteringAvUlikeKilderForNavn() {
+    void prioriteringAvUlikeKilderForNavn() {
         String pdlNavn = "pdl_F";
         String fregNavn = "freg_F";
         String annetNavn = "annet_F";
@@ -53,7 +53,7 @@ public class PDLPersonTest {
     }
 
     @Test
-    public void prioriteringAvSammeKildeForNavn_skalVelgeForsteIListen() {
+    void prioriteringAvSammeKildeForNavn_skalVelgeForsteIListen() {
         String pdlNavn1 = "pdl_1";
         String pdlNavn2 = "pdl_2";
 
@@ -69,50 +69,52 @@ public class PDLPersonTest {
     }
 
     @Test
-    public void enkelKjonnFraPdl_returnererRiktigKjonn() {
+    void enkelKjonnFraPdl_returnererRiktigKjonn() {
         var kjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.M);
     }
 
     @Test
-    public void enkelKjonnFraFreg_returnererRiktigKjonn() {
+    void enkelKjonnFraFreg_returnererRiktigKjonn() {
         var kjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.K);
     }
 
     @Test
-    public void flerKjonn_pdlOgFreg_velgerPdlNaarPdlErNyest() {
+    void flerKjonn_pdlOgFreg_velgerPdlNaarPdlErNyest() {
         var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-06-01");
         var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.M);
     }
 
     @Test
-    public void flerKjonn_pdlOgFreg_velgerFregNaarFregErNyere() {
+    void flerKjonn_pdlOgFreg_velgerFregNaarFregErNyere() {
         var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
         var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-06-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.K);
     }
 
     @Test
-    public void flerKjonn_sammeDato_velgerPdl() {
+    void flerKjonn_sammeDato_velgerPdl() {
         var pdlKjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
         var fregKjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(pdlKjoenn, fregKjoenn))).isEqualTo(Kjonn.M);
     }
 
     @Test
-    public void ingenAktiveKjonn_kasterException() {
+    void ingenAktiveKjonn_kasterException() {
         var historisk = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
         historisk.getMetadata().setHistorisk(true);
-        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(List.of(historisk)))
+        var input = List.of(historisk);
+        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(input))
                 .isInstanceOf(PdlPersonValideringException.class);
     }
 
     @Test
-    public void ukjentKjonn_kasterException() {
+    void ukjentKjonn_kasterException() {
         var kjoenn = lagKjoenn("ANNET", PdlMaster.PDL, "2024-01-01");
-        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(List.of(kjoenn)))
+        var input = List.of(kjoenn);
+        assertThatThrownBy(() -> kontrollerResponseOgHentKjonn(input))
                 .isInstanceOf(PdlPersonValideringException.class);
     }
 
