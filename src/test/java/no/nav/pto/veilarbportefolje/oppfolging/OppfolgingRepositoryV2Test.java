@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
 import org.junit.Before;
@@ -40,12 +40,12 @@ public class OppfolgingRepositoryV2Test {
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
-        BrukerOppdatertInformasjon brukerOppdatertInformasjon = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
+        OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
 
         assertThat(aktorIds.isEmpty()).isFalse();
         assertThat(aktorIds.get(0)).isEqualTo(aktoerId);
-        assertThat(VeilederId.of(brukerOppdatertInformasjon.getVeileder())).isEqualTo(veilederId);
+        assertThat(VeilederId.of(oppfolgingData.getVeilederId())).isEqualTo(veilederId);
     }
 
 }

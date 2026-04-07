@@ -12,13 +12,13 @@ import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId
+import no.nav.pto.veilarbportefolje.domene.NavKontor
+import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV3Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV3Dto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.KontorDto
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteEndringsType
-import no.nav.pto.veilarbportefolje.domene.NavKontor
-import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.PersonId
-import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import org.apache.commons.lang3.RandomUtils
@@ -88,7 +88,7 @@ object TestDataUtils {
         oppfolgingsperiodeUuid: UUID = UUID.randomUUID(),
         kontorId: String = "2020",
         fnr: Fnr = randomFnr(),
-        ): GjeldendeOppfolgingsperiodeV3Dto {
+    ): GjeldendeOppfolgingsperiodeV3Dto {
         return GjeldendeOppfolgingsperiodeV3Dto(
             oppfolgingsperiodeUuid,
             SisteEndringsType.OPPFOLGING_STARTET,
@@ -100,23 +100,23 @@ object TestDataUtils {
         )
     }
 
-    /* Java does not work with default args so have to make an overloaded function in addition to default args */
     @JvmStatic
-    fun genererAvsluttetOppfolgingsperiode(aktorId: AktorId) = genererAvsluttetOppfolgingsperiode(aktorId, UUID.randomUUID())
-
-    @JvmStatic
+    @JvmOverloads
     fun genererAvsluttetOppfolgingsperiode(
         aktorId: AktorId,
         oppfolgingsperiodeId: UUID = UUID.randomUUID(),
+        initiellStartetOppfolgingsperiode: GjeldendeOppfolgingsperiodeV3Dto = genererStartetOppfolgingsperiode(
+            aktorId,
+            oppfolgingsperiodeUuid = oppfolgingsperiodeId
+        )
     ): AvsluttetOppfolgingsperiodeV3Dto {
-        val periode = genererStartetOppfolgingsperiode(aktorId, oppfolgingsperiodeUuid = oppfolgingsperiodeId)
         return AvsluttetOppfolgingsperiodeV3Dto(
             oppfolgingsperiodeId,
             SisteEndringsType.OPPFOLGING_AVSLUTTET,
             aktorId.get(),
-            periode.ident,
-            periode.startTidspunkt,
-            tilfeldigSenereDato(periode.startTidspunkt),
+            initiellStartetOppfolgingsperiode.ident,
+            initiellStartetOppfolgingsperiode.startTidspunkt,
+            tilfeldigSenereDato(initiellStartetOppfolgingsperiode.startTidspunkt),
             ZonedDateTime.now()
         )
     }
