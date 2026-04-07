@@ -129,7 +129,8 @@ public class PDLPerson {
         }
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
 
-        return fodselsListe.stream().findFirst()
+        return fodselsListe.stream()
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDate.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedested::getFoedeland)
                 .orElse("");
     }
