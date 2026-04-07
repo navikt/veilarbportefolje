@@ -84,9 +84,10 @@ public class PDLPerson {
     private static LocalDate kontrollerOgHentFodsel(List<PdlPersonResponse.PdlPersonResponseData.Foedseldato> response) {
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
+            log.warn("Fant flere fødselsdatoer ({}), velger nyeste basert på registreringstidspunkt", fodselsListe.size());
         }
-        return fodselsListe.stream().findFirst()
+        return fodselsListe.stream()
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDate.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedseldato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
