@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,7 @@ public class PDLPerson {
             log.warn("Fant flere fødselsdatoer ({}), velger nyeste basert på registreringstidspunkt", fodselsListe.size());
         }
         return fodselsListe.stream()
-                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDate.MIN)))
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDateTime.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedseldato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
@@ -100,7 +101,7 @@ public class PDLPerson {
         }
 
         var kjonn = kjonnListe.stream()
-                .max(Comparator.comparing(k -> hentSistRegistrert(k.getMetadata()).orElse(LocalDate.MIN)))
+                .max(Comparator.comparing(k -> hentSistRegistrert(k.getMetadata()).orElse(LocalDateTime.MIN)))
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
@@ -113,14 +114,14 @@ public class PDLPerson {
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 
-    private static Optional<LocalDate> hentSistRegistrert(Metadata metadata) {
+    private static Optional<LocalDateTime> hentSistRegistrert(Metadata metadata) {
         if (metadata.getEndringer() == null || metadata.getEndringer().isEmpty()) {
             return Optional.empty();
         }
         return metadata.getEndringer().stream()
-                .map(e -> DateUtils.toLocalDateOrNull(e.getRegistrert()))
+                .map(e -> DateUtils.toLocalDateTimeOrNull(e.getRegistrert()))
                 .filter(Objects::nonNull)
-                .max(LocalDate::compareTo);
+                .max(LocalDateTime::compareTo);
     }
 
     private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
@@ -130,7 +131,7 @@ public class PDLPerson {
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
 
         return fodselsListe.stream()
-                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDate.MIN)))
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDateTime.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedested::getFoedeland)
                 .orElse("");
     }

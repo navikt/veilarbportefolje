@@ -69,28 +69,22 @@ class PDLPersonTest {
     }
 
     @Test
-    void enkelKjonnFraPdl_returnererRiktigKjonn() {
+    void enkelKjonn_returnererRiktigKjonn() {
         var kjoenn = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
         assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.M);
     }
 
     @Test
-    void enkelKjonnFraFreg_returnererRiktigKjonn() {
-        var kjoenn = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
-        assertThat(kontrollerResponseOgHentKjonn(List.of(kjoenn))).isEqualTo(Kjonn.K);
-    }
-
-    @Test
     void flerKjonn_velgerNyeste() {
-        var gammel = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-01-01");
-        var nyeste = lagKjoenn("MANN", PdlMaster.PDL, "2024-06-01");
+        var gammel = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-06-01T00:00:00Z");
+        var nyeste = lagKjoenn("MANN", PdlMaster.PDL, "2024-06-01T10:00:00Z");
         assertThat(kontrollerResponseOgHentKjonn(List.of(gammel, nyeste))).isEqualTo(Kjonn.M);
     }
 
     @Test
     void flerKjonn_velgerNyeste_uavhengigAvMaster() {
-        var gammel = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01");
-        var nyeste = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-06-01");
+        var gammel = lagKjoenn("MANN", PdlMaster.PDL, "2024-01-01T00:00:00Z");
+        var nyeste = lagKjoenn("KVINNE", PdlMaster.FREG, "2024-06-01T00:00:00Z");
         assertThat(kontrollerResponseOgHentKjonn(List.of(gammel, nyeste))).isEqualTo(Kjonn.K);
     }
 
