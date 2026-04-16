@@ -527,7 +527,7 @@ class OpensearchFilterQueryBuilder {
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery(FNR, query))
             } else {
-                queryBuilder.must(QueryBuilders.termQuery(FULLT_NAVN, query))
+                queryBuilder.must(byggNavnesokQuery(query))
             }
         }
 
@@ -1029,6 +1029,24 @@ class OpensearchFilterQueryBuilder {
 
     private fun byggSisteEndringFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
         queryBuilder.must(QueryBuilders.existsQuery("$SISTE_ENDRINGER.$sisteEndringKategori"))
+    }
+
+    private fun byggNavnesokQuery(query: String): QueryBuilder {
+        val navnetokens = query
+            .replace(",", " ")
+            .split("\\s+".toRegex())
+            .filter { it.isNotBlank() }
+
+        if (navnetokens.size <= 1) {
+            return QueryBuilders.matchQuery(FULLT_NAVN, query)
+        }
+
+        val navnQuery = QueryBuilders.boolQuery()
+        navnetokens.forEach { navn ->
+            navnQuery.must(QueryBuilders.matchQuery(FULLT_NAVN, navn))
+        }
+
+        return navnQuery
     }
 
     private fun byggMoteMedNavIdag(): RangeQueryBuilder {

@@ -176,6 +176,42 @@ class OpensearchQueryBuilderTest {
         }
     }
 
+    @Test
+    fun `skal bruke matchQuery for navn med ett navneledd`() {
+        val filtervalg = getFiltervalgDefaults().copy(navnEllerFnrQuery = "Ola")
+        val boolQuery = QueryBuilders.boolQuery()
+
+        filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg)
+
+        val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
+        assertThat(queryString).contains("\"match\":{\"fullt_navn\"")
+        assertThat(queryString).doesNotContain("\"term\":{\"fullt_navn\"")
+    }
+
+    @Test
+    fun `skal matche alle navneledd, uten komma`() {
+        val filtervalg = getFiltervalgDefaults().copy(navnEllerFnrQuery = "Ola Nordmann")
+        val boolQuery = QueryBuilders.boolQuery()
+
+        filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg)
+
+        val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
+        assertThat(queryString).contains("\"query\":\"ola\"")
+        assertThat(queryString).contains("\"query\":\"nordmann\"")
+    }
+
+    @Test
+    fun `skal matche alle navneledd, med komma`() {
+        val filtervalg = getFiltervalgDefaults().copy(navnEllerFnrQuery = "Nordmann, Ola")
+        val boolQuery = QueryBuilders.boolQuery()
+
+        filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg)
+
+        val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
+        assertThat(queryString).contains("\"query\":\"nordmann\"")
+        assertThat(queryString).contains("\"query\":\"ola\"")
+    }
+
 
     companion object {
         @JvmStatic
