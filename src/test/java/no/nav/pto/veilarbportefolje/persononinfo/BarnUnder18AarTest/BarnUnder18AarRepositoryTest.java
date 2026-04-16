@@ -190,6 +190,40 @@ public class BarnUnder18AarRepositoryTest {
     }
 
     @Test
+    public void testOppdateringAvBarnIdent_naarNyIdentAlleredeFinnes() {
+        Fnr fnrPerson = randomFnr();
+        Fnr gammelFnrBarn = randomFnr();
+        Fnr nyFnrBarn = randomFnr();
+        List<PDLIdent> identerBruker = List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(fnrPerson.get(), false, FOLKEREGISTERIDENT)
+        );
+
+        pdlPersonRepository.upsertPerson(fnrPerson, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
+        pdlIdentRepository.upsertIdenter(identerBruker);
+
+        barnUnder18AarRepository.lagreBarnData(gammelFnrBarn, pdlBarn15Aar().getFodselsdato(), pdlBarn15Aar().getDiskresjonskode());
+        barnUnder18AarRepository.lagreForeldreansvar(fnrPerson, gammelFnrBarn);
+
+        barnUnder18AarRepository.lagreBarnData(nyFnrBarn, pdlBarn4Aar().getFodselsdato(), pdlBarn4Aar().getDiskresjonskode());
+        barnUnder18AarRepository.lagreForeldreansvar(fnrPerson, nyFnrBarn);
+
+        Assertions.assertDoesNotThrow(() ->
+                barnUnder18AarRepository.oppdatereBarnIdent(nyFnrBarn, List.of(gammelFnrBarn))
+        );
+
+        BarnUnder18AarData barnMedNyIdent = barnUnder18AarRepository.hentInfoOmBarn(nyFnrBarn);
+        BarnUnder18AarData barnMedGammelIdent = barnUnder18AarRepository.hentInfoOmBarn(gammelFnrBarn);
+        Boolean finnesNyIdentIForeldreansvar = barnUnder18AarRepository.finnesBarnIForeldreansvar(nyFnrBarn);
+        Boolean finnesGammelIdentIForeldreansvar = barnUnder18AarRepository.finnesBarnIForeldreansvar(gammelFnrBarn);
+
+        Assertions.assertNotNull(barnMedNyIdent);
+        Assertions.assertNull(barnMedGammelIdent);
+        Assertions.assertTrue(finnesNyIdentIForeldreansvar);
+        Assertions.assertFalse(finnesGammelIdentIForeldreansvar);
+    }
+
+    @Test
     public void testFjerningAvData(){
         Fnr fnrPerson = randomFnr();
         Fnr fnrBarn1 = randomFnr();

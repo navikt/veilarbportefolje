@@ -91,9 +91,28 @@ public class BarnUnder18AarRepository {
             return;
         }
         String inaktiveIdenterBarnStr = inaktiveIdenterBarn.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+
         db.update("""
-                UPDATE bruker_data_barn SET barn_ident = ? WHERE barn_ident = ANY (?::varchar[])
+                INSERT INTO bruker_data_barn (barn_ident, barn_foedselsdato, barn_diskresjonkode)
+                SELECT ?, barn_foedselsdato, barn_diskresjonkode FROM bruker_data_barn
+                WHERE barn_ident = ANY (?::varchar[]) LIMIT 1
+                ON CONFLICT (barn_ident) DO NOTHING
                  """, nyIdentBarn.get(), inaktiveIdenterBarnStr);
+
+        db.update("""
+                INSERT INTO foreldreansvar (foresatt_ident, barn_ident)
+                SELECT foresatt_ident, ? FROM foreldreansvar
+                WHERE barn_ident = ANY (?::varchar[])
+                ON CONFLICT (foresatt_ident, barn_ident) DO NOTHING
+                 """, nyIdentBarn.get(), inaktiveIdenterBarnStr);
+
+        db.update("""
+                DELETE FROM foreldreansvar WHERE barn_ident = ANY (?::varchar[])
+                 """, inaktiveIdenterBarnStr);
+
+        db.update("""
+                DELETE FROM bruker_data_barn WHERE barn_ident = ANY (?::varchar[])
+                 """, inaktiveIdenterBarnStr);
     }
 
     public void lagreForeldreansvar(Fnr foresattIdent, Fnr barnIdent) {
