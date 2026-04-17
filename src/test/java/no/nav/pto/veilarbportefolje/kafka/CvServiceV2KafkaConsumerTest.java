@@ -7,6 +7,7 @@ import no.nav.arbeid.cv.avro.Meldingstype;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +47,7 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
 
     @Disabled
     @Test
-    public void testCVEksistere() {
+    public void testCVEksistere() throws JSONException {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
         assertCvEksistereAreFalseInOpensearch(aktoerId1, aktoerId2, aktoerId3);
 
@@ -70,7 +71,7 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
                 .allMatch(CvServiceV2KafkaConsumerTest::cvEksistere);
     }
 
-    private void createCvDocumentsInOpensearch(AktorId... aktoerIds) {
+    private void createCvDocumentsInOpensearch(AktorId... aktoerIds) throws JSONException {
         for (AktorId aktoerId : aktoerIds) {
             createCvDocument(aktoerId);
         }
@@ -94,7 +95,7 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
         return (boolean) get1.getSourceAsMap().get("cv_eksistere");
     }
 
-    private void createCvDocument(AktorId aktoerId) {
+    private void createCvDocument(AktorId aktoerId) throws JSONException {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.get())
                 .put("cv_eksistere", false)

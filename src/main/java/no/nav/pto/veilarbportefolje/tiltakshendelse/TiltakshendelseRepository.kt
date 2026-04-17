@@ -83,9 +83,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         val sql = "SELECT * FROM tiltakshendelse"
 
         try {
-            return db.queryForList(sql).stream()
-                .map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
-                .toList()
+            return db.query(sql) { rs, row -> TiltakshendelseMapper.tiltakshendelseMapper(rs, row) }
         } catch (e: Exception) {
             secureLog.error("Kunne ikke hente alle tiltakshendelser.", e)
             throw RuntimeException("Kunne ikke hente alle tiltakshendelser.")
@@ -105,7 +103,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         """.trimIndent()
 
         return try {
-            db.queryForObject(sql, TiltakshendelseMapper::tiltakshendelseMapper, fnr.toString())
+            db.queryForObject(sql, { rs, row -> TiltakshendelseMapper.tiltakshendelseMapper(rs, row) }, fnr.toString())
         } catch (e: EmptyResultDataAccessException) {
             null
         } catch (e: Error) {

@@ -10,10 +10,11 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
@@ -31,9 +32,9 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     private TiltakshendelseService service;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @MockBean
+    @MockitoBean
     private BrukerServiceV2 brukerServiceV2;
-    @MockBean
+    @MockitoBean
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @BeforeEach
@@ -42,7 +43,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void kanMottaTiltakshendelse() {
+    public void kanMottaTiltakshendelse() throws JSONException {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -71,7 +72,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void kanMottaOgInaktivereTiltakshendelse() {
+    public void kanMottaOgInaktivereTiltakshendelse() throws JSONException {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -107,7 +108,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void kanInaktivereTiltakshendelseOgOppdatereOpensearchMedEldsteTiltakshendelse() {
+    public void kanInaktivereTiltakshendelseOgOppdatereOpensearchMedEldsteTiltakshendelse() throws JSONException {
         UUID hendelseId1 = UUID.randomUUID();
         UUID hendelseId2 = UUID.randomUUID();
         LocalDateTime opprettetHendelse1 = LocalDateTime.now();

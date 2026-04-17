@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,7 +25,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
+    public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, true);
@@ -43,7 +44,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
+    public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, false);
