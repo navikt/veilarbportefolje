@@ -70,6 +70,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.lucene.search.join.ScoreMode
 import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.opensearch.index.query.RangeQueryBuilder
@@ -1039,11 +1040,15 @@ class OpensearchFilterQueryBuilder {
 
         if (navnetokens.size <= 1) {
             return QueryBuilders.matchQuery(FULLT_NAVN, query)
+                .operator(Operator.AND)
         }
 
         val navnQuery = QueryBuilders.boolQuery()
         navnetokens.forEach { navn ->
-            navnQuery.must(QueryBuilders.matchQuery(FULLT_NAVN, navn))
+            navnQuery.must(
+                QueryBuilders.matchQuery(FULLT_NAVN, navn)
+                    .operator(Operator.AND)
+            )
         }
 
         return navnQuery

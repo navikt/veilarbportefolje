@@ -185,6 +185,7 @@ class OpensearchQueryBuilderTest {
 
         val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
         assertThat(queryString).contains("\"match\":{\"fullt_navn\"")
+        assertThat(queryString).contains("\"operator\":\"AND\"")
         assertThat(queryString).doesNotContain("\"term\":{\"fullt_navn\"")
     }
 
@@ -198,6 +199,7 @@ class OpensearchQueryBuilderTest {
         val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
         assertThat(queryString).contains("\"query\":\"ola\"")
         assertThat(queryString).contains("\"query\":\"nordmann\"")
+        assertThat(queryString).contains("\"operator\":\"AND\"")
     }
 
     @Test
@@ -210,6 +212,7 @@ class OpensearchQueryBuilderTest {
         val queryString = boolQuery.toString().replace("\\s".toRegex(), "")
         assertThat(queryString).contains("\"query\":\"nordmann\"")
         assertThat(queryString).contains("\"query\":\"ola\"")
+        assertThat(queryString).contains("\"operator\":\"AND\"")
     }
 
 
