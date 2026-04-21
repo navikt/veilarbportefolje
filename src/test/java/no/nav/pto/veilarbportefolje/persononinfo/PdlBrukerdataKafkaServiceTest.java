@@ -43,7 +43,9 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
         BarnUnder18AarRepository barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         PdlIdentRepository pdlIdentRepository = new PdlIdentRepository(db);
         PdlPersonRepository pdlPersonRepository = new PdlPersonRepository(db, db);
-        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
+        DefaultUnleash mockUnleash = Mockito.mock(DefaultUnleash.class);
+        Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null, mockUnleash);
         OppfolgingRepositoryV2 oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
 
         db.update("truncate bruker_data CASCADE");
@@ -54,9 +56,6 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
         Mockito.when(pdlPortefoljeClient.hentBrukerBarnDataBolkFraPdl(any())).thenReturn(Map.of());
 
         BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
-
-        DefaultUnleash mockUnleash = Mockito.mock(DefaultUnleash.class);
-        Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
 
         pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 pdlIdentRepository,
