@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.dto.Metadata;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,20 +85,23 @@ public class PDLPerson {
     private static LocalDate kontrollerOgHentFodsel(List<PdlPersonResponse.PdlPersonResponseData.Foedseldato> response) {
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
         if (fodselsListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere registrerte fødseler er ikke implentert");
+            log.warn("Fant flere fødselsdatoer ({}), velger nyeste basert på registreringstidspunkt", fodselsListe.size());
         }
-        return fodselsListe.stream().findFirst()
+        return fodselsListe.stream()
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDateTime.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedseldato::getFoedselsdato)
                 .map(LocalDate::parse)
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen registrert fødsel er ikke implentert"));
     }
 
-    private static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
+    public static Kjonn kontrollerResponseOgHentKjonn(List<PdlPersonResponse.PdlPersonResponseData.Kjoenn> response) {
         var kjonnListe = response.stream().filter(kjoenn -> !kjoenn.getMetadata().isHistorisk()).toList();
         if (kjonnListe.size() > 1) {
-            throw new PdlPersonValideringException("Støtte for flere kjønn er ikke implentert");
+            log.warn("Fant flere kjønn ({}), velger nyeste basert på registreringstidspunkt", kjonnListe.size());
         }
-        var kjonn = kjonnListe.stream().findAny()
+
+        var kjonn = kjonnListe.stream()
+                .max(Comparator.comparing(k -> hentSistRegistrert(k.getMetadata()).orElse(LocalDateTime.MIN)))
                 .orElseThrow(() -> new PdlPersonValideringException("Støtte for ingen kjønn er ikke implentert"))
                 .getKjoenn();
 
@@ -110,13 +114,24 @@ public class PDLPerson {
         throw new PdlPersonValideringException("Fant kjønn som ikke er støttet");
     }
 
+    private static Optional<LocalDateTime> hentSistRegistrert(Metadata metadata) {
+        if (metadata.getEndringer() == null || metadata.getEndringer().isEmpty()) {
+            return Optional.empty();
+        }
+        return metadata.getEndringer().stream()
+                .map(e -> DateUtils.toLocalDateTimeOrNull(e.getRegistrert()))
+                .filter(Objects::nonNull)
+                .max(LocalDateTime::compareTo);
+    }
+
     private static String hentFoedselLand(List<PdlPersonResponse.PdlPersonResponseData.Foedested> response) {
         if (response == null || response.isEmpty()) {
             return null;
         }
         var fodselsListe = response.stream().filter(foedsel -> !foedsel.getMetadata().isHistorisk()).toList();
 
-        return fodselsListe.stream().findFirst()
+        return fodselsListe.stream()
+                .max(Comparator.comparing(f -> hentSistRegistrert(f.getMetadata()).orElse(LocalDateTime.MIN)))
                 .map(PdlPersonResponse.PdlPersonResponseData.Foedested::getFoedeland)
                 .orElse("");
     }
