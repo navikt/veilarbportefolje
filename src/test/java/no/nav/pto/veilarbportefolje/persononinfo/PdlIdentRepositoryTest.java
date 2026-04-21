@@ -114,11 +114,11 @@ public class PdlIdentRepositoryTest {
                 new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
         );
         pdlIdentRepository.upsertIdenter(identer);
-        var opfolgingStart = genererStartetOppfolgingsperiode(ident);
-        var opfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, opfolgingStart.getOppfolgingsperiodeUuid());
+        var oppfolgingStart = genererStartetOppfolgingsperiode(ident);
+        var oppfolgingAvslutt = genererAvsluttetOppfolgingsperiode(ident, oppfolgingStart.getOppfolgingsperiodeUuid(), oppfolgingStart);
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingStart);
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(opfolgingAvslutt);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingStart);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(oppfolgingAvslutt);
         var lokaleIdenter = hentLokaleIdenter(ident);
         assertThat(lokaleIdenter).hasSize(0);
     }

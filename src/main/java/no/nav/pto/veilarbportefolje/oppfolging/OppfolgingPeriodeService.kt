@@ -49,7 +49,7 @@ class OppfolgingPeriodeService(
                    return
                }
                SecureLog.secureLog.info("Avslutter oppfolging for: " + sisteOppfolgingsperiode.aktorId)
-               oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(sisteOppfolgingsperiode.aktorId))
+               oppfolgingAvsluttetService.avsluttOppfolging(AktorId.of(sisteOppfolgingsperiode.aktorId), sisteOppfolgingsperiode.sluttTidspunkt)
            }
         }
     }

@@ -51,7 +51,10 @@ class TestDataClient(
         lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null)
     }
 
-    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr) {
+    fun lagreBrukerUnderOppfolging(
+        aktoerId: AktorId,
+        fnr: Fnr
+    ) {
         lagreBrukerUnderOppfolging(
             aktoerId,
             fnr,

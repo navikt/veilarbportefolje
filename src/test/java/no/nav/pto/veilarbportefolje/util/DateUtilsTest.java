@@ -187,4 +187,30 @@ public class DateUtilsTest {
     public void skalLageFodselsdatoStringPaaUTCFormat() {
         assertThat(DateUtils.lagFodselsdato(fodselsdato)).isEqualTo("1980-10-10T00:00:00Z");
     }
+
+    @Test
+    public void toLocalDateTimeOrNull_isoInstantFormat() {
+        LocalDateTime result = DateUtils.toLocalDateTimeOrNull("2022-09-28T12:23:36Z");
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2022);
+        assertThat(result.getMonthValue()).isEqualTo(9);
+        assertThat(result.getDayOfMonth()).isEqualTo(28);
+    }
+
+    @Test
+    public void toLocalDateTimeOrNull_localDateTimeFormat() {
+        LocalDateTime result = DateUtils.toLocalDateTimeOrNull("2022-09-28T12:23:36");
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2022);
+        assertThat(result.getMonthValue()).isEqualTo(9);
+        assertThat(result.getDayOfMonth()).isEqualTo(28);
+        assertThat(result.getHour()).isEqualTo(12);
+        assertThat(result.getMinute()).isEqualTo(23);
+        assertThat(result.getSecond()).isEqualTo(36);
+    }
+
+    @Test
+    public void toLocalDateTimeOrNull_nullReturnsNull() {
+        assertThat(DateUtils.toLocalDateTimeOrNull((String) null)).isNull();
+    }
 }
