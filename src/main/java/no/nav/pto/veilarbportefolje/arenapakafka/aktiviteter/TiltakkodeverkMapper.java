@@ -13,7 +13,9 @@ public class TiltakkodeverkMapper {
     public static final Map<String, String> tiltakskodeTiltaksnavnMap = new HashMap<>(
             Map.ofEntries(
                     entry("MIDLONTIL", "Midlertidig lønnstilskudd"),
-                    entry("VARLONTIL", "Varig lønnstilskudd")
+                    entry("VARLONTIL", "Varig lønnstilskudd"),
+                    entry("SOMMERJOBB", "Sommerjobb"),
+                    entry("FIREARIG_LONNSTILSKUDD", "Fireårig lønnstilskudd for unge")
             )
     );
 
