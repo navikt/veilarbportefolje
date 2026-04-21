@@ -34,7 +34,8 @@ public class Tiltakskodeverk {
                     entry("STUDIESPESIALISERING", "Studiespesialisering"),
                     entry("FAG_OG_YRKESOPPLAERING", "Fag- og yrkesopplæring"),
                     entry("HOYERE_YRKESFAGLIG_UTDANNING", "Fagskole (høyere yrkesfaglig utdanning)"),
-                    entry("FIREARIG_LONNSTILSKUDD", "Fireårig lønnstilskudd for unge")
+                    entry("FIREARIG_LONNSTILSKUDD", "Fireårig lønnstilskudd for unge"),
+                    entry("SOMMERJOBB", "Sommerjobb")
             )
     );
 
