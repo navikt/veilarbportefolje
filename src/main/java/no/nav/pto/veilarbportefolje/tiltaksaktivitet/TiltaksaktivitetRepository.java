@@ -34,11 +34,18 @@ public class TiltaksaktivitetRepository {
 
         db.update("""
                         INSERT INTO TILTAKSAKTIVITET
-                        (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version, status) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version, status) VALUES (:aktivitetid, :aktoerid, :tiltakskode, :fradato, :tildato, :version, :status)
                         ON CONFLICT (aktivitetid) DO UPDATE SET (aktoerid, tiltakskode, fradato, tildato, version, status)
                         = (excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version, excluded.status)
                         """,
-                tiltakaktivitet.getAktivitetId(), aktorId.get(), tiltakaktivitet.getTiltakskode(), fraDato, tilDato, tiltakaktivitet.getVersion(), tiltakaktivitet.getStatus()
+                Map.of("aktivitetid", tiltakaktivitet.getAktivitetId(),
+                        "aktoerid", aktorId.get(),
+                        "tiltakskode", tiltakaktivitet.getTiltakskode(),
+                        "fradato", fraDato,
+                        "tildato", tilDato,
+                        "version", tiltakaktivitet.getVersion(),
+                        "status", tiltakaktivitet.getStatus()
+                )
         );
     }
 
@@ -66,7 +73,7 @@ public class TiltaksaktivitetRepository {
     public Long hentSistVersjonAvAktivitet(String aktivitetId) {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(
-                        "SELECT * FROM TILTAKSAKTIVITET WHERE aktivitetid = ?",
+                        "SELECT VERSION FROM TILTAKSAKTIVITET WHERE AKTIVITETID = ?",
                         (rs, row) -> rs.getLong("version"),
                         aktivitetId
                 ))
