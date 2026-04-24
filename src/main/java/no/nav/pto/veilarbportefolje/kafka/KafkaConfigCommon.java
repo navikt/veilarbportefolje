@@ -61,6 +61,7 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.tiltaksaktivitet.TiltaksaktivitetService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -85,6 +86,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
+    public final static String TILTAK_AKTIVITET_CLIENT_ID = "veilarbportefolje-tiltak-aktivitet-consumer-0";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
@@ -141,7 +143,6 @@ public class KafkaConfigCommon {
 
         YTELSER_TOPIC("obo.ytelser-v1");
 
-
         @Getter
         final String topicName;
 
@@ -153,9 +154,10 @@ public class KafkaConfigCommon {
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientTiltakAktivitet;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceV2 cvServiceV2,
+    public KafkaConfigCommon(CVServiceV2 cvServiceV2, TiltaksaktivitetService tiltaksaktivitetService,
                              SistLestService sistLestService, AktivitetService aktivitetService,
                              Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
                              DialogService dialogService, ManuellStatusService manuellStatusService,
@@ -491,10 +493,29 @@ public class KafkaConfigCommon {
                 .withToggle(kafkaAivenUnleash)
                 .build();
 
+        KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding> tiltaksaktivitetTopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<String, KafkaAktivitetMelding>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                Topic.AIVEN_AKTIVITER_TOPIC.topicName,
+                                Deserializers.stringDeserializer(),
+                                new AivenAvroDeserializer<KafkaAktivitetMelding>().getDeserializer(),
+                                tiltaksaktivitetService::behandleKafkaRecord
+                        );
+
+        consumerClientTiltakAktivitet = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(TILTAK_AKTIVITET_CLIENT_ID))
+                .withTopicConfig(tiltaksaktivitetTopicConfig)
+                .withToggle(() -> defaultUnleash.isEnabled(STOP_LESE_TILTAKSAKTIVITETER) || kafkaAivenUnleash.get())
+                .build();
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
         allTopicConfigs.add(siste14aTopicConfig);
         allTopicConfigs.add(cvTopicConfig);
+        allTopicConfigs.add(tiltaksaktivitetTopicConfig);
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
@@ -505,13 +526,13 @@ public class KafkaConfigCommon {
                 .build();
     }
 
-
     @PostConstruct
     public void start() {
         consumerRecordProcessor.start();
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
         consumerClientAivenCv.start();
+        consumerClientTiltakAktivitet.start();
     }
 
 
