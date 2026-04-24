@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -58,9 +58,9 @@ public class BarnUnder18AarMisterForeldreansvarTest {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
 
-    @MockBean
+    @MockitoBean
     private OpensearchIndexer opensearchIndexer;
-    @MockBean
+    @MockitoBean
     private OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
 
@@ -127,9 +127,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         List<PDLIdent> pdlIdenter = pdlDokForelder.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         Fnr fnrForelder = hentAktivFnr(pdlIdenter);
-        aktorIder.forEach(aktorId -> {
-            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        });
+        aktorIder.forEach(aktorId -> oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now()));
 
         pdlIdentRepository.upsertIdenter(pdlDokForelder.getHentIdenter().getIdenter());
 

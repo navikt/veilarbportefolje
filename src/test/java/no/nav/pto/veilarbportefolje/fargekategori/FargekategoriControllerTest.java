@@ -10,17 +10,25 @@ import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
+import no.nav.common.json.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,11 +50,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = FargekategoriController.class)
-@Import({FargekategoriControllerTestConfig.class, ApplicationConfigTest.class})
+@SpringBootTest(classes = {ApplicationConfigTest.class, FargekategoriController.class, FargekategoriControllerTest.MvcConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 public class FargekategoriControllerTest {
 
+    @Configuration
+    @EnableWebMvc
+    static class MvcConfig implements WebMvcConfigurer {
+        @Override
+        public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+            builder.registerDefaults()
+                   .withJsonConverter(new JacksonJsonHttpMessageConverter((JsonMapper) JsonUtils.getMapper()));
+        }
+    }
+
     @Autowired
+    private WebApplicationContext webApplicationContext;
+
     private MockMvc mockMvc;
 
     @Autowired
@@ -55,10 +74,10 @@ public class FargekategoriControllerTest {
     @Autowired
     private TestDataClient testDataClient;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private AktorClient aktorClient;
 
     @Test
@@ -100,7 +119,7 @@ public class FargekategoriControllerTest {
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
                 .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
-                .replace("$sistEndret", sistEndret.toString())
+                .replace("$sistEndret", JsonUtils.toJson(sistEndret).replace("\"", ""))
                 .replace("$endretAvVeileder", sistEndretAv.getValue());
 
         mockMvc.perform(
@@ -190,9 +209,7 @@ public class FargekategoriControllerTest {
         );
 
         List<String> kategorifødselsnummer = opprettedeFargekategorier.stream().map(fargekategori -> fargekategori.fnr().get()).toList();
-        fnrliste.forEach(fnr -> {
-                    assertThat(kategorifødselsnummer.contains(fnr)).isTrue();
-                }
+        fnrliste.forEach(fnr -> assertThat(kategorifødselsnummer.contains(fnr)).isTrue()
         );
     }
 
@@ -501,12 +518,10 @@ public class FargekategoriControllerTest {
 
     private List<FargekategoriEntity> hentListeAvFargekategorier(List<String> fnrliste) {
         return fnrliste.stream().map(fnr ->
-                queryForObjectOrNull(() -> {
-                    return jdbcTemplate.queryForObject(
-                            "SELECT * FROM fargekategori WHERE fnr=?",
-                            mapTilFargekategoriEntity(),
-                            fnr);
-                })
+                queryForObjectOrNull(() -> jdbcTemplate.queryForObject(
+                        "SELECT * FROM fargekategori WHERE fnr=?",
+                        mapTilFargekategoriEntity(),
+                        fnr))
         ).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
@@ -524,6 +539,8 @@ public class FargekategoriControllerTest {
 
     @BeforeEach
     void setup() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
         // Reset all data
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");

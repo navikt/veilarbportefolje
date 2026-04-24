@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Map;
@@ -22,17 +21,14 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class BarnUnder18AarServiceTest {
 
-    @MockBean
+    @MockitoBean
     private BarnUnder18AarRepository barnUnder18AarRepository;
 
     private BarnUnder18AarService barnUnder18AarService;
 
-    @Autowired
-    private PdlPortefoljeClient mockedPdlPortefoljeClient;
-
     @BeforeEach
     public void setUp() {
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, mockedPdlPortefoljeClient);
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, Mockito.mock(PdlPortefoljeClient.class));
     }
 
     @Test
@@ -60,11 +56,11 @@ public class BarnUnder18AarServiceTest {
 
         Map<Fnr, List<BarnUnder18AarData>> barnUnder18AarInfo = barnUnder18AarService.hentBarnUnder18Aar(foreldre);
 
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).size(), 3);
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(0), barnInfo.get(0));
+        Assertions.assertEquals(3, barnUnder18AarInfo.get(foreldre.getFirst()).size());
+        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.getFirst()).getFirst(), barnInfo.get(0));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(1), barnInfo.get(1));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(2), barnInfo.get(2));
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).size(), 2);
+        Assertions.assertEquals(2, barnUnder18AarInfo.get(foreldre.get(1)).size());
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).get(0), barnInfo.get(3));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).get(1), barnInfo.get(4));
     }
@@ -81,7 +77,7 @@ public class BarnUnder18AarServiceTest {
                 .thenReturn(barn.subList(3, 5));
 
         List<Fnr> fnrBarnRespons = barnUnder18AarService.hentBarnFnrsForForeldre(foreldre);
-        Assertions.assertEquals(fnrBarnRespons.size(), 5);
+        Assertions.assertEquals(5, fnrBarnRespons.size());
         Assertions.assertEquals(fnrBarnRespons, barn);
     }
 
@@ -97,7 +93,7 @@ public class BarnUnder18AarServiceTest {
                 .thenReturn(barn.subList(2, 5));
 
         List<Fnr> fnrBarnRespons = barnUnder18AarService.hentBarnFnrsForForeldre(foreldre);
-        Assertions.assertEquals(fnrBarnRespons.size(), 6);
+        Assertions.assertEquals(6, fnrBarnRespons.size());
         Assertions.assertTrue(fnrBarnRespons.containsAll(barn));
     }
 

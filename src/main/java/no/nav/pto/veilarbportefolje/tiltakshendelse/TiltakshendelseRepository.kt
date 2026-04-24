@@ -84,7 +84,7 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
 
         try {
             return db.queryForList(sql).stream()
-                .map { rs: Map<String, Any> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
+                .map { rs: Map<String, Any?> -> TiltakshendelseMapper.tiltakshendelseMapper(rs) }
                 .toList()
         } catch (e: Exception) {
             secureLog.error("Kunne ikke hente alle tiltakshendelser.", e)
