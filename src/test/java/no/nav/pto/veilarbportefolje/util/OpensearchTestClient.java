@@ -7,16 +7,17 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchCountService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.action.index.IndexRequest;
-import org.opensearch.action.index.IndexResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -64,12 +65,12 @@ public class OpensearchTestClient {
     }
 
     @SneakyThrows
-    public IndexResponse createDocument(AktorId aktoerId, String json) {
+    public void createDocument(AktorId aktoerId, String json) {
         IndexRequest indexRequest = new IndexRequest();
         indexRequest.index(BRUKERINDEKS_ALIAS);
         indexRequest.id(aktoerId.toString());
         indexRequest.source(json, XContentType.JSON);
-        return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+        restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @SneakyThrows
@@ -77,7 +78,7 @@ public class OpensearchTestClient {
         return (int) opensearchCountService.getCount();
     }
 
-    public void createUserInOpensearch(AktorId aktoerId) {
+    public void createUserInOpensearch(AktorId aktoerId) throws JSONException {
         String document = new JSONObject()
                 .put("aktoer_id", aktoerId.toString())
                 .put("oppfolging", true)
@@ -114,7 +115,7 @@ public class OpensearchTestClient {
             throw new RuntimeException(e);
         }
 
-        final AktorId aktoerId = AktorId.of(bruker.getAktoer_id());
+        final AktorId aktoerId = AktorId.of(Objects.requireNonNull(bruker.getAktoer_id()));
         final Optional<GetResponse> getResponse = getDocument(aktoerId);
 
         assertThat(getResponse).isPresent();

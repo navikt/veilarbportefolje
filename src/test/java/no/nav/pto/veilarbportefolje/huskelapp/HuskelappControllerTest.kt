@@ -18,28 +18,43 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2
 import no.nav.pto.veilarbportefolje.util.TestDataClient
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-
-import org.springframework.context.annotation.Import
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK
 import org.springframework.http.MediaType
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.LocalDate
 import java.util.*
 
-@WebMvcTest(controllers = [HuskelappController::class])
-@Import(
-    ApplicationConfigTest::class
-)
+@SpringBootTest(classes = [ApplicationConfigTest::class, HuskelappController::class], webEnvironment = MOCK)
 open class HuskelappControllerTest {
+
     @Autowired
+    private lateinit var huskelappController: HuskelappController
+
     private lateinit var mockMvc: MockMvc
+
+    @BeforeEach
+    fun setupMockMvc() {
+        val objectMapper = ObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        mockMvc = MockMvcBuilders.standaloneSetup(huskelappController)
+            .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
+            .build()
+    }
 
     @Autowired
     protected var testDataClient: TestDataClient? = null
