@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
@@ -26,14 +26,15 @@ class ManuellStatusServiceTest extends EndToEndTest {
 
     @Autowired
     public ManuellStatusServiceTest(OppfolgingRepositoryV2 oppfolgingRepository, ManuellStatusService manuellStatusService,
-                                    OpensearchTestClient opensearchTestClient,  JdbcTemplate postgres) {
+                                    OpensearchTestClient opensearchTestClient, JdbcTemplate postgres) {
         this.manuellStatusService = manuellStatusService;
         this.opensearchTestClient = opensearchTestClient;
         this.oppfolgingRepository = oppfolgingRepository;
         this.postgres = postgres;
     }
+
     @BeforeEach
-    public void reset(){
+    public void reset() {
         postgres.update("truncate TABLE oppfolging_data");
         postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
     }
@@ -46,7 +47,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), true);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);
 
-        final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+        final OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 
         assertThat(oppfolgingData.getManuell()).isTrue();
         pollOpensearchUntil(() -> opensearchTestClient.hentBrukerFraOpensearch(aktoerId).getManuell_bruker().equals(MANUELL.name()));
@@ -60,7 +61,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), false);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);
 
-        final BrukerOppdatertInformasjon oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
+        final OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).orElseThrow();
 
         assertThat(oppfolgingData.getManuell()).isFalse();
         pollOpensearchUntil(() -> opensearchTestClient.hentBrukerFraOpensearch(aktoerId).getManuell_bruker() == null);

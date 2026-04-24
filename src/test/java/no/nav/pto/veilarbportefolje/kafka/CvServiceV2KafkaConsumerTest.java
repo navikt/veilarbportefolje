@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,6 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
         testDataClient.lagreBrukerUnderOppfolging(aktoerId3, ZonedDateTime.now());
     }
 
-    @Disabled
     @Test
     public void testCVEksistere() throws JSONException {
         createCvDocumentsInOpensearch(aktoerId1, aktoerId2, aktoerId3);
@@ -55,7 +53,7 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
         pollOpensearchUntil(() -> hvisCvEksistere(aktoerId1, aktoerId2, aktoerId3));
         assertCvEksistereAreTrueInOpensearch(aktoerId1, aktoerId2, aktoerId3);
     }
-    @Disabled
+
     @Test
     public void testCvEksistererIkke() {
         populateCVEksistereKafkaTopic(aktoerId1, aktoerId2, aktoerId3);

@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,13 +29,30 @@ public class SkjermingService {
         SkjermingDTO skjermingDTO = kafkaMelding.value();
         LocalDateTime skjermetFra;
         LocalDateTime skjermetTil;
+        if (isDevelopment().orElse(false) && skjermingDTO == null) {
+            secureLog.info(String.format("Ignorerer dårlig datakvalitet i dev, bruker fnr %s, kafka melding: %s",
+                    fnr.get(),
+                    kafkaMelding.value()));
+            return;
+        }
+
         if (skjermingDTO.getSkjermetFra() != null && skjermingDTO.getSkjermetFra().length >= 5) {
-            skjermetFra = LocalDateTime.of(skjermingDTO.getSkjermetFra()[0], skjermingDTO.getSkjermetFra()[1], skjermingDTO.getSkjermetFra()[2], skjermingDTO.getSkjermetFra()[3], skjermingDTO.getSkjermetFra()[4], 0);
+            skjermetFra = LocalDateTime.of(skjermingDTO.getSkjermetFra()[0],
+                    skjermingDTO.getSkjermetFra()[1],
+                    skjermingDTO.getSkjermetFra()[2],
+                    skjermingDTO.getSkjermetFra()[3],
+                    skjermingDTO.getSkjermetFra()[4],
+                    0);
         } else {
             skjermetFra = null;
         }
         if (skjermingDTO.getSkjermetTil() != null && skjermingDTO.getSkjermetTil().length >= 5) {
-            skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0], skjermingDTO.getSkjermetTil()[1], skjermingDTO.getSkjermetTil()[2], skjermingDTO.getSkjermetTil()[3], skjermingDTO.getSkjermetTil()[4], 0);
+            skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0],
+                    skjermingDTO.getSkjermetTil()[1],
+                    skjermingDTO.getSkjermetTil()[2],
+                    skjermingDTO.getSkjermetTil()[3],
+                    skjermingDTO.getSkjermetTil()[4],
+                    0);
         } else {
             skjermetTil = null;
         }
@@ -41,7 +61,9 @@ public class SkjermingService {
             throw new Exception("Possible illegal data about skjerming period, kafka message: " + kafkaMelding.value());
         }
 
-        skjermingRepository.settSkjermingPeriode(fnr, DateUtils.toTimestamp(skjermetFra), DateUtils.toTimestamp(skjermetTil));
+        skjermingRepository.settSkjermingPeriode(fnr,
+                DateUtils.toTimestamp(skjermetFra),
+                DateUtils.toTimestamp(skjermetTil));
 
         brukerService.hentAktorId(fnr).ifPresent(aktorId ->
                 opensearchIndexerPaDatafelt.updateSkjermetTil(aktorId, skjermetTil)

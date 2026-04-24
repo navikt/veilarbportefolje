@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
@@ -35,7 +35,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
         NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, false);
         nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
-        final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
+        final Optional<OppfolgingData> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
         assertThat(data.get().getNyForVeileder()).isFalse();
 
@@ -55,7 +55,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
 
         nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
-        final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
+        final Optional<OppfolgingData> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
         //assertThat(data.get().getNyForVeileder()).isFalse();
 

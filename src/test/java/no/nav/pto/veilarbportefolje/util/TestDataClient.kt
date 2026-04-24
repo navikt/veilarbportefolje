@@ -51,7 +51,10 @@ class TestDataClient(
         lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null)
     }
 
-    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr) {
+    fun lagreBrukerUnderOppfolging(
+        aktoerId: AktorId,
+        fnr: Fnr
+    ) {
         lagreBrukerUnderOppfolging(
             aktoerId,
             fnr,
@@ -120,9 +123,11 @@ class TestDataClient(
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
                 fnr.get(), null, null,
-                navKontor.value, null, null, null,
+                "9999", null, null, null,
                 ZonedDateTime.now()
-            )
+            ),
+            navKontor,
+            aktoerId
         )
         opensearchTestClient.createUserInOpensearch(aktoerId)
     }
