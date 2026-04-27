@@ -74,7 +74,7 @@ public class TiltaksaktivitetRepository {
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(
                         "SELECT VERSION FROM TILTAKSAKTIVITET WHERE AKTIVITETID = ?",
-                        (rs, row) -> rs.getLong("version"),
+                        Long.class,
                         aktivitetId
                 ))
         ).orElse(-1L);
