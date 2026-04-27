@@ -98,6 +98,8 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.tiltaksaktivitet.TiltaksaktivitetRepository;
+import no.nav.pto.veilarbportefolje.tiltaksaktivitet.TiltaksaktivitetService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
@@ -214,7 +216,9 @@ import static org.mockito.Mockito.when;
         TiltakspengerService.class,
         DagpengerRepository.class,
         DagpengerService.class,
-        OppfolgingsbrukerTestRepository.class
+        OppfolgingsbrukerTestRepository.class,
+        TiltaksaktivitetRepository.class,
+        TiltaksaktivitetService.class,
 })
 public class ApplicationConfigTest {
 
