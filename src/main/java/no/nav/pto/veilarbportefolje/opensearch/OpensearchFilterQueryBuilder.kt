@@ -70,6 +70,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.lucene.search.join.ScoreMode
 import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.opensearch.index.query.RangeQueryBuilder
@@ -527,7 +528,7 @@ class OpensearchFilterQueryBuilder {
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery(FNR, query))
             } else {
-                queryBuilder.must(QueryBuilders.termQuery(FULLT_NAVN, query))
+                queryBuilder.must(byggNavnesokQuery(query))
             }
         }
 
@@ -1029,6 +1030,28 @@ class OpensearchFilterQueryBuilder {
 
     private fun byggSisteEndringFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
         queryBuilder.must(QueryBuilders.existsQuery("$SISTE_ENDRINGER.$sisteEndringKategori"))
+    }
+
+    private fun byggNavnesokQuery(query: String): QueryBuilder {
+        val navnetokens = query
+            .replace(",", " ")
+            .split("\\s+".toRegex())
+            .filter { it.isNotBlank() }
+
+        if (navnetokens.size <= 1) {
+            return QueryBuilders.matchQuery(FULLT_NAVN, query)
+                .operator(Operator.AND)
+        }
+
+        val navnQuery = QueryBuilders.boolQuery()
+        navnetokens.forEach { navn ->
+            navnQuery.must(
+                QueryBuilders.matchQuery(FULLT_NAVN, navn)
+                    .operator(Operator.AND)
+            )
+        }
+
+        return navnQuery
     }
 
     private fun byggMoteMedNavIdag(): RangeQueryBuilder {
