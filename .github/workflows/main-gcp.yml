@@ -44,7 +44,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      packages: write
       id-token: write
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
