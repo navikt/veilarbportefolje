@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
@@ -107,7 +108,7 @@ public class BarnUnder18AarKafkaTest {
                 pdlPortefoljeClient
         )
                 , this.pdlIdentRepository,
-                new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
+            new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2, mock(AktorClient.class)),
                 this.barnUnder18AarService,
                 opensearchIndexer
         );
