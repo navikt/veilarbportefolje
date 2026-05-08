@@ -141,7 +141,6 @@ import static org.mockito.Mockito.when;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
-        JacksonConfig.class,
         Siste14aVedtakRepository.class,
         Siste14aVedtakService.class,
         BrukerServiceV2.class,
