@@ -1,16 +1,11 @@
 package no.nav.pto.veilarbportefolje.util
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.common.json.JsonUtils
 import no.nav.common.rest.client.RestUtils
 import okhttp3.Response
+import tools.jackson.module.kotlin.readValue
 
-val objectMapper: ObjectMapper = ObjectMapper()
-    .findAndRegisterModules()
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    .configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false)
-    .configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false)
+val objectMapper = JsonUtils.getMapper()
 
 inline fun <reified T> Response.deserializeJson(): T? {
     return RestUtils.getBodyStr(this)

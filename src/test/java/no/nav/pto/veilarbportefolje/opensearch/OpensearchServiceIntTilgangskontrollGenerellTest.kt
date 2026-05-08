@@ -50,10 +50,10 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value
-        TEST_VEILEDER_1 = randomVeilederId().value
-        TEST_VEILEDER_2 = randomVeilederId().value
-        TEST_VEILEDER_3 = randomVeilederId().value
+        TEST_VEILEDER_0 = randomVeilederId().value!!
+        TEST_VEILEDER_1 = randomVeilederId().value!!
+        TEST_VEILEDER_2 = randomVeilederId().value!!
+        TEST_VEILEDER_3 = randomVeilederId().value!!
 
 
 

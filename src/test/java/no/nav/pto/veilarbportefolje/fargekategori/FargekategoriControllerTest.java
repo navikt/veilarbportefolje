@@ -15,20 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverters;
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -50,22 +43,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {ApplicationConfigTest.class, FargekategoriController.class, FargekategoriControllerTest.MvcConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@WebMvcTest(controllers = FargekategoriController.class)
+@Import(ApplicationConfigTest.class)
 public class FargekategoriControllerTest {
 
-    @Configuration
-    @EnableWebMvc
-    static class MvcConfig implements WebMvcConfigurer {
-        @Override
-        public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
-            builder.registerDefaults()
-                   .withJsonConverter(new JacksonJsonHttpMessageConverter((JsonMapper) JsonUtils.getMapper()));
-        }
-    }
-
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
     private MockMvc mockMvc;
 
     @Autowired
@@ -539,8 +521,6 @@ public class FargekategoriControllerTest {
 
     @BeforeEach
     void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-
         // Reset all data
         jdbcTemplate.update("TRUNCATE fargekategori");
         jdbcTemplate.update("TRUNCATE oppfolgingsbruker_arena_v2");

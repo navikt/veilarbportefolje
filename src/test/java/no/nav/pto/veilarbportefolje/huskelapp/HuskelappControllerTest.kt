@@ -18,51 +18,26 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2
 import no.nav.pto.veilarbportefolje.util.TestDataClient
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Configuration
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.http.converter.HttpMessageConverters
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.web.servlet.config.annotation.EnableWebMvc
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import tools.jackson.databind.json.JsonMapper
 import java.time.LocalDate
 import java.util.*
 
-@SpringBootTest(
-    classes = [ApplicationConfigTest::class, HuskelappController::class, HuskelappControllerTest.MvcConfig::class],
-    webEnvironment = SpringBootTest.WebEnvironment.MOCK
-)
+@WebMvcTest(controllers = [HuskelappController::class])
+@Import(ApplicationConfigTest::class)
 class HuskelappControllerTest {
 
-    @Configuration
-    @EnableWebMvc
-    class MvcConfig : WebMvcConfigurer {
-        override fun configureMessageConverters(builder: HttpMessageConverters.ServerBuilder) {
-            builder.registerDefaults()
-                .withJsonConverter(JacksonJsonHttpMessageConverter(JsonUtils.getMapper() as JsonMapper))
-        }
-    }
     @Autowired
-    private lateinit var webApplicationContext: WebApplicationContext
-
     private lateinit var mockMvc: MockMvc
-
-    @BeforeEach
-    fun setupMockMvc() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build()
-    }
 
     @Autowired
     protected var testDataClient: TestDataClient? = null
