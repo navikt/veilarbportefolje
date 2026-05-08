@@ -48,7 +48,7 @@ class TestDataClient(
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
         val fnr = randomFnr()
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), null, startDato, null)
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null)
     }
 
     fun lagreBrukerUnderOppfolging(
@@ -103,7 +103,7 @@ class TestDataClient(
         aktoerId: AktorId,
         fnr: Fnr,
         navKontor: NavKontor,
-        veilederId: VeilederId?,
+        veilederId: VeilederId,
         startDato: ZonedDateTime,
         diskresjonKode: String?
     ) {
@@ -118,7 +118,7 @@ class TestDataClient(
             PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode)
         )
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato)
-        if (veilederId != null) oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
+        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
         upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(

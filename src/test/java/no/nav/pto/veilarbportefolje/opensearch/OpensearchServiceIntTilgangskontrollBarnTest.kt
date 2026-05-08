@@ -34,7 +34,7 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value!!
+        TEST_VEILEDER_0 = randomVeilederId().value
 
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))

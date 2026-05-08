@@ -49,8 +49,8 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value!!
-        TEST_VEILEDER_1 = randomVeilederId().value!!
+        TEST_VEILEDER_0 = randomVeilederId().value
+        TEST_VEILEDER_1 = randomVeilederId().value
 
         veilederePaEnhet = listOf(TEST_VEILEDER_0)
 
@@ -1294,6 +1294,6 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     }
 
     companion object {
-        private val LITE_PRIVILEGERT_VEILEDER: String = randomVeilederId().value!!
+        private val LITE_PRIVILEGERT_VEILEDER: String = randomVeilederId().value
     }
 }

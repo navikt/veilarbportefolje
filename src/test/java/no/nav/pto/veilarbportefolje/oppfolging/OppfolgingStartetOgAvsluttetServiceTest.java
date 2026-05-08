@@ -1,7 +1,8 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.common.json.JsonUtils;
-import tools.jackson.core.type.TypeReference;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
@@ -288,7 +290,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void nar_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() {
+    void nar_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() throws JsonProcessingException {
         UUID periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16");
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
@@ -363,7 +365,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void nar_oppfolging_avsluttes_skal_arbeidsokerdata_slettes() {
+    void nar_oppfolging_avsluttes_skal_arbeidsokerdata_slettes() throws JsonProcessingException {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         mockHentArbeidssoekerPerioderResponse(fnr);
@@ -521,21 +523,24 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
     }
 
-    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) {
+    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) throws JsonProcessingException {
         String file = readFileAsJsonString("/arbeidssoekerperioder.json", getClass());
-        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(arbeidssoekerResponse);
     }
 
-    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) {
+    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
         String file = readFileAsJsonString("/opplysningerOmArbeidssoeker.json", getClass());
-        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
     }
 
-    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) {
+    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
         String file = readFileAsJsonString("/profilering.json", getClass());
-        List<ProfileringResponse> profileringResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<ProfileringResponse> profileringResponse = getObjectMapper().readValue(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
     }
 

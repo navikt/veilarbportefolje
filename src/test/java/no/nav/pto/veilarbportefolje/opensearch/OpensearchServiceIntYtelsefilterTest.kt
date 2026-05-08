@@ -36,8 +36,8 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value!!
-        LITE_PRIVILEGERT_VEILEDER = randomVeilederId().value!!
+        TEST_VEILEDER_0 = randomVeilederId().value
+        LITE_PRIVILEGERT_VEILEDER = randomVeilederId().value
     }
 
     @Test

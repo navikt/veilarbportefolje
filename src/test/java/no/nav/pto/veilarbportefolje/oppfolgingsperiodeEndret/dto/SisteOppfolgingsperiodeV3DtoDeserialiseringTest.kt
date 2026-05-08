@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto
 
-import tools.jackson.core.JacksonException
+import com.fasterxml.jackson.databind.JsonMappingException
 import no.nav.pto.veilarbportefolje.util.objectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -105,7 +105,7 @@ class SisteOppfolgingsperiodeV3DtoDeserialiseringTest {
         """.trimIndent()
 
         assertThatThrownBy { deserialize(json) }
-            .isInstanceOf(JacksonException::class.java)
+            .isInstanceOf(JsonMappingException::class.java)
     }
 
     @ParameterizedTest(name = "{0}")
@@ -113,7 +113,7 @@ class SisteOppfolgingsperiodeV3DtoDeserialiseringTest {
     fun `feiler ved ugyldige payloads`(beskrivelse: String, json: String) {
         assertThatThrownBy { deserialize(json) }
             .describedAs(beskrivelse)
-            .isInstanceOf(JacksonException::class.java)
+            .isInstanceOf(JsonMappingException::class.java)
     }
 
     companion object {
