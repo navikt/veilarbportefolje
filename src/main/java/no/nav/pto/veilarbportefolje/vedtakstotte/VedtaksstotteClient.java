@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.springframework.cache.annotation.Cacheable;
 
 import jakarta.ws.rs.core.HttpHeaders;
 import java.util.Optional;
