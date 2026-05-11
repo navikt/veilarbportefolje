@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
@@ -16,8 +17,6 @@ import org.springframework.http.HttpHeaders;
 
 import java.util.function.Supplier;
 
-import static no.nav.common.json.JsonUtils.fromJson;
-import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 
@@ -44,13 +43,13 @@ public class OppfolgingClient {
         Request request = new Request.Builder()
                 .url(joinPaths(baseUrl, "/api/v3/hent-oppfolging"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
-                .post(RequestBody.create(toJson(new UnderOppfolgingRequest(fnr)), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(new UnderOppfolgingRequest(fnr)), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.getBodyStr(response)
-                    .map(bodyStr -> fromJson(bodyStr, UnderOppfolgingV2Response.class))
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, UnderOppfolgingV2Response.class))
                     .map(UnderOppfolgingV2Response::isErUnderOppfolging)
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }

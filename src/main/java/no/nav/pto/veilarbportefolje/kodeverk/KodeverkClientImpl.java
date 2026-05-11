@@ -1,12 +1,14 @@
 package no.nav.pto.veilarbportefolje.kodeverk;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.pto.veilarbportefolje.kodeverk.dto.KodeverkBetydningerResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.StreamSupport;
 
-import static no.nav.common.json.JsonUtils.fromJson;
 import static java.lang.String.format;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -74,34 +76,39 @@ public class KodeverkClientImpl implements KodeverkClient {
     private Map<String, String> parseKodeverkBetydningJson(String responseJson) {
         Map<String, String> betydningerMap = new HashMap<>();
         try {
-            KodeverkBetydningerResponse response = fromJson(responseJson, KodeverkBetydningerResponse.class);
+            JsonNode rootNode = JsonUtils.getMapper().readTree(responseJson);
+            JsonNode betydninger = rootNode.get("betydninger");
 
-            response.betydninger().forEach((navn, betydningListe) -> {
-                KodeverkBetydningerResponse.KodeverkBetydning nyeste = Optional.ofNullable(betydningListe)
-                        .map(liste -> liste.stream()
-                                .filter(b -> b.gyldigFra() != null)
-                                .max(Comparator.comparingInt(b -> Integer.parseInt(b.gyldigFra().substring(0, 4))))
-                                .orElse(!liste.isEmpty() ? liste.get(0) : null))
-                        .orElse(null);
+            betydninger.propertyNames().forEach((betydningName) -> {
+                JsonNode betydningerValues = betydninger.get(betydningName);
+                JsonNode betydningNyeste;
+
+                //find most recent value
+                if (betydningerValues.isArray()) {
+                    ArrayNode arrayField = (ArrayNode) betydningerValues;
+                    betydningNyeste = StreamSupport
+                            .stream(arrayField.spliterator(), false)
+                            .filter(betydning -> betydning.get("gyldigFra") != null)
+                            .max(Comparator.comparing(o -> Integer.valueOf(o.get("gyldigFra").asText().substring(0, 4))))
+                            .orElse(null);
+                } else {
+                    betydningNyeste = betydningerValues;
+                }
 
                 // Noen koder mangler informasjon
-                if (nyeste == null || nyeste.beskrivelser() == null) {
+                if (betydningNyeste == null) {
                     return;
                 }
 
-                KodeverkBetydningerResponse.KodeverkBeskrivelse beskrivelseNb = nyeste.beskrivelser().get("nb");
-                if (beskrivelseNb == null) {
-                    return;
+                JsonNode betydningBeskrivelserNode = betydningNyeste.get("beskrivelser");
+                JsonNode beskrivelseNbNode = betydningBeskrivelserNode.get("nb");
+                String beskrivelseNb = beskrivelseNbNode.get("tekst").asText();
+
+                if (beskrivelseNb.isEmpty()) {
+                    beskrivelseNb = beskrivelseNbNode.get("term").asText();
                 }
 
-                String tekst = beskrivelseNb.tekst();
-                if (tekst == null || tekst.isEmpty()) {
-                    tekst = beskrivelseNb.term();
-                }
-
-                if (tekst != null && !tekst.isEmpty()) {
-                    betydningerMap.put(navn, tekst);
-                }
+                betydningerMap.put(betydningName, beskrivelseNb);
             });
 
             return betydningerMap;

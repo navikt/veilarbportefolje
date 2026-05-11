@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch;
 import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.common.json.JsonUtils.fromJson;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -167,7 +167,7 @@ public class OpensearchService {
                 .source(searchSourceBuilder);
 
         SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-        return fromJson(response.toString(), clazz);
+        return JsonUtils.fromJson(response.toString(), clazz);
     }
 
     private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(

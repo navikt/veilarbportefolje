@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.client;
 
-import lombok.SneakyThrows;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
@@ -12,7 +12,6 @@ import okhttp3.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
@@ -34,13 +33,12 @@ public class EnsligForsorgerClientImpl implements EnsligForsorgerClient {
         this.client = RestClient.baseClient();
     }
 
-    @SneakyThrows
     public Optional<OvergangsstønadResponseDto> hentEnsligForsorgerOvergangsstonad(Fnr personIdent) {
         Request request = new Request.Builder()
                 .url(joinPaths(ensligForsorgerUrl, "/api/ekstern/perioder/perioder-aktivitet"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + machineToMachineTokenSupplier.get())
-                .post(RequestBody.create(toJson(new EnsligForsorgerRequestParam(personIdent.get())), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(new EnsligForsorgerRequestParam(personIdent.get())), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
