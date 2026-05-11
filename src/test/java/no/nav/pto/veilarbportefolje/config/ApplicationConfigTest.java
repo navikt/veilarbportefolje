@@ -138,7 +138,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
         Siste14aVedtakRepository.class,
@@ -273,8 +273,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public RestHighLevelClient restHighLevelClient() {
-        return createClient(opensearchClientConfig());
+    public RestHighLevelClient restHighLevelClient(OpensearchClientConfig opensearchClientConfig) {
+        return createClient(opensearchClientConfig);
     }
 
     @Bean

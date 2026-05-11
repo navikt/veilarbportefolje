@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
@@ -31,7 +32,7 @@ public class AktivitetKafkaConsumerTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_oppdatere_aktivitet_i_opensearch() {
+    public void skal_oppdatere_aktivitet_i_opensearch() throws JSONException {
         final AktorId aktoerId = randomAktorId();
         testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
 
@@ -71,7 +72,7 @@ public class AktivitetKafkaConsumerTest extends EndToEndTest {
     }
 
 
-    private void createAktivitetDocument(AktorId aktoerId) {
+    private void createAktivitetDocument(AktorId aktoerId) throws JSONException {
         String document = new JSONObject()
                 .put("aktivitet_mote_utlopsdato", DateUtils.getFarInTheFutureDate())
                 .put("aktivitet_stilling_utlopsdato", DateUtils.getFarInTheFutureDate())

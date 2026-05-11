@@ -22,8 +22,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -34,10 +33,9 @@ import java.time.LocalDate
 import java.util.*
 
 @WebMvcTest(controllers = [HuskelappController::class])
-@Import(
-    ApplicationConfigTest::class
-)
-open class HuskelappControllerTest {
+@Import(ApplicationConfigTest::class)
+class HuskelappControllerTest {
+
     @Autowired
     private lateinit var mockMvc: MockMvc
 
