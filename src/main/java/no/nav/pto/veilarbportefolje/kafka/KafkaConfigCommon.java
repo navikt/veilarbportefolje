@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.kafka;
 import io.getunleash.DefaultUnleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -77,7 +76,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -141,11 +140,14 @@ public class KafkaConfigCommon {
         YTELSER_TOPIC("obo.ytelser-v1");
 
 
-        @Getter
         final String topicName;
 
         Topic(String topicName) {
             this.topicName = topicName;
+        }
+
+        public String getTopicName() {
+            return this.topicName;
         }
     }
 

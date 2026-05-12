@@ -1,14 +1,14 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
-import no.nav.pto.veilarbportefolje.kafka.deserializers.KotlinJsonDeserializer
+import no.nav.common.kafka.consumer.util.deserializer.Deserializers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZonedDateTime
-import java.util.Date
+import java.util.*
 
 class PortefoljeAktivitetKafkaMeldingContractTest {
-    private val deserializer = KotlinJsonDeserializer(PortefoljeAktivitetKafkaMelding::class.java)
+    private val deserializer = Deserializers.jsonDeserializer(PortefoljeAktivitetKafkaMelding::class.java)
 
     @Test
     fun `skal deserialisere gyldig v4-melding`() {
