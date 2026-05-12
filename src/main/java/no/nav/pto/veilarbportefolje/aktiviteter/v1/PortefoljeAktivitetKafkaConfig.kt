@@ -27,7 +27,7 @@ import java.time.Duration
  * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
  * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
  * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
- *   (0.5s → 1s → 2s → ... maks 10 minutt) heilt til batchen lykkast.
+ *   (10s → 20s → 40s → ... maks 1 time) heilt til batchen lykkast.
  *   Offsets vert ALDRI committa for feila meldingar.
  */
 @Configuration
@@ -77,9 +77,9 @@ class PortefoljeAktivitetKafkaConfig {
      */
     private fun batchErrorHandler(): DefaultErrorHandler {
         val backOff = ExponentialBackOff().apply {
-            initialInterval = HALVT_SEKUND
+            initialInterval = TI_SEKUND
             multiplier = DOBLING
-            maxInterval = TI_MINUTT
+            maxInterval = EIN_TIME
             maxElapsedTime = UENDELEG_TID
         }
 
@@ -110,9 +110,9 @@ class PortefoljeAktivitetKafkaConfig {
 
     private companion object {
         private val log = LoggerFactory.getLogger(PortefoljeAktivitetKafkaConfig::class.java)
-        private val HALVT_SEKUND = Duration.ofMillis(500).toMillis()
+        private val TI_SEKUND = Duration.ofSeconds(10).toMillis()
         private const val DOBLING = 2.0
-        private val TI_MINUTT = Duration.ofMinutes(10).toMillis()
+        private val EIN_TIME = Duration.ofHours(1).toMillis()
         private const val UENDELEG_TID = Long.MAX_VALUE
     }
 }
