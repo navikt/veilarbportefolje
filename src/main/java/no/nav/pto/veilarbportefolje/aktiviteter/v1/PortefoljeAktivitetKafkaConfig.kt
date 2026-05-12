@@ -26,8 +26,8 @@ import org.springframework.util.backoff.ExponentialBackOff
  * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
  * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
  * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
- *   (0.5s → 1s → 2s → ... maks 60s). Etter 15 minutt stoppar containeren.
- *   Offsets vert ALDRI committa for feila meldingar — dei vert konsumerte på nytt ved restart.
+ *   (0.5s → 1s → 2s → ... maks 60s) heilt til batchen lykkast.
+ *   Offsets vert ALDRI committa for feila meldingar.
  */
 @Configuration
 @EnableKafka
@@ -71,29 +71,28 @@ class PortefoljeAktivitetKafkaConfig {
         }
 
     /**
-     * Ved vedvarande feil: retry med exponential back-off, deretter stopp container.
-     * Recoverer kastar exception i staden for å hoppe over meldingar — dette sikrar at
-     * offsets aldri vert committa for feila meldingar.
+     * Ved vedvarande feil: retry med capped exponential back-off utan å stoppe containeren.
+     * Då kan ikkje feature-toggle-sjekken restarte containeren og starte ein ny retry-syklus.
      */
     private fun batchErrorHandler(): DefaultErrorHandler {
         val backOff = ExponentialBackOff().apply {
             initialInterval = 500L
             multiplier = 2.0
             maxInterval = 60_000L
-            maxElapsedTime = 15 * 60 * 1_000L
+            maxElapsedTime = Long.MAX_VALUE
         }
 
-        // Kast exception for å stoppe containeren — ikkje hopp over meldingar
-        val stopContainerRecoverer = ConsumerRecordRecoverer { _, exception ->
+        // Skal i praksis ikkje kallast med Long.MAX_VALUE, men hindrar offset-skip dersom back-off stoppar.
+        val failIfBackOffStopsRecoverer = ConsumerRecordRecoverer { _, exception ->
             log.error(
-                "Alle retry-forsøk brukte opp — stoppar container. Offsets er ikkje committa. Feiltype: {}",
+                "Back-off stoppa uventa. Offsets er ikkje committa. Feiltype: {}",
                 exception.javaClass.name
             )
             throw exception
         }
 
-        return DefaultErrorHandler(stopContainerRecoverer, backOff).apply {
-            setLogLevel(KafkaException.Level.ERROR)
+        return DefaultErrorHandler(failIfBackOffStopsRecoverer, backOff).apply {
+            setLogLevel(KafkaException.Level.DEBUG)
             setRetryListeners(RetryLogger())
         }
     }
