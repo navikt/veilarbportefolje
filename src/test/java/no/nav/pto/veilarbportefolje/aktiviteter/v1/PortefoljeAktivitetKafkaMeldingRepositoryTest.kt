@@ -137,6 +137,41 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     }
 
     @Test
+    fun `skal bevare rekkefoelge ved dedup - siste melding per aktivitet vinn`() {
+        val resultat = repository.tryLagreAktivitetDataBatch(
+            listOf(
+                aktivitetEntity(aktivitetId = "a1", version = 1, aktivitetStatus = "PLANLAGT", recordOffset = 1),
+                aktivitetEntity(aktivitetId = "a2", version = 1, aktivitetStatus = "PLANLAGT", recordOffset = 2),
+                aktivitetEntity(aktivitetId = "a1", version = 2, aktivitetStatus = "GJENNOMFORES", recordOffset = 3),
+                aktivitetEntity(aktivitetId = "a3", version = 1, aktivitetStatus = "PLANLAGT", recordOffset = 4),
+                aktivitetEntity(aktivitetId = "a2", version = 2, aktivitetStatus = "FULLFORT", recordOffset = 5),
+            ),
+        )
+
+        assertThat(resultat.mottatte).isEqualTo(5)
+        assertThat(resultat.dedupliserte).isEqualTo(2)
+        assertThat(resultat.prosesserte).isEqualTo(3)
+
+        val a1 = hentRad("a1")!!
+        val a2 = hentRad("a2")!!
+        val a3 = hentRad("a3")!!
+
+        // a1: v1 (offset 1) og v2 (offset 3) → v2 vinn fordi den kjem sist i lista
+        assertThat(a1["version"]).isEqualTo(2L)
+        assertThat(a1["aktivitet_status"]).isEqualTo("GJENNOMFORES")
+        assertThat(a1["record_offset"]).isEqualTo(3L)
+
+        // a2: v1 (offset 2) og v2 (offset 5) → v2 vinn
+        assertThat(a2["version"]).isEqualTo(2L)
+        assertThat(a2["aktivitet_status"]).isEqualTo("FULLFORT")
+        assertThat(a2["record_offset"]).isEqualTo(5L)
+
+        // a3: berre éin melding
+        assertThat(a3["version"]).isEqualTo(1L)
+        assertThat(a3["record_offset"]).isEqualTo(4L)
+    }
+
+    @Test
     fun `skal haandtere tom batch`() {
         val resultat = repository.tryLagreAktivitetDataBatch(emptyList())
 
