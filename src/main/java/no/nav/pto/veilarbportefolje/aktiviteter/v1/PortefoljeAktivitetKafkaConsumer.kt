@@ -13,13 +13,8 @@ import org.springframework.stereotype.Component
 /**
  * Batch-consumer for aktivitet-meldinger fra Kafka.
  *
- * Hvordan dette fungerer:
- * 1. Spring Kafka poller Kafka i bakgrunnen og samler opp meldinger.
- * 2. Når det finnes meldinger, kaller Spring [onBatch] med alle meldinger fra én poll().
- * 3. Vi prosesserer hele batchen i én transaksjon via [PortefoljeAktivitetKafkaMeldingService].
- * 4. Hvis [onBatch] returnerer uten feil, committer Spring offsets automatisk (AckMode.BATCH).
- *    Hvis [onBatch] kaster exception, committer Spring IKKE — meldingene vil bli levert på nytt.
- * 5. [sjekkToggle] kjører hvert 30. sekund og starter/stopper consumeren basert på Unleash-toggles.
+ * Consumeren styres av Unleash-toggles via [sjekkToggle], som køyrer kvart 30. sekund.
+ * autoStartup=false i config gjer at consumeren ikkje startar før togglen er på.
  */
 @Component
 class PortefoljeAktivitetKafkaConsumer(

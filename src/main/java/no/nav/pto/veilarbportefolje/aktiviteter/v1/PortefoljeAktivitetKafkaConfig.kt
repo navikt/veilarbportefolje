@@ -22,15 +22,11 @@ import org.springframework.kafka.listener.RetryListener
 import org.springframework.util.backoff.ExponentialBackOff
 
 /**
- * Setter opp Spring Kafka for batch-konsumering av aktivitet-meldinger.
- *
  * Nøkkelvalg:
- * - concurrency=1: Én tråd prosesserer alle partisjoner sekvensielt → garantert rekkefølge.
- * - batchListener=true: Spring samler opp meldinger fra én poll() og sender dem som en liste.
- * - AckMode.BATCH: Spring committer offsets automatisk etter at listener-metoden returnerer uten feil.
- * - autoStartup=false: Consumeren starter ikke automatisk — styres av Unleash-toggle i PortefoljeAktivitetKafkaConsumer.
- * - DefaultErrorHandler med ExponentialBackOff: Ved feil vert batchen forsøkt på nytt med aukande
- *   ventetid (0.5s → 1s → 2s → ... maks 60s). Etter 15 minutt utan suksess stoppar containeren.
+ * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
+ * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
+ * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
+ *   (0.5s → 1s → 2s → ... maks 60s). Etter 15 minutt stoppar containeren.
  *   Offsets vert ALDRI committa for feila meldingar — dei vert konsumerte på nytt ved restart.
  */
 @Configuration
@@ -75,15 +71,9 @@ class PortefoljeAktivitetKafkaConfig {
         }
 
     /**
-     * Retry med exponential back-off → stopp container.
-     *
-     * Flyt ved vedvarande feil:
-     * 1. Batch feilar → vent 0.5s → retry
-     * 2. Feilar igjen → vent 1s → retry
-     * 3. Feilar igjen → vent 2s → retry → ... (maks 60s mellom forsøk)
-     * 4. Etter 15 minutt totalt → recoverer kastar exception → containeren stoppar
-     * 5. Offsets er IKKJE committa
-     * 6. sjekkToggle() kan restarte containeren (meldingane vert konsumerte på nytt)
+     * Ved vedvarande feil: retry med exponential back-off, deretter stopp container.
+     * Recoverer kastar exception i staden for å hoppe over meldingar — dette sikrar at
+     * offsets aldri vert committa for feila meldingar.
      */
     private fun batchErrorHandler(): DefaultErrorHandler {
         val backOff = ExponentialBackOff().apply {
@@ -93,8 +83,7 @@ class PortefoljeAktivitetKafkaConfig {
             maxElapsedTime = 15 * 60 * 1_000L
         }
 
-        // Når alle retry-forsøk er brukte opp: kast exception slik at containeren stoppar.
-        // Dette sikrar at offsets ALDRI vert committa for feila meldingar.
+        // Kast exception for å stoppe containeren — ikkje hopp over meldingar
         val stopContainerRecoverer = ConsumerRecordRecoverer { _, exception ->
             log.error(
                 "Alle retry-forsøk brukte opp — stoppar container. Offsets er ikkje committa. Feiltype: {}",
@@ -109,9 +98,6 @@ class PortefoljeAktivitetKafkaConfig {
         }
     }
 
-    /**
-     * Loggar kvart retry-forsøk slik at det er synleg i loggane kva som skjer.
-     */
     private class RetryLogger : RetryListener {
         override fun failedDelivery(
             record: ConsumerRecord<*, *>,
