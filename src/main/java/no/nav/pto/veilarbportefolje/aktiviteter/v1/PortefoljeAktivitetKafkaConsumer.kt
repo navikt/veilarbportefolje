@@ -31,6 +31,8 @@ class PortefoljeAktivitetKafkaConsumer(
 
     @KafkaListener(
         id = CONTAINER_ID,
+        idIsGroup = false,
+        groupId = CONSUMER_GROUP_ID,
         topics = [AKTIVITET_TOPIC],
         containerFactory = "portefoljeAktivitetKafkaListenerContainerFactory",
     )
@@ -64,6 +66,7 @@ class PortefoljeAktivitetKafkaConsumer(
     private companion object {
         private val log = LoggerFactory.getLogger(PortefoljeAktivitetKafkaConsumer::class.java)
         private const val CONTAINER_ID = "portefolje-aktivitet-consumer"
+        private const val CONSUMER_GROUP_ID = "veilarbportefolje-portefolje-aktivitet-consumer"
         const val AKTIVITET_TOPIC = "pto.aktivitet-portefolje-v1"
     }
 }

@@ -33,7 +33,6 @@ class PortefoljeAktivitetKafkaConfig {
 
         val props = mapOf<String, Any>(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to getRequiredProperty("KAFKA_BROKERS"),
-            ConsumerConfig.GROUP_ID_CONFIG to "veilarbportefolje-portefolje-aktivitet-consumer",
             ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
             ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG to 200,
