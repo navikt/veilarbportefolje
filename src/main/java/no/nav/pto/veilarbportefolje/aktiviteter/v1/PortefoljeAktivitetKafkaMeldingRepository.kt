@@ -1,15 +1,14 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
-import org.springframework.jdbc.core.BatchPreparedStatementSetter
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import java.sql.PreparedStatement
 import java.sql.Statement
 
 @Repository
 class PortefoljeAktivitetKafkaMeldingRepository(
-    private val db: JdbcTemplate,
+    private val db: NamedParameterJdbcTemplate,
 ) {
     @Transactional
     fun tryLagreAktivitetDataBatch(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
@@ -61,7 +60,13 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 RAD_OPPRETTET,
                 RAD_OPPDATERT
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (
+                :aktivitetId, :aktorId, :aktivitetType, :aktivitetStatus, :endringsType,
+                :fraDato, :tilDato, :endretDato, :tiltakskode, :lagtInnAv,
+                :avtalt, :version, :historisk, :cvKanDelesStatus, :svarfristStillingFraNav,
+                :recordOffset, :recordPartition, :recordKey,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
             ON CONFLICT (AKTIVITET_ID) DO UPDATE
             SET AKTOR_ID = excluded.AKTOR_ID,
                 AKTIVITET_TYPE = excluded.AKTIVITET_TYPE,
@@ -84,31 +89,9 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             WHERE KAFKA_AKTIVITET_MELDING.VERSION <= excluded.VERSION
         """.trimIndent()
 
-        return db.batchUpdate(sql, object : BatchPreparedStatementSetter {
-            override fun setValues(ps: PreparedStatement, i: Int) {
-                val aktivitet = aktiviteter[i]
-                ps.setString(1, aktivitet.value.aktivitetId)
-                ps.setString(2, aktivitet.value.aktorId)
-                ps.setString(3, aktivitet.value.aktivitetType)
-                ps.setString(4, aktivitet.value.aktivitetStatus)
-                ps.setString(5, aktivitet.value.endringsType)
-                ps.setTimestamp(6, aktivitet.value.fraDato)
-                ps.setTimestamp(7, aktivitet.value.tilDato)
-                ps.setTimestamp(8, aktivitet.value.endretDato)
-                ps.setString(9, aktivitet.value.tiltakskode)
-                ps.setString(10, aktivitet.value.lagtInnAv)
-                ps.setBoolean(11, aktivitet.value.avtalt)
-                ps.setLong(12, aktivitet.value.version)
-                ps.setBoolean(13, aktivitet.value.historisk)
-                ps.setString(14, aktivitet.value.cvKanDelesStatus)
-                ps.setTimestamp(15, aktivitet.value.svarfristStillingFraNav)
-                ps.setLong(16, aktivitet.metadata.recordOffset)
-                ps.setInt(17, aktivitet.metadata.recordPartition)
-                ps.setString(18, aktivitet.metadata.recordKey)
-            }
+        val params = aktiviteter.map { it.toSqlParams() }.toTypedArray()
 
-            override fun getBatchSize(): Int = aktiviteter.size
-        })
+        return db.batchUpdate(sql, params)
     }
 
     private fun batchDeleteById(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {
@@ -118,19 +101,17 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
         val sql = """
             DELETE FROM KAFKA_AKTIVITET_MELDING
-            WHERE AKTIVITET_ID = ?
-              AND VERSION <= ?
+            WHERE AKTIVITET_ID = :aktivitetId
+              AND VERSION <= :version
         """.trimIndent()
 
-        return db.batchUpdate(sql, object : BatchPreparedStatementSetter {
-            override fun setValues(ps: PreparedStatement, i: Int) {
-                val aktivitet = aktiviteter[i]
-                ps.setString(1, aktivitet.value.aktivitetId)
-                ps.setLong(2, aktivitet.value.version)
-            }
+        val params = aktiviteter.map {
+            MapSqlParameterSource()
+                .addValue("aktivitetId", it.value.aktivitetId)
+                .addValue("version", it.value.version)
+        }.toTypedArray()
 
-            override fun getBatchSize(): Int = aktiviteter.size
-        })
+        return db.batchUpdate(sql, params)
     }
 
     private fun beholdSisteMeldingPerAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): List<KafkaAktivitetMeldingEntity> {
@@ -150,6 +131,26 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             Statement.EXECUTE_FAILED -> error("Batch-operasjon mot aktivitet-tabellen feilet.")
             else -> maxOf(updateCount, 0)
         }
+
+    private fun KafkaAktivitetMeldingEntity.toSqlParams() = MapSqlParameterSource()
+        .addValue("aktivitetId", value.aktivitetId)
+        .addValue("aktorId", value.aktorId)
+        .addValue("aktivitetType", value.aktivitetType)
+        .addValue("aktivitetStatus", value.aktivitetStatus)
+        .addValue("endringsType", value.endringsType)
+        .addValue("fraDato", value.fraDato)
+        .addValue("tilDato", value.tilDato)
+        .addValue("endretDato", value.endretDato)
+        .addValue("tiltakskode", value.tiltakskode)
+        .addValue("lagtInnAv", value.lagtInnAv)
+        .addValue("avtalt", value.avtalt)
+        .addValue("version", value.version)
+        .addValue("historisk", value.historisk)
+        .addValue("cvKanDelesStatus", value.cvKanDelesStatus)
+        .addValue("svarfristStillingFraNav", value.svarfristStillingFraNav)
+        .addValue("recordOffset", metadata.recordOffset)
+        .addValue("recordPartition", metadata.recordPartition)
+        .addValue("recordKey", metadata.recordKey)
 }
 
 data class PortefoljeAktivitetBatchResult(
