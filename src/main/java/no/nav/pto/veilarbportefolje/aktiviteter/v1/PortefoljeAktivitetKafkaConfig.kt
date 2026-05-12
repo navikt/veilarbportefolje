@@ -8,11 +8,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
+import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.KafkaException
 import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.listener.ConsumerRecordRecoverer
@@ -27,7 +29,7 @@ import java.time.Duration
  * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
  * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
  * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
- *   (10s → 20s → 40s → ... maks 1 time) heilt til batchen lykkast.
+ *   (10s → 20s → 40s → ... maks 1 time) i inntil 1 time før containeren stoppar.
  *   Offsets vert ALDRI committa for feila meldingar.
  */
 @Configuration
@@ -61,6 +63,8 @@ class PortefoljeAktivitetKafkaConfig {
     @Bean
     fun portefoljeAktivitetKafkaListenerContainerFactory(
         portefoljeAktivitetConsumerFactory: ConsumerFactory<String, PortefoljeAktivitetKafkaMelding>,
+        registry: KafkaListenerEndpointRegistry,
+        consumerState: PortefoljeAktivitetKafkaConsumerState,
     ): ConcurrentKafkaListenerContainerFactory<String, PortefoljeAktivitetKafkaMelding> =
         ConcurrentKafkaListenerContainerFactory<String, PortefoljeAktivitetKafkaMelding>().apply {
             setConsumerFactory(portefoljeAktivitetConsumerFactory)
@@ -68,31 +72,38 @@ class PortefoljeAktivitetKafkaConfig {
             setBatchListener(true)
             containerProperties.ackMode = ContainerProperties.AckMode.BATCH
             setAutoStartup(false)
-            setCommonErrorHandler(batchErrorHandler())
+            setCommonErrorHandler(batchErrorHandler(registry, consumerState))
         }
 
     /**
-     * Ved vedvarande feil: retry med capped exponential back-off utan å stoppe containeren.
-     * Då kan ikkje feature-toggle-sjekken restarte containeren og starte ein ny retry-syklus.
+     * Ved vedvarande feil: retry med capped exponential back-off før containeren stoppar.
+     * Feilstopp-state hindrar at feature-toggle-sjekken startar consumeren på nytt automatisk.
      */
-    private fun batchErrorHandler(): DefaultErrorHandler {
+    private fun batchErrorHandler(
+        registry: KafkaListenerEndpointRegistry,
+        consumerState: PortefoljeAktivitetKafkaConsumerState,
+    ): DefaultErrorHandler {
         val backOff = ExponentialBackOff().apply {
             initialInterval = TI_SEKUND
             multiplier = DOBLING
             maxInterval = EIN_TIME
-            maxElapsedTime = UENDELEG_TID
+            maxElapsedTime = EIN_TIME
         }
 
-        // Skal i praksis ikkje kallast med Long.MAX_VALUE, men hindrar offset-skip dersom back-off stoppar.
-        val failIfBackOffStopsRecoverer = ConsumerRecordRecoverer { _, exception ->
+        // Stopp containeren i staden for å recovere/skippa meldingar når back-off er brukt opp.
+        val stopContainerRecoverer = ConsumerRecordRecoverer { _, exception ->
+            consumerState.markerStoppetPaaGrunnAvVedvarendeFeil()
             log.error(
-                "Back-off stoppa uventa. Offsets er ikkje committa. Feiltype: {}",
+                "Back-off brukt opp — stoppar container. Offsets er ikkje committa. Feiltype: {}",
                 exception.javaClass.name
             )
+            CONTAINER_STOP_EXECUTOR.execute {
+                registry.getListenerContainer(PORTEFOLJE_AKTIVITET_CONTAINER_ID)?.stop()
+            }
             throw exception
         }
 
-        return DefaultErrorHandler(failIfBackOffStopsRecoverer, backOff).apply {
+        return DefaultErrorHandler(stopContainerRecoverer, backOff).apply {
             setLogLevel(KafkaException.Level.DEBUG)
             setRetryListeners(RetryLogger())
         }
@@ -110,9 +121,9 @@ class PortefoljeAktivitetKafkaConfig {
 
     private companion object {
         private val log = LoggerFactory.getLogger(PortefoljeAktivitetKafkaConfig::class.java)
+        private val CONTAINER_STOP_EXECUTOR = SimpleAsyncTaskExecutor("portefolje-aktivitet-container-stop-")
         private val TI_SEKUND = Duration.ofSeconds(10).toMillis()
         private const val DOBLING = 2.0
         private val EIN_TIME = Duration.ofHours(1).toMillis()
-        private const val UENDELEG_TID = Long.MAX_VALUE
     }
 }

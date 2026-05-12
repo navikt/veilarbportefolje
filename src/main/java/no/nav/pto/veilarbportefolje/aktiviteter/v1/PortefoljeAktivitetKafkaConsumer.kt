@@ -10,6 +10,8 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
+const val PORTEFOLJE_AKTIVITET_CONTAINER_ID = "portefolje-aktivitet-consumer"
+
 /**
  * Batch-consumer for aktivitet-meldinger fra Kafka.
  *
@@ -21,11 +23,12 @@ class PortefoljeAktivitetKafkaConsumer(
     private val aktivitetKafkaMeldingService: PortefoljeAktivitetKafkaMeldingService,
     private val registry: KafkaListenerEndpointRegistry,
     private val defaultUnleash: DefaultUnleash,
+    private val consumerState: PortefoljeAktivitetKafkaConsumerState,
 ) {
     private val kafkaAivenUnleash = KafkaAivenUnleash(defaultUnleash)
 
     @KafkaListener(
-        id = CONTAINER_ID,
+        id = PORTEFOLJE_AKTIVITET_CONTAINER_ID,
         idIsGroup = false,
         groupId = CONSUMER_GROUP_ID,
         topics = [AKTIVITET_TOPIC],
@@ -44,14 +47,24 @@ class PortefoljeAktivitetKafkaConsumer(
 
     @Scheduled(fixedDelay = 30_000, initialDelay = 5_000)
     fun sjekkToggle() {
-        val container = registry.getListenerContainer(CONTAINER_ID) ?: return
+        val container = registry.getListenerContainer(PORTEFOLJE_AKTIVITET_CONTAINER_ID) ?: return
 
-        if (skalKonsumere() && !container.isRunning) {
+        if (!skalKonsumere()) {
+            consumerState.nullstillFeilstopp()
+            if (container.isRunning) {
+                log.info("Stopper aktivitet-consumer (toggle er av).")
+                container.stop()
+            }
+            return
+        }
+
+        if (consumerState.erStoppetPaaGrunnAvVedvarendeFeil()) {
+            return
+        }
+
+        if (!container.isRunning) {
             log.info("Starter aktivitet-consumer (toggle er på).")
             container.start()
-        } else if (!skalKonsumere() && container.isRunning) {
-            log.info("Stopper aktivitet-consumer (toggle er av).")
-            container.stop()
         }
     }
 
@@ -60,7 +73,6 @@ class PortefoljeAktivitetKafkaConsumer(
 
     private companion object {
         private val log = LoggerFactory.getLogger(PortefoljeAktivitetKafkaConsumer::class.java)
-        private const val CONTAINER_ID = "portefolje-aktivitet-consumer"
         private const val CONSUMER_GROUP_ID = "veilarbportefolje-portefolje-aktivitet-consumer"
         const val AKTIVITET_TOPIC = "pto.aktivitet-portefolje-v1"
     }
