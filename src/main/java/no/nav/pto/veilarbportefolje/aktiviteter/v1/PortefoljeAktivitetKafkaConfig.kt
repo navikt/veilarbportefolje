@@ -20,13 +20,14 @@ import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.listener.DefaultErrorHandler
 import org.springframework.kafka.listener.RetryListener
 import org.springframework.util.backoff.ExponentialBackOff
+import java.time.Duration
 
 /**
  * Nøkkelvalg:
  * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
  * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
  * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
- *   (0.5s → 1s → 2s → ... maks 60s) heilt til batchen lykkast.
+ *   (0.5s → 1s → 2s → ... maks 10 minutt) heilt til batchen lykkast.
  *   Offsets vert ALDRI committa for feila meldingar.
  */
 @Configuration
@@ -76,10 +77,10 @@ class PortefoljeAktivitetKafkaConfig {
      */
     private fun batchErrorHandler(): DefaultErrorHandler {
         val backOff = ExponentialBackOff().apply {
-            initialInterval = 500L
-            multiplier = 2.0
-            maxInterval = 60_000L
-            maxElapsedTime = Long.MAX_VALUE
+            initialInterval = HALVT_SEKUND
+            multiplier = DOBLING
+            maxInterval = TI_MINUTT
+            maxElapsedTime = UENDELEG_TID
         }
 
         // Skal i praksis ikkje kallast med Long.MAX_VALUE, men hindrar offset-skip dersom back-off stoppar.
@@ -109,5 +110,9 @@ class PortefoljeAktivitetKafkaConfig {
 
     private companion object {
         private val log = LoggerFactory.getLogger(PortefoljeAktivitetKafkaConfig::class.java)
+        private val HALVT_SEKUND = Duration.ofMillis(500).toMillis()
+        private const val DOBLING = 2.0
+        private val TI_MINUTT = Duration.ofMinutes(10).toMillis()
+        private const val UENDELEG_TID = Long.MAX_VALUE
     }
 }
