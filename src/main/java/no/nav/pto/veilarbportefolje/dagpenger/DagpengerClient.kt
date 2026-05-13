@@ -6,10 +6,10 @@ import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerRequest
+import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpHeaders
-import tools.jackson.core.type.TypeReference
 import java.util.function.Supplier
 
 class DagpengerClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
@@ -48,7 +48,7 @@ class DagpengerClient(private val baseUrl: String, private val machineToMachineT
         client.newCall(request).execute().use { response ->
             RestUtils.throwIfNotSuccessful(response)
 
-            return RestUtils.parseJsonResponseOrThrow(response, object : TypeReference<List<DagpengerBeregningerResponseDto>>() {})
+            return response.deserializeJsonOrThrow()
         }
 
     }
