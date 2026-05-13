@@ -5,10 +5,10 @@ import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerRequest
 import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
-import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpHeaders
+import tools.jackson.core.type.TypeReference
 import java.util.function.Supplier
 
 
@@ -27,7 +27,7 @@ class TiltakspengerClient(private val baseUrl: String, private val machineToMach
         client.newCall(request).execute().use { response ->
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(response, object : TypeReference<List<TiltakspengerResponseDto>>() {})
         }
 
     }

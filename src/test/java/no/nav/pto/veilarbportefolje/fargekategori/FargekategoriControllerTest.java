@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
-import no.nav.common.json.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +100,7 @@ public class FargekategoriControllerTest {
                 """.replace("$uuid", uuid.toString())
                 .replace("$fnr", fnr.get())
                 .replace("$fargekategoriVerdi", fargekategoriVerdi.name())
-                .replace("$sistEndret", JsonUtils.toJson(sistEndret).replace("\"", ""))
+                .replace("$sistEndret", sistEndret.toString())
                 .replace("$endretAvVeileder", sistEndretAv.getValue());
 
         mockMvc.perform(

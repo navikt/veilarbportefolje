@@ -4,10 +4,10 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 import jakarta.ws.rs.core.HttpHeaders
 import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
-import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
+import tools.jackson.core.type.TypeReference
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.function.Supplier
@@ -33,7 +33,10 @@ class OppslagArbeidssoekerregisteretClient(
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(
+                response,
+                object : TypeReference<List<ArbeidssokerperiodeResponse>>() {}
+            )
         }
     }
 
@@ -55,7 +58,10 @@ class OppslagArbeidssoekerregisteretClient(
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(
+                response,
+                object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {}
+            )
         }
     }
 
@@ -74,7 +80,10 @@ class OppslagArbeidssoekerregisteretClient(
 
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(
+                response,
+                object : TypeReference<List<ProfileringResponse>>() {}
+            )
         }
     }
 }
