@@ -7,15 +7,14 @@ import java.time.LocalDate
 
 
 data class AapVedtakResponseDto(
-    val vedtak: List<Vedtak>
+    val vedtak: List<Vedtak>,
+    val sakstatus: String? = null,
 ) {
     data class Vedtak(
         val status: AapVedtakStatus,
         val saksnummer: String,
         val periode: Periode,
         val rettighetsType: AapRettighetstype,
-        val kildesystem: String,
-        val opphorsAarsak: String? = null,
     )
 
     data class Periode(
