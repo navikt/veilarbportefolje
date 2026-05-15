@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 data class AapVedtakResponseDto(
     val vedtak: List<Vedtak>,
-    val sakstatus: String? = null,
+    val sakstatus: String,
 ) {
     data class Vedtak(
         val status: AapVedtakStatus,

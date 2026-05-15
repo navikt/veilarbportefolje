@@ -35,16 +35,15 @@ class AapClientTest {
                             "fraOgMedDato": "2025-04-22",
                             "tilOgMedDato": "2026-04-21"
                           },
-                          "rettighetsType": "${AapRettighetstype.BISTANDSBEHOV}",
-                          "kildesystem": "KELVIN",
-                          "opphorsAarsak": null
+                          "rettighetsType": "${AapRettighetstype.BISTANDSBEHOV}"
                         }
-                      ]
+                      ],
+                      "sakstatus": "FERDIGBEHANDLET"
                     }
                 """.trimIndent()
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/kelvin/maksimumUtenUtbetaling")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/kelvin/obo")).withRequestBody(
                 WireMock.equalToJson(
                     "{\"personidentifikator\":\"$fnr\", \"fraOgMedDato\":\"2024-01-01\", \"tilOgMedDato\":\"2026-12-31\"}"
                 )
@@ -64,7 +63,8 @@ class AapClientTest {
                     ),
                     rettighetsType = AapRettighetstype.BISTANDSBEHOV
                 )
-            )
+            ),
+            sakstatus = "FERDIGBEHANDLET"
         )
 
         Assertions.assertThat(response).isEqualTo(forventet)
