@@ -114,7 +114,7 @@ class AapServiceTest(
                 anyString(),
                 anyString()
             )
-        ).thenReturn(AapVedtakResponseDto(emptyList()))
+        ).thenReturn(AapVedtakResponseDto(emptyList(),sakstatus = "FERDIGBEHANDLET"))
 
         // When
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
@@ -145,7 +145,7 @@ class AapServiceTest(
                 anyString(),
                 anyString()
             )
-        ).thenReturn(AapVedtakResponseDto(emptyList()))
+        ).thenReturn(AapVedtakResponseDto(emptyList(), sakstatus = "FERDIGBEHANDLET"))
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
         val lagretAapOppdater = aapRepository.hentAap(norskIdent.get())
         assertThat(lagretAapOppdater).isNull()
@@ -186,7 +186,7 @@ class AapServiceTest(
             )
         )
 
-        val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
+        val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig), sakstatus = "FERDIGBEHANDLET")
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
         val resultat = aapService.hentSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
@@ -389,7 +389,8 @@ val mockedVedtak = AapVedtakResponseDto.Vedtak(
 val mockedAapClientRespons = AapVedtakResponseDto(
     vedtak = listOf(
         mockedVedtak
-    )
+    ),
+    sakstatus = "FERDIGBEHANDLET"
 )
 
 val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
@@ -400,5 +401,6 @@ val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
                 tilOgMedDato = LocalDate.now().minusYears(2)
             )
         ),
-    )
+    ),
+    sakstatus = "FERDIGBEHANDLET"
 )
