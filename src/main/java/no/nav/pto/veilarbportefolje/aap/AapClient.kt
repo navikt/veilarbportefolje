@@ -18,7 +18,7 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
         val requestBody = AapVedtakRequest(personnr, fom, tom)
 
         val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "/kelvin/obo"))
+            .url(UrlUtils.joinPaths(baseUrl, "/kelvin/maksimumUtenUtbetaling"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .post(RestUtils.toJsonRequestBody(requestBody))
             .build()
