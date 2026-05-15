@@ -545,7 +545,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     private void mockHentAapResponse(Fnr fnr) {
-        AapVedtakResponseDto aapResponse = new AapVedtakResponseDto(Collections.emptyList());
+        AapVedtakResponseDto aapResponse = new AapVedtakResponseDto(Collections.emptyList(), "status");
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aapClient.hentAapVedtak(any(), any(), any())).thenReturn(aapResponse);
     }
