@@ -105,6 +105,8 @@ public class PostgresTable {
         public static final String YTELSER_AAP_STATUS = "YTELSER_AAP_STATUS";
         public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
         public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
+        public static final String YTELSER_AAP_MAKSDATO = "YTELSER_AAP_MAKSDATO";
+
 
         // YTELSER TILTAKSPENGER
         public static final String YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM = "YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM";
@@ -456,8 +458,8 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
-        public static final String OPPHORSAARSAK = "OPPHORSAARSAK";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+        public static final String MAKSDATO = "MAKSDATO";
     }
 
     public static final class YTELSER_TILTAKSPENGER {

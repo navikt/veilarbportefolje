@@ -202,7 +202,8 @@ object PortefoljebrukerFrontendModellMapper {
     private fun mapAapKelvin(opensearchBruker: PortefoljebrukerOpensearchModell): AapKelvin? {
         val vedtaksdato = opensearchBruker.aap_kelvin_tom_vedtaksdato
         val rettighet = opensearchBruker.aap_kelvin_rettighetstype
-        if (vedtaksdato == null && rettighet == null) {
+        val maksdato = opensearchBruker.aap_kelvin_maksdato
+        if (vedtaksdato == null && rettighet == null && maksdato == null) {
             return null
         }
         // TODO: 2026-01-05, Sondre
@@ -216,7 +217,8 @@ object PortefoljebrukerFrontendModellMapper {
 
         return AapKelvin(
             vedtaksdatoTilOgMed = vedtaksdato!!,
-            rettighetstype = rettighetTekst
+            rettighetstype = rettighetTekst,
+            maksdato = maksdato!!
         )
     }
 

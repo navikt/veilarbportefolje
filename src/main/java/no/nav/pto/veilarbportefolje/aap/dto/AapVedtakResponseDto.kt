@@ -14,15 +14,14 @@ data class AapVedtakResponseDto(
         val saksnummer: String,
         val periode: Periode,
         val rettighetsType: AapRettighetstype,
-        val kildesystem: String,
-        val opphorsAarsak: String? = null,
+        val opphorsAarsak: String? = null, // ikke klar og vil bli erstattet med noe annet
     )
 
     data class Periode(
-        @JsonFormat(pattern = "yyyy-MM-dd")
+        @param:JsonFormat(pattern = "yyyy-MM-dd")
         val fraOgMedDato: LocalDate,
 
-        @JsonFormat(pattern = "yyyy-MM-dd")
+        @param:JsonFormat(pattern = "yyyy-MM-dd")
         val tilOgMedDato: LocalDate
     )
 }

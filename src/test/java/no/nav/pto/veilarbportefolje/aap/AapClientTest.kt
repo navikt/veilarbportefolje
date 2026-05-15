@@ -62,9 +62,7 @@ class AapClientTest {
                         fraOgMedDato = LocalDate.parse("2025-04-22"),
                         tilOgMedDato = LocalDate.parse("2026-04-21")
                     ),
-                    rettighetsType = AapRettighetstype.BISTANDSBEHOV,
-                    kildesystem = "KELVIN",
-                    opphorsAarsak = null
+                    rettighetsType = AapRettighetstype.BISTANDSBEHOV
                 )
             )
         )

@@ -93,16 +93,23 @@ class AapService(
                 LocalDate.now().minusDays(1)
             )
 
+        //TODO: hent fra api når dette blir klart
+        val maksdato = null
+
         upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
         opensearchIndexerPaDatafelt.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
             sisteAapPeriode.periode.tilOgMedDato,
-            sisteAapPeriode.rettighetsType
+            sisteAapPeriode.rettighetsType,
+            maksdato
         )
     }
 
-    fun upsertAapForAktivIdentForBruker(personIdent: String, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+    fun upsertAapForAktivIdentForBruker(
+        personIdent: String,
+        sisteAapPeriode: AapVedtakResponseDto.Vedtak,
+    ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->

@@ -360,13 +360,15 @@ class OpensearchIndexerPaDatafelt(
         aktorId: AktorId,
         harAapKelvin: Boolean,
         tomVedtaksdato: LocalDate?,
-        rettighetstype: AapRettighetstype?
+        rettighetstype: AapRettighetstype?,
+        maksdato: LocalDate?
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .field(DatafeltKeys.Ytelser.AAP_KELVIN, harAapKelvin)
             .field(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
             .field(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN_MAKSDATO, maksdato)
             .endObject()
 
         update(aktorId, content, "Oppdatert aap kelvin for aktorId: $aktorId")
@@ -378,6 +380,7 @@ class OpensearchIndexerPaDatafelt(
             .field(DatafeltKeys.Ytelser.AAP_KELVIN, false)
             .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO)
             .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE)
+            .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_MAKSDATO)
             .endObject()
 
         update(aktorId, content, "Slettet aap kelvin for aktorId: $aktorId")

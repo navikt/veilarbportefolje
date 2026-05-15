@@ -29,7 +29,7 @@ class AapRepositoryTest(
         val ident = "123456789"
         val vedtak = aapVedtakDto
 
-        aapRepository.upsertAap(ident, vedtak)
+        aapRepository.upsertAap(ident, vedtak, null)
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -44,7 +44,6 @@ class AapRepositoryTest(
         val vedtak_nr1 = aapVedtakDto
 
         val vedtak_nr2 = vedtak_nr1.copy(
-            saksnummer = "SAK-2",
             periode = AapVedtakResponseDto.Periode(
                 fraOgMedDato = LocalDate.of(2025, 1, 1),
                 tilOgMedDato = LocalDate.of(2025, 12, 31)
@@ -91,9 +90,7 @@ class AapRepositoryTest(
             fraOgMedDato = LocalDate.of(2024, 1, 1),
             tilOgMedDato = LocalDate.of(2024, 12, 31)
         ),
-        kildesystem = "KELVIN",
-        rettighetsType = AapRettighetstype.ARBEIDSSØKER,
-        opphorsAarsak = null
+        rettighetsType = AapRettighetstype.ARBEIDSSØKER
     )
 
 }

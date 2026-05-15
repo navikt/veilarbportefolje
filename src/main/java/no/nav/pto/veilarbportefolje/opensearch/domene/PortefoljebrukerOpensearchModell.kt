@@ -118,6 +118,7 @@ data class PortefoljebrukerOpensearchModell(
     var aap_kelvin: Boolean = false,
     var aap_kelvin_rettighetstype: AapRettighetstype? = null,
     var aap_kelvin_tom_vedtaksdato: LocalDate? = null,
+    var aap_kelvin_maksdato: LocalDate? = null,
     var aapmaxtiduke: Int? = null,
     var aapordinerutlopsdato: LocalDate? = null,
     var aapunntakukerigjen: Int? = null,

@@ -378,9 +378,7 @@ val mockedYtelseAapMelding = YtelserKafkaDTO(
 
 val mockedVedtak = AapVedtakResponseDto.Vedtak(
     status = AapVedtakStatus.LØPENDE,
-    saksnummer = "S123",
     rettighetsType = AapRettighetstype.ARBEIDSSØKER,
-    kildesystem = "KILDE1",
     opphorsAarsak = null,
     periode = AapVedtakResponseDto.Periode(
         fraOgMedDato = LocalDate.now().minusMonths(1),
