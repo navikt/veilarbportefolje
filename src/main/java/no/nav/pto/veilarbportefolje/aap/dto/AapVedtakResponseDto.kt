@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.aap.dto
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import java.time.LocalDate
@@ -19,10 +18,8 @@ data class AapVedtakResponseDto(
     )
 
     data class Periode(
-        @JsonFormat(pattern = "yyyy-MM-dd")
         val fraOgMedDato: LocalDate,
 
-        @JsonFormat(pattern = "yyyy-MM-dd")
         val tilOgMedDato: LocalDate
     )
 }
