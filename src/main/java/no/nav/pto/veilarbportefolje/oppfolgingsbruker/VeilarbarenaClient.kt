@@ -5,7 +5,6 @@ import no.nav.common.rest.client.RestUtils
 import no.nav.common.rest.client.RestUtils.toJsonRequestBody
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.UrlUtils.joinPaths
-import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
@@ -36,7 +35,7 @@ class VeilarbarenaClient(
             RestUtils.throwIfNotSuccessful(response)
 
             return Optional.ofNullable(
-                response.deserializeJsonOrThrow()
+                RestUtils.parseJsonResponseOrThrow(response, OppfolgingsbrukerDTO::class.java)
             )
         }
     }

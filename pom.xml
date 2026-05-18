@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <common.version>3.2026.03.04_12.35-b34c347c6239</common.version>
+        <common.version>4.2026.05.05_06.25-f72fab488a93</common.version>
         <kotlin.version>2.3.10</kotlin.version>
         <jaxb.version>2.3.1</jaxb.version>
         <testcontainers.version>1.21.4</testcontainers.version>
@@ -183,10 +183,7 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.4.0-b180830.0359</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-kotlin</artifactId>
-        </dependency>
+
         <!-- database -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -281,7 +278,7 @@
         <dependency>
             <groupId>com.github.navikt.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2025.10.16_11.29-aaf8578da14c</version>
+            <version>4.2026.05.11_07.01-54ab6eae4dde</version>
         </dependency>
         <!--Logging-->
         <dependency>

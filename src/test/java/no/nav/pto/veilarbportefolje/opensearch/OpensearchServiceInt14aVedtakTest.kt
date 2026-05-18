@@ -38,7 +38,7 @@ class OpensearchServiceInt14aVedtakTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value
+        TEST_VEILEDER_0 = randomVeilederId().value!!
     }
 
     @Test

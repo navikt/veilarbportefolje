@@ -27,7 +27,7 @@ class DagpengerClient(private val baseUrl: String, private val machineToMachineT
         client.newCall(request).execute().use { response ->
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(response, DagpengerPerioderResponseDto::class.java)
         }
 
     }
@@ -54,4 +54,3 @@ class DagpengerClient(private val baseUrl: String, private val machineToMachineT
     }
 
 }
-
