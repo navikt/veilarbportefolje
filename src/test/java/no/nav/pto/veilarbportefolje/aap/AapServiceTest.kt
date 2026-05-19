@@ -189,7 +189,7 @@ class AapServiceTest(
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
         val resultat = aapService.hentVedtakMedSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
-        assertThat(resultat).isEqualTo(vedtakInnenfor)
+        assertThat(resultat?.vedtak[0]).isEqualTo(vedtakInnenfor)
     }
 
     @Test

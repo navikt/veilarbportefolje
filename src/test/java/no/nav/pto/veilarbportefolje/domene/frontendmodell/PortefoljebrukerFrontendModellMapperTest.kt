@@ -349,6 +349,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             aapmaxtiduke = 10,
             aapunntakukerigjen = 5,
             aapordinerutlopsdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin = true,
             aap_kelvin_rettighetstype = AapRettighetstype.VURDERES_FOR_UFØRETRYGD,
             aap_kelvin_tom_vedtaksdato = LocalDate.of(2026, 1, 1),
             tiltakspenger_rettighet = TILTAKSPENGER,
