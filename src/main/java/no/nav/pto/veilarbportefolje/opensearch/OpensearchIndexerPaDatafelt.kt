@@ -192,7 +192,7 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterVeileder(aktoerId: AktorId, veilederId: VeilederId, tildeltTidspunkt: ZonedDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.Oppfolging.VEILEDER_ID, veilederId.toString())
+            .field(DatafeltKeys.Oppfolging.VEILEDER_ID, veilederId.value)
             .field(DatafeltKeys.Oppfolging.NY_FOR_VEILEDER, true)
             .field(DatafeltKeys.Oppfolging.TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
             .endObject()

@@ -5,7 +5,6 @@ import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakRequest
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.util.deserializeJsonOrThrow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpHeaders
@@ -18,7 +17,7 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
         val requestBody = AapVedtakRequest(personnr, fom, tom)
 
         val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "/kelvin/maksimumUtenUtbetaling"))
+            .url(UrlUtils.joinPaths(baseUrl, "/kelvin/obo"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .post(RestUtils.toJsonRequestBody(requestBody))
             .build()
@@ -26,9 +25,8 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
         client.newCall(request).execute().use { response ->
             RestUtils.throwIfNotSuccessful(response)
 
-            return response.deserializeJsonOrThrow()
+            return RestUtils.parseJsonResponseOrThrow(response, AapVedtakResponseDto::class.java)
         }
 
     }
 }
-

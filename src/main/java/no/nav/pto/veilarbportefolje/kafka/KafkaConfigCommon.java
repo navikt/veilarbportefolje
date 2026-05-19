@@ -39,7 +39,6 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsst√
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
-import no.nav.pto.veilarbportefolje.kafka.deserializers.KotlinJsonDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -346,7 +345,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.SISTE_OPPFOLGINGS_PERIODE_V3.topicName,
                                         Deserializers.longDeserializer(),
-                                        new KotlinJsonDeserializer<>(SisteOppfolgingsperiodeV3Dto.class),
+                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV3Dto.class),
                                         oppfolgingPeriodeService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
@@ -426,7 +425,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new KotlinJsonDeserializer<>(YtelserKafkaDTO.class),
+                                        Deserializers.jsonDeserializer(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()

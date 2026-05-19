@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.core.type.TypeReference
+import tools.jackson.core.type.TypeReference
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -613,20 +612,15 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentArbeidssoekerPerioderResponse(fnr: Fnr, periodeId: UUID? = null) {
         val file = TestUtil.readFileAsJsonString("/arbeidssoekerperioder.json", javaClass)
         val arbeidssoekerResponse: List<ArbeidssokerperiodeResponse> =
-            objectMapper.readValue(
-                file,
-                object : TypeReference<List<ArbeidssokerperiodeResponse>>() {
-                })
+            JsonUtils.fromJson(file, object : TypeReference<List<ArbeidssokerperiodeResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(
             arbeidssoekerResponse.map { it.copy(periodeId = periodeId ?: it.periodeId) }
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentOpplysningerOmArbeidssoekerResponse(
         fnr: Fnr,
         periodeId: UUID,
@@ -634,10 +628,7 @@ class ArbeidssoekerServiceTest(
     ) {
         val file = TestUtil.readFileAsJsonString("/opplysningerOmArbeidssoeker.json", javaClass)
         val opplysningerOmArbeidssoekerResponse: List<OpplysningerOmArbeidssoekerResponse> =
-            objectMapper.readValue(
-                file,
-                object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {
-                })
+            JsonUtils.fromJson(file, object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(
             opplysningerOmArbeidssoekerResponse.map {
                 it.copy(
@@ -648,13 +639,10 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentProfileringResponse(fnr: Fnr, periodeId: UUID, opplysningerOmArbeidssoekerId: UUID? = null) {
         val file = TestUtil.readFileAsJsonString("/profilering.json", javaClass)
-        val profileringResponse: List<ProfileringResponse> = objectMapper.readValue(
-            file,
-            object : TypeReference<List<ProfileringResponse>>() {
-            })
+        val profileringResponse: List<ProfileringResponse> =
+            JsonUtils.fromJson(file, object : TypeReference<List<ProfileringResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(
             profileringResponse.map {
                 it.copy(
@@ -666,7 +654,7 @@ class ArbeidssoekerServiceTest(
     }
 
     private fun mockHentAapResponse(fnr: Fnr) {
-        val aapResponse = AapVedtakResponseDto(vedtak = listOf())
+        val aapResponse = AapVedtakResponseDto(vedtak = listOf(), sakstatus = "FERDIGBEHANDLET", maksdato = null)
         `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(aapResponse)
     }
