@@ -28,20 +28,26 @@ class AapRepositoryTest(
     fun `upsert med ny bruker skal inserte ny rad`() {
         val ident = "123456789"
         val vedtak = aapVedtakDto
+        val sakstatus = "FERDIGBEHANDLET"
+        val maksdato = LocalDate.of(2028, 12, 31)
 
-        aapRepository.upsertAap(ident, vedtak, null)
+        aapRepository.upsertAap(ident, vedtak, maksdato, sakstatus)
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
         assertThat(resultatAvHenting!!.status).isEqualTo(AapVedtakStatus.LØPENDE)
         assertThat(resultatAvHenting.periodeFom).isEqualTo(LocalDate.of(2024, 1, 1))
         assertThat(resultatAvHenting.periodeTom).isEqualTo(LocalDate.of(2024, 12, 31))
+        assertThat(resultatAvHenting.maksdato).isEqualTo(maksdato)
+        assertThat(resultatAvHenting.sakstatus).isEqualTo(sakstatus)
     }
 
     @Test
     fun `upsert med eksisterende bruker skal oppdatere ny rad`() {
         val ident = "123456789"
         val vedtak_nr1 = aapVedtakDto
+        val sakstatus = "FERDIGBEHANDLET"
+        val maksdato = LocalDate.of(2028, 12, 31)
 
         val vedtak_nr2 = vedtak_nr1.copy(
             periode = AapVedtakResponseDto.Periode(
@@ -50,8 +56,8 @@ class AapRepositoryTest(
             )
         )
 
-        aapRepository.upsertAap(ident, vedtak_nr1)
-        aapRepository.upsertAap(ident, vedtak_nr2)
+        aapRepository.upsertAap(ident, vedtak_nr1, maksdato, sakstatus)
+        aapRepository.upsertAap(ident, vedtak_nr2, maksdato, sakstatus)
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -72,8 +78,10 @@ class AapRepositoryTest(
     fun `slettAapForBruker skal slette rad`() {
         val ident = "123456789"
         val vedtak = aapVedtakDto
+        val sakstatus = "FERDIGBEHANDLET"
+        val maksdato = LocalDate.of(2028, 12, 31)
 
-        aapRepository.upsertAap(ident, vedtak)
+        aapRepository.upsertAap(ident, vedtak, maksdato, sakstatus)
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
 

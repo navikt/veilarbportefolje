@@ -359,8 +359,8 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterAapKelvin(
         aktorId: AktorId,
         harAapKelvin: Boolean,
-        tomVedtaksdato: LocalDate?,
-        rettighetstype: AapRettighetstype?,
+        tomVedtaksdato: LocalDate,
+        rettighetstype: AapRettighetstype,
         maksdato: LocalDate?
     ) {
         val content = XContentFactory.jsonBuilder()
