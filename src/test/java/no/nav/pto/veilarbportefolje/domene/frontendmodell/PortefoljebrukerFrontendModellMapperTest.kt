@@ -170,6 +170,17 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `veilederId kan vere null i frontendmodell`() {
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(veileder_id = null),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+
+        Assertions.assertEquals(null, frontendBruker.veilederId)
+    }
+
+    @Test
     fun `geografiskBosted skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             kommunenummer = "0301",
