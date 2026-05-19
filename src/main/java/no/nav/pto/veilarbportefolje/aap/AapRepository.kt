@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
 @Repository
-class AapRepository(@param:Autowired private val db: JdbcTemplate) {
+class AapRepository(private val db: JdbcTemplate) {
 
     fun upsertAap(
         norskIdent: NorskIdent,
@@ -55,11 +55,11 @@ class AapRepository(@param:Autowired private val db: JdbcTemplate) {
                 excluded.${YTELSER_AAP.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            aap.status.toString(),
+            aap.status.name,
             aap.saksnummer,
             aap.periode.fraOgMedDato,
             aap.periode.tilOgMedDato,
-            aap.rettighetsType.toString(),
+            aap.rettighetsType.name,
             maksdato,
             sakstatus
         )
