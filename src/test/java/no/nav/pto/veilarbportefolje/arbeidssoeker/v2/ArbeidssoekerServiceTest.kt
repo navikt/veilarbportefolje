@@ -654,7 +654,7 @@ class ArbeidssoekerServiceTest(
     }
 
     private fun mockHentAapResponse(fnr: Fnr) {
-        val aapResponse = AapVedtakResponseDto(vedtak = listOf())
+        val aapResponse = AapVedtakResponseDto(vedtak = listOf(), sakstatus = "FERDIGBEHANDLET", maksdato = null)
         `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(aapResponse)
     }

@@ -456,7 +456,6 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String RETTIGHETSTYPE = "RETTIGHETSTYPE";
-        public static final String OPPHORSAARSAK = "OPPHORSAARSAK";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 

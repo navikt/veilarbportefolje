@@ -91,9 +91,7 @@ class AapRepositoryTest(
             fraOgMedDato = LocalDate.of(2024, 1, 1),
             tilOgMedDato = LocalDate.of(2024, 12, 31)
         ),
-        kildesystem = "KELVIN",
-        rettighetsType = AapRettighetstype.ARBEIDSSØKER,
-        opphorsAarsak = null
+        rettighetsType = AapRettighetstype.ARBEIDSSØKER
     )
 
 }
