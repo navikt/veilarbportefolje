@@ -200,25 +200,20 @@ object PortefoljebrukerFrontendModellMapper {
     }
 
     private fun mapAapKelvin(opensearchBruker: PortefoljebrukerOpensearchModell): AapKelvin? {
+        if (!opensearchBruker.aap_kelvin) return null
         val vedtaksdato = opensearchBruker.aap_kelvin_tom_vedtaksdato
         val rettighet = opensearchBruker.aap_kelvin_rettighetstype
         val maksdato = opensearchBruker.aap_kelvin_maksdato
-        if (vedtaksdato == null && rettighet == null && maksdato == null) {
+        if (vedtaksdato == null || rettighet == null) {
             return null
         }
-        // TODO: 2026-01-05, Sondre
-        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet!!)
+
+        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet)
 
         return AapKelvin(
-            vedtaksdatoTilOgMed = vedtaksdato!!,
+            vedtaksdatoTilOgMed = vedtaksdato,
             rettighetstype = rettighetTekst,
-            maksdato = maksdato!!
+            maksdato = maksdato
         )
     }
 

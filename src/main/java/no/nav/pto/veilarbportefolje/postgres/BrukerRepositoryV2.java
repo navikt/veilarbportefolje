@@ -127,7 +127,7 @@ public class BrukerRepositoryV2 {
                                YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
                                YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
                                YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
-                               YTELSER_AAP.MAKSDATO                                     as YTELSER_AAP_MAKSDATO,    
+                               YTELSER_AAP.MAKSDATO                                     as YTELSER_AAP_MAKSDATO,
                                YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
                                YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
                                YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
@@ -276,9 +276,9 @@ public class BrukerRepositoryV2 {
         AapRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : AapRettighetstype.valueOf(rettighetstype);
 
         brukerOpensearchModell.setAap_kelvin(vedtakErFortsattGjeldende);
-        brukerOpensearchModell.setAap_kelvin_tom_vedtaksdato(vedtaksDatoTom);
-        brukerOpensearchModell.setAap_kelvin_rettighetstype(rettighetstypeOrNull);
-        brukerOpensearchModell.setAap_kelvin_maksdato(maksdato);
+        brukerOpensearchModell.setAap_kelvin_tom_vedtaksdato(vedtakErFortsattGjeldende ? vedtaksDatoTom : null);
+        brukerOpensearchModell.setAap_kelvin_rettighetstype(vedtakErFortsattGjeldende ? rettighetstypeOrNull: null);
+        brukerOpensearchModell.setAap_kelvin_maksdato(vedtakErFortsattGjeldende ? maksdato: null);
     }
 
     @SneakyThrows

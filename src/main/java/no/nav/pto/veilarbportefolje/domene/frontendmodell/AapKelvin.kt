@@ -5,5 +5,5 @@ import java.time.LocalDate
 data class AapKelvin(
     val vedtaksdatoTilOgMed: LocalDate,
     val rettighetstype: String,
-    val maksdato: LocalDate,
+    val maksdato: LocalDate?,
 )

@@ -41,6 +41,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.HO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TALESPRAAK_TOLK
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TEGNSPRAAK_TOLK
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Personalia.TOLKBEHOV_SIST_OPPDATERT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN_MAKSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.AAP_MAXTID_UKE
@@ -313,6 +314,11 @@ class OpensearchSortQueryBuilder {
 
             Sorteringsfelt.AAP_KELVIN_TOM_VEDTAKSDATO -> {
                 sorterAapKelvinTomVedtaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.AAP_KELVIN_MAKSDATO -> {
+                sorterAapKelvinMaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -598,6 +604,22 @@ class OpensearchSortQueryBuilder {
         val expression = """
                     if (doc.containsKey('$AAP_KELVIN_TOM_VEDTAKSDATO') && !doc['$AAP_KELVIN_TOM_VEDTAKSDATO'].empty) {
                         return doc['$AAP_KELVIN_TOM_VEDTAKSDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterAapKelvinMaksdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$AAP_KELVIN_MAKSDATO') && !doc['$AAP_KELVIN_MAKSDATO'].empty) {
+                        return doc['$AAP_KELVIN_MAKSDATO'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }
