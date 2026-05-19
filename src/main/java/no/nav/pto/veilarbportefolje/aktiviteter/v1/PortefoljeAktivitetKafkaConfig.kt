@@ -26,7 +26,7 @@ import java.time.Duration
 
 /**
  * Nøkkelvalg:
- * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar sekvensielt.
+ * - concurrency=1: Garanterer rekkefølge — éin tråd prosesserer alle partisjonar (som consumeren får tildelt) sekvensielt.
  * - autoStartup=false: Consumeren styres av Unleash-toggle i [PortefoljeAktivitetKafkaConsumer].
  * - DefaultErrorHandler med ExponentialBackOff: Ved vedvarande feil, retry med aukande ventetid
  *   (10s → 20s → 40s → ... maks 1 time) i inntil 1 time før containeren stoppar.
