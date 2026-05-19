@@ -2,137 +2,106 @@ package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import no.nav.pto.veilarbportefolje.kafka.KafkaMeldingMedMetadata
-import no.nav.pto.veilarbportefolje.util.DateUtils
-import java.sql.Timestamp
-import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PortefoljeAktivitetKafkaMelding(
-    @param:JsonProperty("aktivitetId")
-    val aktivitetId: String? = null,
-    @param:JsonProperty("version")
-    val version: Long? = null,
-    @param:JsonProperty("aktorId")
-    val aktorId: String? = null,
+    @param:JsonProperty("aktivitetId", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val aktivitetId: String,
+    @param:JsonProperty("version", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val version: Long,
+    @param:JsonProperty("aktorId", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val aktorId: String,
     @param:JsonProperty("fraDato")
-    val fraDato: Date? = null,
+    val fraDato: String? = null,
     @param:JsonProperty("tilDato")
-    val tilDato: Date? = null,
+    val tilDato: String? = null,
     @param:JsonProperty("endretDato")
-    val endretDato: Date? = null,
-    @param:JsonProperty("aktivitetType")
-    val aktivitetType: AktivitetTypeDTO? = null,
-    @param:JsonProperty("aktivitetStatus")
-    val aktivitetStatus: AktivitetStatus? = null,
-    @param:JsonProperty("endringsType")
-    val endringsType: EndringsType? = null,
-    @param:JsonProperty("lagtInnAv")
-    val lagtInnAv: Innsender? = null,
+    val endretDato: String? = null,
+    @param:JsonProperty("aktivitetType", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val aktivitetType: String,
+    @param:JsonProperty("aktivitetStatus", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val aktivitetStatus: String,
+    @param:JsonProperty("endringsType", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val endringsType: String,
+    @param:JsonProperty("lagtInnAv", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val lagtInnAv: String,
     @param:JsonProperty("stillingFraNavData")
     val stillingFraNavData: StillingFraNavPortefoljeData? = null,
-    @param:JsonProperty("avtalt")
-    val avtalt: Boolean = false,
-    @param:JsonProperty("historisk")
-    val historisk: Boolean = false,
+    @param:JsonProperty("avtalt", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val avtalt: Boolean,
+    @param:JsonProperty("historisk", required = true)
+    @param:JsonSetter(nulls = Nulls.FAIL)
+    val historisk: Boolean,
     @param:JsonProperty("tiltakskode")
     val tiltakskode: String? = null,
 ) {
     fun toEntity(metadata: KafkaMeldingMetadata): KafkaAktivitetMeldingEntity {
         return KafkaAktivitetMeldingEntity(
-            value = KafkaAktivitetMeldingValue(
-                aktivitetId = requireNotNull(aktivitetId) { "Mangler aktivitetId i aktivitet-melding" },
-                aktorId = requireNotNull(aktorId) { "Mangler aktorId i aktivitet-melding" },
-                aktivitetType = requireNotNull(aktivitetType) { "Mangler aktivitetType i aktivitet-melding" }.name,
-                aktivitetStatus = requireNotNull(aktivitetStatus) { "Mangler aktivitetStatus i aktivitet-melding" }.name,
-                endringsType = requireNotNull(endringsType) { "Mangler endringsType i aktivitet-melding" }.name,
-                fraDato = DateUtils.dateToTimestamp(fraDato),
-                tilDato = DateUtils.dateToTimestamp(tilDato),
-                endretDato = DateUtils.dateToTimestamp(endretDato),
-                tiltakskode = tiltakskode,
-                lagtInnAv = requireNotNull(lagtInnAv) { "Mangler lagtInnAv i aktivitet-melding" }.name,
-                avtalt = avtalt,
-                version = requireNotNull(version) { "Mangler version i aktivitet-melding" },
-                historisk = historisk,
-                cvKanDelesStatus = stillingFraNavData?.cvKanDelesStatus?.name,
-                svarfristStillingFraNav = stillingFraNavData?.svarfrist?.toLocalDate()?.let(DateUtils::toTimestamp),
-            ),
-            metadata = metadata,
+            aktivitetId = aktivitetId,
+            aktorId = aktorId,
+            aktivitetType = aktivitetType,
+            aktivitetStatus = aktivitetStatus,
+            endringsType = endringsType,
+            fraDato = fraDato,
+            tilDato = tilDato,
+            endretDato = endretDato,
+            tiltakskode = tiltakskode,
+            lagtInnAv = lagtInnAv,
+            avtalt = avtalt,
+            version = version,
+            historisk = historisk,
+            cvKanDelesStatus = stillingFraNavData?.cvKanDelesStatus,
+            svarfristStillingFraNav = stillingFraNavData?.svarfrist,
+            recordOffset = metadata.recordOffset,
+            recordPartition = metadata.recordPartition,
+            recordKey = metadata.recordKey,
         )
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class StillingFraNavPortefoljeData(
         @param:JsonProperty("cvKanDelesStatus")
-        val cvKanDelesStatus: CvKanDelesStatus? = null,
+        val cvKanDelesStatus: String? = null,
         @param:JsonProperty("svarfrist")
-        val svarfrist: java.sql.Date? = null,
+        val svarfrist: String? = null,
     )
-
-    enum class AktivitetStatus {
-        PLANLAGT,
-        GJENNOMFORES,
-        FULLFORT,
-        BRUKER_ER_INTERESSERT,
-        AVBRUTT,
-    }
-
-    enum class AktivitetTypeDTO {
-        EGEN,
-        STILLING,
-        SOKEAVTALE,
-        IJOBB,
-        BEHANDLING,
-        MOTE,
-        SAMTALEREFERAT,
-        STILLING_FRA_NAV,
-        TILTAK,
-    }
-
-    enum class EndringsType {
-        OPPRETTET,
-        FLYTTET,
-        REDIGERT,
-        HISTORISK,
-    }
-
-    enum class Innsender {
-        BRUKER,
-        NAV,
-        ARBEIDSGIVER,
-        TILTAKSARRANGOER,
-        ARENAIDENT,
-        SYSTEM,
-    }
-
-    enum class CvKanDelesStatus {
-        JA,
-        NEI,
-        IKKE_SVART,
-    }
 }
 
 data class KafkaAktivitetMeldingEntity(
-    val value: KafkaAktivitetMeldingValue,
-    val metadata: KafkaMeldingMetadata,
-)
-
-data class KafkaAktivitetMeldingValue(
+    // Aktivitetdata frå Kafka-meldinga
     val aktivitetId: String,
     val aktorId: String,
     val aktivitetType: String,
     val aktivitetStatus: String,
     val endringsType: String,
-    val fraDato: Timestamp?,
-    val tilDato: Timestamp?,
-    val endretDato: Timestamp?,
+    val fraDato: String?,
+    val tilDato: String?,
+    val endretDato: String?,
     val tiltakskode: String?,
     val lagtInnAv: String,
     val avtalt: Boolean,
     val version: Long,
     val historisk: Boolean,
+
+    // Stilling fra Nav-data frå nested Kafka-payload
     val cvKanDelesStatus: String?,
-    val svarfristStillingFraNav: Timestamp?,
+    val svarfristStillingFraNav: String?,
+
+    // Kafka-metadata
+    val recordOffset: Long,
+    val recordPartition: Int,
+    val recordKey: String,
 )
 
 data class KafkaMeldingMetadata(
@@ -147,7 +116,7 @@ fun KafkaMeldingMedMetadata<PortefoljeAktivitetKafkaMelding>.toEntity(): KafkaAk
             recordOffset = metadata.offset,
             recordPartition = metadata.partition,
             recordKey = requireNotNull(metadata.key) {
-                "Kafka-record mangler key for aktivitetId=${value.aktivitetId}"
+                "Kafka-record mangler key for aktivitet-melding"
             },
         ),
     )

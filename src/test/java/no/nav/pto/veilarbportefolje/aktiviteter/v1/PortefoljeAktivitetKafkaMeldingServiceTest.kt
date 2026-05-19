@@ -6,9 +6,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
-import java.sql.Date as SqlDate
-import java.time.Instant
-import java.util.Date as UtilDate
 
 class PortefoljeAktivitetKafkaMeldingServiceTest {
     private val repository = mock(PortefoljeAktivitetKafkaMeldingRepository::class.java)
@@ -65,16 +62,16 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
         aktivitetId = aktivitetId,
         version = 2,
         aktorId = "aktor-1",
-        fraDato = UtilDate.from(Instant.parse("2024-01-01T10:15:30Z")),
-        tilDato = UtilDate.from(Instant.parse("2024-02-01T10:15:30Z")),
-        endretDato = UtilDate.from(Instant.parse("2024-03-01T10:15:30Z")),
-        aktivitetType = PortefoljeAktivitetKafkaMelding.AktivitetTypeDTO.STILLING_FRA_NAV,
-        aktivitetStatus = PortefoljeAktivitetKafkaMelding.AktivitetStatus.GJENNOMFORES,
-        endringsType = PortefoljeAktivitetKafkaMelding.EndringsType.REDIGERT,
-        lagtInnAv = PortefoljeAktivitetKafkaMelding.Innsender.NAV,
+        fraDato = "2024-01-01T10:15:30Z",
+        tilDato = "2024-02-01T10:15:30Z",
+        endretDato = "2024-03-01T10:15:30Z",
+        aktivitetType = "STILLING_FRA_NAV",
+        aktivitetStatus = "GJENNOMFORES",
+        endringsType = "REDIGERT",
+        lagtInnAv = "NAV",
         stillingFraNavData = PortefoljeAktivitetKafkaMelding.StillingFraNavPortefoljeData(
-            cvKanDelesStatus = PortefoljeAktivitetKafkaMelding.CvKanDelesStatus.IKKE_SVART,
-            svarfrist = SqlDate.valueOf("2024-04-01"),
+            cvKanDelesStatus = "IKKE_SVART",
+            svarfrist = "2024-04-01",
         ),
         avtalt = true,
         historisk = false,

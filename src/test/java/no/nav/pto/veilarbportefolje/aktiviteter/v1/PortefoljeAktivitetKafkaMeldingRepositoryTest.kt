@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Timestamp
-import java.time.Instant
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PortefoljeAktivitetKafkaMeldingRepositoryTest(
@@ -28,16 +27,16 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         val aktivitet = aktivitetEntity()
 
         val resultat = repository.tryLagreAktivitetDataBatch(listOf(aktivitet))
-        val rad = hentRad(aktivitet.value.aktivitetId)
+        val rad = hentRad(aktivitet.aktivitetId)
 
         assertThat(resultat.prosesserte).isEqualTo(1)
         assertThat(rad).isNotNull
-        assertThat(rad!!["aktor_id"]).isEqualTo(aktivitet.value.aktorId)
-        assertThat(rad["aktivitet_type"]).isEqualTo(aktivitet.value.aktivitetType)
-        assertThat(rad["tiltakskode"]).isEqualTo(aktivitet.value.tiltakskode)
-        assertThat(rad["record_offset"]).isEqualTo(aktivitet.metadata.recordOffset)
-        assertThat(rad["record_partition"]).isEqualTo(aktivitet.metadata.recordPartition)
-        assertThat(rad["record_key"]).isEqualTo(aktivitet.metadata.recordKey)
+        assertThat(rad!!["aktor_id"]).isEqualTo(aktivitet.aktorId)
+        assertThat(rad["aktivitet_type"]).isEqualTo(aktivitet.aktivitetType)
+        assertThat(rad["tiltakskode"]).isEqualTo(aktivitet.tiltakskode)
+        assertThat(rad["record_offset"]).isEqualTo(aktivitet.recordOffset)
+        assertThat(rad["record_partition"]).isEqualTo(aktivitet.recordPartition)
+        assertThat(rad["record_key"]).isEqualTo(aktivitet.recordKey)
         assertThat(rad["rad_opprettet"]).isInstanceOf(Timestamp::class.java)
         assertThat(rad["rad_oppdatert"]).isInstanceOf(Timestamp::class.java)
     }
@@ -46,7 +45,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     fun `skal oppdatere aktivitet naar version er nyere og oppdatere rad_oppdatert`() {
         val opprinnelig = aktivitetEntity(version = 1, aktivitetStatus = "PLANLAGT", recordOffset = 10)
         repository.tryLagreAktivitetDataBatch(listOf(opprinnelig))
-        val radFoer = hentRad(opprinnelig.value.aktivitetId)!!
+        val radFoer = hentRad(opprinnelig.aktivitetId)!!
         val radOpprettetFoer = radFoer["rad_opprettet"] as Timestamp
         val radOppdatertFoer = radFoer["rad_oppdatert"] as Timestamp
 
@@ -54,7 +53,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
         val oppdatert = aktivitetEntity(version = 2, aktivitetStatus = "FULLFORT", recordOffset = 11, recordKey = "ny-key")
         val resultat = repository.tryLagreAktivitetDataBatch(listOf(oppdatert))
-        val radEtter = hentRad(opprinnelig.value.aktivitetId)!!
+        val radEtter = hentRad(opprinnelig.aktivitetId)!!
 
         assertThat(resultat.prosesserte).isEqualTo(1)
         assertThat(radEtter["version"]).isEqualTo(2L)
@@ -236,27 +235,23 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         recordPartition: Int = 3,
         recordKey: String = aktivitetId,
     ) = KafkaAktivitetMeldingEntity(
-        value = KafkaAktivitetMeldingValue(
-            aktivitetId = aktivitetId,
-            aktorId = "aktor-1",
-            aktivitetType = "TILTAK",
-            aktivitetStatus = aktivitetStatus,
-            endringsType = "OPPRETTET",
-            fraDato = Timestamp.from(Instant.parse("2024-01-01T10:15:30Z")),
-            tilDato = Timestamp.from(Instant.parse("2024-02-01T10:15:30Z")),
-            endretDato = Timestamp.from(Instant.parse("2024-03-01T10:15:30Z")),
-            tiltakskode = "ARBFORB",
-            lagtInnAv = "NAV",
-            avtalt = true,
-            version = version,
-            historisk = historisk,
-            cvKanDelesStatus = "IKKE_SVART",
-            svarfristStillingFraNav = Timestamp.from(Instant.parse("2024-04-01T00:00:00Z")),
-        ),
-        metadata = KafkaMeldingMetadata(
-            recordOffset = recordOffset,
-            recordPartition = recordPartition,
-            recordKey = recordKey,
-        ),
+        aktivitetId = aktivitetId,
+        aktorId = "aktor-1",
+        aktivitetType = "TILTAK",
+        aktivitetStatus = aktivitetStatus,
+        endringsType = "OPPRETTET",
+        fraDato = "2024-01-01T10:15:30Z",
+        tilDato = "2024-02-01T10:15:30Z",
+        endretDato = "2024-03-01T10:15:30Z",
+        tiltakskode = "ARBFORB",
+        lagtInnAv = "NAV",
+        avtalt = true,
+        version = version,
+        historisk = historisk,
+        cvKanDelesStatus = "IKKE_SVART",
+        svarfristStillingFraNav = "2024-04-01",
+        recordOffset = recordOffset,
+        recordPartition = recordPartition,
+        recordKey = recordKey,
     )
 }

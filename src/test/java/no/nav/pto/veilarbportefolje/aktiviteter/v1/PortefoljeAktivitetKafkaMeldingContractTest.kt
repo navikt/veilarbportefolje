@@ -2,10 +2,8 @@ package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import java.util.*
 
 class PortefoljeAktivitetKafkaMeldingContractTest {
     private val deserializer = Deserializers.jsonDeserializer(PortefoljeAktivitetKafkaMelding::class.java)
@@ -39,15 +37,15 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
         assertThat(resultat!!.aktivitetId).isEqualTo("144136")
         assertThat(resultat.version).isEqualTo(1L)
         assertThat(resultat.aktorId).isEqualTo("123456789")
-        assertThat(resultat.fraDato).isEqualTo(date("2020-07-09T12:00:00+02:00"))
+        assertThat(resultat.fraDato).isEqualTo("2020-07-09T12:00:00+02:00")
         assertThat(resultat.tilDato).isNull()
-        assertThat(resultat.endretDato).isEqualTo(date("2020-05-28T09:47:42.48+02:00"))
-        assertThat(resultat.aktivitetType).isEqualTo(PortefoljeAktivitetKafkaMelding.AktivitetTypeDTO.STILLING_FRA_NAV)
-        assertThat(resultat.aktivitetStatus).isEqualTo(PortefoljeAktivitetKafkaMelding.AktivitetStatus.FULLFORT)
-        assertThat(resultat.endringsType).isEqualTo(PortefoljeAktivitetKafkaMelding.EndringsType.OPPRETTET)
-        assertThat(resultat.lagtInnAv).isEqualTo(PortefoljeAktivitetKafkaMelding.Innsender.NAV)
-        assertThat(resultat.stillingFraNavData?.cvKanDelesStatus).isEqualTo(PortefoljeAktivitetKafkaMelding.CvKanDelesStatus.IKKE_SVART)
-        assertThat(resultat.stillingFraNavData?.svarfrist?.toLocalDate()).isEqualTo(LocalDate.parse("2022-08-18"))
+        assertThat(resultat.endretDato).isEqualTo("2020-05-28T09:47:42.48+02:00")
+        assertThat(resultat.aktivitetType).isEqualTo("STILLING_FRA_NAV")
+        assertThat(resultat.aktivitetStatus).isEqualTo("FULLFORT")
+        assertThat(resultat.endringsType).isEqualTo("OPPRETTET")
+        assertThat(resultat.lagtInnAv).isEqualTo("NAV")
+        assertThat(resultat.stillingFraNavData?.cvKanDelesStatus).isEqualTo("IKKE_SVART")
+        assertThat(resultat.stillingFraNavData?.svarfrist).isEqualTo("2022-08-18")
         assertThat(resultat.avtalt).isTrue()
         assertThat(resultat.historisk).isFalse()
     }
@@ -76,10 +74,72 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
         val resultat = deserializer.deserialize("pto.portefolje-aktivitet-v1", payload.toByteArray())
 
         assertThat(resultat).isNotNull
-        assertThat(resultat!!.aktivitetType).isEqualTo(PortefoljeAktivitetKafkaMelding.AktivitetTypeDTO.TILTAK)
+        assertThat(resultat!!.aktivitetType).isEqualTo("TILTAK")
         assertThat(resultat.tiltakskode).isEqualTo("ARBFORB")
-        assertThat(resultat.lagtInnAv).isEqualTo(PortefoljeAktivitetKafkaMelding.Innsender.SYSTEM)
+        assertThat(resultat.lagtInnAv).isEqualTo("SYSTEM")
     }
 
-    private fun date(value: String): Date = Date.from(ZonedDateTime.parse(value).toInstant())
+    @Test
+    fun `skal feile deserialisering naar paakrevd felt mangler`() {
+        val payload = """
+            {
+              "aktivitetId": "200",
+              "version": 2,
+              "fraDato": null,
+              "tilDato": null,
+              "endretDato": null,
+              "aktivitetType": "TILTAK",
+              "aktivitetStatus": "GJENNOMFORES",
+              "endringsType": "REDIGERT",
+              "lagtInnAv": "SYSTEM",
+              "avtalt": false,
+              "historisk": false
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            deserializer.deserialize("pto.portefolje-aktivitet-v1", payload.toByteArray())
+        }.isInstanceOf(RuntimeException::class.java)
+    }
+
+    @Test
+    fun `skal feile deserialisering naar paakrevd boolean-felt mangler`() {
+        val payload = """
+            {
+              "aktivitetId": "200",
+              "version": 2,
+              "aktorId": "999",
+              "aktivitetType": "TILTAK",
+              "aktivitetStatus": "GJENNOMFORES",
+              "endringsType": "REDIGERT",
+              "lagtInnAv": "SYSTEM",
+              "historisk": false
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            deserializer.deserialize("pto.portefolje-aktivitet-v1", payload.toByteArray())
+        }.isInstanceOf(RuntimeException::class.java)
+    }
+
+    @Test
+    fun `skal feile deserialisering naar paakrevd boolean-felt er null`() {
+        val payload = """
+            {
+              "aktivitetId": "200",
+              "version": 2,
+              "aktorId": "999",
+              "aktivitetType": "TILTAK",
+              "aktivitetStatus": "GJENNOMFORES",
+              "endringsType": "REDIGERT",
+              "lagtInnAv": "SYSTEM",
+              "avtalt": null,
+              "historisk": false
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            deserializer.deserialize("pto.portefolje-aktivitet-v1", payload.toByteArray())
+        }.isInstanceOf(RuntimeException::class.java)
+    }
 }

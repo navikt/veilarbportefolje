@@ -17,8 +17,8 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }
 
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val slettinger = endeligeAktiviteter.filter { it.value.historisk }
-        val upserts = endeligeAktiviteter.filterNot { it.value.historisk }
+        val slettinger = endeligeAktiviteter.filter { it.historisk }
+        val upserts = endeligeAktiviteter.filterNot { it.historisk }
 
         val prosesserteSlettinger = batchDeleteById(slettinger).sumOf(::normaliserUpdateCount)
         val prosesserteUpserts = batchUpsertAktivitet(upserts).sumOf(::normaliserUpdateCount)
@@ -107,8 +107,8 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
         val params = aktiviteter.map {
             MapSqlParameterSource()
-                .addValue("aktivitetId", it.value.aktivitetId)
-                .addValue("version", it.value.version)
+                .addValue("aktivitetId", it.aktivitetId)
+                .addValue("version", it.version)
         }.toTypedArray()
 
         return db.batchUpdate(sql, params)
@@ -118,8 +118,8 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         val sisteMeldingPerAktivitet = linkedMapOf<String, KafkaAktivitetMeldingEntity>()
 
         aktiviteter.forEach { aktivitet ->
-            sisteMeldingPerAktivitet.remove(aktivitet.value.aktivitetId)
-            sisteMeldingPerAktivitet[aktivitet.value.aktivitetId] = aktivitet
+            sisteMeldingPerAktivitet.remove(aktivitet.aktivitetId)
+            sisteMeldingPerAktivitet[aktivitet.aktivitetId] = aktivitet
         }
 
         return sisteMeldingPerAktivitet.values.toList()
@@ -133,24 +133,24 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }
 
     private fun KafkaAktivitetMeldingEntity.toSqlParams() = MapSqlParameterSource()
-        .addValue("aktivitetId", value.aktivitetId)
-        .addValue("aktorId", value.aktorId)
-        .addValue("aktivitetType", value.aktivitetType)
-        .addValue("aktivitetStatus", value.aktivitetStatus)
-        .addValue("endringsType", value.endringsType)
-        .addValue("fraDato", value.fraDato)
-        .addValue("tilDato", value.tilDato)
-        .addValue("endretDato", value.endretDato)
-        .addValue("tiltakskode", value.tiltakskode)
-        .addValue("lagtInnAv", value.lagtInnAv)
-        .addValue("avtalt", value.avtalt)
-        .addValue("version", value.version)
-        .addValue("historisk", value.historisk)
-        .addValue("cvKanDelesStatus", value.cvKanDelesStatus)
-        .addValue("svarfristStillingFraNav", value.svarfristStillingFraNav)
-        .addValue("recordOffset", metadata.recordOffset)
-        .addValue("recordPartition", metadata.recordPartition)
-        .addValue("recordKey", metadata.recordKey)
+        .addValue("aktivitetId", aktivitetId)
+        .addValue("aktorId", aktorId)
+        .addValue("aktivitetType", aktivitetType)
+        .addValue("aktivitetStatus", aktivitetStatus)
+        .addValue("endringsType", endringsType)
+        .addValue("fraDato", fraDato)
+        .addValue("tilDato", tilDato)
+        .addValue("endretDato", endretDato)
+        .addValue("tiltakskode", tiltakskode)
+        .addValue("lagtInnAv", lagtInnAv)
+        .addValue("avtalt", avtalt)
+        .addValue("version", version)
+        .addValue("historisk", historisk)
+        .addValue("cvKanDelesStatus", cvKanDelesStatus)
+        .addValue("svarfristStillingFraNav", svarfristStillingFraNav)
+        .addValue("recordOffset", recordOffset)
+        .addValue("recordPartition", recordPartition)
+        .addValue("recordKey", recordKey)
 }
 
 data class PortefoljeAktivitetBatchResult(
