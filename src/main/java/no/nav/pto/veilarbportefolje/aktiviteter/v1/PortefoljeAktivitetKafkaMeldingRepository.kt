@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
+import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -38,27 +39,27 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }
 
         val sql = """
-            INSERT INTO KAFKA_AKTIVITET_MELDING (
-                AKTIVITET_ID,
-                AKTOR_ID,
-                AKTIVITET_TYPE,
-                AKTIVITET_STATUS,
-                ENDRINGS_TYPE,
-                FRA_DATO,
-                TIL_DATO,
-                ENDRET_DATO,
-                TILTAKSKODE,
-                LAGT_INN_AV,
-                AVTALT,
-                VERSION,
-                HISTORISK,
-                CV_KAN_DELES_STATUS,
-                SVARFRIST_STILLING_FRA_NAV,
-                RECORD_OFFSET,
-                RECORD_PARTITION,
-                RECORD_KEY,
-                RAD_OPPRETTET,
-                RAD_OPPDATERT
+            INSERT INTO $TABLE_NAME (
+                $AKTIVITET_ID,
+                $AKTOR_ID,
+                $AKTIVITET_TYPE,
+                $AKTIVITET_STATUS,
+                $ENDRINGS_TYPE,
+                $FRA_DATO,
+                $TIL_DATO,
+                $ENDRET_DATO,
+                $TILTAKSKODE,
+                $LAGT_INN_AV,
+                $AVTALT,
+                $VERSION,
+                $HISTORISK,
+                $CV_KAN_DELES_STATUS,
+                $SVARFRIST_STILLING_FRA_NAV,
+                $RECORD_OFFSET,
+                $RECORD_PARTITION,
+                $RECORD_KEY,
+                $RAD_OPPRETTET,
+                $RAD_OPPDATERT
             )
             VALUES (
                 :aktivitetId, :aktorId, :aktivitetType, :aktivitetStatus, :endringsType,
@@ -67,26 +68,26 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 :recordOffset, :recordPartition, :recordKey,
                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )
-            ON CONFLICT (AKTIVITET_ID) DO UPDATE
-            SET AKTOR_ID = excluded.AKTOR_ID,
-                AKTIVITET_TYPE = excluded.AKTIVITET_TYPE,
-                AKTIVITET_STATUS = excluded.AKTIVITET_STATUS,
-                ENDRINGS_TYPE = excluded.ENDRINGS_TYPE,
-                FRA_DATO = excluded.FRA_DATO,
-                TIL_DATO = excluded.TIL_DATO,
-                ENDRET_DATO = excluded.ENDRET_DATO,
-                TILTAKSKODE = excluded.TILTAKSKODE,
-                LAGT_INN_AV = excluded.LAGT_INN_AV,
-                AVTALT = excluded.AVTALT,
-                VERSION = excluded.VERSION,
-                HISTORISK = excluded.HISTORISK,
-                CV_KAN_DELES_STATUS = excluded.CV_KAN_DELES_STATUS,
-                SVARFRIST_STILLING_FRA_NAV = excluded.SVARFRIST_STILLING_FRA_NAV,
-                RECORD_OFFSET = excluded.RECORD_OFFSET,
-                RECORD_PARTITION = excluded.RECORD_PARTITION,
-                RECORD_KEY = excluded.RECORD_KEY,
-                RAD_OPPDATERT = CURRENT_TIMESTAMP
-            WHERE KAFKA_AKTIVITET_MELDING.VERSION <= excluded.VERSION
+            ON CONFLICT ($AKTIVITET_ID) DO UPDATE
+            SET $AKTOR_ID = excluded.$AKTOR_ID,
+                $AKTIVITET_TYPE = excluded.$AKTIVITET_TYPE,
+                $AKTIVITET_STATUS = excluded.$AKTIVITET_STATUS,
+                $ENDRINGS_TYPE = excluded.$ENDRINGS_TYPE,
+                $FRA_DATO = excluded.$FRA_DATO,
+                $TIL_DATO = excluded.$TIL_DATO,
+                $ENDRET_DATO = excluded.$ENDRET_DATO,
+                $TILTAKSKODE = excluded.$TILTAKSKODE,
+                $LAGT_INN_AV = excluded.$LAGT_INN_AV,
+                $AVTALT = excluded.$AVTALT,
+                $VERSION = excluded.$VERSION,
+                $HISTORISK = excluded.$HISTORISK,
+                $CV_KAN_DELES_STATUS = excluded.$CV_KAN_DELES_STATUS,
+                $SVARFRIST_STILLING_FRA_NAV = excluded.$SVARFRIST_STILLING_FRA_NAV,
+                $RECORD_OFFSET = excluded.$RECORD_OFFSET,
+                $RECORD_PARTITION = excluded.$RECORD_PARTITION,
+                $RECORD_KEY = excluded.$RECORD_KEY,
+                $RAD_OPPDATERT = CURRENT_TIMESTAMP
+            WHERE $TABLE_NAME.$VERSION <= excluded.$VERSION
         """.trimIndent()
 
         val params = aktiviteter.map { it.toSqlParams() }.toTypedArray()
@@ -100,9 +101,9 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }
 
         val sql = """
-            DELETE FROM KAFKA_AKTIVITET_MELDING
-            WHERE AKTIVITET_ID = :aktivitetId
-              AND VERSION <= :version
+            DELETE FROM $TABLE_NAME
+            WHERE $AKTIVITET_ID = :aktivitetId
+              AND $VERSION <= :version
         """.trimIndent()
 
         val params = aktiviteter.map {

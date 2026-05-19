@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.AKTIVITET_ID
+import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,7 +21,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     @BeforeEach
     fun setup() {
         repository = PortefoljeAktivitetKafkaMeldingRepository(NamedParameterJdbcTemplate(jdbcTemplate))
-        jdbcTemplate.update("TRUNCATE TABLE KAFKA_AKTIVITET_MELDING")
+        jdbcTemplate.update("TRUNCATE TABLE $TABLE_NAME")
     }
 
     @Test
@@ -51,7 +53,8 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
         Thread.sleep(5)
 
-        val oppdatert = aktivitetEntity(version = 2, aktivitetStatus = "FULLFORT", recordOffset = 11, recordKey = "ny-key")
+        val oppdatert =
+            aktivitetEntity(version = 2, aktivitetStatus = "FULLFORT", recordOffset = 11, recordKey = "ny-key")
         val resultat = repository.tryLagreAktivitetDataBatch(listOf(oppdatert))
         val radEtter = hentRad(opprinnelig.aktivitetId)!!
 
@@ -116,9 +119,24 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     fun `skal deduplisere og beholde siste melding per aktivitet i batch`() {
         val resultat = repository.tryLagreAktivitetDataBatch(
             listOf(
-                aktivitetEntity(aktivitetId = "aktivitet-1", version = 1, aktivitetStatus = "PLANLAGT", recordOffset = 10),
-                aktivitetEntity(aktivitetId = "aktivitet-1", version = 2, aktivitetStatus = "FULLFORT", recordOffset = 11),
-                aktivitetEntity(aktivitetId = "aktivitet-2", version = 5, aktivitetStatus = "GJENNOMFORES", recordOffset = 12),
+                aktivitetEntity(
+                    aktivitetId = "aktivitet-1",
+                    version = 1,
+                    aktivitetStatus = "PLANLAGT",
+                    recordOffset = 10
+                ),
+                aktivitetEntity(
+                    aktivitetId = "aktivitet-1",
+                    version = 2,
+                    aktivitetStatus = "FULLFORT",
+                    recordOffset = 11
+                ),
+                aktivitetEntity(
+                    aktivitetId = "aktivitet-2",
+                    version = 5,
+                    aktivitetStatus = "GJENNOMFORES",
+                    recordOffset = 12
+                ),
             ),
         )
 
@@ -222,7 +240,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
     private fun hentRad(aktivitetId: String): Map<String, Any?>? =
         jdbcTemplate.queryForList(
-            "SELECT * FROM KAFKA_AKTIVITET_MELDING WHERE AKTIVITET_ID = ?",
+            "SELECT * FROM $TABLE_NAME WHERE $AKTIVITET_ID = ?",
             aktivitetId
         ).firstOrNull()
 
