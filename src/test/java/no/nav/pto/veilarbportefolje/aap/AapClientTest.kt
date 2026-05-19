@@ -38,7 +38,8 @@ class AapClientTest {
                           "rettighetsType": "${AapRettighetstype.BISTANDSBEHOV}"
                         }
                       ],
-                      "sakstatus": "FERDIGBEHANDLET"
+                      "sakstatus": "FERDIGBEHANDLET",
+                      "maksdato": "2026-04-22"
                     }
                 """.trimIndent()
 
@@ -64,7 +65,8 @@ class AapClientTest {
                     rettighetsType = AapRettighetstype.BISTANDSBEHOV
                 )
             ),
-            sakstatus = "FERDIGBEHANDLET"
+            sakstatus = "FERDIGBEHANDLET",
+            maksdato = LocalDate.parse("2026-04-22")
         )
 
         Assertions.assertThat(response).isEqualTo(forventet)

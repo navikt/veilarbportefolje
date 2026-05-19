@@ -8,6 +8,7 @@ import java.time.LocalDate
 data class AapVedtakResponseDto(
     val vedtak: List<Vedtak>,
     val sakstatus: String,
+    val maksdato: LocalDate?  // kan være null i starten, men etterhvert som maksdatoer blir generert skal den alltid komme med
 ) {
     data class Vedtak(
         val status: AapVedtakStatus,
@@ -18,7 +19,6 @@ data class AapVedtakResponseDto(
 
     data class Periode(
         val fraOgMedDato: LocalDate,
-
         val tilOgMedDato: LocalDate
     )
 }
