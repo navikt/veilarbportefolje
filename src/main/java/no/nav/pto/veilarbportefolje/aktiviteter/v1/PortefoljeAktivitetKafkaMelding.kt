@@ -33,8 +33,7 @@ data class PortefoljeAktivitetKafkaMelding(
     @param:JsonSetter(nulls = Nulls.FAIL)
     val endringsType: String,
     @param:JsonProperty("lagtInnAv", required = true)
-    @param:JsonSetter(nulls = Nulls.FAIL)
-    val lagtInnAv: String,
+    val lagtInnAv: String?,
     @param:JsonProperty("stillingFraNavData")
     val stillingFraNavData: StillingFraNavPortefoljeData? = null,
     @param:JsonProperty("avtalt", required = true)
@@ -89,7 +88,7 @@ data class KafkaAktivitetMeldingEntity(
     val tilDato: String?,
     val endretDato: String?,
     val tiltakskode: String?,
-    val lagtInnAv: String,
+    val lagtInnAv: String?,
     val avtalt: Boolean,
     val version: Long,
     val historisk: Boolean,
