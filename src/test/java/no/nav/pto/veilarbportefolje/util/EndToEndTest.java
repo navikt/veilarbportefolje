@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.ZonedDateTime;
@@ -54,6 +55,9 @@ public abstract class EndToEndTest {
     @Autowired
     protected OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
+    @Autowired
+    protected JdbcTemplate db;
+
     @BeforeEach
     void setUp() {
         try {
@@ -63,6 +67,7 @@ public abstract class EndToEndTest {
             opensearchAdminService.slettIndex(BRUKERINDEKS_ALIAS);
             opensearchAdminService.opprettNyIndeks(BRUKERINDEKS_ALIAS);
         }
+        db.update("TRUNCATE ao_kontor");
     }
 
     @AfterEach

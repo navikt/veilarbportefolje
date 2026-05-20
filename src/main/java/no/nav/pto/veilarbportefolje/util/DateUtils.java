@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
@@ -168,7 +169,11 @@ public class DateUtils {
         if (date == null) {
             return null;
         }
-        return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
+        try {
+            return LocalDateTime.ofInstant(Instant.parse(date), ZoneId.systemDefault());
+        } catch (DateTimeParseException e) {
+            return LocalDateTime.parse(date);
+        }
     }
 
     public static LocalDateTime toLocalDateTimeOrNull(Timestamp date) {

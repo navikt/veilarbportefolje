@@ -2,14 +2,12 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.*
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
-import no.nav.pto.veilarbportefolje.domene.NavKontor
-import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -114,7 +112,7 @@ class AapServiceTest(
                 anyString(),
                 anyString()
             )
-        ).thenReturn(AapVedtakResponseDto(emptyList()))
+        ).thenReturn(AapVedtakResponseDto(emptyList(), sakstatus = "FERDIGBEHANDLET", maksdato = null))
 
         // When
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding)
@@ -145,7 +143,7 @@ class AapServiceTest(
                 anyString(),
                 anyString()
             )
-        ).thenReturn(AapVedtakResponseDto(emptyList()))
+        ).thenReturn(AapVedtakResponseDto(emptyList(), sakstatus = "FERDIGBEHANDLET", maksdato = null))
         aapService.behandleKafkaMeldingLogikk(mockedYtelseAapMelding.copy(meldingstype = YTELSE_MELDINGSTYPE.OPPDATER))
         val lagretAapOppdater = aapRepository.hentAap(norskIdent.get())
         assertThat(lagretAapOppdater).isNull()
@@ -186,7 +184,8 @@ class AapServiceTest(
             )
         )
 
-        val apiResponse = AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig))
+        val apiResponse =
+            AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig), sakstatus = "FERDIGBEHANDLET", maksdato = null)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
         val resultat = aapService.hentSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
@@ -321,7 +320,7 @@ class AapServiceTest(
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         val nyNorskIdent = randomNorskIdent()
-        val identerBrukerMedNyIdent =  List.of<PDLIdent>(
+        val identerBrukerMedNyIdent = List.of<PDLIdent>(
             PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
             PDLIdent(norskIdent.get(), true, Gruppe.FOLKEREGISTERIDENT),
             PDLIdent(nyNorskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
@@ -380,8 +379,6 @@ val mockedVedtak = AapVedtakResponseDto.Vedtak(
     status = AapVedtakStatus.LØPENDE,
     saksnummer = "S123",
     rettighetsType = AapRettighetstype.ARBEIDSSØKER,
-    kildesystem = "KILDE1",
-    opphorsAarsak = null,
     periode = AapVedtakResponseDto.Periode(
         fraOgMedDato = LocalDate.now().minusMonths(1),
         tilOgMedDato = LocalDate.now().plusMonths(1)
@@ -391,7 +388,9 @@ val mockedVedtak = AapVedtakResponseDto.Vedtak(
 val mockedAapClientRespons = AapVedtakResponseDto(
     vedtak = listOf(
         mockedVedtak
-    )
+    ),
+    sakstatus = "FERDIGBEHANDLET",
+    maksdato = LocalDate.of(2027, 1, 1),
 )
 
 val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
@@ -402,5 +401,8 @@ val uttdatertMockeAapClientRespons = AapVedtakResponseDto(
                 tilOgMedDato = LocalDate.now().minusYears(2)
             )
         ),
-    )
+    ),
+    sakstatus = "FERDIGBEHANDLET",
+    maksdato = LocalDate.of(2027, 1, 1),
+
 )

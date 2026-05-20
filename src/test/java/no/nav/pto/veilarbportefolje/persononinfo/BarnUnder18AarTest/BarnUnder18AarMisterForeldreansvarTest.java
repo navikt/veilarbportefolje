@@ -6,10 +6,12 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.persononinfo.*;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
@@ -23,7 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -33,6 +35,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService.hentAktorider;
 import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -54,9 +59,9 @@ public class BarnUnder18AarMisterForeldreansvarTest {
 
     private final BarnUnder18AarRepository barnUnder18AarRepository;
 
-    @MockBean
+    @MockitoBean
     private OpensearchIndexer opensearchIndexer;
-    @MockBean
+    @MockitoBean
     private OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
 
@@ -72,7 +77,9 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         pdlIdentRepository = new PdlIdentRepository(db);
         pdlPersonRepository = new PdlPersonRepository(db, db);
-        oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
+        DefaultUnleash mockUnleash = mock(DefaultUnleash.class);
+        when(mockUnleash.isEnabled(anyString())).thenReturn(true);
+        oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null, mockUnleash);
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
     }
 
@@ -101,7 +108,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
                 this.barnUnder18AarService,
                 pdlPortefoljeClient)
                 , this.pdlIdentRepository,
-                new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2),
+            new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2, mock(AktorClient.class)),
                 this.barnUnder18AarService,
                 opensearchIndexer
         );
@@ -121,9 +128,7 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         List<PDLIdent> pdlIdenter = pdlDokForelder.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         Fnr fnrForelder = hentAktivFnr(pdlIdenter);
-        aktorIder.forEach(aktorId -> {
-            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
-        });
+        aktorIder.forEach(aktorId -> oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now()));
 
         pdlIdentRepository.upsertIdenter(pdlDokForelder.getHentIdenter().getIdenter());
 

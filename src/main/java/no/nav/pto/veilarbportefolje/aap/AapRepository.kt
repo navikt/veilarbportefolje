@@ -23,9 +23,8 @@ class AapRepository(@param:Autowired private val db: JdbcTemplate) {
                 ${YTELSER_AAP.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_AAP.NYESTE_PERIODE_TOM}, 
                 ${YTELSER_AAP.RETTIGHETSTYPE}, 
-                ${YTELSER_AAP.OPPHORSAARSAK}, 
                 ${YTELSER_AAP.RAD_SIST_ENDRET}
-            ) VALUES (?,?,?,?,?,?,?,current_timestamp) 
+            ) VALUES (?,?,?,?,?,?,current_timestamp) 
             ON CONFLICT (${YTELSER_AAP.NORSK_IDENT}) 
             DO UPDATE SET (
                 ${YTELSER_AAP.STATUS}, 
@@ -33,7 +32,6 @@ class AapRepository(@param:Autowired private val db: JdbcTemplate) {
                 ${YTELSER_AAP.NYESTE_PERIODE_FOM}, 
                 ${YTELSER_AAP.NYESTE_PERIODE_TOM}, 
                 ${YTELSER_AAP.RETTIGHETSTYPE}, 
-                ${YTELSER_AAP.OPPHORSAARSAK}, 
                 ${YTELSER_AAP.RAD_SIST_ENDRET}
             ) = (
                 excluded.${YTELSER_AAP.STATUS}, 
@@ -41,7 +39,6 @@ class AapRepository(@param:Autowired private val db: JdbcTemplate) {
                 excluded.${YTELSER_AAP.NYESTE_PERIODE_FOM}, 
                 excluded.${YTELSER_AAP.NYESTE_PERIODE_TOM}, 
                 excluded.${YTELSER_AAP.RETTIGHETSTYPE}, 
-                excluded.${YTELSER_AAP.OPPHORSAARSAK}, 
                 excluded.${YTELSER_AAP.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
@@ -50,7 +47,6 @@ class AapRepository(@param:Autowired private val db: JdbcTemplate) {
             aap.periode.fraOgMedDato,
             aap.periode.tilOgMedDato,
             aap.rettighetsType.toString(),
-            aap.opphorsAarsak
         )
     }
 

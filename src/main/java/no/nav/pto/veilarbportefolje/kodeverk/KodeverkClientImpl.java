@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.kodeverk;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
@@ -79,7 +79,7 @@ public class KodeverkClientImpl implements KodeverkClient {
             JsonNode rootNode = JsonUtils.getMapper().readTree(responseJson);
             JsonNode betydninger = rootNode.get("betydninger");
 
-            betydninger.fieldNames().forEachRemaining((betydningName) -> {
+            betydninger.propertyNames().forEach((betydningName) -> {
                 JsonNode betydningerValues = betydninger.get(betydningName);
                 JsonNode betydningNyeste;
 

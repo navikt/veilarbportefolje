@@ -41,4 +41,3 @@ public class EnvironmentProperties {
     private String dagpengerUrl;
     private String dagpengerScope;
 }
-

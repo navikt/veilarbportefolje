@@ -48,10 +48,13 @@ class TestDataClient(
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
         val fnr = randomFnr()
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), VeilederId.of(null), startDato, null)
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), null, startDato, null)
     }
 
-    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr) {
+    fun lagreBrukerUnderOppfolging(
+        aktoerId: AktorId,
+        fnr: Fnr
+    ) {
         lagreBrukerUnderOppfolging(
             aktoerId,
             fnr,
@@ -100,7 +103,7 @@ class TestDataClient(
         aktoerId: AktorId,
         fnr: Fnr,
         navKontor: NavKontor,
-        veilederId: VeilederId,
+        veilederId: VeilederId?,
         startDato: ZonedDateTime,
         diskresjonKode: String?
     ) {
@@ -115,14 +118,16 @@ class TestDataClient(
             PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode)
         )
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato)
-        oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
+        if (veilederId != null) oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
         upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
                 fnr.get(), null, null,
-                navKontor.value, null, null, null,
+                "9999", null, null, null,
                 ZonedDateTime.now()
-            )
+            ),
+            navKontor,
+            aktoerId
         )
         opensearchTestClient.createUserInOpensearch(aktoerId)
     }

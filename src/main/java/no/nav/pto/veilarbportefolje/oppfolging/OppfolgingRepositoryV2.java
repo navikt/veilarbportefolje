@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -58,7 +58,7 @@ public class OppfolgingRepositoryV2 {
         db.update("DELETE FROM oppfolging_data WHERE aktoerid = ?", aktoerId.get());
     }
 
-    public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
+    public Optional<OppfolgingData> hentOppfolgingData(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("SELECT * FROM oppfolging_data WHERE aktoerid = ?", this::mapToBrukerOppdatertInformasjon, aktoerId.get())
         ));
@@ -83,18 +83,20 @@ public class OppfolgingRepositoryV2 {
     }
 
     @SneakyThrows
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
+    private OppfolgingData mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
-        return new BrukerOppdatertInformasjon()
-                .setAktoerid(rs.getString(AKTOERID))
-                .setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER))
-                .setOppfolging(rs.getBoolean(OPPFOLGING))
-                .setVeileder(rs.getString(VEILEDERID))
-                .setManuell(rs.getBoolean(MANUELL))
-                .setStartDato(rs.getTimestamp(STARTDATO))
-                .setTildeltTidspunkt(rs.getTimestamp(TILDELT_TIDSPUNKT));
+
+        return new OppfolgingData(
+                rs.getString(AKTOERID),
+                rs.getString(VEILEDERID),
+                rs.getBoolean(OPPFOLGING),
+                rs.getBoolean(NY_FOR_VEILEDER),
+                rs.getBoolean(MANUELL),
+                rs.getTimestamp(STARTDATO),
+                rs.getTimestamp(TILDELT_TIDSPUNKT)
+        );
     }
 
     public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {

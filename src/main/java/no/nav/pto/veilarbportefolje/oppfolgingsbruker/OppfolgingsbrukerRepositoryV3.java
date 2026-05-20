@@ -1,10 +1,13 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,13 +24,6 @@ import java.util.stream.Collectors;
 
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR;
-import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime;
@@ -39,9 +35,10 @@ public class OppfolgingsbrukerRepositoryV3 {
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;
+    private final DefaultUnleash defaultUnleash;
 
     @Transactional
-    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker) {
+    public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker, NavKontor navKontor, AktorId aktorId) {
         if (oppfolgingsbruker == null || oppfolgingsbruker.fodselsnr() == null) {
             return 0;
         }
@@ -50,7 +47,10 @@ public class OppfolgingsbrukerRepositoryV3 {
         if (oppfolgingsbruker.endret_dato() == null || (sistEndretDato.isPresent() && sistEndretDato.get().isAfter(oppfolgingsbruker.endret_dato()))) {
             return 0;
         }
-        return upsert(oppfolgingsbruker);
+
+        var rowsChanged = upsert(oppfolgingsbruker);
+        if (navKontor != null) upsertNavKontor(aktorId, Fnr.of(oppfolgingsbruker.fodselsnr()), navKontor);
+        return rowsChanged;
     }
 
     public int slettOppfolgingsbruker(Fnr fnr) {
@@ -60,19 +60,31 @@ public class OppfolgingsbrukerRepositoryV3 {
         );
     }
 
-    public Optional<OppfolgingsbrukerEntity> getOppfolgingsBruker(Fnr fnr) {
-        String sql = "SELECT * FROM OPPFOLGINGSBRUKER_ARENA_V2 WHERE fodselsnr = ?";
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, OppfolgingsbrukerRepositoryV3::mapTilOppfolgingsbruker, fnr.get()))
-        );
-    }
-
 
     private Optional<ZonedDateTime> getEndretDatoForUpdate(Fnr fnr) {
         String sql = "SELECT endret_dato FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ? for update";
         return Optional.ofNullable(
                 queryForObjectOrNull(() -> db.queryForObject(sql, this::mapTilZonedDateTime, fnr.get()))
         );
+    }
+
+    public void upsertNavKontor(AktorId aktorId, Fnr fnr, NavKontor navKontor) {
+        var params = new MapSqlParameterSource()
+                .addValue("ident", fnr.get())
+                .addValue("navKontor", navKontor.getValue())
+                .addValue("aktorId", aktorId.get());
+        dbNamed.update("""
+                    INSERT INTO ao_kontor (ident, kontor_id, aktorid) VALUES (:ident, :navKontor, :aktorId)
+                    ON CONFLICT (aktorid) DO UPDATE SET ident = EXCLUDED.ident, kontor_id = EXCLUDED.kontor_id, updated_at = CURRENT_TIMESTAMP
+                """, params);
+    }
+
+    public void slettNavKontor(AktorId aktorId) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get());
+        dbNamed.update("""
+                    DELETE FROM ao_kontor WHERE aktorid = :aktorId
+                """, params);
     }
 
     private int upsert(OppfolgingsbrukerEntity oppfolgingsbruker) {
@@ -109,18 +121,6 @@ public class OppfolgingsbrukerRepositoryV3 {
         return toZonedDateTime(rs.getTimestamp(ENDRET_DATO));
     }
 
-    @SneakyThrows
-    public static OppfolgingsbrukerEntity mapTilOppfolgingsbruker(ResultSet rs, int row) {
-        if (rs == null || rs.getString(FODSELSNR) == null) {
-            return null;
-        }
-        return new OppfolgingsbrukerEntity(rs.getString(FODSELSNR), rs.getString(FORMIDLINGSGRUPPEKODE),
-                toZonedDateTime(rs.getTimestamp(ISERV_FRA_DATO)),
-                rs.getString(NAV_KONTOR), rs.getString(KVALIFISERINGSGRUPPEKODE), rs.getString(RETTIGHETSGRUPPEKODE),
-                rs.getString(HOVEDMAALKODE),
-                toZonedDateTime(rs.getTimestamp(ENDRET_DATO)));
-    }
-
     public List<String> finnSkjulteBrukere(List<String> fnrListe, BrukerinnsynTilganger brukerInnsynTilganger) {
         var params = new MapSqlParameterSource();
         params.addValue("fnrListe", fnrListe.stream().collect(Collectors.joining(",", "{", "}")));
@@ -142,10 +142,20 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
+        var sql = """
+                SELECT coalesce(CASE WHEN :brukAoKontor::boolean THEN ao.kontor_id ELSE NULL END, ob.nav_kontor) AS kontor_id
+                FROM oppfolgingsbruker_arena_v2 ob
+                LEFT JOIN ao_kontor ao ON ob.fodselsnr = ao.ident
+                WHERE ob.fodselsnr = :ident
+                """;
+        var params = new MapSqlParameterSource()
+                .addValue("ident", fnr.get())
+                .addValue("brukAoKontor", brukAoKontor);
         return Optional.ofNullable(
                 queryForObjectOrNull(
-                        () -> db.queryForObject("select nav_kontor from oppfolgingsbruker_arena_v2 where fodselsnr = ?",
-                                (rs, i) -> NavKontor.navKontorOrNull(rs.getString("nav_kontor")), fnr.get())
+                        () -> dbNamed.queryForObject(sql, params, (rs, i) ->
+                                NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
     }
 }

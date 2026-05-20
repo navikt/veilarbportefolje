@@ -14,12 +14,12 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FargekategoriController.class)
-@Import({FargekategoriControllerTestConfig.class, ApplicationConfigTest.class})
+@Import(ApplicationConfigTest.class)
 public class FargekategoriControllerTest {
 
     @Autowired
@@ -55,10 +55,10 @@ public class FargekategoriControllerTest {
     @Autowired
     private TestDataClient testDataClient;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private AktorClient aktorClient;
 
     @Test
@@ -190,9 +190,7 @@ public class FargekategoriControllerTest {
         );
 
         List<String> kategorifødselsnummer = opprettedeFargekategorier.stream().map(fargekategori -> fargekategori.fnr().get()).toList();
-        fnrliste.forEach(fnr -> {
-                    assertThat(kategorifødselsnummer.contains(fnr)).isTrue();
-                }
+        fnrliste.forEach(fnr -> assertThat(kategorifødselsnummer.contains(fnr)).isTrue()
         );
     }
 
@@ -501,12 +499,10 @@ public class FargekategoriControllerTest {
 
     private List<FargekategoriEntity> hentListeAvFargekategorier(List<String> fnrliste) {
         return fnrliste.stream().map(fnr ->
-                queryForObjectOrNull(() -> {
-                    return jdbcTemplate.queryForObject(
-                            "SELECT * FROM fargekategori WHERE fnr=?",
-                            mapTilFargekategoriEntity(),
-                            fnr);
-                })
+                queryForObjectOrNull(() -> jdbcTemplate.queryForObject(
+                        "SELECT * FROM fargekategori WHERE fnr=?",
+                        mapTilFargekategoriEntity(),
+                        fnr))
         ).filter(Objects::nonNull).collect(Collectors.toList());
     }
 

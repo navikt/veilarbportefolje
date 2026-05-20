@@ -73,6 +73,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerTestRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
@@ -137,7 +138,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
         Siste14aVedtakRepository.class,
@@ -212,7 +213,8 @@ import static org.mockito.Mockito.when;
         TiltakspengerRespository.class,
         TiltakspengerService.class,
         DagpengerRepository.class,
-        DagpengerService.class
+        DagpengerService.class,
+        OppfolgingsbrukerTestRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -271,8 +273,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public RestHighLevelClient restHighLevelClient() {
-        return createClient(opensearchClientConfig());
+    public RestHighLevelClient restHighLevelClient(OpensearchClientConfig opensearchClientConfig) {
+        return createClient(opensearchClientConfig);
     }
 
     @Bean

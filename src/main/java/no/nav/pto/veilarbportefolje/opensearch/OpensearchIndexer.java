@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -59,7 +60,7 @@ public class OpensearchIndexer {
         brukerOpensearchModellList.stream()
                 .map(bruker -> {
                     IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
-                    return indexRequest.source(toJson(bruker), XContentType.JSON);
+                        return indexRequest.source(toJson(bruker), XContentType.JSON);
                 })
                 .forEach(bulk::add);
 
@@ -135,7 +136,7 @@ public class OpensearchIndexer {
             flettInnNodvendigData(List.of(brukerOpensearchModell));
             syncronIndekseringsRequest(brukerOpensearchModell);
         } else {
-            slettDokumenter(List.of(AktorId.of(brukerOpensearchModell.getAktoer_id())));
+            slettDokumenter(List.of(AktorId.of(Objects.requireNonNull(brukerOpensearchModell.getAktoer_id()))));
         }
     }
 

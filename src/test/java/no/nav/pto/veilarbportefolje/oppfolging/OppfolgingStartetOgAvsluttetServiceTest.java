@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import no.nav.common.json.JsonUtils;
+import tools.jackson.core.type.TypeReference;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
@@ -12,7 +11,8 @@ import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakApiDto;
@@ -37,12 +37,11 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -51,7 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.util.SerialiseringOgDeserialiseringUtilsKt.getObjectMapper;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
@@ -92,6 +90,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
 
     @Autowired
+    private OppfolgingsbrukerTestRepository oppfolgingsbrukerTestRepository;
+
+    @Autowired
     private OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
 
     @Autowired
@@ -106,16 +107,16 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private DagpengerClient dagpengerClient;
 
-    @MockBean
+    @MockitoBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
-    @MockBean
+    @MockitoBean
     private VedtaksstotteClient vedtaksstotteClient;
 
-    @MockBean
+    @MockitoBean
     private VeilarbarenaClient veilarbarenaClient;
 
-    @MockBean
+    @MockitoBean
     private OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient;
 
     private final Fnr fnr = Fnr.of("17858998980");
@@ -131,7 +132,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void når_oppfolging_startes_skal_bruker_settes_under_oppfølging_i_databasen() {
+    void nar_oppfolging_startes_skal_bruker_settes_under_oppfolging_i_databasen() {
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -142,13 +143,33 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        final BrukerOppdatertInformasjon info = oppfolgingRepositoryV2.hentOppfolgingData(aktorId).orElseThrow();
+        final OppfolgingData info = oppfolgingRepositoryV2.hentOppfolgingData(aktorId).orElseThrow();
         assertThat(info.getOppfolging()).isTrue();
         assertThat(info.getNyForVeileder()).isFalse();
     }
 
     @Test
-    void når_oppfolging_startes_skal_brukeridenter_hentes_og_lagres() {
+    void nar_ny_melding_om_oppfolging_start_kommer_skal_oppdatert_kontor_lagres() {
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
+        mockHentTiltakspengerResponse(fnr);
+        var startDato = ZonedDateTime.now().minusDays(1);
+        var oppfolgingsperiodeId = UUID.randomUUID();
+        var forsteKontor = "1234";
+        var andreKontor = "4321";
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfolgingsperiodeId, forsteKontor, fnr));
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId, startDato, oppfolgingsperiodeId, andreKontor, fnr));
+
+        var oppfolgingsbruker = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get();
+        assertThat(oppfolgingsbruker.nav_kontor()).isEqualTo(andreKontor);
+    }
+
+    @Test
+    void nar_oppfolging_startes_skal_brukeridenter_hentes_og_lagres() {
         mockPdlIdenterRespons(aktorId, fnr);
         PDLPerson pdlPerson = mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -172,7 +193,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void når_oppfolging_startes_skal_siste_14a_vedtak_hentes_og_lagres() {
+    void nar_oppfolging_startes_skal_siste_14a_vedtak_hentes_og_lagres() {
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -181,11 +202,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentTiltakspengerResponse(fnr);
         mockHentDagpengerResponse(fnr);
 
-        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
+        var sisteOppfolgingsperiodeV1 = genererStartetOppfolgingsperiode(aktorId);
         Siste14aVedtakApiDto siste14aVedtakApiDto = new Siste14aVedtakApiDto(
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS,
                 Hovedmal.OKE_DELTAKELSE,
-                sisteOppfolgingsperiodeV1.getStartDato().plusDays(1),
+                sisteOppfolgingsperiodeV1.getStartTidspunkt().plusDays(1),
                 true
         );
         when(vedtaksstotteClient.hentSiste14aVedtak(fnr)).thenReturn(Optional.of(siste14aVedtakApiDto));
@@ -209,7 +230,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
-    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_lagres() {
+    void nar_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_lagres() {
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
         mockPdlPersonBarnRespons(fnr);
@@ -221,13 +242,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
 
     }
 
     @Test
-    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_oppdateres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
+    void nar_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_oppdateres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
         insertOppfolgingsbrukerEntity(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").minusDays(2));
 
         mockPdlIdenterRespons(aktorId, fnr);
@@ -241,13 +262,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
         assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00"));
     }
 
     @Test
-    void når_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_ignoreres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
+    void nar_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_ignoreres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
         insertOppfolgingsbrukerEntity(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2));
 
         mockPdlIdenterRespons(aktorId, fnr);
@@ -261,13 +282,13 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntity = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntity).isPresent();
         assertThat(oppfolgingsbrukerEntity.get().endret_dato()).isEqualTo(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").plusDays(2));
     }
 
     @Test
-    void når_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() throws JsonProcessingException {
+    void nar_oppfolging_startes_skal_arbeidssoekerdata_hentes_lagres() {
         UUID periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16");
         mockPdlIdenterRespons(aktorId, fnr);
         mockPdlPersonRespons(fnr);
@@ -300,67 +321,74 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
 
     @Test
-    void når_oppfølging_avsluttes_skal_siste_14a_vedtak_slettes() {
+    void nar_oppfolging_avsluttes_skal_siste_14a_vedtak_slettes() {
         when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
         when(aktorClient.hentAktorId(any())).thenReturn(aktorId);
 
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, tilfeldigDatoTilbakeITid());
+        ZonedDateTime oppfølgingStartdato = tilfeldigDatoTilbakeITid();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, oppfølgingStartdato);
 
+        ZonedDateTime vedtakFattetDato = tilfeldigSenereDato(oppfølgingStartdato);
         siste14aVedtakService.lagreSiste14aVedtak(
-                new Siste14aVedtakForBruker(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, tilfeldigDatoTilbakeITid(), false)
+                new Siste14aVedtakForBruker(aktorId, STANDARD_INNSATS, BEHOLDE_ARBEID, vedtakFattetDato, false)
         );
 
         assertFalse(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
+        UUID oppfølgingsperiodeId = UUID.randomUUID();
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId, oppfølgingsperiodeId, genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(vedtakFattetDato), oppfølgingsperiodeId)));
 
         assertTrue(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get()))).isEmpty());
     }
 
     @Test
-    void når_oppfølging_avsluttes_skal_oppfolgingsbrukerdata_slettes() {
+    void nar_oppfolging_avsluttes_skal_oppfolgingsbrukerdata_slettes() {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         mockHentOppfolgingsbrukerResponse(fnr);
 
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
+        ZonedDateTime oppfølgingStartDato = tilfeldigDatoTilbakeITid();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfølgingStartDato);
 
-        oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId);
+        oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId, new NavKontor("0101"));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityFørAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
-        assertThat(oppfolgingsbrukerEntityFørAvsluttet).isPresent();
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityForAvsluttet = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
+        assertThat(oppfolgingsbrukerEntityForAvsluttet).isPresent();
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
+        UUID oppfølgingsperiodeId = UUID.randomUUID();
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId, oppfølgingsperiodeId, genererStartetOppfolgingsperiode(aktorId, oppfølgingStartDato, oppfølgingsperiodeId)));
 
-        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerRepositoryV3.getOppfolgingsBruker(fnr);
+        Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityEtterAvsluttet).isEmpty();
     }
 
     @Test
-    void når_oppfølging_avsluttes_skal_arbeidssøkerdata_slettes() throws JsonProcessingException {
+    void nar_oppfolging_avsluttes_skal_arbeidsokerdata_slettes() {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         mockHentArbeidssoekerPerioderResponse(fnr);
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
 
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr);
+        ZonedDateTime oppfolgingStartDato = tilfeldigDatoTilbakeITid();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfolgingStartDato);
 
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 
-        ArbeidssoekerPeriodeEntity sisteArbeidssoekerPeriodeFørAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
-        assertThat(sisteArbeidssoekerPeriodeFørAvsluttet).isNotNull();
-        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
-        assertThat(opplysningerOmArbeidssoekerFørAvsluttet).isNotNull();
-        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
-        assertThat(opplysningerOmArbeidssoekerJobbsituasjonFørAvsluttet).isNotNull();
+        ArbeidssoekerPeriodeEntity sisteArbeidssoekerPeriodeForAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        assertThat(sisteArbeidssoekerPeriodeForAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerForAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeForAvsluttet.getArbeidssoekerperiodeId());
+        assertThat(opplysningerOmArbeidssoekerForAvsluttet).isNotNull();
+        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonForAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerForAvsluttet.getOpplysningerOmArbeidssoekerId());
+        assertThat(opplysningerOmArbeidssoekerJobbsituasjonForAvsluttet).isNotNull();
 
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId));
+        UUID oppfølgingsperiodeId = UUID.randomUUID();
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId, oppfølgingsperiodeId, genererStartetOppfolgingsperiode(aktorId, oppfolgingStartDato, oppfølgingsperiodeId)));
 
         ArbeidssoekerPeriodeEntity sisteArbeidssoekerPeriodeEtterAvsluttet = TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
         assertThat(sisteArbeidssoekerPeriodeEtterAvsluttet).isNull();
-        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeFørAvsluttet.getArbeidssoekerperiodeId());
+        OpplysningerOmArbeidssoekerEntity opplysningerOmArbeidssoekerEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerFraDb(jdbcTemplate, sisteArbeidssoekerPeriodeForAvsluttet.getArbeidssoekerperiodeId());
         assertThat(opplysningerOmArbeidssoekerEtterAvsluttet).isNull();
-        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerFørAvsluttet.getOpplysningerOmArbeidssoekerId());
+        OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerForAvsluttet.getOpplysningerOmArbeidssoekerId());
         assertThat(opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet).isNull();
     }
 
@@ -376,7 +404,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         ZonedDateTime sluttDato = tilfeldigDatoTilbakeITid();
 
-        SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(sluttDato));
+        var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(sluttDato));
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(periode);
 
@@ -384,7 +412,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 genererSluttdatoForOppfolgingsperiode(periode, sluttDato)
         );
 
-        Optional<BrukerOppdatertInformasjon> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
+        Optional<OppfolgingData> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
 
         assertThat(bruker.orElseThrow().getOppfolging()).isTrue();
     }
@@ -402,17 +430,44 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentTiltakspengerResponse(fnr);
         mockHentDagpengerResponse(fnr);
 
-        SisteOppfolgingsperiodeV1 periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
+        var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigDatoTilbakeITid());
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(periode);
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(
-                genererSluttdatoForOppfolgingsperiode(periode, tilfeldigSenereDato(periode.getStartDato()))
+                genererSluttdatoForOppfolgingsperiode(periode, tilfeldigSenereDato(periode.getStartTidspunkt()))
         );
 
-        Optional<BrukerOppdatertInformasjon> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
+        Optional<OppfolgingData> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
 
         assertThat(bruker).isNotPresent();
+    }
+
+    @Test
+    void skal_ikke_avslutte_bruker_som_har_en_nyere_startdato_enn_sluttdato() {
+        when(aktorClient.hentFnr(aktorId)).thenReturn(randomFnr());
+        when(aktorClient.hentAktorId(randomFnr())).thenReturn(aktorId);
+
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockHentOppfolgingsbrukerResponse(fnr);
+        mockHentAapResponse(fnr);
+        mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
+
+        var utdatertAvsluttetOppfølgingDato = tilfeldigDatoTilbakeITid();
+        var periode = genererStartetOppfolgingsperiode(aktorId, tilfeldigSenereDato(utdatertAvsluttetOppfølgingDato));
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(periode);
+
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(
+                genererSluttdatoForOppfolgingsperiode(periode, utdatertAvsluttetOppfølgingDato)
+        );
+
+        Optional<OppfolgingData> bruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
+
+        assertThat(bruker).isPresent();
     }
 
     private void mockPdlIdenterRespons(AktorId aktorId, Fnr fnr) {
@@ -466,29 +521,26 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
     }
 
-    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) throws JsonProcessingException {
+    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) {
         String file = readFileAsJsonString("/arbeidssoekerperioder.json", getClass());
-        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
-        });
+        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
         when(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(arbeidssoekerResponse);
     }
 
-    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
+    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) {
         String file = readFileAsJsonString("/opplysningerOmArbeidssoeker.json", getClass());
-        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = getObjectMapper().readValue(file, new TypeReference<>() {
-        });
+        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
         when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
     }
 
-    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) throws JsonProcessingException {
+    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) {
         String file = readFileAsJsonString("/profilering.json", getClass());
-        List<ProfileringResponse> profileringResponse = getObjectMapper().readValue(file, new TypeReference<>() {
-        });
+        List<ProfileringResponse> profileringResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
         when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
     }
 
     private void mockHentAapResponse(Fnr fnr) {
-        AapVedtakResponseDto aapResponse = new AapVedtakResponseDto(Collections.emptyList());
+        AapVedtakResponseDto aapResponse = new AapVedtakResponseDto(Collections.emptyList(), "status", null);
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aapClient.hentAapVedtak(any(), any(), any())).thenReturn(aapResponse);
     }
@@ -516,6 +568,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
                 Hovedmaal.BEHOLDEA.name(),
                 endret_dato
         );
-        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker);
+        oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(oppfolgingsbruker, new NavKontor(oppfolgingsbruker.nav_kontor()), aktorId);
     }
 }
