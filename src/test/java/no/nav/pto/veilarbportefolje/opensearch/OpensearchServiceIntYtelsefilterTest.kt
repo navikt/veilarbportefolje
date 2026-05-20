@@ -586,6 +586,92 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertEquals(response.brukere[2].fnr, bruker5.fnr)
     }
 
+
+    @Test
+    fun skal_sortere_brukere_pa_aap_maksdato() {
+        val tidspunkt1 = LocalDate.now()
+        val tidspunkt2 = LocalDate.now().plusDays(2)
+        val tidspunkt3 = LocalDate.now().plusDays(3)
+
+        val tidligstBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt1,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt2,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val senestBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt3,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = false,
+        )
+
+
+        val liste = listOf(midtImellomBruker, senestBruker, tidligstBruker, nullBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = emptyList(),
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+        )
+
+        val brukereMedAntall = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.AAP_KELVIN_MAKSDATO,
+            filtervalg,
+            null,
+            null
+        )
+        val brukereMedAntall2 = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.AAP_KELVIN_MAKSDATO,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereStigende = brukereMedAntall.brukere
+        val brukereSynkende = brukereMedAntall2.brukere
+
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
+        Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstBruker.fnr)
+
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstBruker.fnr)
+    }
+
+
     @Test
     fun skal_sortere_brukere_pa_aap_tom_vedtaksdato() {
         val tidspunkt1 = LocalDate.now()

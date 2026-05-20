@@ -287,6 +287,9 @@
       "aap_kelvin_tom_vedtaksdato": {
         "type": "date"
       },
+      "aap_kelvin_maksdato": {
+        "type": "date"
+      },
       "aap_kelvin_rettighetstype": {
         "type": "keyword"
       },

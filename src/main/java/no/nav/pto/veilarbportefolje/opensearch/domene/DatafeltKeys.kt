@@ -103,6 +103,7 @@ object DatafeltKeys {
         val AAP_KELVIN = PortefoljebrukerOpensearchModell::aap_kelvin.name
         val AAP_KELVIN_TOM_VEDTAKSDATO = PortefoljebrukerOpensearchModell::aap_kelvin_tom_vedtaksdato.name
         val AAP_KELVIN_RETTIGHETSTYPE = PortefoljebrukerOpensearchModell::aap_kelvin_rettighetstype.name
+        val AAP_KELVIN_MAKSDATO = PortefoljebrukerOpensearchModell::aap_kelvin_maksdato.name
         val AAP_ORDINER_UTLOPSDATO = PortefoljebrukerOpensearchModell::aapordinerutlopsdato.name
         val AAP_MAXTID_UKE = PortefoljebrukerOpensearchModell::aapmaxtiduke.name
         val AAP_UNNTAK_UKER_IGJEN = PortefoljebrukerOpensearchModell::aapunntakukerigjen.name
