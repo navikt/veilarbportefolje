@@ -1,25 +1,21 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.poao_tilgang.client.NorskIdent
+import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakPeriodeEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
-import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.jetbrains.annotations.TestOnly
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import java.time.LocalDate
 
 @Repository
 class AapRepository(private val db: JdbcTemplate) {
 
     fun upsertAap(
         norskIdent: NorskIdent,
-        aap: AapVedtakResponseDto.Vedtak,
-        maksdato: LocalDate?,
-        sakstatus: String
+        aap: AapEntity,
     ) {
         db.update(
             """
@@ -55,13 +51,13 @@ class AapRepository(private val db: JdbcTemplate) {
                 excluded.${YTELSER_AAP.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            aap.status.name,
-            aap.saksnummer,
-            aap.periode.fraOgMedDato,
-            aap.periode.tilOgMedDato,
-            aap.rettighetsType.name,
-            maksdato,
-            sakstatus
+            aap.sisteVedtak.status.name,
+            aap.sisteVedtak.saksnummer,
+            aap.sisteVedtak.periode.fraOgMedDato,
+            aap.sisteVedtak.periode.tilOgMedDato,
+            aap.sisteVedtak.rettighetsType.name,
+            aap.maksdato,
+            aap.sakstatus
         )
     }
 

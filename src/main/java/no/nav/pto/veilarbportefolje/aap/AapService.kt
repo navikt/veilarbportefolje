@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
@@ -87,24 +88,27 @@ class AapService(
                 return
             }
 
-        val sisteAapPeriode = aapVedtak.vedtak[0]
-        val harAktivAap = sisteAapPeriode.periode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
+        val sisteAapVedtak = aapVedtak.vedtak[0]
+        val harAktivAap = sisteAapVedtak.periode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
+        val aapDataTilLagring = AapEntity(
+            sakstatus = aapVedtak.sakstatus,
+            maksdato = aapVedtak.maksdato,
+            sisteVedtak = sisteAapVedtak
+        )
 
-        upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode, aapVedtak.maksdato, aapVedtak.sakstatus )
+        upsertAapForAktivIdentForBruker(personIdent, aapDataTilLagring)
         opensearchIndexerPaDatafelt.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
-            sisteAapPeriode.periode.tilOgMedDato,
-            sisteAapPeriode.rettighetsType,
+            sisteAapVedtak.periode.tilOgMedDato,
+            sisteAapVedtak.rettighetsType,
             aapVedtak.maksdato
         )
     }
 
     fun upsertAapForAktivIdentForBruker(
         personIdent: String,
-        sisteAapPeriode: AapVedtakResponseDto.Vedtak,
-        maksdato: LocalDate?,
-        sakstatus: String
+        sisteAapVedtak: AapEntity,
     ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
@@ -113,7 +117,7 @@ class AapService(
             }
         }
 
-        aapRepository.upsertAap(personIdent, sisteAapPeriode, maksdato, sakstatus)
+        aapRepository.upsertAap(personIdent, sisteAapVedtak)
     }
 
     fun hentVedtakMedSisteAapPeriodeFraApi(
