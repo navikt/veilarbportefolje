@@ -1,8 +1,9 @@
 package no.nav.pto.veilarbportefolje.aap
 
-import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
+import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
+import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.assertj.core.api.Assertions.assertThat
@@ -31,7 +32,7 @@ class AapRepositoryTest(
         val sakstatus = "FERDIGBEHANDLET"
         val maksdato = LocalDate.of(2028, 12, 31)
 
-        aapRepository.upsertAap(ident, vedtak, maksdato, sakstatus)
+        aapRepository.upsertAap(ident, AapEntity(sakstatus, maksdato, vedtak))
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -56,8 +57,8 @@ class AapRepositoryTest(
             )
         )
 
-        aapRepository.upsertAap(ident, vedtak_nr1, maksdato, sakstatus)
-        aapRepository.upsertAap(ident, vedtak_nr2, maksdato, sakstatus)
+        aapRepository.upsertAap(ident, AapEntity(sakstatus, maksdato, vedtak_nr1))
+        aapRepository.upsertAap(ident, AapEntity(sakstatus, maksdato, vedtak_nr2))
 
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -81,7 +82,7 @@ class AapRepositoryTest(
         val sakstatus = "FERDIGBEHANDLET"
         val maksdato = LocalDate.of(2028, 12, 31)
 
-        aapRepository.upsertAap(ident, vedtak, maksdato, sakstatus)
+        aapRepository.upsertAap(ident, AapEntity(sakstatus, maksdato, vedtak))
         val resultatAvHenting = aapRepository.hentAap(ident)
         assertThat(resultatAvHenting).isNotNull
 
