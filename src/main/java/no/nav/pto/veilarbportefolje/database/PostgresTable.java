@@ -354,6 +354,32 @@ public class PostgresTable {
         public static final String VERSION = "VERSION";
     }
 
+    public static final class KAFKA_AKTIVITET_MELDING {
+        private KAFKA_AKTIVITET_MELDING() { /* no-op */ }
+
+        public static final String TABLE_NAME = "KAFKA_AKTIVITET_MELDING";
+        public static final String AKTIVITET_ID = "AKTIVITET_ID";
+        public static final String AKTOR_ID = "AKTOR_ID";
+        public static final String AKTIVITET_TYPE = "AKTIVITET_TYPE";
+        public static final String AKTIVITET_STATUS = "AKTIVITET_STATUS";
+        public static final String ENDRINGS_TYPE = "ENDRINGS_TYPE";
+        public static final String FRA_DATO = "FRA_DATO";
+        public static final String TIL_DATO = "TIL_DATO";
+        public static final String ENDRET_DATO = "ENDRET_DATO";
+        public static final String TILTAKSKODE = "TILTAKSKODE";
+        public static final String LAGT_INN_AV = "LAGT_INN_AV";
+        public static final String AVTALT = "AVTALT";
+        public static final String VERSION = "VERSION";
+        public static final String HISTORISK = "HISTORISK";
+        public static final String CV_KAN_DELES_STATUS = "CV_KAN_DELES_STATUS";
+        public static final String SVARFRIST_STILLING_FRA_NAV = "SVARFRIST_STILLING_FRA_NAV";
+        public static final String RECORD_OFFSET = "RECORD_OFFSET";
+        public static final String RECORD_PARTITION = "RECORD_PARTITION";
+        public static final String RECORD_KEY = "RECORD_KEY";
+        public static final String RAD_OPPRETTET = "RAD_OPPRETTET";
+        public static final String RAD_OPPDATERT = "RAD_OPPDATERT";
+    }
+
     public static final class BRUKERTILTAK {
         private BRUKERTILTAK() { /* no-op */ }
 

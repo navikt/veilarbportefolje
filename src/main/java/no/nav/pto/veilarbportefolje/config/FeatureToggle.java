@@ -11,6 +11,7 @@ public class FeatureToggle {
     public static final String ALIAS_INDEKSERING = "veilarbportefolje.aliasIndeksering";
     public static final String KAFKA_AIVEN_CONSUMERS_STOP = "veilarbportefolje.kafka_aiven_consumers_stop";
     public static final String KAFKA_SISTE_14A_STOP = "veilarbportefolje.kafka_siste_14a_stop";
+    public static final String KAFKA_PORTEFOLJE_AKTIVITET_V1_START = "veilarbportefolje.kafka_portefolje_aktivitet_v1_start";
     public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
     public static final String BRUK_KONTOR_FRA_AOKONTOR = "veilarbportefolje.bruk_kontor_fra_aokontor";
 
