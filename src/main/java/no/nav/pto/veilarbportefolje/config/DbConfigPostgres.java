@@ -64,6 +64,7 @@ public class DbConfigPostgres {
                     .dataSource(dataSource)
                     .locations("db/postgres")
                     .baselineOnMigrate(true)
+                    .outOfOrder(true)
                     .load()
                     .migrate();
 
