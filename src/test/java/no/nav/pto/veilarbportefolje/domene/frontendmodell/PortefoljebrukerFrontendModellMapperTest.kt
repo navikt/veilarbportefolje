@@ -352,6 +352,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             aap_kelvin = true,
             aap_kelvin_rettighetstype = AapRettighetstype.VURDERES_FOR_UFØRETRYGD,
             aap_kelvin_tom_vedtaksdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin_maksdato = LocalDate.of(2026, 1, 1),
             tiltakspenger_rettighet = TILTAKSPENGER,
             tiltakspenger_vedtaksdato_tom = LocalDate.of(2026, 1, 1),
             enslige_forsorgere_overgangsstonad =
@@ -389,6 +390,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             ytelser.aap!!.rettighetstype
         )
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.maksdato)
         Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)

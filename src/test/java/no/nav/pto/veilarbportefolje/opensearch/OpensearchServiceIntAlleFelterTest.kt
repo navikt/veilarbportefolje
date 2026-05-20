@@ -147,6 +147,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             aap_kelvin = PortefoljebrukerOpensearchModell.AAP_KELVIN,
             aap_kelvin_rettighetstype = PortefoljebrukerOpensearchModell.AAP_KELVIN_RETTIGHETSTYPE,
             aap_kelvin_tom_vedtaksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_TOM_VEDTAKSDATO,
+            aap_kelvin_maksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_MAKSDATO,
             aapmaxtiduke = PortefoljebrukerOpensearchModell.AAP_MAXTID_UKE,
             aapordinerutlopsdato = PortefoljebrukerOpensearchModell.AAP_ORDINER_UTLOPSDATO,
             aapunntakukerigjen = PortefoljebrukerOpensearchModell.AAP_UNNTAK_UKER_IGJEN,
@@ -365,6 +366,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val AAP_KELVIN: Boolean = true
             val AAP_KELVIN_RETTIGHETSTYPE: AapRettighetstype = AapRettighetstype.BISTANDSBEHOV
             val AAP_KELVIN_TOM_VEDTAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
+            val AAP_KELVIN_MAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
             val AAP_MAXTID_UKE: Int = 50
             val AAP_ORDINER_UTLOPSDATO: LocalDate = LocalDate.parse("2025-12-17")
             val AAP_UNNTAK_UKER_IGJEN: Int = 10
