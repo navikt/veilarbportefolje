@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapperV2;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.delete.DeleteRequest;
@@ -39,6 +40,7 @@ public class OpensearchIndexer {
     private final RestHighLevelClient restHighLevelClient;
     private final BrukerRepositoryV2 brukerRepositoryV2;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
+    private final PostgresOpensearchMapperV2 postgresOpensearchMapperV2;
 
     public void indekser(AktorId aktoerId) {
         Optional<PortefoljebrukerOpensearchModell> brukerOpensearchModell;
@@ -150,6 +152,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnEldsteHendelsePerKategori(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(brukerOpensearchModell);
+        postgresOpensearchMapperV2.flettInnAktivitetData(brukerOpensearchModell);
 
         if (brukerOpensearchModell.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

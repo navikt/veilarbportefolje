@@ -16,6 +16,11 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+data class AktivitetData (
+    // Alle tiltak (koder) for personen hvor det er registrert minst en aktiv aktivitet
+    val tiltakskoder: Set<String> = emptySet()
+)
+
 /**
  * Representerer en person under arbeidsrettet oppfølging, med tilhørende opplysninger, som er relevant i oppfølgingsøyemed.
  * Opplysningene mappes stort 1-til-1 til properties i [no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell],
@@ -113,6 +118,8 @@ data class PortefoljebrukerOpensearchModell(
     var nyesteutlopteaktivitet: String? = null,
     var siste_endringer: Map<String, Endring>? = null,
     var tiltak: Set<String>? = emptySet(),
+
+    var aktivitetData: AktivitetData = AktivitetData(),
 
     // Ytelser
     var aap_kelvin: Boolean = false,
