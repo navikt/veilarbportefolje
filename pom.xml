@@ -24,6 +24,10 @@
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
         <unleash.version>12.1.1</unleash.version>
+
+        <!-- Overrides av Spring Boot managed dependencies. -->
+        <!-- Se: https://docs.spring.io/spring-boot/appendix/dependency-versions/coordinates.html -->
+        <tomcat.version>11.0.22</tomcat.version> <!-- TODO: 2026-05-26, midlertidig override for å fikse sårbarhet. Fjernes når Spring Boot har oppdatert versjon internt. -->
     </properties>
 
     <build>
