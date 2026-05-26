@@ -23,7 +23,7 @@ class PostgresOpensearchMapperV2(
         return brukerOpensearchModellList.map {
             it.copy(
                 aktivitetData = AktivitetData(
-                    tiltak
+                    tiltak.keys.toSet()
                 )
             )
         }
