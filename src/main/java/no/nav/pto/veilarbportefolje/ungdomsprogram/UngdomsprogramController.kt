@@ -17,7 +17,7 @@ class UngdomsprogramController(
 
     @PostMapping("/hent-alle-brukere")
     fun hentUngdsomsprogramFraApi(): UngdomsprogramResponseDto {
-        sjekkTilgangTilAdmin()
+        //sjekkTilgangTilAdmin()
         val respons = ungdomsprogramClient.hentAlleMedUngdomsprogram()
 
         return respons
