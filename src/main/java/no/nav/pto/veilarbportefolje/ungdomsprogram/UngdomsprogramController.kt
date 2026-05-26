@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
-@RequestMapping("/ekstern/deltakelse/alle")
+@RequestMapping("/api/ungdomsprogram")
 class DagpengerController(
     private val ungdomsprogramClient: UngdomsprogramClient,
     private val authContextHolder: AuthContextHolder,

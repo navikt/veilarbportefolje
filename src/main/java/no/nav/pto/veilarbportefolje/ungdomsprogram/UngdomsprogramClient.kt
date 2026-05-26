@@ -15,7 +15,7 @@ class UngdomsprogramClient(private val baseUrl: String, private val machineToMac
 
     fun hentAlleMedUngdomsprogram(): UngdomsprogramResponseDto {
         val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "/vedtak/detaljer"))
+            .url(UrlUtils.joinPaths(baseUrl, "/ekstern/deltakelse/alle"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .build()
 
