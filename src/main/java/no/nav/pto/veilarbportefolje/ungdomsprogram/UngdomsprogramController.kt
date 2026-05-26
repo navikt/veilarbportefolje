@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/ungdomsprogram")
-class DagpengerController(
+class UngdomsprogramController(
     private val ungdomsprogramClient: UngdomsprogramClient,
     private val authContextHolder: AuthContextHolder,
 ) {
