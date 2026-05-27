@@ -12,8 +12,8 @@ class UngdomsprogramScheduler(
 ) {
     private val logger = LoggerFactory.getLogger(UngdomsprogramScheduler::class.java)
 
-    // Hvert 10. minutt: 0, 10, 20, 30, 40, 50
-    @Scheduled(cron = "0 */10 * * * ?")
+    // Hver hele time
+    @Scheduled(cron = "0 0 * * * ?")
     fun hentUngdomsprogramForAlleBrukere() {
         if (!leaderElectionClient.isLeader) return
 
