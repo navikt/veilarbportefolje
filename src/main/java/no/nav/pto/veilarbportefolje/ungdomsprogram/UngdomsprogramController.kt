@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+
+// Midlertidig controller for å kunne sjekke kobling mot apiet til team ung. Kan slettes når kafka eller chron-jobber tar over flyten.
+
 @RestController
 @RequestMapping("/api/ungdomsprogram")
 class UngdomsprogramController(

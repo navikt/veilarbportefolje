@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.ungdomsprogram.dto
 
 import java.time.LocalDate
-import java.util.UUID
 
 
 data class UngdomsprogramResponseDto(
@@ -9,7 +8,6 @@ data class UngdomsprogramResponseDto(
 )
 
 data class Deltakelse(
-    val deltakelseId: UUID,
     val deltakerIdent: String,
     val periode: Periode
 )
