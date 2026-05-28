@@ -82,6 +82,44 @@ class UngdomsprogramServiceTest(
         assertThat(lagretMelding).isNotNull
     }
 
+    @Test
+    fun `skal ikke lagre personer som ikke er under oppfølging`() {
+        // Given
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriode)
+
+        //When
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+        val lagretMelding = undomsprogramRepository.hentUngdomsprogram(norskIdent.get())
+        val meldingMedBrukerIkkeUnderOppfølging =
+            undomsprogramRepository.hentUngdomsprogram(mockedPeriode.deltakelser[1].deltakerIdent)
+
+        //Then
+        assertThat(lagretMelding).isNotNull
+        assertThat(lagretMelding!!.fraOgMed).isEqualTo(LocalDate.now().minusMonths(1))
+        assertThat(lagretMelding.tilOgMed).isEqualTo(mockedPeriode.deltakelser[0].periode.tilOgMed)
+        assertThat(lagretMelding.harForlengetPeriode).isEqualTo(mockedPeriode.deltakelser[0].periode.harForlengetPeriode)
+        assertThat(meldingMedBrukerIkkeUnderOppfølging).isNull()
+    }
+
+    @Test
+    fun `skal ikke lagre personer som ikke har ytelsen i oppfølgingsperioden`() {
+        // Given
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriodeFortid)
+
+        //When
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+        val lagretMelding = undomsprogramRepository.hentUngdomsprogram(norskIdent.get())
+        //Then
+        assertThat(lagretMelding).isNull()
+
+    }
+
 }
 
 val mockedPeriode = UngdomsprogramResponseDto(
@@ -98,8 +136,8 @@ val mockedPeriode = UngdomsprogramResponseDto(
         Deltakelse(
             deltakerIdent = "20108000000",
             periode = Periode(
-                fraOgMed = LocalDate.now().minusMonths(1),
-                tilOgMed = LocalDate.now().plusMonths(1),
+                fraOgMed = LocalDate.now().minusMonths(2),
+                tilOgMed = LocalDate.now().plusMonths(2),
                 harForlengetPeriode = false,
                 periodeMaksDato = LocalDate.now().plusMonths(12)
             )
@@ -107,11 +145,24 @@ val mockedPeriode = UngdomsprogramResponseDto(
         Deltakelse(
             deltakerIdent = "30108000000",
             periode = Periode(
-                fraOgMed = LocalDate.now().minusMonths(1),
-                tilOgMed = LocalDate.now().plusMonths(1),
+                fraOgMed = LocalDate.now().minusMonths(3),
+                tilOgMed = LocalDate.now().plusMonths(3),
                 harForlengetPeriode = false,
                 periodeMaksDato = LocalDate.now().plusMonths(12)
             )
         )
     )
 )
+
+val mockedPeriodeFortid = UngdomsprogramResponseDto(
+    deltakelser = listOf(
+        Deltakelse(
+            deltakerIdent = "10108000000",
+            periode = Periode(
+                fraOgMed = LocalDate.now().minusMonths(12),
+                tilOgMed = LocalDate.now().minusMonths(11),
+                harForlengetPeriode = false,
+                periodeMaksDato = LocalDate.now().plusMonths(12)
+            )
+        )
+    ))
