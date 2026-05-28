@@ -513,4 +513,16 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class YTELSER_UNGDOMSPROGRAM {
+        private YTELSER_UNGDOMSPROGRAM() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_UNGDOMSPROGRAM";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String NYESTE_PERIODE_FOM = "NYESTE_PERIODE_FOM";
+        public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
+        public static final String HAR_FORLENGET_PERIODE = "HAR_FORLENGET_PERIODE";
+        public static final String MAKSDATO = "MAKSDATO";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }
