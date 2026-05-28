@@ -103,6 +103,8 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -214,6 +216,7 @@ import static org.mockito.Mockito.when;
         TiltakspengerService.class,
         DagpengerRepository.class,
         DagpengerService.class,
+        UngdomsprogramService.class,
         OppfolgingsbrukerTestRepository.class
 })
 public class ApplicationConfigTest {
@@ -412,6 +415,11 @@ public class ApplicationConfigTest {
     @Bean
     public DagpengerClient dagpengerClient() {
         return mock(DagpengerClient.class);
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient() {
+        return mock(UngdomsprogramClient.class);
     }
 
     @Bean
