@@ -128,12 +128,12 @@ class AapService(
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
-        val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .filter { vedtak ->
+        val aapIOppfolgingsPeriode = aapRespons?.vedtak
+            ?.filter { vedtak ->
                 vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
-        val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
+        val sistePeriode = aapIOppfolgingsPeriode?.maxByOrNull { it.periode.fraOgMedDato }
 
         return if (sistePeriode != null) {
             AapVedtakResponseDto(
