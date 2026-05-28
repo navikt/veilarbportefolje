@@ -57,9 +57,11 @@ public class SisteEndringDTO {
         return tidspunkt;
     }
 
-    public static SisteEndringsKategori getSisteEndringsKategori(KafkaAktivitetMelding.EndringsType endringsType,
-                                                                 KafkaAktivitetMelding.AktivitetTypeData type,
-                                                                 KafkaAktivitetMelding.AktivitetStatus status) {
+    public static SisteEndringsKategori getSisteEndringsKategori(
+            KafkaAktivitetMelding.EndringsType endringsType,
+            KafkaAktivitetMelding.AktivitetTypeData type,
+            KafkaAktivitetMelding.AktivitetStatus status
+    ) {
         if (endringsType == null || type == null || status == null) {
             secureLog.error("Et eller flere felt i aktivtet er null endringstype: {}, aktivitetstype: {}, aktivitetsstatus: {}",
                     endringsType,
