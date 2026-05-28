@@ -3,8 +3,6 @@ package no.nav.pto.veilarbportefolje.ungdomsprogram
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
-import no.nav.pto.veilarbportefolje.domene.NavKontor
-import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -23,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.time.ZonedDateTime
-import java.util.List
 
 class UngdomsprogramServiceTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
@@ -59,12 +56,10 @@ class UngdomsprogramServiceTest(
 
     val norskIdent = Fnr.ofValidFnr("10108000000")
     val aktorId = AktorId.of("12345")
-    val identerBruker = List.of<PDLIdent>(
+    val identerBruker = listOf(
         PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
         PDLIdent(norskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT)
     )
-    val navKontor = NavKontor.of("1123")
-    val veilederId = VeilederId.of("Z12345")
 
     @Test
     fun `skal starte henting og lagring av ungdomsprogram ved chron-job`() {
@@ -83,7 +78,7 @@ class UngdomsprogramServiceTest(
     }
 
     @Test
-    fun `skal ikke lagre personer som ikke er under oppfølging`() {
+    fun `hentUngdomsprogramForAlleBrukere skal ikke lagre personer som ikke er under oppfølging`() {
         // Given
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         pdlIdentRepository.upsertIdenter(identerBruker)
@@ -92,20 +87,20 @@ class UngdomsprogramServiceTest(
 
         //When
         ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
-        val lagretMelding = undomsprogramRepository.hentUngdomsprogram(norskIdent.get())
-        val meldingMedBrukerIkkeUnderOppfølging =
+        val lagretBruker = undomsprogramRepository.hentUngdomsprogram(mockedPeriode.deltakelser[0].deltakerIdent)
+        val brukerIkkeUnderOppfolging =
             undomsprogramRepository.hentUngdomsprogram(mockedPeriode.deltakelser[1].deltakerIdent)
 
         //Then
-        assertThat(lagretMelding).isNotNull
-        assertThat(lagretMelding!!.fraOgMed).isEqualTo(LocalDate.now().minusMonths(1))
-        assertThat(lagretMelding.tilOgMed).isEqualTo(mockedPeriode.deltakelser[0].periode.tilOgMed)
-        assertThat(lagretMelding.harForlengetPeriode).isEqualTo(mockedPeriode.deltakelser[0].periode.harForlengetPeriode)
-        assertThat(meldingMedBrukerIkkeUnderOppfølging).isNull()
+        assertThat(lagretBruker).isNotNull
+        assertThat(lagretBruker!!.fraOgMed).isEqualTo(LocalDate.now().minusMonths(1))
+        assertThat(lagretBruker.tilOgMed).isEqualTo(mockedPeriode.deltakelser[0].periode.tilOgMed)
+        assertThat(lagretBruker.harForlengetPeriode).isEqualTo(mockedPeriode.deltakelser[0].periode.harForlengetPeriode)
+        assertThat(brukerIkkeUnderOppfolging).isNull()
     }
 
     @Test
-    fun `skal ikke lagre personer som ikke har ytelsen i oppfølgingsperioden`() {
+    fun `hentUngdomsprogramForAlleBrukere skal ikke lagre personer som ikke har ytelsen i oppfølgingsperioden`() {
         // Given
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         pdlIdentRepository.upsertIdenter(identerBruker)
