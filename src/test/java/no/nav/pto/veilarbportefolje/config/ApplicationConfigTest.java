@@ -104,6 +104,7 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramRepository;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
@@ -217,6 +218,7 @@ import static org.mockito.Mockito.when;
         DagpengerRepository.class,
         DagpengerService.class,
         UngdomsprogramService.class,
+        UngdomsprogramRepository.class,
         OppfolgingsbrukerTestRepository.class
 })
 public class ApplicationConfigTest {
