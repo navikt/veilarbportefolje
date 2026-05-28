@@ -5,14 +5,16 @@ import no.nav.common.rest.client.RestUtils
 import no.nav.common.utils.UrlUtils
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakRequest
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import java.util.function.Supplier
 
 class AapClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
+    private val logger: Logger = LoggerFactory.getLogger(AapClient::class.java)
     private val client: OkHttpClient = baseClient()
 
     fun hentAapVedtak(personnr: String, fom: String, tom: String): AapVedtakResponseDto? {
@@ -26,7 +28,7 @@ class AapClient(private val baseUrl: String, private val machineToMachineTokenSu
 
         client.newCall(request).execute().use { response ->
             if (response.code == HttpStatus.NOT_FOUND.value()) {
-                secureLog.info("AAP-klient fikk 404 fra Kelvin for personnr, returnerer null")
+                logger.info("AAP-klient fikk 404 fra Kelvin for personnr, returnerer null")
                 return null
             }
             RestUtils.throwIfNotSuccessful(response)
