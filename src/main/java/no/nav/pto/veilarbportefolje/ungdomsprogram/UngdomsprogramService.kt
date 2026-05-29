@@ -6,10 +6,12 @@ import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.util.Optional
 
 
 /**
@@ -25,6 +27,7 @@ class UngdomsprogramService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
+    val ungdomsprogramRepository: UngdomsprogramRepository,
 ) {
 
     fun hentUngdomsprogramForAlleBrukere() {
@@ -53,21 +56,53 @@ class UngdomsprogramService(
                                 "sletter eventuell eksisterende ytelse-periode i databasen",
                         bruker.deltakerIdent
                     )
-                    //todo: slette alle identer i ungdomsprogram i db, og i opensearch
+                    slettUngdomsprogramForAlleIdenterForBruker(bruker.deltakerIdent)
                     continue
                 }
 
-                val ytelsesperiodenErAktiv = tilOgMed == null || tilOgMed.isAfter(LocalDate.now().minusDays(1))
-                // todo: upsert perioden i db, og oppdater opensearch
+                upsertUngdomsprogramForAktivIdentForBruker(bruker.deltakerIdent, bruker.periode)
 
             } catch (e: Exception) {
                 secureLog.error("Feil ved behandling av ungdomsprogram for ${bruker.deltakerIdent}", e)
             }
         }
-
-
     }
 
+    fun upsertUngdomsprogramForAktivIdentForBruker(
+        personIdent: String,
+        ungdomsperiode: Periode,
+    ) {
+        val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
+        if (alleFnrIdenterForBruker.size > 1) {
+            alleFnrIdenterForBruker.forEach { ident ->
+                ungdomsprogramRepository.slettUngdomsprogramForBruker(ident)
+            }
+        }
+        ungdomsprogramRepository.upsertUngdomsprogram(personIdent, ungdomsperiode)
+    }
+
+    fun slettUngdomsprogramData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        if (maybeFnr.isEmpty) {
+            secureLog.warn(
+                "Kunne ikke slette Ungdomsprogram bruker med Aktør-ID ${aktorId.get()}. Årsak fødselsnummer-parameter var tom."
+            )
+            return
+        }
+
+        try {
+            slettUngdomsprogramForAlleIdenterForBruker(maybeFnr.get().toString())
+        } catch (e: Exception) {
+            secureLog.error("Feil ved sletting av Ungdomsprogram data for bruker med fnr: ${maybeFnr.get()}", e)
+            return
+        }
+    }
+
+    fun slettUngdomsprogramForAlleIdenterForBruker(personIdent: String) {
+        val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
+        alleFnrIdenterForBruker.forEach { ident ->
+            ungdomsprogramRepository.slettUngdomsprogramForBruker(ident)
+        }
+    }
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
         val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
