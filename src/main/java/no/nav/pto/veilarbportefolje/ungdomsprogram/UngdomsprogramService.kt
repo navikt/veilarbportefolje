@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
@@ -11,7 +12,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 
 
 /**
@@ -28,6 +29,7 @@ class UngdomsprogramService(
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
     val ungdomsprogramRepository: UngdomsprogramRepository,
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
 ) {
 
     fun hentUngdomsprogramForAlleBrukere() {
@@ -48,7 +50,7 @@ class UngdomsprogramService(
 
                 val tilOgMed = bruker.periode.tilOgMed
                 val ytelsenErIOppfolgingsPeriode =
-                    tilOgMed == null || tilOgMed.isAfter(oppfolgingsStartdato.minusDays(1))
+                    tilOgMed == null || !tilOgMed.isBefore(oppfolgingsStartdato)
 
                 if (!ytelsenErIOppfolgingsPeriode) {
                     secureLog.info(
@@ -61,6 +63,13 @@ class UngdomsprogramService(
                 }
 
                 upsertUngdomsprogramForAktivIdentForBruker(bruker.deltakerIdent, bruker.periode)
+
+                val harAktivYtelse = tilOgMed == null || !tilOgMed.isBefore(LocalDate.now())
+                if (harAktivYtelse) {
+                    opensearchIndexerPaDatafelt.oppdaterUngdomsprogram(aktorId, bruker.periode)
+                } else {
+                    opensearchIndexerPaDatafelt.slettUngdomsprogram(aktorId)
+                }
 
             } catch (e: Exception) {
                 secureLog.error("Feil ved behandling av ungdomsprogram for ${bruker.deltakerIdent}", e)
