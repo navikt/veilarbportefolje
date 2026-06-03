@@ -87,7 +87,8 @@ data class Filtervalg(
                 harYtelseTiltakspengerFilter() ||
                 harYtelseTiltakspengerArenaFilter() ||
                 harYtelseDagpengerFilter() ||
-                harYtelseDagpengerArenaFilter()
+                harYtelseDagpengerArenaFilter() ||
+                harYtelseUngdomsprogramFilter()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
         gjeldendeVedtak14a.isNotEmpty()

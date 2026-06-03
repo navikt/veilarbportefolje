@@ -59,6 +59,11 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLI
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_RETTIGHET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_VEDTAKSDATO_TOM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UTLOPSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -324,6 +329,29 @@ class OpensearchSortQueryBuilder {
 
             Sorteringsfelt.AAP_KELVIN_RETTIGHETSTYPE -> {
                 searchSourceBuilder.sort(AAP_KELVIN_RETTIGHETSTYPE, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UNGDOMSPROGRAM_STARTDATO -> {
+                sorterUngdomsprogramStartdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UNGDOMSPROGRAM_SLUTTDATO -> {
+                sorterUngdomsprogramSluttdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UNGDSOMPROGRAM_MAKSDATO -> {
+                sorterUngdomsprogramMaksdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UNGDSOMPROGRAM_PERIODETYPE -> {
+                searchSourceBuilder.sort(
+                    "$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE",
+                    sorteringsrekkefolgeOpenSearch
+                )
                 searchSourceBuilder
             }
 
@@ -674,6 +702,55 @@ class OpensearchSortQueryBuilder {
                     }
                     """.trimIndent()
         }
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterUngdomsprogramStartdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_FRA_OG_MED') && !doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_FRA_OG_MED'].empty) {
+                        return doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_FRA_OG_MED'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterUngdomsprogramMaksdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_MAKSDATO') && !doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_MAKSDATO'].empty) {
+                        return doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_MAKSDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterUngdomsprogramSluttdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_TIL_OG_MED') && !doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_TIL_OG_MED'].empty) {
+                        return doc['$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_TIL_OG_MED'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
 
         val script = Script(expression)
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)

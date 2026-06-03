@@ -45,6 +45,11 @@ public enum Sorteringsfelt {
     DAGPENGER_ANTALL_RESTERENDE_DAGER("dagpenger_antall_resterende_dager"),
     DAGPENGER_RETTIGHETSTYPE("dagpenger_rettighetstype"),
 
+    UNGDOMSPROGRAM_STARTDATO("ungdomsprogram_startdato"),
+    UNGDOMSPROGRAM_SLUTTDATO("ungdomsprogram_sluttdato"),
+    UNGDSOMPROGRAM_MAKSDATO("ungdomsprogram_maksdato"),
+    UNGDSOMPROGRAM_PERIODETYPE("ungdomsprogram_periodetype"),
+
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 

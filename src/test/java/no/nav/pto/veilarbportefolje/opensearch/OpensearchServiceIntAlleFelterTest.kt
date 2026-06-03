@@ -161,6 +161,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utlopsdato = PortefoljebrukerOpensearchModell.UTLOPSDATO,
             ytelse = PortefoljebrukerOpensearchModell.YTELSE,
             dagpenger = PortefoljebrukerOpensearchModell.DAGPENGER,
+            ungdomsprogram = PortefoljebrukerOpensearchModell.UNGDOMSPROGRAM,
 
             // Dialog
             venterpasvarfrabruker = PortefoljebrukerOpensearchModell.VENTER_PA_SVAR_FRA_BRUKER,
@@ -390,6 +391,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 antallResterendeDager = null,
                 datoAntallDagerBleBeregnet = null
             )
+            val UNGDOMSPROGRAM = null
 
             // Dialog
             val VENTER_PA_SVAR_FRA_BRUKER: String = "2025-10-10T10:00:00.000Z"
