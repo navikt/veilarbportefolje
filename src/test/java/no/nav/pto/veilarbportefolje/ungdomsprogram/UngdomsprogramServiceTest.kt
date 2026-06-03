@@ -4,10 +4,15 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseUngdomsprogram
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -133,12 +138,11 @@ class UngdomsprogramServiceTest(
         val getResponse = opensearchTestClient.fetchDocument(aktorId)
         assertThat(getResponse.isExists).isTrue()
 
-        val ungdomsprogramMap = getResponse.sourceAsMap[DatafeltKeys.Ytelser.UNGDOMSPROGRAM] as Map<*, *>
-        val fraOgMed = ungdomsprogramMap[DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED]
-        val tilOgMed = ungdomsprogramMap[DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED]
-        val maksdato = ungdomsprogramMap[DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO]
-        val harForlengelse = ungdomsprogramMap[DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE]
-
+        val ungdomsprogramMap = getResponse.sourceAsMap[UNGDOMSPROGRAM] as Map<*, *>
+        val fraOgMed = ungdomsprogramMap[UNGDOMSPROGRAM_FRA_OG_MED]
+        val tilOgMed = ungdomsprogramMap[UNGDOMSPROGRAM_TIL_OG_MED]
+        val maksdato = ungdomsprogramMap[UNGDOMSPROGRAM_MAKSDATO]
+        val harForlengelse = ungdomsprogramMap[UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE]
 
         assertThat(ungdomsprogramMap).isNotNull
         assertThat(fraOgMed).isEqualTo(LocalDate.now().minusMonths(1).toString())
@@ -165,6 +169,46 @@ class UngdomsprogramServiceTest(
 
             assertThat(responseBrukere.antall).isEqualTo(1)
             assertThat(responseBrukere.brukere.first().ytelser.ungdomsprogram).isNotNull()
+        }
+    }
+
+
+    @Test
+    fun `skal populere og filtrere riktig i opensearch ved sletting av ungdomsprogram `() {
+        val aktorId = randomAktorId()
+        // Legg til bruker med ungdomsprogram og oppdater opensearch
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        val responsMedUngdomsprogram = getResponse.sourceAsMap[UNGDOMSPROGRAM];
+        assertThat(responsMedUngdomsprogram).isNotNull
+
+        //Fjern ungdomsprogram og oppdater opensearch
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriodeFortid)
+        populateOpensearch(NavKontor.of("1123"), VeilederId.of("Z12345"), aktorId.get())
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+
+        val getResponse2 = opensearchTestClient.fetchDocument(aktorId)
+        val responsUtenUngdomsprogram = getResponse2.sourceAsMap[UNGDOMSPROGRAM];
+        assertThat(responsUtenUngdomsprogram).isNull()
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAM)
+        )
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(0)
         }
     }
 
