@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
@@ -391,7 +392,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 antallResterendeDager = null,
                 datoAntallDagerBleBeregnet = null
             )
-            val UNGDOMSPROGRAM = null
+            val UNGDOMSPROGRAM: UngdomsprogramForOpensearch = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.parse("2025-02-10"),
+                tilOgMed = null,
+                maksdato = LocalDate.parse("2026-02-10"),
+                harForlengetPeriode = false
+            )
 
             // Dialog
             val VENTER_PA_SVAR_FRA_BRUKER: String = "2025-10-10T10:00:00.000Z"
