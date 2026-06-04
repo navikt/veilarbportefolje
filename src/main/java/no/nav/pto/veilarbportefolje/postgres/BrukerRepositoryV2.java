@@ -156,6 +156,7 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;

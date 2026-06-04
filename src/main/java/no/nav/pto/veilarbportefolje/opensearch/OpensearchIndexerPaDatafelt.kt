@@ -439,13 +439,13 @@ class OpensearchIndexerPaDatafelt(
             .endObject()
             .endObject()
 
-        update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")
+        update(aktorId, content, "Oppdatert ungdomsprogram for aktorId: $aktorId")
     }
 
     fun slettUngdomsprogram(aktorId: AktorId) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .nullField(DatafeltKeys.Ytelser.DAGPENGER)
+            .nullField(DatafeltKeys.Ytelser.UNGDOMSPROGRAM)
             .endObject()
         update(aktorId, content, "Slettet ungdomsprogram for aktorId: $aktorId")
     }
