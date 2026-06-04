@@ -325,7 +325,7 @@ public class BrukerRepositoryV2 {
 
     @SneakyThrows
     private void setUngdomsprogram(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        Date fraOgMedDate = rs.getDate(YTELSER_UNGDOMSPROGRAM_FRA_OG_MED);
+        Date fraOgMedDate = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM);
 
         // Ingen rad i YTELSER_UNGDOMSPROGRAM => bruker har ikke ytelsen
         if (fraOgMedDate == null) {
@@ -333,7 +333,7 @@ public class BrukerRepositoryV2 {
             return;
         }
         LocalDate fraOgMed = fraOgMedDate.toLocalDate();
-        LocalDate tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM_TIL_OG_MED) != null ? rs.getDate(YTELSER_UNGDOMSPROGRAM_TIL_OG_MED).toLocalDate() : null;
+        LocalDate tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM).toLocalDate() : null;
         LocalDate maksdato = rs.getDate(YTELSER_UNGDOMSPROGRAM_MAKSDATO).toLocalDate();
         boolean harForlengetPeriode = rs.getBoolean(YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE);
 
