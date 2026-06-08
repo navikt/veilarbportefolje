@@ -3,6 +3,15 @@ package no.nav.pto.veilarbportefolje.ungdomsprogram
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.domene.*
+import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseUngdomsprogram
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -11,6 +20,7 @@ import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Deltakelse
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.UngdomsprogramResponseDto
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
+import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,12 +31,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class UngdomsprogramServiceTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
     @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
-    @param:Autowired private val undomsprogramRepository: UngdomsprogramRepository
+    @param:Autowired private val undomsprogramRepository: UngdomsprogramRepository,
+    @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
+    @param:Autowired private val opensearchService: OpensearchService,
 ) : EndToEndTest() {
 
     private lateinit var ungdomsprogramService: UngdomsprogramService
@@ -50,7 +64,8 @@ class UngdomsprogramServiceTest(
             oppfolgingRepositoryV2,
             pdlIdentRepository,
             aktorClient,
-            undomsprogramRepository
+            undomsprogramRepository,
+            opensearchIndexerPaDatafelt
         )
     }
 
@@ -115,6 +130,100 @@ class UngdomsprogramServiceTest(
 
     }
 
+    @Test
+    fun `Ungdomsprogram skal populere og filtrere riktig i opensearch når man har ytelsen`() {
+        val aktorId = randomAktorId()
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.isExists).isTrue()
+
+        val ungdomsprogramMap = getResponse.sourceAsMap[UNGDOMSPROGRAM] as Map<*, *>
+        val fraOgMed = ungdomsprogramMap[UNGDOMSPROGRAM_FRA_OG_MED]
+        val tilOgMed = ungdomsprogramMap[UNGDOMSPROGRAM_TIL_OG_MED]
+        val maksdato = ungdomsprogramMap[UNGDOMSPROGRAM_MAKSDATO]
+        val harForlengelse = ungdomsprogramMap[UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE]
+
+        assertThat(ungdomsprogramMap).isNotNull
+        assertThat(fraOgMed).isEqualTo(LocalDate.now().minusMonths(1).toString())
+        assertThat(tilOgMed).isEqualTo(LocalDate.now().plusMonths(1).toString())
+        assertThat(maksdato).isEqualTo(LocalDate.now().plusMonths(12).toString())
+        assertThat(harForlengelse).isEqualTo(false)
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
+        )
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(1)
+            assertThat(responseBrukere.brukere.first().ytelser.ungdomsprogram).isNotNull()
+        }
+    }
+
+
+    @Test
+    fun `skal populere og filtrere riktig i opensearch ved sletting av ungdomsprogram `() {
+        val aktorId = randomAktorId()
+        // Legg til bruker med ungdomsprogram og oppdater opensearch
+        setInitialState(aktorId)
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        val responsMedUngdomsprogram = getResponse.sourceAsMap[UNGDOMSPROGRAM];
+        assertThat(responsMedUngdomsprogram).isNotNull
+
+        //Fjern ungdomsprogram og oppdater opensearch
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriodeFortid)
+        populateOpensearch(NavKontor.of("1123"), VeilederId.of("Z12345"), aktorId.get())
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+
+        val getResponse2 = opensearchTestClient.fetchDocument(aktorId)
+        val responsUtenUngdomsprogram = getResponse2.sourceAsMap[UNGDOMSPROGRAM];
+        assertThat(responsUtenUngdomsprogram).isNull()
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
+        )
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(0)
+        }
+    }
+
+    private fun setInitialState(aktorId: AktorId) {
+        val navKontor = NavKontor.of("1123")
+        val veilederId = VeilederId.of("Z12345")
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriode)
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+
+    }
+
 }
 
 val mockedPeriode = UngdomsprogramResponseDto(
@@ -160,4 +269,5 @@ val mockedPeriodeFortid = UngdomsprogramResponseDto(
                 periodeMaksDato = LocalDate.now().plusMonths(12)
             )
         )
-    ))
+    )
+)

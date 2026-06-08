@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -368,6 +369,12 @@ class PortefoljebrukerFrontendModellMapperTest {
                 null,
                 156,
                 LocalDate.of(2026, 1, 1),
+            ),
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                LocalDate.of(2026, 1, 1),
+                null,
+                LocalDate.of(2027, 1, 1),
+                false
             )
         )
 
@@ -397,6 +404,11 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("Dagpenger under permittering", ytelser.dagpenger!!.rettighetstype)
         Assertions.assertEquals(null, ytelser.dagpenger.datoStans)
         Assertions.assertEquals("156 dager", ytelser.dagpenger.resterendeDager)
+        Assertions.assertNotNull(ytelser.ungdomsprogram)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ungdomsprogram!!.startdato)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram.sluttdato)
+        Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
+        Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
     }
 
     @Test
@@ -425,6 +437,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
         Assertions.assertEquals(null, ytelser.dagpenger)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram)
     }
 
     @Test

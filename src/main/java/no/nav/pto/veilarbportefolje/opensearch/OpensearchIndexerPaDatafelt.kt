@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.opensearch.OpenSearchException
@@ -422,6 +423,31 @@ class OpensearchIndexerPaDatafelt(
             .endObject()
 
         update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")
+    }
+
+    fun oppdaterUngdomsprogram(
+        aktorId: AktorId,
+        periode: Periode
+    ) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .startObject(DatafeltKeys.Ytelser.UNGDOMSPROGRAM)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED, periode.fraOgMed)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED, periode.tilOgMed)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO, periode.periodeMaksDato)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE, periode.harForlengetPeriode)
+            .endObject()
+            .endObject()
+
+        update(aktorId, content, "Oppdatert ungdomsprogram for aktorId: $aktorId")
+    }
+
+    fun slettUngdomsprogram(aktorId: AktorId) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .nullField(DatafeltKeys.Ytelser.UNGDOMSPROGRAM)
+            .endObject()
+        update(aktorId, content, "Slettet ungdomsprogram for aktorId: $aktorId")
     }
 
     private fun updateWithScript(aktoerId: AktorId, script: Script?, logInfo: String?) {
