@@ -505,7 +505,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
         val filterValg = getFiltervalgDefaults().copy(
-            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAM)
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
         )
 
         val response = opensearchService.hentBrukere(
@@ -1353,7 +1353,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         val filtervalg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAM)
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
         )
 
         val brukereMedAntall = opensearchService.hentBrukere(

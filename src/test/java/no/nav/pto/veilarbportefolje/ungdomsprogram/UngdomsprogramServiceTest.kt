@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseUngdomsprogram
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
@@ -151,7 +150,7 @@ class UngdomsprogramServiceTest(
         assertThat(harForlengelse).isEqualTo(false)
 
         val filtervalg = getFiltervalgDefaults().copy(
-            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAM)
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
         )
 
         verifiserAsynkront(
@@ -192,7 +191,7 @@ class UngdomsprogramServiceTest(
         assertThat(responsUtenUngdomsprogram).isNull()
 
         val filtervalg = getFiltervalgDefaults().copy(
-            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAM)
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
         )
 
         verifiserAsynkront(
