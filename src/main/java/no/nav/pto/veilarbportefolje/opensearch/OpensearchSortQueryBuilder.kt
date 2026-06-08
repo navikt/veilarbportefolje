@@ -347,7 +347,7 @@ class OpensearchSortQueryBuilder {
                 searchSourceBuilder
             }
 
-            Sorteringsfelt.UNGDSOMPROGRAM_PERIODETYPE -> {
+            Sorteringsfelt.UNGDSOMPROGRAM_RETTIGHET -> {
                 searchSourceBuilder.sort(
                     "$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE",
                     sorteringsrekkefolgeOpenSearch

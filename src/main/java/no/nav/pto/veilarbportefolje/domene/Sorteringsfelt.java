@@ -48,7 +48,7 @@ public enum Sorteringsfelt {
     UNGDOMSPROGRAM_STARTDATO("ungdomsprogram_startdato"),
     UNGDOMSPROGRAM_SLUTTDATO("ungdomsprogram_sluttdato"),
     UNGDSOMPROGRAM_MAKSDATO("ungdomsprogram_maksdato"),
-    UNGDSOMPROGRAM_PERIODETYPE("ungdomsprogram_periodetype"),
+    UNGDSOMPROGRAM_RETTIGHET("ungdomsprogram_rettighet"),
 
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),

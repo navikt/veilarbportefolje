@@ -204,10 +204,10 @@ object PortefoljebrukerFrontendModellMapper {
         val ungdomsprogram = opensearchModell.ungdomsprogram ?: return null
 
         return Ungdomsprogram(
-            startdatoPeriode = ungdomsprogram.fraOgMed,
-            maksdatoPeriode = ungdomsprogram.maksdato,
+            startdato = ungdomsprogram.fraOgMed,
             sluttdato = ungdomsprogram.tilOgMed,
-            typePeriode = if (ungdomsprogram.harForlengetPeriode) "Unntak" else "Ordinær"
+            maksdato = ungdomsprogram.maksdato,
+            rettighet = if (ungdomsprogram.harForlengetPeriode) "Unntak" else "Ordinær"
         )
     }
 

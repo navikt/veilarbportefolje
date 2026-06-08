@@ -405,10 +405,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.dagpenger.datoStans)
         Assertions.assertEquals("156 dager", ytelser.dagpenger.resterendeDager)
         Assertions.assertNotNull(ytelser.ungdomsprogram)
-        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ungdomsprogram!!.startdatoPeriode)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ungdomsprogram!!.startdato)
         Assertions.assertEquals(null, ytelser.ungdomsprogram.sluttdato)
-        Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdatoPeriode)
-        Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.typePeriode)
+        Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
+        Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
     }
 
     @Test
