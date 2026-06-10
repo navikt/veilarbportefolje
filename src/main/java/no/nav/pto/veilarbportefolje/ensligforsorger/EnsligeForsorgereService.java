@@ -7,6 +7,8 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClient;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Vedtaksresultat;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
@@ -120,6 +122,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
         Fnr fnr = aktorClient.hentFnr(aktorId);
         Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
+        secureLog.info("Hentet overgangsstønad, response {}", overgangsstønadResponseDto );
         if (fnr != null && overgangsstønadResponseDto.isPresent()) {
             List<OvergangsstønadPeriode> ensligForsorgerPerioder = overgangsstønadResponseDto.get().getData().getPerioder();
 

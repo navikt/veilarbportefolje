@@ -28,7 +28,7 @@ public class AktivitetsTypeTilAktivitetsplikt {
             }
 
             if (List.of(BARNET_SÆRLIG_TILSYNSKREVENDE, FORSØRGER_MANGLER_TILSYNSORDNING,
-                            FORSØRGER_ER_SYK, BARNET_ER_SYKT)
+                            FORSØRGER_ER_SYK, BARNET_ER_SYKT, SÆRLIG_TILSYNSKREVENDE_BARN)
                     .contains(aktivitetstypes)) {
                 return Optional.of(false);
             }
