@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -50,6 +51,7 @@ public class OppfolgingAvsluttetService {
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
     private final DagpengerService dagpengerService;
+    private final UngdomsprogramService ungdomsprogramService;
 
     public void avsluttOppfolging(AktorId aktorId, ZonedDateTime avsluttetDato) {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
@@ -88,6 +90,7 @@ public class OppfolgingAvsluttetService {
         aapService.slettAapData(aktorId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktorId, maybeFnr);
         dagpengerService.slettDagpengerData(aktorId, maybeFnr);
+        ungdomsprogramService.slettUngdomsprogramData(aktorId, maybeFnr);
         cvServiceV2.slettCvData(aktorId, maybeFnr);
         opensearchIndexer.slettDokumenter(List.of(aktorId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktorId);

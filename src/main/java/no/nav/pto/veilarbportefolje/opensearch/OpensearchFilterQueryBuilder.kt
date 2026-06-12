@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
+import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
@@ -62,6 +63,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
@@ -398,7 +400,7 @@ class OpensearchFilterQueryBuilder {
 
             val combinedSubQuery = QueryBuilders.boolQuery()
 
-            filtervalg.ytelseDagpenger?.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
+            filtervalg.ytelseDagpenger.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
                 when (ytelseDagpenger) {
                     YtelseDagpenger.HAR_DAGPENGER_ORDINAER -> {
                         subQueryDagpenger.should(
@@ -479,6 +481,15 @@ class OpensearchFilterQueryBuilder {
             }
 
             queryBuilder.must(combinedSubQuery)
+        }
+
+        if (filtervalg.harYtelseUngdomsprogramFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    UNGDOMSPROGRAM
+                )
+            )
+
         }
 
         if (filtervalg.harKjonnfilter()) {

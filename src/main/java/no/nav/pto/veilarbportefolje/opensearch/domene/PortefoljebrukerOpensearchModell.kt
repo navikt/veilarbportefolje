@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -139,6 +140,7 @@ data class PortefoljebrukerOpensearchModell(
     var utlopsdato: String? = null,
     var ytelse: String? = null,
     var dagpenger: DagpengerForOpensearch? = null,
+    var ungdomsprogram: UngdomsprogramForOpensearch? = null,
 
     // Dialog
     var venterpasvarfrabruker: String? = null,
