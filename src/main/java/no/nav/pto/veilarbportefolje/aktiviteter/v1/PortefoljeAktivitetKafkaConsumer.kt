@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import io.getunleash.DefaultUnleash
+import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
@@ -24,6 +26,7 @@ class PortefoljeAktivitetKafkaConsumer(
     private val registry: KafkaListenerEndpointRegistry,
     private val defaultUnleash: DefaultUnleash,
     private val consumerState: PortefoljeAktivitetKafkaConsumerState,
+    private val opensearchIndexer: OpensearchIndexer
 ) {
     private val kafkaAivenUnleash = KafkaAivenUnleash(defaultUnleash)
 
@@ -43,6 +46,9 @@ class PortefoljeAktivitetKafkaConsumer(
         )
 
         aktivitetKafkaMeldingService.behandleKafkaRecords(records)
+
+        val aktoerIder = records.map { AktorId.of(it.value().aktorId) }.toSet()
+        opensearchIndexer.indekserBolk(aktoerIder.toList())
     }
 
     @Scheduled(fixedDelay = 30_000, initialDelay = 5_000)

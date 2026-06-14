@@ -12,7 +12,7 @@ class PostgresOpensearchMapperV2(
 ) {
     fun flettInnAktivitetData(brukerOpensearchModellList: List<PortefoljebrukerOpensearchModell>): List<PortefoljebrukerOpensearchModell> {
         val aktorIder = brukerOpensearchModellList.mapNotNull { it.aktoer_id }
-        val tiltak = kafkaAktivitetMeldingRepository.hentTiltaksaktiviteter(
+        val tiltak = kafkaAktivitetMeldingRepository.hentKafkaAktivitetMeldinger(
             personidenter = aktorIder,
             avtalt = true,
             aktivitetStatusFilter = listOf(
