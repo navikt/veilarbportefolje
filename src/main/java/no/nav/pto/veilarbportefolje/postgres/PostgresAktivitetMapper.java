@@ -54,7 +54,7 @@ public class PostgresAktivitetMapper {
                 .setTiltak(aktiveTiltak);
     }
 
-    private static void byggAktivitetStatusBrukerData(AktivitetStatusData aktivitetStatusData, List<AktivitetEntityDto> aktiviter) {
+    private static void byggAktivitetStatusBrukerData(AktivitetStatusData aktivitetStatusData, List<AktivitetEntityDto> aktiviteter) {
         LocalDate idag = LocalDate.now();
 
         Timestamp moteFremtidigStartdato = null;
@@ -68,7 +68,7 @@ public class PostgresAktivitetMapper {
         Timestamp utdanningaktivitetFremtidigUtlopsdato = null;
         Timestamp gruppeaktivitetFremtidigUtlopsdato = null;
 
-        for (AktivitetEntityDto aktivitet : aktiviter) {
+        for (AktivitetEntityDto aktivitet : aktiviteter) {
             if (aktivitet.getAktivitetsType().equals(mote) && !(aktivitet.getStart() == null || aktivitet.getStart().toLocalDateTime().toLocalDate().isBefore(idag))) {
                 moteFremtidigStartdato = nesteFremITiden(moteFremtidigStartdato, aktivitet.getStart());
             }

@@ -55,7 +55,7 @@ public class PostgresOpensearchMapper {
     private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
     public void flettInnAktivitetsData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        List<AktorId> aktoerIder = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).map(AktorId::of).toList();
+        List<AktorId> aktoerIder = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).filter(Objects::nonNull).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
         brukerOpensearchModellList.forEach(bruker -> {
@@ -117,10 +117,10 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnStatsborgerskapData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        List<Fnr> fnrs = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getFnr).map(Fnr::of).collect(Collectors.toList());
+        List<Fnr> fnrs = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getFnr).filter(Objects::nonNull).map(Fnr::of).collect(Collectors.toList());
         Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
         brukerOpensearchModellList.forEach(bruker -> {
-            List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
+            List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(Objects.requireNonNull(bruker.getFnr())), Collections.emptyList());
             bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
             bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
         });
