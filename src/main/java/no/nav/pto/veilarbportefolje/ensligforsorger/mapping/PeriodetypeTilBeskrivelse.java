@@ -13,6 +13,8 @@ public class PeriodetypeTilBeskrivelse {
             case UTVIDELSE -> "Utvidelse";
             case NY_PERIODE_FOR_NYTT_BARN -> "Ny periode for nytt barn";
             case SÆRLIG_TILSYNSKREVENDE_BARN -> "Særlig tilsynskrevende barn";
+            case BARN_UNDER_14_MÅNEDER -> "Barn under 14 måneder";
+            case FORBIGÅENDE_SYKDOM_HOS_BARNET -> "Forbigående sykdom hos barnet";
         };
     }
 
