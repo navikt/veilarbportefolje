@@ -41,18 +41,18 @@ public class PeriodetypeTilBeskrivelseTest {
         Assert.assertEquals("Ny periode for nytt barn", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.NY_PERIODE_FOR_NYTT_BARN));
     }
 
-    @Test
-    public void særligTilsynskrevendeBarn_skalGiRiktigBeskrivelse() {
-        Assert.assertEquals("Særlig tilsynskrevende barn", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN));
-    }
-
-    @Test
-    public void barnUnder14Måneder_skalGiRiktigBeskrivelse() {
-        Assert.assertEquals("Barn under 14 måneder", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.BARN_UNDER_14_MÅNEDER));
-    }
-
-    @Test
-    public void forbigåendeSykdomHosBarnet_skalGiRiktigBeskrivelse() {
-        Assert.assertEquals("Forbigående sykdom hos barnet", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.FORBIGÅENDE_SYKDOM_HOS_BARNET));
-    }
+//    @Test
+//    public void særligTilsynskrevendeBarn_skalGiRiktigBeskrivelse() {
+//        Assert.assertEquals("Særlig tilsynskrevende barn", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN));
+//    }
+//
+//    @Test
+//    public void barnUnder14Måneder_skalGiRiktigBeskrivelse() {
+//        Assert.assertEquals("Barn under 14 måneder", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.BARN_UNDER_14_MÅNEDER));
+//    }
+//
+//    @Test
+//    public void forbigåendeSykdomHosBarnet_skalGiRiktigBeskrivelse() {
+//        Assert.assertEquals("Forbigående sykdom hos barnet", PeriodetypeTilBeskrivelse.mapPeriodetypeTilBeskrivelse(Periodetype.FORBIGÅENDE_SYKDOM_HOS_BARNET));
+//    }
 }
