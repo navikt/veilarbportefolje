@@ -23,7 +23,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
-import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
