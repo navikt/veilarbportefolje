@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
+import no.nav.common.types.identer.EnhetId
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.EnhetTiltak
 import org.springframework.stereotype.Component
 
 typealias TiltakKode = String
@@ -29,6 +31,14 @@ class TiltaksaktivitetService(
                 .filterNotNull()
                 .toSet()
         }
+    }
+
+    //Henter tiltakskoder kun fra den nye tiltakstabellen KAFKA_AKTIVITET_MELDING.
+
+    fun finnTiltakstyperBrukerDeltarPaa(
+        enhetId: EnhetId,
+    ): EnhetTiltak {
+        return kafkaAktivitetMeldingRepository.hentTiltakskoderForBrukerePaaEnhet(enhetId)
     }
 
     companion object {
