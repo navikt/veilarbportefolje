@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.getunleash.DefaultUnleash;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -24,7 +23,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
-import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
@@ -44,9 +42,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
         BarnUnder18AarRepository barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
         PdlIdentRepository pdlIdentRepository = new PdlIdentRepository(db);
         PdlPersonRepository pdlPersonRepository = new PdlPersonRepository(db, db);
-        DefaultUnleash mockUnleash = Mockito.mock(DefaultUnleash.class);
-        Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
-        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null, mockUnleash);
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
         OppfolgingRepositoryV2 oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
 
         db.update("truncate bruker_data CASCADE");
