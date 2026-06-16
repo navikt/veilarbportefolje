@@ -53,6 +53,7 @@ public class HuskelappServiceTest {
         this.jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
         this.jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
         this.jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
+        this.jdbcTemplate.execute("TRUNCATE TABLE ao_kontor");
     }
 
     @Test
@@ -115,6 +116,7 @@ public class HuskelappServiceTest {
                 new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
+        jdbcTemplate.update("INSERT INTO ao_kontor (ident, kontor_id, aktorid) VALUES (?,?,?)", fnr.get(), navKontor.get(), aktorId.get());
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(aktorId, veilederId);
     }
