@@ -129,7 +129,6 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
             for (OvergangsstønadPeriode periode : ensligForsorgerPerioder) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
-                secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, periode);
             }
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
