@@ -32,7 +32,7 @@ class VeilederTilordnetService(
         val veilederId = dto.veilederId
         val tildeltTidspunkt = dto.tilordnetTidspunkt
 
-        tilordneVeileder(aktoerId!!, veilederId, tildeltTidspunkt)
+        tilordneVeileder(aktoerId, veilederId, tildeltTidspunkt)
     }
 
     fun tilordneVeileder(aktoerId: AktorId, veilederId: VeilederId?, tildeltTidspunkt: ZonedDateTime?) {
