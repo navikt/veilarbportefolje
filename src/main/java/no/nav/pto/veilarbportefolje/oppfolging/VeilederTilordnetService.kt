@@ -26,7 +26,7 @@ class VeilederTilordnetService(
 ) : KafkaCommonNonKeyedConsumerService<VeilederTilordnetDTO?>() {
 
     public override fun behandleKafkaMeldingLogikk(dto: VeilederTilordnetDTO?) {
-        requireNotNull(dto) { "VeilederTilordnetDTO var null. Klarer ikke behandle melding." }
+        checkNotNull(dto) { "Ulovlig tilstand: VeilederTilordnetDTO var null. Klarer ikke behandle melding." }
 
         val aktoerId = dto.aktorId
         val veilederId = dto.veilederId
@@ -41,7 +41,7 @@ class VeilederTilordnetService(
 
         kastErrorHvisBrukerSkalVaereUnderOppfolging(aktoerId, veilederId)
         opensearchIndexerPaDatafelt.oppdaterVeileder(aktoerId, veilederId, tildeltTidspunkt)
-        secureLog.info("Oppdatert bruker: $aktoerId, til veileder med id: $veilederId")
+        secureLog.info("Oppdatert bruker: $aktoerId, til veileder med id: $veilederId, med tildelt tidspunkt: $tildeltTidspunkt")
 
         val maybeFnr: Fnr? = pdlIdentRepository.hentFnrForAktivBruker(aktoerId)
 
