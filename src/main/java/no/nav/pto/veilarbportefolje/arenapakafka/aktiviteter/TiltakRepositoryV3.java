@@ -25,8 +25,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -148,6 +147,32 @@ public class TiltakRepositoryV3 {
 
                         List<AktivitetEntityDto> list = result.get(aktoerId);
                         result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
+                    }
+                    return result;
+                });
+    }
+
+    public void leggTilTiltaksAktivitet(String aktorIder, boolean avtalt, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("aktorIder", aktorIder);
+        params.addValue("avtalt", avtalt);
+        params.addValue("aktivitetstype", "TILTAK");
+        params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
+
+        namedDb.query("""
+                        SELECT AKTOR_ID, TIL_DATO, FRA_DATO, TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
+                        WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
+                        AND AKTIVITET_TYPE = :aktivitetstype::varchar
+                        AND AVTALT = :avtalt::boolean
+                        AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
+                        """,
+                params,
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        AktorId aktoerId = AktorId.of(rs.getString("AKTOR_ID"));
+                        AktivitetEntityDto aktivitet = mapTiltaksAktivitetTilEntity(rs);
+
+                        result.compute(aktoerId, (k, list) -> leggTilAktivitetPaResultat(aktivitet, list));
                     }
                     return result;
                 });
