@@ -38,8 +38,10 @@ public class AktivitetOpensearchService {
 
         if (bruktTiltaksAktivitetFraAktivitetsplan) {
             tiltakRepositoryV3.leggTilTiltaksAktivitet(aktoerIder, true, result);
+            log.debug("leggTilTiltaksAktivitet på resultat for indeksering. Antall tiltaksaktiviteter: {}", result.size());
         } else {
             tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
+            log.debug("leggTilTiltak på resultat for indeksering. Antall: {}", result.size());
         }
 
         return result;

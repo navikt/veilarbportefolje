@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
@@ -12,6 +13,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,12 +22,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlIdentRepositoryTest {
@@ -53,6 +57,14 @@ public class PdlIdentRepositoryTest {
 
     @MockitoBean
     private UngdomsprogramService ungdomsprogramService;
+
+    @MockitoBean
+    private DefaultUnleash defaultUnleash;
+
+    @BeforeEach
+    public void setup(){
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
+    }
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {

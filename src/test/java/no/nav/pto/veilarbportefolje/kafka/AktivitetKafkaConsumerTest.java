@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.kafka;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
@@ -7,6 +8,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.action.get.GetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +18,26 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static no.nav.pto.veilarbportefolje.util.DateUtils.getFarInTheFutureDate;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.timestampFromISO8601;
-import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 public class AktivitetKafkaConsumerTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
+    private final DefaultUnleash defaultUnleash;
 
     @Autowired
-    public AktivitetKafkaConsumerTest(AktivitetService aktivitetService) {
+    public AktivitetKafkaConsumerTest(AktivitetService aktivitetService, DefaultUnleash defaultUnleash) {
         this.aktivitetService = aktivitetService;
+        this.defaultUnleash = defaultUnleash;
+    }
+
+    @BeforeEach
+    public void setup(){
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

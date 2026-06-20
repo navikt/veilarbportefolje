@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.utils.AvtaltAktivitetEntity;
 import no.nav.pto.veilarbportefolje.postgres.PostgresAktivitetMapper;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,22 +19,32 @@ import java.util.List;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class AktiviteterV2Test {
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final AktivitetService aktivitetService;
+    private final DefaultUnleash defaultUnleash;
 
     @Autowired
-    public AktiviteterV2Test(AktivitetOpensearchService aktivitetOpensearchService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, AktivitetService aktivitetService) {
+    public AktiviteterV2Test(AktivitetOpensearchService aktivitetOpensearchService, AktiviteterRepositoryV2 aktiviteterRepositoryV2,
+                             AktivitetService aktivitetService, DefaultUnleash defaultUnleash) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.aktiviteterRepositoryV2 = aktiviteterRepositoryV2;
         this.aktivitetService = aktivitetService;
+        this.defaultUnleash = defaultUnleash;
+    }
+
+    @BeforeEach
+    public void setup(){
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

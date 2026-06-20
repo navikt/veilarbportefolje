@@ -20,10 +20,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
     private final JdbcTemplate db;
@@ -46,6 +48,8 @@ public class OppfolgingsbrukerServiceV2Test extends EndToEndTest {
         db.update("truncate oppfolgingsbruker_arena_v2");
         db.update("truncate oppfolging_data");
         db.update("truncate bruker_identer");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
 

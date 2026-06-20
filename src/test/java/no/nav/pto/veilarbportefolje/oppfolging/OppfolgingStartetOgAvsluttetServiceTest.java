@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
@@ -129,6 +130,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         jdbcTemplate.update("truncate bruker_data_barn CASCADE");
         jdbcTemplate.update("truncate foreldreansvar");
         jdbcTemplate.update("truncate siste_arbeidssoeker_periode cascade");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

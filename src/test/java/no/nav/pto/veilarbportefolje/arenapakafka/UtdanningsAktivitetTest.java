@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
@@ -24,10 +25,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService.mapTilKafkaAktivitetMelding;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class UtdanningsAktivitetTest {
@@ -37,12 +40,14 @@ public class UtdanningsAktivitetTest {
     private final JdbcTemplate jbPostgres;
     private final AktorId aktorId = AktorId.of("1000123");
     private final Fnr fnr = Fnr.of("12345678912");
+    private final DefaultUnleash defaultUnleash;
 
     @Autowired
-    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService,  JdbcTemplate jbPostgres) {
+    public UtdanningsAktivitetTest(AktivitetService aktivitetService, AktivitetOpensearchService aktivitetOpensearchService,  JdbcTemplate jbPostgres, DefaultUnleash defaultUnleash) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jbPostgres = jbPostgres;
         this.aktivitetService = aktivitetService;
+        this.defaultUnleash = defaultUnleash;
 
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
@@ -54,6 +59,8 @@ public class UtdanningsAktivitetTest {
     public void reset() {
         jbPostgres.execute("truncate table aktiviteter");
         jbPostgres.execute("truncate table lest_arena_hendelse_aktivitet");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
 

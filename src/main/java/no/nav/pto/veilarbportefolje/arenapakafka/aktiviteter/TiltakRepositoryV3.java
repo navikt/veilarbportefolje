@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.InaktivAktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
+import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -42,6 +45,9 @@ public class TiltakRepositoryV3 {
     private final DefaultUnleash defaultUnleash;
 
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
+            .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
+
+    private final static String inaktivAktivitetStatuser = Arrays.stream(InaktivAktivitetStatus.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
@@ -157,15 +163,23 @@ public class TiltakRepositoryV3 {
         params.addValue("aktorIder", aktorIder);
         params.addValue("avtalt", avtalt);
         params.addValue("aktivitetstype", "TILTAK");
-        params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
+        params.addValue("ikkestatuser", inaktivAktivitetStatuser);
 
-        namedDb.query("""
-                        SELECT AKTOR_ID, TIL_DATO, FRA_DATO, TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
-                        WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
-                        AND AKTIVITET_TYPE = :aktivitetstype::varchar
-                        AND AVTALT = :avtalt::boolean
-                        AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
-                        """,
+        String sql = """
+        SELECT AKTOR_ID, TIL_DATO, FRA_DATO, TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
+        WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
+        AND AKTIVITET_TYPE = :aktivitetstype::varchar
+        AND AVTALT = :avtalt::boolean
+        AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
+        """;
+
+        ParsedSql parsed = NamedParameterUtils.parseSqlStatement(sql);
+        String executableSql = NamedParameterUtils.substituteNamedParameters(parsed, params);
+        Object[] paramArray = NamedParameterUtils.buildValueArray(parsed, params, null);
+        log.debug("Prepared SQL: {}", executableSql);
+        log.debug("Params array: {}", Arrays.toString(paramArray));
+
+        namedDb.query(sql,
                 params,
                 (ResultSet rs) -> {
                     while (rs.next()) {

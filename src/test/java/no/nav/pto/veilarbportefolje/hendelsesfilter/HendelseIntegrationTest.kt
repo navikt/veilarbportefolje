@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
+import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
@@ -17,6 +19,7 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.util.*
@@ -25,7 +28,8 @@ class HendelseIntegrationTest(
     @Autowired private val opensearchService: OpensearchService,
     @Autowired private val hendelseService: HendelseService,
     @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val jdbcTemplate: JdbcTemplate
+    @Autowired private val jdbcTemplate: JdbcTemplate,
+    @Autowired private val defaultUnleash: DefaultUnleash,
 ) : EndToEndTest() {
 
     @BeforeEach
@@ -36,6 +40,9 @@ class HendelseIntegrationTest(
         jdbcTemplate.update("TRUNCATE oppfolging_data")
         jdbcTemplate.update("TRUNCATE nom_skjerming")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
+
+        Mockito.`when`<Boolean?>(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN))
+            .thenReturn(false)
     }
 
     @Test

@@ -27,12 +27,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgAktivteterForJavaTester;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus.I_AKTIVITET;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
     private final AktivitetService aktivitetService;
@@ -61,6 +63,8 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
         jdbcTemplatePostgres.update("TRUNCATE oppfolging_data");
         jdbcTemplatePostgres.update("TRUNCATE nom_skjerming");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test
@@ -136,6 +140,7 @@ public class AktiviteterOpensearchIntegrasjonTest extends EndToEndTest {
         AktorId aktorIdCvDeltMedNav = randomAktorId();
         AktorId aktorIdIkkeDeltCv = randomAktorId();
         VeilederId veileder = randomVeilederId();
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
         Filtervalg filtervalgKunIAktivitet = getFiltervalgAktivteterForJavaTester(List.of(I_AKTIVITET));
         testDataClient.lagreBrukerUnderOppfolging(aktorIdCvDeltMedNav, navKontor, veileder, ZonedDateTime.now(), null);
         testDataClient.lagreBrukerUnderOppfolging(aktorIdIkkeDeltCv, navKontor, veileder, ZonedDateTime.now(), null);

@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
@@ -24,30 +25,33 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomPersonId;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class GruppeAktivitetTest {
     private final GruppeAktivitetService gruppeAktivitetService;
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final JdbcTemplate jdbcTemplate;
+    private final DefaultUnleash defaultUnleash;
 
     private final AktorId aktorId;
     private final Fnr fnr;
     private final PersonId personId;
 
     @Autowired
-    public GruppeAktivitetTest( JdbcTemplate jdbcTemplate, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService) {
+    public GruppeAktivitetTest( JdbcTemplate jdbcTemplate, GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2, AktivitetOpensearchService aktivitetOpensearchService, DefaultUnleash defaultUnleash) {
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.jdbcTemplate = jdbcTemplate;
         this.personId = randomPersonId();
         this.aktorId = randomAktorId();
         this.fnr = randomFnr();
-
+        this.defaultUnleash = defaultUnleash;
         AktorClient aktorClient = mock(AktorClient.class);
         Mockito.when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
@@ -59,6 +63,8 @@ public class GruppeAktivitetTest {
         jdbcTemplate.execute("truncate table oppfolgingsbruker_arena_v2");
         jdbcTemplate.execute("truncate table gruppe_aktiviter");
         jdbcTemplate.execute("truncate table oppfolging_data");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
 

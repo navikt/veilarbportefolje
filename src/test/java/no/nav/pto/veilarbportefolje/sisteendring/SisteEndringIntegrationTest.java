@@ -32,6 +32,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgSisteEndringForJavaTester;
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.*;
@@ -40,6 +41,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SisteEndringIntegrationTest extends EndToEndTest {
     private final MalService malService;
@@ -57,7 +59,8 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private Long aktivitetVersion = 1L;
 
     @Autowired
-    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2, OpensearchIndexer opensearchIndexer, TiltakService tiltakService) {
+    public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2,
+                                       OpensearchIndexer opensearchIndexer, TiltakService tiltakService) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.tiltakService = tiltakService;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
@@ -73,6 +76,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         jdbcTemplatePostgres.execute("truncate table siste_endring");
         jdbcTemplatePostgres.execute("truncate table oppfolging_data");
         jdbcTemplatePostgres.execute("truncate table aktiviteter");
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

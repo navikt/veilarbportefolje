@@ -44,13 +44,13 @@ public class PostgresAktivitetMapper {
                 .collect(Collectors.toSet());
 
         Set<String> aktiveTiltaksTyper = avtalteAktivteter.stream()
-                .filter(aktivitet -> aktivitet.getAktivitetsType().equals(tiltak))
                 .map(AktivitetEntityDto::getMuligTiltaksNavn)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         byggAktivitetStatusBrukerData(entity, avtalteAktivteter);
         byggAktivitetBrukerData(entity, avtalteAktivteter);
+
         return entity
                 .setAktiviteter(aktiveAktivitetsTyper)
                 .setTiltak(aktiveTiltaksTyper);
