@@ -1,6 +1,10 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
+import io.getunleash.DefaultUnleash
+import no.nav.common.types.identer.AktorId
+import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -10,6 +14,8 @@ import java.sql.Statement
 @Repository
 class PortefoljeAktivitetKafkaMeldingRepository(
     private val db: NamedParameterJdbcTemplate,
+    private val opensearchIndexer: OpensearchIndexer,
+    private val defaultUnleash: DefaultUnleash,
 ) {
     @Transactional
     fun tryLagreAktivitetDataBatch(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
@@ -24,6 +30,14 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         val prosesserteSlettinger = batchDeleteById(slettinger).sumOf(::normaliserUpdateCount)
         val prosesserteUpserts = batchUpsertAktivitet(upserts).sumOf(::normaliserUpdateCount)
         val prosesserte = prosesserteSlettinger + prosesserteUpserts
+
+        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
+            if (prosesserteUpserts == 1 || prosesserteSlettinger == 1) {
+                indekserAktivitet(AktorId.of(upserts.first().aktorId))
+            } else if (prosesserteUpserts > 1 || prosesserteSlettinger > 1) {
+                indekserAktiviteter(endeligeAktiviteter)
+            }
+        }
 
         return PortefoljeAktivitetBatchResult(
             mottatte = aktiviteter.size,
@@ -113,6 +127,18 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }.toTypedArray()
 
         return db.batchUpdate(sql, params)
+    }
+
+    private fun indekserAktiviteter(aktiviteter: List<KafkaAktivitetMeldingEntity>) {
+        if (aktiviteter.isEmpty()) {
+            return
+        }
+        opensearchIndexer.indekserBolk(aktiviteter.map { AktorId.of(it.aktorId) })
+    }
+
+
+    private fun indekserAktivitet(aktorId: AktorId) {
+        opensearchIndexer.indekser(aktorId)
     }
 
     private fun beholdSisteMeldingPerAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): List<KafkaAktivitetMeldingEntity> {

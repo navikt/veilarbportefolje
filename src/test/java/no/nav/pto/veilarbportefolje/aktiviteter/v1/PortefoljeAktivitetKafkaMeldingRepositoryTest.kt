@@ -1,11 +1,15 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
+import io.getunleash.DefaultUnleash
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.AKTIVITET_ID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -15,13 +19,20 @@ import java.sql.Timestamp
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
+    @param:Autowired private val defaultUnleash: DefaultUnleash,
+    @param:Autowired private val opensearchIndexer: OpensearchIndexer
 ) {
     private lateinit var repository: PortefoljeAktivitetKafkaMeldingRepository
 
     @BeforeEach
     fun setup() {
-        repository = PortefoljeAktivitetKafkaMeldingRepository(NamedParameterJdbcTemplate(jdbcTemplate))
+        repository = PortefoljeAktivitetKafkaMeldingRepository(
+            NamedParameterJdbcTemplate(jdbcTemplate),
+            opensearchIndexer,
+            defaultUnleash
+        )
         jdbcTemplate.update("TRUNCATE TABLE $TABLE_NAME")
+        `when`(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

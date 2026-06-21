@@ -65,7 +65,7 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
         this.tiltakService = tiltakService;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService, defaultUnleash);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;
