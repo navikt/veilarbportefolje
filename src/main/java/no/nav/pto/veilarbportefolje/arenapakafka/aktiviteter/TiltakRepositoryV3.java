@@ -166,7 +166,10 @@ public class TiltakRepositoryV3 {
         params.addValue("ikkestatuser", inaktivAktivitetStatuser);
 
         String sql = """
-        SELECT AKTOR_ID, TIL_DATO, FRA_DATO, TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
+        SELECT AKTOR_ID,
+               CAST(TIL_DATO AS TIMESTAMP) AS TIL_DATO,
+               CAST(FRA_DATO AS TIMESTAMP) AS FRA_DATO,
+               TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
         WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
         AND AKTIVITET_TYPE = :aktivitetstype::varchar
         AND AVTALT = :avtalt::boolean
