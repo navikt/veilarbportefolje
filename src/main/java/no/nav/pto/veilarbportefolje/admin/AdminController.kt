@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
+import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -44,7 +45,8 @@ class AdminController(
     private val opensearchAdminService: OpensearchAdminService,
     private val pdlService: PdlService,
     private val ensligForsorgerService: EnsligeForsorgereService,
-    private val aapService: AapService
+    private val aapService: AapService,
+    private val veilederTilordnetService: VeilederTilordnetService
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -200,6 +202,16 @@ class AdminController(
 
         log.info("Ferdig: Innlasting av ensligforsørger brukerdata")
         return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført")
+    }
+
+    @PostMapping("/lastInnTildelingsdatoForBrukere")
+    @Operation(
+        summary = "Oppdater tildelingsdato for alle brukere",
+        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tildelingsdato for disse."
+    )
+    fun lastInnTildelingstidspunktForVeileder(): String {
+        veilederTilordnetService.lastInnTildelingstidspunktForVeileder()
+        return "Innlastning av tildelingsdato for veileder har startet"
     }
 
     @GetMapping("hentData/hentDataForBruker/muligeValg")
