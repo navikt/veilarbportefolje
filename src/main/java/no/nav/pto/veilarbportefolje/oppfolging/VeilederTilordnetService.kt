@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
+import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -58,9 +59,9 @@ class VeilederTilordnetService(
 
     fun oppdaterTildelingstidspunkt(aktorId: AktorId) {
         try {
-            val veilarbInfo = oppfolgingClient.hentVeilarbData(aktorId)
+            val veilarbInfo: Veilarbportefoljeinfo = oppfolgingClient.hentVeilarbData(aktorId)
 
-            if (veilarbInfo.isErUnderOppfolging &&
+            if (veilarbInfo.erUnderOppfolging &&
                 veilarbInfo.tilordnetTidspunkt != null
             ) {
                 oppfolgingRepositoryV2.settTildeltTidspunkt(
