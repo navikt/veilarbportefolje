@@ -210,6 +210,7 @@ class AdminController(
         description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tildelingsdato for disse."
     )
     fun lastInnTildelingstidspunktForVeileder(): String {
+        sjekkTilgangTilAdmin()
         veilederTilordnetService.lastInnTildelingstidspunktForVeileder()
         return "Innlastning av tildelingsdato for veileder har startet"
     }
