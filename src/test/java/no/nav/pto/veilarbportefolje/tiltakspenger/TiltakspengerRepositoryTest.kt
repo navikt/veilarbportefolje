@@ -29,7 +29,7 @@ class TiltakspengerRepositoryTest(
         val ident = "123456789"
         val clientReponse = tiltakspengerResponseDto
 
-        tiltakspengerRepository.upsertAap(ident, clientReponse)
+        tiltakspengerRepository.upsertTiltakspenger(ident, clientReponse)
 
         val resultatAvHenting = tiltakspengerRepository.hentTiltakspenger(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -49,8 +49,8 @@ class TiltakspengerRepositoryTest(
             tom = LocalDate.of(2026, 12, 31)
         )
 
-        tiltakspengerRepository.upsertAap(ident, vedtak_nr1)
-        tiltakspengerRepository.upsertAap(ident, vedtak_nr2)
+        tiltakspengerRepository.upsertTiltakspenger(ident, vedtak_nr1)
+        tiltakspengerRepository.upsertTiltakspenger(ident, vedtak_nr2)
 
         val resultatAvHenting = tiltakspengerRepository.hentTiltakspenger(ident)
         assertThat(resultatAvHenting).isNotNull
@@ -70,7 +70,7 @@ class TiltakspengerRepositoryTest(
         val ident = "123456789"
         val vedtak = tiltakspengerResponseDto
 
-        tiltakspengerRepository.upsertAap(ident, vedtak)
+        tiltakspengerRepository.upsertTiltakspenger(ident, vedtak)
         val resultatAvHenting = tiltakspengerRepository.hentTiltakspenger(ident)
         assertThat(resultatAvHenting).isNotNull
 

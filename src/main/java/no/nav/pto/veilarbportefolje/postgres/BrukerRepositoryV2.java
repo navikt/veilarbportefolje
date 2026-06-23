@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch;
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -129,7 +130,11 @@ public class BrukerRepositoryV2 {
                                YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
                                YTELSER_DAGPENGER.RETTIGHETSTYPE                         as YTELSER_DAGPENGER_RETTIGHETSTYPE,
                                YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER                as YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER,
-                               YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET         as YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET
+                               YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET         as YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET,
+                               YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM,
+                               YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM,
+                               YTELSER_UNGDOMSPROGRAM.MAKSDATO                          as YTELSER_UNGDOMSPROGRAM_MAKSDATO,
+                               YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE             as YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE                        
                         from OPPFOLGING_DATA
                                  inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                                  left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -147,6 +152,7 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                                 left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;
@@ -246,6 +252,7 @@ public class BrukerRepositoryV2 {
         setAapKelvin(brukerOpensearchModell, rs);
         setTiltakspenger(brukerOpensearchModell, rs);
         setDagpenger(brukerOpensearchModell, rs);
+        setUngdomsprogram(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
@@ -272,8 +279,8 @@ public class BrukerRepositoryV2 {
 
         brukerOpensearchModell.setAap_kelvin(vedtakErFortsattGjeldende);
         brukerOpensearchModell.setAap_kelvin_tom_vedtaksdato(vedtakErFortsattGjeldende ? vedtaksDatoTom : null);
-        brukerOpensearchModell.setAap_kelvin_rettighetstype(vedtakErFortsattGjeldende ? rettighetstypeOrNull: null);
-        brukerOpensearchModell.setAap_kelvin_maksdato(vedtakErFortsattGjeldende ? maksdato: null);
+        brukerOpensearchModell.setAap_kelvin_rettighetstype(vedtakErFortsattGjeldende ? rettighetstypeOrNull : null);
+        brukerOpensearchModell.setAap_kelvin_maksdato(vedtakErFortsattGjeldende ? maksdato : null);
     }
 
     @SneakyThrows
@@ -309,6 +316,37 @@ public class BrukerRepositoryV2 {
         );
 
         brukerOpensearchModell.setDagpenger(dagpenger);
+    }
+
+    @SneakyThrows
+    private void setUngdomsprogram(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
+        Date fraOgMedDate = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM);
+
+        // Ingen rad i YTELSER_UNGDOMSPROGRAM => bruker har ikke ytelsen
+        if (fraOgMedDate == null) {
+            brukerOpensearchModell.setUngdomsprogram(null);
+            return;
+        }
+        LocalDate fraOgMed = fraOgMedDate.toLocalDate();
+        LocalDate tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM).toLocalDate() : null;
+        LocalDate maksdato = rs.getDate(YTELSER_UNGDOMSPROGRAM_MAKSDATO).toLocalDate();
+        boolean harForlengetPeriode = rs.getBoolean(YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE);
+
+        // Aktiv hvis åpen periode (tom == null) eller tom er i dag/fremtiden
+        boolean harAktivYtelse = tilOgMed == null || tilOgMed.isAfter(LocalDate.now().minusDays(1));
+        if (!harAktivYtelse) {
+            brukerOpensearchModell.setUngdomsprogram(null);
+            return;
+        }
+
+        UngdomsprogramForOpensearch ungdomsprogram = new UngdomsprogramForOpensearch(
+                fraOgMed,
+                tilOgMed,
+                maksdato,
+                harForlengetPeriode
+        );
+
+        brukerOpensearchModell.setUngdomsprogram(ungdomsprogram);
     }
 
     @SneakyThrows

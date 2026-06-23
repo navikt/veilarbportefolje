@@ -143,7 +143,8 @@ object PortefoljebrukerFrontendModellMapper {
                         utlopsDato = it.utlopsDato,
                         yngsteBarnsFodselsdato = it.yngsteBarnsFødselsdato
                     )
-                }
+                },
+                ungdomsprogram = mapUngdomsprogram(opensearchBruker),
             ),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
@@ -196,6 +197,17 @@ object PortefoljebrukerFrontendModellMapper {
             datoStans = opensearchModell.dagpenger?.datoStans,
             resterendeDager = resterendeDagerMedDato
 
+        )
+    }
+
+    fun mapUngdomsprogram(opensearchModell: PortefoljebrukerOpensearchModell): Ungdomsprogram? {
+        val ungdomsprogram = opensearchModell.ungdomsprogram ?: return null
+
+        return Ungdomsprogram(
+            startdato = ungdomsprogram.fraOgMed,
+            sluttdato = ungdomsprogram.tilOgMed,
+            maksdato = ungdomsprogram.maksdato,
+            rettighet = if (ungdomsprogram.harForlengetPeriode) "Unntak" else "Ordinær"
         )
     }
 

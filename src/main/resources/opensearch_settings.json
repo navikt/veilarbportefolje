@@ -323,6 +323,22 @@
             "type": "date"
           }
         }
+      },
+      "ungdomsprogram": {
+        "properties": {
+          "harForlengetPeriode": {
+            "type": "boolean"
+          },
+          "fraOgMed": {
+            "type": "date"
+          },
+          "tilOgMed": {
+            "type": "date"
+          },
+          "maksdato": {
+            "type": "date"
+          }
+        }
       }
     }
   }

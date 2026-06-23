@@ -3,6 +3,8 @@ package no.nav.pto.veilarbportefolje.ensligforsorger;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOvergangsstønadTiltak;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Vedtaksresultat;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,13 +14,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype.BARN_UNDER_ETT_ÅR;
-import static no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
+import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 
 
@@ -49,8 +52,8 @@ public class EnsligeForsorgereRepositoryTest {
     //Få inn melding om opphørt vedtak
     @Test
     public void lagreOgHenteOvergangsstønadVedMotattKafkamelding() {
-        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(20), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, Month.MAY, 4)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(20), NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 54321L,
                 "12345678910",
@@ -70,7 +73,7 @@ public class EnsligeForsorgereRepositoryTest {
         Assert.assertEquals(BARN_UNDER_ETT_ÅR, ensligeForsorgerOvergangsstønadTiltakOptional.get().aktivitetsType());
 
         Assert.assertTrue(yngsteBarnFdato.isPresent());
-        Assert.assertEquals(LocalDate.of(2023, 5, 4), yngsteBarnFdato.get());
+        Assert.assertEquals(LocalDate.of(2023, Month.MAY, 4), yngsteBarnFdato.get());
     }
 
     @Test
@@ -78,7 +81,7 @@ public class EnsligeForsorgereRepositoryTest {
         lagreInitiellVedtakIdatabase();
 
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn("14052312320", null));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.APRIL, 4), LocalDate.of(2024, Month.APRIL, 4), NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 12345L,
                 "12345678910",
@@ -94,7 +97,7 @@ public class EnsligeForsorgereRepositoryTest {
         Optional<LocalDate> yngsteBarnFdato = ensligeForsorgereRepository.hentYngsteBarn(melding.vedtakId());
 
         Assert.assertTrue(yngsteBarnFdato.isPresent());
-        Assert.assertEquals(LocalDate.of(2023, 5, 14), yngsteBarnFdato.get());
+        Assert.assertEquals(LocalDate.of(2023, Month.MAY, 14), yngsteBarnFdato.get());
 
     }
 
@@ -103,7 +106,7 @@ public class EnsligeForsorgereRepositoryTest {
         lagreInitiellVedtakIdatabase();
 
         List<Barn> barn = List.of(new Barn("11032245678", null), new Barn("14052312320", null));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.APRIL, 4), LocalDate.of(2024, Month.APRIL, 4), NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 12345L,
                 "12345678910",
@@ -123,8 +126,8 @@ public class EnsligeForsorgereRepositoryTest {
 
 
     private void lagreInitiellVedtakIdatabase() {
-        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, Month.MAY, 4)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.APRIL, 4), LocalDate.of(2024, Month.APRIL, 4), NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 12345L,
                 "12345678910",
@@ -140,7 +143,7 @@ public class EnsligeForsorgereRepositoryTest {
 
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
-        List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));
         VedtakOvergangsstønadArbeidsoppfølging melding = new VedtakOvergangsstønadArbeidsoppfølging(
                 vedtakId,
                 fnr.toString(),
@@ -163,12 +166,12 @@ public class EnsligeForsorgereRepositoryTest {
                 Fnr.of("14018012321"),
                 Fnr.of("15018012321"),
                 Fnr.of("18048012321"));
-        List<Long> vedtakIds = List.of(new Random().nextLong(10000l),
-                new Random().nextLong(10000l),
-                new Random().nextLong(10000l),
-                new Random().nextLong(10000l),
-                new Random().nextLong(10000l),
-                new Random().nextLong(10000l));
+        List<Long> vedtakIds = List.of(new Random().nextLong(10000L),
+                new Random().nextLong(10000L),
+                new Random().nextLong(10000L),
+                new Random().nextLong(10000L),
+                new Random().nextLong(10000L),
+                new Random().nextLong(10000L));
         lagreRandomVedtakIdatabase(vedtakIds.get(0), fnrList.get(0), LocalDate.now().plusMonths(4), LocalDate.now().plusMonths(10));
         lagreRandomVedtakIdatabase(vedtakIds.get(1), fnrList.get(1), LocalDate.now().plusDays(3), LocalDate.now().plusMonths(1));
         lagreRandomVedtakIdatabase(vedtakIds.get(2), fnrList.get(2), LocalDate.now().minusDays(20), LocalDate.now().plusMonths(1));
@@ -177,14 +180,14 @@ public class EnsligeForsorgereRepositoryTest {
         lagreRandomVedtakIdatabase(vedtakIds.get(5), fnrList.get(5), LocalDate.now().plusMonths(7), LocalDate.now().plusMonths(10));
 
         List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(fnrList, true);
-        Assert.assertEquals(ensligeForsorgerOvergangsstønadTiltaks.size(), 4);
+        Assert.assertEquals(4, ensligeForsorgerOvergangsstønadTiltaks.size());
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(0))));
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(1))));
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(2))));
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(4))));
 
         ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(fnrList, false);
-        Assert.assertEquals(ensligeForsorgerOvergangsstønadTiltaks.size(), 2);
+        Assert.assertEquals(2, ensligeForsorgerOvergangsstønadTiltaks.size());
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(2))));
         Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(4))));
     }

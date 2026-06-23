@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
@@ -161,6 +162,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utlopsdato = PortefoljebrukerOpensearchModell.UTLOPSDATO,
             ytelse = PortefoljebrukerOpensearchModell.YTELSE,
             dagpenger = PortefoljebrukerOpensearchModell.DAGPENGER,
+            ungdomsprogram = PortefoljebrukerOpensearchModell.UNGDOMSPROGRAM,
 
             // Dialog
             venterpasvarfrabruker = PortefoljebrukerOpensearchModell.VENTER_PA_SVAR_FRA_BRUKER,
@@ -389,6 +391,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
                 antallResterendeDager = null,
                 datoAntallDagerBleBeregnet = null
+            )
+            val UNGDOMSPROGRAM: UngdomsprogramForOpensearch = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.parse("2025-02-10"),
+                tilOgMed = null,
+                maksdato = LocalDate.parse("2026-02-10"),
+                harForlengetPeriode = false
             )
 
             // Dialog
