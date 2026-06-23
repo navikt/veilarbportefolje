@@ -100,7 +100,7 @@ public class TiltakRepositoryV3 {
                     SELECT DISTINCT tiltakskode FROM
                     (
                         SELECT tiltakskode, aktoerid FROM brukertiltak
-                        UNION
+                        UNION ALL
                         SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
                     ) BT
                     INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
