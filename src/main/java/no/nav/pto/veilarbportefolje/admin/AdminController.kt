@@ -207,8 +207,8 @@ class AdminController(
 
     @PostMapping("/lastInnTildelingsdatoForBrukere")
     @Operation(
-        summary = "Oppdater tildelingsdato for alle brukere",
-        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tildelingsdato for disse."
+        summary = "Oppdater tilordningsdato for alle brukere",
+        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tilordningsdato for disse."
     )
     fun lastInnTildelingstidspunktForVeileder(
         @RequestParam(required = false) limit: Int? = null
@@ -216,7 +216,7 @@ class AdminController(
         sjekkTilgangTilAdmin()
         val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder()
         val brukereUnderOppfolging = if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
-        log.info("Tilordningsdato: prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
+        log.info("Tilordningsdato : prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
         val antall = AtomicInteger(0)
 
         brukereUnderOppfolging.forEach { aktorId ->
@@ -228,7 +228,7 @@ class AdminController(
             }
             try {
                 val veilarbInfo: Veilarbportefoljeinfo = oppfolgingClient.hentVeilarbData(aktorId)
-                secureLog.info("Tilordningsdato: Starter prosessering for nr $antall med aktorId $aktorId")
+                secureLog.info("Tilordningsdato : Starter prosessering for nr $antall med aktorId $aktorId")
 
                 if (veilarbInfo.erUnderOppfolging && veilarbInfo.tilordnetTidspunkt != null
                 ) {
@@ -236,23 +236,23 @@ class AdminController(
                         aktorId,
                         veilarbInfo.tilordnetTidspunkt
                     )
-                    secureLog.info("Tilordningsdato: dato ble oppdatert i databasen for nr $antall med aktorId $aktorId")
+                    secureLog.info("Tilordningsdato : dato ble oppdatert i databasen for nr $antall med aktorId $aktorId")
                 } else {
                     secureLog.warn(
-                        "Tilordningsdato: blir ikke lagret fordi aktorId $aktorId har fra clientet at tilordnettidspunkt=${veilarbInfo.tilordnetTidspunkt} " +
+                        "Tilordningsdato : blir ikke lagret fordi aktorId $aktorId har fra clientet at tilordnettidspunkt=${veilarbInfo.tilordnetTidspunkt} " +
                                 "og erUnderOppfolging=${veilarbInfo.erUnderOppfolging}"
                     )
                 }
             } catch (e: Exception) {
                 secureLog.error(
-                    "Exception i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
+                    "Tilordningsdato : Exception i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
                     e
                 )
             }
             Thread.sleep(50) // throttle: ~20 req/s mot veilarboppfolging
 
         }
-        return "Innlastning av tildelingsdato for veileder har startet"
+        return "Innlastning av tilordningsdato for veileder har startet"
     }
 
     @GetMapping("hentData/hentDataForBruker/muligeValg")
