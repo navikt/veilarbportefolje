@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.oppfolging
 
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.VeilederId.Companion.of
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
+//import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
