@@ -1,13 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker;
 
-import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +33,6 @@ public class OppfolgingsbrukerRepositoryV3 {
     private final JdbcTemplate db;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate dbNamed;
-    private final DefaultUnleash defaultUnleash;
 
     @Transactional
     public int leggTilEllerEndreOppfolgingsbruker(OppfolgingsbrukerEntity oppfolgingsbruker, NavKontor navKontor, AktorId aktorId) {
@@ -142,16 +139,14 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
-        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
         var sql = """
-                SELECT coalesce(CASE WHEN :brukAoKontor::boolean THEN ao.kontor_id ELSE NULL END, ob.nav_kontor) AS kontor_id
+            SELECT ao.kontor_id AS kontor_id
                 FROM oppfolgingsbruker_arena_v2 ob
                 LEFT JOIN ao_kontor ao ON ob.fodselsnr = ao.ident
                 WHERE ob.fodselsnr = :ident
                 """;
         var params = new MapSqlParameterSource()
-                .addValue("ident", fnr.get())
-                .addValue("brukAoKontor", brukAoKontor);
+            .addValue("ident", fnr.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
                         () -> dbNamed.queryForObject(sql, params, (rs, i) ->

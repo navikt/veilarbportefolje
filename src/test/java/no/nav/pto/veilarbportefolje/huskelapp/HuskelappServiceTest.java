@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp;
 
-import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -42,7 +41,7 @@ public class HuskelappServiceTest {
     public HuskelappServiceTest() {
         jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
         this.pdlIdentRepository = new PdlIdentRepository(jdbcTemplate);
-        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate), Mockito.mock(DefaultUnleash.class));
+        OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate));
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(jdbcTemplate);
         BrukerServiceV2 brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class));
         huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate));
@@ -54,6 +53,7 @@ public class HuskelappServiceTest {
         this.jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data");
         this.jdbcTemplate.execute("TRUNCATE TABLE oppfolgingsbruker_arena_v2");
         this.jdbcTemplate.execute("TRUNCATE TABLE bruker_identer");
+        this.jdbcTemplate.execute("TRUNCATE TABLE ao_kontor");
     }
 
     @Test
@@ -116,6 +116,7 @@ public class HuskelappServiceTest {
                 new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
+        jdbcTemplate.update("INSERT INTO ao_kontor (ident, kontor_id, aktorid) VALUES (?,?,?)", fnr.get(), navKontor.get(), aktorId.get());
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
         oppfolgingRepositoryV2.settVeileder(aktorId, veilederId);
     }
