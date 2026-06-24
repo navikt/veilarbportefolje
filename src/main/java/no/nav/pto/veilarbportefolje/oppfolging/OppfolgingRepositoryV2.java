@@ -35,7 +35,7 @@ public class OppfolgingRepositoryV2 {
     }
 
     public void settVeileder(AktorId aktorId, VeilederId veilederId) {
-        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
+        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", Optional.ofNullable(veilederId).map(VeilederId::getValue).orElse(null), aktorId.get());
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
