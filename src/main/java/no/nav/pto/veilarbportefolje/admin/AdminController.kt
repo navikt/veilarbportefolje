@@ -18,8 +18,9 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
-import no.nav.pto.veilarbportefolje.oppfolging.VeilederTilordnetService
+import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -46,7 +47,7 @@ class AdminController(
     private val pdlService: PdlService,
     private val ensligForsorgerService: EnsligeForsorgereService,
     private val aapService: AapService,
-    private val veilederTilordnetService: VeilederTilordnetService
+    private val oppfolgingClient: OppfolgingClient
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -206,12 +207,52 @@ class AdminController(
 
     @PostMapping("/lastInnTildelingsdatoForBrukere")
     @Operation(
-        summary = "Oppdater tildelingsdato for alle brukere",
-        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tildelingsdato for disse."
+        summary = "Oppdater tilordningsdato for alle brukere",
+        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tilordningsdato for disse."
     )
-    fun lastInnTildelingstidspunktForVeileder(): String {
-        veilederTilordnetService.lastInnTildelingstidspunktForVeileder()
-        return "Innlastning av tildelingsdato for veileder har startet"
+    fun lastInnTildelingstidspunktForVeileder(
+        @RequestParam(required = false) limit: Int? = null
+    ): String {
+        sjekkTilgangTilAdmin()
+        val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder()
+        val brukereUnderOppfolging = if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
+        log.info("Tilordningsdato : prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
+        val antall = AtomicInteger(0)
+
+        brukereUnderOppfolging.forEach { aktorId ->
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info(
+                    "Tilordningsdato brukerdata: innlasting {}% ferdig",
+                    (antall.get().toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
+                )
+            }
+            try {
+                val veilarbInfo: Veilarbportefoljeinfo = oppfolgingClient.hentVeilarbData(aktorId)
+                secureLog.info("Tilordningsdato : Starter prosessering for nr $antall med aktorId $aktorId")
+
+                if (veilarbInfo.erUnderOppfolging && veilarbInfo.tilordnetTidspunkt != null
+                ) {
+                    oppfolgingRepositoryV2.settTildeltTidspunkt(
+                        aktorId,
+                        veilarbInfo.tilordnetTidspunkt
+                    )
+                    secureLog.info("Tilordningsdato : dato ble oppdatert i databasen for nr $antall med aktorId $aktorId")
+                } else {
+                    secureLog.warn(
+                        "Tilordningsdato : blir ikke lagret fordi aktorId $aktorId har fra clientet at tilordnettidspunkt=${veilarbInfo.tilordnetTidspunkt} " +
+                                "og erUnderOppfolging=${veilarbInfo.erUnderOppfolging}"
+                    )
+                }
+            } catch (e: Exception) {
+                secureLog.error(
+                    "Tilordningsdato : Exception i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
+                    e
+                )
+            }
+            Thread.sleep(50) // throttle: ~20 req/s mot veilarboppfolging
+
+        }
+        return "Innlastning av tilordningsdato for veileder har startet"
     }
 
     @GetMapping("hentData/hentDataForBruker/muligeValg")
