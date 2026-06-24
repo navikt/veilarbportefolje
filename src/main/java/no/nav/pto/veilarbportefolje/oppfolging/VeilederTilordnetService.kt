@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging
 
+import no.nav.common.job.JobRunner
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.VeilederId
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
+import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -33,6 +35,51 @@ class VeilederTilordnetService(
         val tildeltTidspunkt = dto.tilordnetTidspunkt
 
         tilordneVeileder(aktoerId, veilederId, tildeltTidspunkt)
+    }
+
+    // midlertidig kode for å kjøre batch-jobb
+    private val log = org.slf4j.LoggerFactory.getLogger(VeilederTilordnetService::class.java)
+
+    fun lastInnTildelingstidspunktForVeileder() {
+        log.info("Startet: Innlastning av tildelingstidspunkt for veileder")
+
+        JobRunner.runAsync("OppfolgingSyncTildelingstidspunkt") {
+            val oppfolgingsBrukere =
+                oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder()
+            oppfolgingsBrukere.forEach(::oppdaterTildelingstidspunkt)
+
+            log.info(
+                "OppfolgingsJobb: oppdaterte tildelingstidspunkt pa: {} brukere",
+                oppfolgingsBrukere.size
+            )
+        }
+
+        log.info("Ferdig: Innlastning av tildelingstidspunkt for veileder")
+    }
+
+    fun oppdaterTildelingstidspunkt(aktorId: AktorId) {
+        try {
+            val veilarbInfo: Veilarbportefoljeinfo = oppfolgingClient.hentVeilarbData(aktorId)
+
+            if (veilarbInfo.erUnderOppfolging &&
+                veilarbInfo.tilordnetTidspunkt != null
+            ) {
+                oppfolgingRepositoryV2.settTildeltTidspunkt(
+                    aktorId,
+                    veilarbInfo.tilordnetTidspunkt
+                )
+            }
+        } catch (e: RuntimeException) {
+            secureLog.error(
+                "RuntimeException i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
+                e
+            )
+        } catch (e: Exception) {
+            secureLog.error(
+                "Exception i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
+                e
+            )
+        }
     }
 
     fun tilordneVeileder(aktoerId: AktorId, veilederId: VeilederId?, tildeltTidspunkt: ZonedDateTime?) {
