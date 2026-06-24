@@ -64,7 +64,6 @@ public class DbConfigPostgres {
                     .dataSource(dataSource)
                     .locations("db/postgres")
                     .baselineOnMigrate(true)
-                    .outOfOrder(true) // midlertidig, fjernes etter prodsetting
                     .load()
                     .migrate();
 

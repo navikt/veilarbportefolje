@@ -12,7 +12,7 @@ public enum Tiltakstype {
     JOBBK,
     VASV,
 
-    //Nye tiltakskoder
+    //Tiltakskoder nytt kodeverk
     ARBEIDSFORBEREDENDE_TRENING,
     ARBEIDSRETTET_REHABILITERING,
     AVKLARING,
@@ -30,6 +30,5 @@ public enum Tiltakstype {
     STUDIESPESIALISERING,
     FAG_OG_YRKESOPPLAERING,
     HOYERE_YRKESFAGLIG_UTDANNING,
-    TILPASSET_JOBBSTOTTE, //Kun i dev, endrer navn
-    VARIG_TILRETTELAGT_ARBEID_ORDINAER // Tidligere TILPASSET_JOBBSTOTTE
+    TILRETTELAGT_ARBEID_ORDINAER
 }
