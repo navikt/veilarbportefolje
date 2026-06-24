@@ -3,7 +3,7 @@ package no.nav.pto.veilarbportefolje.oppfolging
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.domene.VeilederId
-import no.nav.pto.veilarbportefolje.domene.VeilederId.Companion.of
+//import no.nav.pto.veilarbportefolje.domene.VeilederId.Companion.of
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
@@ -17,7 +17,7 @@ import java.util.*
 
 @Service
 class VeilederTilordnetService(
-    private val oppfolgingClient: OppfolgingClient,
+//    private val oppfolgingClient: OppfolgingClient,
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val huskelappService: HuskelappService,
     private val fargekategoriService: FargekategoriService,
@@ -66,8 +66,8 @@ class VeilederTilordnetService(
 //        check(erUnderOppfolgingIVeilarboppfolging) { "Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarboppfolging" }
 //    }
 
-    private fun hentVeileder(aktoerId: AktorId?): VeilederId? {
-        return oppfolgingRepositoryV2.hentVeilederForBruker(aktoerId)
-            .orElse(of(null))
-    }
+//    private fun hentVeileder(aktoerId: AktorId?): VeilederId? {
+//        return oppfolgingRepositoryV2.hentVeilederForBruker(aktoerId)
+//            .orElse(of(null))
+//    }
 }
