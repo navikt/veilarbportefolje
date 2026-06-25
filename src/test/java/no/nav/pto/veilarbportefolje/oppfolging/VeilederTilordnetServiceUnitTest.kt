@@ -8,7 +8,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -63,7 +62,6 @@ class VeilederTilordnetServiceUnitTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("nullKombinasjoner")
     fun `skal ikke kaste NPE for null-kombinasjoner i DTO`(
-        beskrivelse: String,
         dto: VeilederTilordnetDTO,
     ) {
         `when`(pdlIdentRepository.hentFnrForAktivBruker(aktoerId)).thenReturn(null)

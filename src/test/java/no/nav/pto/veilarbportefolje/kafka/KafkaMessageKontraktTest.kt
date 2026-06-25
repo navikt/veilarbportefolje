@@ -112,7 +112,7 @@ class KafkaMessageKontraktTest {
         }
     }
 
-    
+    companion object {
         @JvmStatic
         fun gyldigeYtelseMeldinger(): Stream<Arguments> =
             lastJsonFilerFraKatalog("/kafka/ytelserkafka/gyldig")
