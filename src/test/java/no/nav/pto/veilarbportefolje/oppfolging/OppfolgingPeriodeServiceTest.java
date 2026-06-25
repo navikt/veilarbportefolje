@@ -5,6 +5,8 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.AvsluttetOppfolgingsperiodeV3Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.GjeldendeOppfolgingsperiodeV3Dto;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV3Dto;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -49,5 +51,19 @@ public class OppfolgingPeriodeServiceTest {
 
         Mockito.verify(oppfolgingStartetService, Mockito.times(0)).startOppfolging(AktorId.of(aktorId), startOppfolgingDate, null);
         Mockito.verify(oppfolgingAvsluttetService, Mockito.times(1)).avsluttOppfolging(AktorId.of(aktorId), sisteOppfolgingsperiode.getSluttTidspunkt());
+    }
+
+    @Test
+    public void testOppfolgingStartViaLongKeyRecord() {
+        String aktorId = "111111";
+        ZonedDateTime startOppfolgingDate = ZonedDateTime.now();
+        GjeldendeOppfolgingsperiodeV3Dto sisteOppfolgingsperiode = genererStartetOppfolgingsperiode(AktorId.of(aktorId), startOppfolgingDate);
+
+        ConsumerRecord<Long, SisteOppfolgingsperiodeV3Dto> record =
+                new ConsumerRecord<>("siste-oppfolgingsperiode-v3", 0, 1L, 1L, sisteOppfolgingsperiode);
+        oppfolgingPeriodeService.behandleKafkaRecordMedLongKey(record);
+
+        Mockito.verify(oppfolgingStartetService, Mockito.times(1)).behandleOppfolgingStartetEllerKontorEndret(Fnr.of(sisteOppfolgingsperiode.getIdent()), AktorId.of(aktorId), startOppfolgingDate, new NavKontor(sisteOppfolgingsperiode.getKontor().getKontorId()));
+        Mockito.verify(oppfolgingAvsluttetService, Mockito.times(0)).avsluttOppfolging(any(), any());
     }
 }
