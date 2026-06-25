@@ -80,9 +80,6 @@ class ArbeidssoekerServiceTest(
     @BeforeEach
     fun setup() {
         db.update("truncate TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
-        `when`<Boolean?>(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(
-            false
-        )
     }
 
     @Test

@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.json.JsonUtils;
-import tools.jackson.core.type.TypeReference;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
@@ -41,8 +40,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.core.type.TypeReference;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal.BEHOLDE_ARBEID;
@@ -130,8 +129,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         jdbcTemplate.update("truncate bruker_data_barn CASCADE");
         jdbcTemplate.update("truncate foreldreansvar");
         jdbcTemplate.update("truncate siste_arbeidssoeker_periode cascade");
-
-        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test
