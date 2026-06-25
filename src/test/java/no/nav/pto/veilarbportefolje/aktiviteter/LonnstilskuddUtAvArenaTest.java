@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
@@ -26,6 +27,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -46,6 +48,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = ApplicationConfigTest.class)
 public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     private final JdbcTemplate jdbcTemplatePostgres;

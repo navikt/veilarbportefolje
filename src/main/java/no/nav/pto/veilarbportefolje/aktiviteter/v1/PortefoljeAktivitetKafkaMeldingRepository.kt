@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import io.getunleash.DefaultUnleash
+import lombok.RequiredArgsConstructor
+import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
@@ -9,42 +11,69 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.lang.Boolean.TRUE
 import java.sql.Statement
 
+@Slf4j
 @Repository
+@RequiredArgsConstructor
 class PortefoljeAktivitetKafkaMeldingRepository(
     private val db: NamedParameterJdbcTemplate,
     private val opensearchIndexer: OpensearchIndexer,
     private val defaultUnleash: DefaultUnleash,
 ) {
     @Transactional
-    fun tryLagreAktivitetDataBatch(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
+    fun behandleAktivitetsKafkaMeldinger(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
         if (aktiviteter.isEmpty()) {
             return PortefoljeAktivitetBatchResult(0, 0, 0, 0)
         }
 
+        /*
+        Vi skiller mellom tiltaksaktiviteter og øvrige aktiviteter fordi vi i første omgang ønsker å indeksere kun tiltaksaktiviteter fra `kafka_aktivitet_melding`-tabellen.
+        Dette gjør vi for å redusere omfanget av endringen og kunne ta i bruk den nye datakilden stegvis.
+        På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
+        */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val slettinger = endeligeAktiviteter.filter { it.historisk }
-        val upserts = endeligeAktiviteter.filterNot { it.historisk }
+        val endeligeAktiviteterEkskludertTiltak = beholdSisteMeldingPerAktivitet(aktiviteter).filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
 
-        val prosesserteSlettinger = batchDeleteById(slettinger).sumOf(::normaliserUpdateCount)
-        val prosesserteUpserts = batchUpsertAktivitet(upserts).sumOf(::normaliserUpdateCount)
-        val prosesserte = prosesserteSlettinger + prosesserteUpserts
+        val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val antallTiltaksAktiviteterBehandlet = behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter)
 
-        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
-            if (prosesserteUpserts == 1 || prosesserteSlettinger == 1) {
-                indekserAktivitet(AktorId.of(upserts.first().aktorId))
-            } else if (prosesserteUpserts > 1 || prosesserteSlettinger > 1) {
-                indekserAktiviteter(endeligeAktiviteter)
-            }
-        }
+        val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
+        val aktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filterNot { it.historisk }
+
+        val antallAktiviteterSlettet = batchDeleteById(inaktivAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallAktiviteterOppdatert = batchUpsertAktivitet(aktivAktiviteter).sumOf(::normaliserUpdateCount)
+
+        val antallMeldingerBehandlet = antallAktiviteterSlettet + antallAktiviteterOppdatert + antallTiltaksAktiviteterBehandlet
 
         return PortefoljeAktivitetBatchResult(
             mottatte = aktiviteter.size,
             dedupliserte = aktiviteter.size - endeligeAktiviteter.size,
-            prosesserte = prosesserte,
-            ignorert = endeligeAktiviteter.size - prosesserte,
+            prosesserte = antallMeldingerBehandlet,
+            ignorert = endeligeAktiviteter.size - antallMeldingerBehandlet,
         )
+    }
+
+    fun behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
+        val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
+        val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk }
+
+        val antallTiltaksAktiviteterSlettet = batchDeleteById(inaktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(aktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
+
+        val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
+
+        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN) && tiltaksaktiviteter.isNotEmpty()) {
+            if (antallTiltaksAktiviteterOppdatert == 1) {
+                indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
+            } else if (antallTiltaksAktiviteterSlettet == 1) {
+                indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
+            } else if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
+                indekserAktiviteter(tiltaksaktiviteter)
+            }
+        }
+         return antallTiltaksMeldinger;
     }
 
     private fun batchUpsertAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {
@@ -135,7 +164,6 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         }
         opensearchIndexer.indekserBolk(aktiviteter.map { AktorId.of(it.aktorId) })
     }
-
 
     private fun indekserAktivitet(aktorId: AktorId) {
         opensearchIndexer.indekser(aktorId)

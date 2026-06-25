@@ -19,13 +19,13 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
             KafkaMeldingMetadata(recordOffset = 42L, recordPartition = 3, recordKey = "record-key"),
         )
 
-        `when`(repository.tryLagreAktivitetDataBatch(listOf(expectedEntity))).thenReturn(
+        `when`(repository.behandleAktivitetsKafkaMeldinger(listOf(expectedEntity))).thenReturn(
             PortefoljeAktivitetBatchResult(mottatte = 1, dedupliserte = 0, prosesserte = 1, ignorert = 0),
         )
 
         service.behandleKafkaRecords(listOf(record))
 
-        verify(repository).tryLagreAktivitetDataBatch(listOf(expectedEntity))
+        verify(repository).behandleAktivitetsKafkaMeldinger(listOf(expectedEntity))
         verifyNoMoreInteractions(repository)
     }
 
@@ -49,13 +49,13 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
             melding2.toEntity(KafkaMeldingMetadata(recordOffset = 11L, recordPartition = 0, recordKey = "key-2")),
         )
 
-        `when`(repository.tryLagreAktivitetDataBatch(expectedEntities)).thenReturn(
+        `when`(repository.behandleAktivitetsKafkaMeldinger(expectedEntities)).thenReturn(
             PortefoljeAktivitetBatchResult(mottatte = 2, dedupliserte = 0, prosesserte = 2, ignorert = 0),
         )
 
         service.behandleKafkaRecords(listOf(record1, record2))
 
-        verify(repository).tryLagreAktivitetDataBatch(expectedEntities)
+        verify(repository).behandleAktivitetsKafkaMeldinger(expectedEntities)
     }
 
     private fun lagMelding(aktivitetId: String = "aktivitet-1") = PortefoljeAktivitetKafkaMelding(

@@ -28,20 +28,22 @@ public class AktivitetOpensearchService {
         String aktoerIder = brukere.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}"));
         HashMap<AktorId, List<AktivitetEntityDto>> result = new HashMap<>(brukere.size());
 
-        boolean bruktTiltaksAktivitetFraAktivitetsplan = FeatureToggle.brukTiltaksaktivitetFraAktivitetsplan(defaultUnleash);
+        boolean hentTiltaksAktiviteterFraAktivitetsplan = FeatureToggle.brukTiltaksaktivitetFraAktivitetsplan(defaultUnleash);
         /*
-        TODO : Erstatt aktiviteter tabellen med den nye kafka_aktivitet_melding tabellen og legg til aktiviteter i resultatet derfra.
-               Fjern leggTilTiltaksAktivitet() og leggTilTiltak(), siden den nye tabellen inneholder alle typer aktiviteter inkludert tiltaksaktiviteter.
-        */
+        TODO : I første omgang henter vi kun tiltaksaktiviteter fra den nye tabellen (kafka_aktivitet_melding). Alle øvrige aktiviteter hentes fortsatt fra den gamle tabellen (aktiviteter).
+               Planen er å hente alle aktiviteter fra den nye tabellen når vi har fått inn samtlige aktivitetstyper der, inkludert aktivitetsplanaktiviteter, tiltaksaktiviteter, gruppeaktiviteter og utdanningsaktiviteter.
+               Når den nye tabellen erstatter den gamle som primær kilde for aktiviteter, trenger vi ikke lenger å hente tiltaksaktiviteter og øvrige aktiviteter fra ulike datakilder.
+               På det tidspunktet kan vi fjerne leggTilTiltaksAktiviteter() og leggTilTiltak() og ha en felles funksjon for å hente alle aktiviteter, siden den nye tabellen vil inneholde alle aktivitetstyper, inkludert tiltaksaktiviteter.
+         */
         aktiviteterRepositoryV2.leggTilAktiviteterFraAktivitetsplanen(aktoerIder, true, result);
         gruppeAktivitetRepositoryV2.leggTilGruppeAktiviteter(aktoerIder, result);
 
-        if (bruktTiltaksAktivitetFraAktivitetsplan) {
+        if (hentTiltaksAktiviteterFraAktivitetsplan) {
             tiltakRepositoryV3.leggTilTiltaksAktivitet(aktoerIder, true, result);
-            log.debug("leggTilTiltaksAktivitet på resultat for indeksering. Antall tiltaksaktiviteter: {}", result.size());
+            log.info("leggTilTiltaksAktivitet på resultat for indeksering. Antall tiltaksaktiviteter: {}, aktorIder: {}", result.size(), aktoerIder);
         } else {
             tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
-            log.debug("leggTilTiltak på resultat for indeksering. Antall: {}", result.size());
+            log.info("leggTilTiltak på resultat for indeksering. Antall: {}, aktorIder: {}", result.size(), aktoerIder);
         }
 
         return result;
