@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -40,10 +42,10 @@ public class AktivitetOpensearchService {
 
         if (hentTiltaksAktiviteterFraAktivitetsplan) {
             tiltakRepositoryV3.leggTilTiltaksAktivitet(aktoerIder, true, result);
-            log.info("leggTilTiltaksAktivitet på resultat for indeksering. Antall tiltaksaktiviteter: {}, aktorIder: {}", result.size(), aktoerIder);
+            secureLog.info("leggTilTiltaksAktivitet på resultat for indeksering. Antall tiltaksaktiviteter: {}, aktorIder: {}", result.size(), aktoerIder);
         } else {
             tiltakRepositoryV3.leggTilTiltak(aktoerIder, result);
-            log.info("leggTilTiltak på resultat for indeksering. Antall: {}, aktorIder: {}", result.size(), aktoerIder);
+            secureLog.info("leggTilTiltak på resultat for indeksering. Antall tiltaksaktiviteter: {}, aktorIder: {}", result.size(), aktoerIder);
         }
 
         return result;
