@@ -44,7 +44,7 @@ public class TiltakRepositoryV3 {
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
-    private final static String inaktivAktivitetStatuser = Arrays.stream(InaktivAktivitetStatus.values())
+    private final static String INAKTIV_AKTIVITET_STATUSER = Arrays.stream(InaktivAktivitetStatus.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
@@ -159,7 +159,7 @@ public class TiltakRepositoryV3 {
         params.addValue("aktorIder", aktorIder);
         params.addValue("avtalt", avtalt);
         params.addValue("aktivitetstype", "TILTAK");
-        params.addValue("ikkestatuser", inaktivAktivitetStatuser);
+        params.addValue("ikkestatuser", INAKTIV_AKTIVITET_STATUSER);
 
         String sql = """
         SELECT AKTOR_ID,
