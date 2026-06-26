@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import tools.jackson.core.type.TypeReference
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -26,13 +25,16 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
-import no.nav.pto.veilarbportefolje.util.*
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getArbeidssoekerPeriodeFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getProfileringFraDb
+import no.nav.pto.veilarbportefolje.util.TestDataUtils
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
+import no.nav.pto.veilarbportefolje.util.TestUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import tools.jackson.core.type.TypeReference
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*

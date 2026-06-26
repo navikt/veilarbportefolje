@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class AktivitetUtils {
-    public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> aktiviteter, LocalDate today) {
-        return aktiviteter
+    public static Timestamp finnNyesteUtlopteAktivAktivitet(List<Timestamp> utlopsDatoer, LocalDate today) {
+        return utlopsDatoer
                 .stream()
-                .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
+                .filter(utlopsdato -> utlopsdato.toLocalDateTime().toLocalDate().isBefore(today))
                 .max(Comparator.naturalOrder())
                 .orElse(null);
     }
@@ -23,15 +23,15 @@ public class AktivitetUtils {
     public static Timestamp finnForrigeAktivitetStartDatoer(List<Timestamp> startDatoer, LocalDate today) {
         return startDatoer
                 .stream()
-                .filter(aktivitet -> aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
+                .filter(startdato -> startdato.toLocalDateTime().toLocalDate().isBefore(today))
                 .max(Comparator.naturalOrder())
                 .orElse(null);
     }
 
-    public static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> aktiviteter, LocalDate today) {
-        return aktiviteter
+    public static List<Timestamp> finnDatoerEtterDagensDato(List<Timestamp> startdatoer, LocalDate today) {
+        return startdatoer
                 .stream()
-                .filter(aktivitet -> !aktivitet.toLocalDateTime().toLocalDate().isBefore(today))
+                .filter(startdato -> !startdato.toLocalDateTime().toLocalDate().isBefore(today))
                 .sorted()
                 .collect(Collectors.toList());
     }
