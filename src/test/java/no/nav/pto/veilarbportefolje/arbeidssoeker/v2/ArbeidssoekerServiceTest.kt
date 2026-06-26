@@ -12,7 +12,6 @@ import no.nav.pto.veilarbportefolje.aap.AapClient
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE

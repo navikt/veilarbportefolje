@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -163,10 +164,12 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             return
         }
         opensearchIndexer.indekserBolk(aktiviteter.map { AktorId.of(it.aktorId) })
+        secureLog.info("IndekserBolk: Indekserte {} aktivitetdmeldingne", aktiviteter.size)
     }
 
     private fun indekserAktivitet(aktorId: AktorId) {
         opensearchIndexer.indekser(aktorId)
+        secureLog.info("Indekserte en aktivitetdmelding med aktorId", aktorId)
     }
 
     private fun beholdSisteMeldingPerAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): List<KafkaAktivitetMeldingEntity> {
