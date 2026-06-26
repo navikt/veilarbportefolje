@@ -44,7 +44,7 @@ public class TiltakRepositoryV3 {
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
-    private final static String INAKTIV_AKTIVITET_STATUSER = Arrays.stream(InaktivAktivitetStatus.values())
+    private static final String INAKTIV_AKTIVITET_STATUSER = Arrays.stream(InaktivAktivitetStatus.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
