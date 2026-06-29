@@ -143,7 +143,8 @@ object PortefoljebrukerFrontendModellMapper {
                         utlopsDato = it.utlopsDato,
                         yngsteBarnsFodselsdato = it.yngsteBarnsFødselsdato
                     )
-                }
+                },
+                ungdomsprogram = mapUngdomsprogram(opensearchBruker),
             ),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
@@ -199,24 +200,32 @@ object PortefoljebrukerFrontendModellMapper {
         )
     }
 
+    fun mapUngdomsprogram(opensearchModell: PortefoljebrukerOpensearchModell): Ungdomsprogram? {
+        val ungdomsprogram = opensearchModell.ungdomsprogram ?: return null
+
+        return Ungdomsprogram(
+            startdato = ungdomsprogram.fraOgMed,
+            sluttdato = ungdomsprogram.tilOgMed,
+            maksdato = ungdomsprogram.maksdato,
+            rettighet = if (ungdomsprogram.harForlengetPeriode) "Unntak" else "Ordinær"
+        )
+    }
+
     private fun mapAapKelvin(opensearchBruker: PortefoljebrukerOpensearchModell): AapKelvin? {
+        if (!opensearchBruker.aap_kelvin) return null
         val vedtaksdato = opensearchBruker.aap_kelvin_tom_vedtaksdato
         val rettighet = opensearchBruker.aap_kelvin_rettighetstype
-        if (vedtaksdato == null && rettighet == null) {
+        val maksdato = opensearchBruker.aap_kelvin_maksdato
+        if (vedtaksdato == null || rettighet == null) {
             return null
         }
-        // TODO: 2026-01-05, Sondre
-        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet!!)
+
+        val rettighetTekst = AapRettighetstype.tilFrontendtekst(rettighet)
 
         return AapKelvin(
-            vedtaksdatoTilOgMed = vedtaksdato!!,
-            rettighetstype = rettighetTekst
+            vedtaksdatoTilOgMed = vedtaksdato,
+            rettighetstype = rettighetTekst,
+            maksdato = maksdato
         )
     }
 

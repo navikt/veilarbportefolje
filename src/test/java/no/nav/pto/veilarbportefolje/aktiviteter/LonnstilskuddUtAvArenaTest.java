@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -12,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
@@ -25,6 +27,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -37,6 +40,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgDefaults;
 import static no.nav.pto.veilarbportefolje.domene.FiltervalgDefaultsKt.getFiltervalgMedTiltakstyperForJavaTester;
 import static no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic.TILTAK_ARENA_TOPIC;
@@ -44,6 +48,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = ApplicationConfigTest.class)
 public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
 
     private final JdbcTemplate jdbcTemplatePostgres;
@@ -52,7 +57,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
     private final AktorClient aktorClient;
     private final AktivitetService aktivitetService;
     private final OpensearchService opensearchService;
-
+    private final DefaultUnleash defaultUnleash;
 
     @Autowired
     public LonnstilskuddUtAvArenaTest(
@@ -61,7 +66,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
             TiltakService tiltakService,
             AktorClient aktorClient,
             AktivitetService aktivitetService,
-            OpensearchService opensearchService
+            OpensearchService opensearchService,
+            DefaultUnleash defaultUnleash
     ) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.tiltakRepositoryV3 = tiltakRepositoryV3;
@@ -69,6 +75,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         this.aktorClient = aktorClient;
         this.aktivitetService = aktivitetService;
         this.opensearchService = opensearchService;
+        this.defaultUnleash = defaultUnleash;
     }
 
     @BeforeEach
@@ -82,6 +89,8 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         jdbcTemplatePostgres.update("TRUNCATE tiltakkodeverket");
         jdbcTemplatePostgres.update("TRUNCATE lest_arena_hendelse_aktivitet");
         jdbcTemplatePostgres.update("TRUNCATE ao_kontor");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test
@@ -231,6 +240,7 @@ public class LonnstilskuddUtAvArenaTest extends EndToEndTest {
         when(aktorClient.hentAktorId(fnr1)).thenReturn(aktorId1);
         when(aktorClient.hentAktorId(fnr2)).thenReturn(aktorId2);
         when(aktorClient.hentAktorId(fnr3)).thenReturn(aktorId3);
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
         testDataClient.lagreBrukerUnderOppfolging(aktorId1, fnr1, navKontor.getValue(), null);
         testDataClient.lagreBrukerUnderOppfolging(aktorId2, fnr2, navKontor.getValue(), null);
         testDataClient.lagreBrukerUnderOppfolging(aktorId3, fnr3, navKontor.getValue(), null);

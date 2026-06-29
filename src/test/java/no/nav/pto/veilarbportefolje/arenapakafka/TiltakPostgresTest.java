@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arenapakafka;
 
+import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.FAR_IN_THE_FUTURE_DATE;
@@ -37,6 +39,7 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class TiltakPostgresTest {
@@ -45,17 +48,23 @@ public class TiltakPostgresTest {
     private final TiltakRepositoryV3 tiltakRepositoryV3;
     private final AktivitetOpensearchService aktivitetOpensearchService;
     private final PdlIdentRepository pdlIdentRepository;
+    private final DefaultUnleash defaultUnleash;
 
     private final AktorId aktorId = randomAktorId();
     private final Fnr fnr = randomFnr();
 
     @Autowired
-    public TiltakPostgresTest(JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV3 tiltakRepositoryV3, AktivitetOpensearchService aktivitetOpensearchService, OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository, PdlIdentRepository pdlIdentRepository) {
+    public TiltakPostgresTest(JdbcTemplate jdbcTemplatePostgres, TiltakRepositoryV3 tiltakRepositoryV3,
+                              AktivitetOpensearchService aktivitetOpensearchService,
+                              OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository,
+                              PdlIdentRepository pdlIdentRepository,
+                              DefaultUnleash defaultUnleash) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
         this.oppfolgingsbrukerRepository = oppfolgingsbrukerRepository;
         this.aktivitetOpensearchService = aktivitetOpensearchService;
         this.tiltakRepositoryV3  = tiltakRepositoryV3;
         this.pdlIdentRepository = pdlIdentRepository;
+        this.defaultUnleash = defaultUnleash;
     }
 
     @BeforeAll
@@ -69,6 +78,8 @@ public class TiltakPostgresTest {
         jdbcTemplatePostgres.update("TRUNCATE " + PostgresTable.TILTAKKODEVERK.TABLE_NAME + " CASCADE");
         jdbcTemplatePostgres.update("TRUNCATE oppfolgingsbruker_arena_v2 ");
         jdbcTemplatePostgres.update("TRUNCATE bruker_identer");
+
+        when(defaultUnleash.isEnabled(BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(false);
     }
 
     @Test

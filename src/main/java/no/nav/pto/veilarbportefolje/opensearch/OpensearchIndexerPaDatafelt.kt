@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringDTO
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.opensearch.OpenSearchException
@@ -189,10 +190,10 @@ class OpensearchIndexerPaDatafelt(
         update(aktoerId, content, "Oppdatert ny for veileder: $nyForVeileder")
     }
 
-    fun oppdaterVeileder(aktoerId: AktorId, veilederId: VeilederId, tildeltTidspunkt: ZonedDateTime?) {
+    fun oppdaterVeileder(aktoerId: AktorId, veilederId: VeilederId?, tildeltTidspunkt: ZonedDateTime?) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
-            .field(DatafeltKeys.Oppfolging.VEILEDER_ID, veilederId.value)
+            .field(DatafeltKeys.Oppfolging.VEILEDER_ID, veilederId?.value)
             .field(DatafeltKeys.Oppfolging.NY_FOR_VEILEDER, true)
             .field(DatafeltKeys.Oppfolging.TILDELT_TIDSPUNKT, DateUtils.toIsoUTC(tildeltTidspunkt))
             .endObject()
@@ -359,14 +360,16 @@ class OpensearchIndexerPaDatafelt(
     fun oppdaterAapKelvin(
         aktorId: AktorId,
         harAapKelvin: Boolean,
-        tomVedtaksdato: LocalDate?,
-        rettighetstype: AapRettighetstype?
+        tomVedtaksdato: LocalDate,
+        rettighetstype: AapRettighetstype,
+        maksdato: LocalDate?
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .field(DatafeltKeys.Ytelser.AAP_KELVIN, harAapKelvin)
             .field(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO, tomVedtaksdato)
             .field(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE, rettighetstype)
+            .field(DatafeltKeys.Ytelser.AAP_KELVIN_MAKSDATO, maksdato)
             .endObject()
 
         update(aktorId, content, "Oppdatert aap kelvin for aktorId: $aktorId")
@@ -378,6 +381,7 @@ class OpensearchIndexerPaDatafelt(
             .field(DatafeltKeys.Ytelser.AAP_KELVIN, false)
             .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_TOM_VEDTAKSDATO)
             .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_RETTIGHETSTYPE)
+            .nullField(DatafeltKeys.Ytelser.AAP_KELVIN_MAKSDATO)
             .endObject()
 
         update(aktorId, content, "Slettet aap kelvin for aktorId: $aktorId")
@@ -419,6 +423,31 @@ class OpensearchIndexerPaDatafelt(
             .endObject()
 
         update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")
+    }
+
+    fun oppdaterUngdomsprogram(
+        aktorId: AktorId,
+        periode: Periode
+    ) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .startObject(DatafeltKeys.Ytelser.UNGDOMSPROGRAM)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED, periode.fraOgMed)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_TIL_OG_MED, periode.tilOgMed)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_MAKSDATO, periode.periodeMaksDato)
+            .field(DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE, periode.harForlengetPeriode)
+            .endObject()
+            .endObject()
+
+        update(aktorId, content, "Oppdatert ungdomsprogram for aktorId: $aktorId")
+    }
+
+    fun slettUngdomsprogram(aktorId: AktorId) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .nullField(DatafeltKeys.Ytelser.UNGDOMSPROGRAM)
+            .endObject()
+        update(aktorId, content, "Slettet ungdomsprogram for aktorId: $aktorId")
     }
 
     private fun updateWithScript(aktoerId: AktorId, script: Script?, logInfo: String?) {

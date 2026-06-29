@@ -55,11 +55,11 @@ public class PostgresOpensearchMapper {
     private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
     public void flettInnAktivitetsData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        List<AktorId> aktoerIder = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).map(AktorId::of).toList();
+        List<AktorId> aktoerIder = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getAktoer_id).filter(Objects::nonNull).map(AktorId::of).toList();
         Map<AktorId, List<AktivitetEntityDto>> avtalteAktiviterMap = aktivitetOpensearchService.hentAvtaltAktivitetData(aktoerIder);
         Map<AktorId, List<AktivitetEntityDto>> ikkeAvtalteAktiviterMap = aktivitetOpensearchService.hentIkkeAvtaltAktivitetData(aktoerIder);
         brukerOpensearchModellList.forEach(bruker -> {
-                    AktorId aktorId = AktorId.of(bruker.getAktoer_id());
+                    AktorId aktorId = AktorId.of(Objects.requireNonNull(bruker.getAktoer_id()));
 
                     List<AktivitetEntityDto> avtalteAktiviteter = avtalteAktiviterMap.get(aktorId) != null ? avtalteAktiviterMap.get(aktorId) : new ArrayList<>();
                     List<AktivitetEntityDto> ikkeAvtalteAktiviteter = ikkeAvtalteAktiviterMap.get(aktorId) != null ? ikkeAvtalteAktiviterMap.get(aktorId) : new ArrayList<>();

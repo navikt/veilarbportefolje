@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
@@ -474,6 +475,56 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
 
     @Test
+    fun skal_hente_ut_brukere_som_gaar_paa_undomsprogrammet() {
+        val brukerMedUngdomsprogram = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.now().minusMonths(1),
+                tilOgMed = null,
+                maksdato = LocalDate.now().plusMonths(12),
+                harForlengetPeriode = false
+            )
+        )
+
+        val brukerUtenUngdomsprogram = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            ungdomsprogram = null,
+        )
+
+        val liste = listOf(brukerMedUngdomsprogram, brukerUtenUngdomsprogram)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filterValg = getFiltervalgDefaults().copy(
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.of(TEST_VEILEDER_0),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filterValg,
+            null,
+            null
+        )
+
+        Assertions.assertThat(response.antall).isEqualTo(1)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUngdomsprogram.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
+            .doesNotContain(brukerUtenUngdomsprogram.fnr)
+    }
+
+    @Test
     fun test_sortering_AAP() {
         val bruker1 = PortefoljebrukerOpensearchModell(
             fnr = randomFnr().toString(),
@@ -585,6 +636,92 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         org.junit.jupiter.api.Assertions.assertEquals(response.brukere[1].fnr, bruker1.fnr)
         org.junit.jupiter.api.Assertions.assertEquals(response.brukere[2].fnr, bruker5.fnr)
     }
+
+
+    @Test
+    fun skal_sortere_brukere_pa_aap_maksdato() {
+        val tidspunkt1 = LocalDate.now()
+        val tidspunkt2 = LocalDate.now().plusDays(2)
+        val tidspunkt3 = LocalDate.now().plusDays(3)
+
+        val tidligstBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt1,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt2,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val senestBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = true,
+            aap_kelvin_maksdato = tidspunkt3,
+            aap_kelvin_rettighetstype = AapRettighetstype.SYKEPENGEERSTATNING
+        )
+
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            aap_kelvin = false,
+        )
+
+
+        val liste = listOf(midtImellomBruker, senestBruker, tidligstBruker, nullBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = emptyList(),
+            ytelseAapKelvin = listOf(YtelseAapKelvin.HAR_AAP)
+        )
+
+        val brukereMedAntall = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.AAP_KELVIN_MAKSDATO,
+            filtervalg,
+            null,
+            null
+        )
+        val brukereMedAntall2 = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.AAP_KELVIN_MAKSDATO,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereStigende = brukereMedAntall.brukere
+        val brukereSynkende = brukereMedAntall2.brukere
+
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
+        Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstBruker.fnr)
+
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstBruker.fnr)
+    }
+
 
     @Test
     fun skal_sortere_brukere_pa_aap_tom_vedtaksdato() {
@@ -1152,6 +1289,100 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(brukereStigende[1].fnr).isEqualTo(bruker2.fnr)
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(bruker2.fnr)
+    }
+
+
+    @Test
+    fun skal_sortere_brukere_pa_undomsprogram_startdato() {
+        val tidspunkt1 = LocalDate.now()
+        val tidspunkt2 = LocalDate.now().plusDays(2)
+        val tidspunkt3 = LocalDate.now().plusDays(3)
+
+        val tidligstTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                tidspunkt1,
+                null,
+                tidspunkt1.plusYears(1),
+                false
+            )
+        )
+
+        val midtImellomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                tidspunkt2,
+                null,
+                tidspunkt2.plusYears(1),
+                false
+            )
+        )
+
+        val senestTomBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                tidspunkt3,
+                null,
+                tidspunkt3.plusYears(1),
+                false
+            )
+        )
+
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            ungdomsprogram = null
+        )
+
+
+        val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, nullBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = emptyList(),
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
+        )
+
+        val brukereMedAntall = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.UNGDOMSPROGRAM_STARTDATO,
+            filtervalg,
+            null,
+            null
+        )
+        val brukereMedAntall2 = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.UNGDOMSPROGRAM_STARTDATO,
+            filtervalg,
+            null,
+            null
+        )
+
+        val brukereStigende = brukereMedAntall.brukere
+        val brukereSynkende = brukereMedAntall2.brukere
+
+        Assertions.assertThat(brukereStigende.size).isEqualTo(3)
+        Assertions.assertThat(brukereStigende[0].fnr).isEqualTo(tidligstTomBruker.fnr)
+
+        Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
+        Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
 

@@ -1,7 +1,9 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.mapping;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype;
 
+@Slf4j
 public class PeriodetypeTilBeskrivelse {
     public static String mapPeriodetypeTilBeskrivelse(Periodetype periodetype) {
         return switch (periodetype) {
@@ -12,6 +14,13 @@ public class PeriodetypeTilBeskrivelse {
             case PERIODE_FØR_FØDSEL -> "Periode før fødsel";
             case UTVIDELSE -> "Utvidelse";
             case NY_PERIODE_FOR_NYTT_BARN -> "Ny periode for nytt barn";
+            case SÆRLIG_TILSYNSKREVENDE_BARN -> "Særlig tilsynskrevende barn";
+            case BARN_UNDER_14_MÅNEDER -> "Barn under 14 måneder";
+            case FORBIGÅENDE_SYKDOM_HOS_BARNET -> "Forbigående sykdom hos barnet";
+            default -> {
+                log.warn("Ukjent periodetype, mangler beskrivelse: {}", periodetype);
+                yield ("Ukjent periodetype: " + periodetype.name());
+            }
         };
     }
 

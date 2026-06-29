@@ -1,8 +1,5 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.domain;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public enum Aktivitetstype {
     MIGRERING,
     IKKE_AKTIVITETSPLIKT,

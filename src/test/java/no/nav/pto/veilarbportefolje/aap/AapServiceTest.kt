@@ -188,8 +188,8 @@ class AapServiceTest(
             AapVedtakResponseDto(vedtak = listOf(vedtakInnenfor, vedtakForTidlig), sakstatus = "FERDIGBEHANDLET", maksdato = null)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(apiResponse)
 
-        val resultat = aapService.hentSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
-        assertThat(resultat).isEqualTo(vedtakInnenfor)
+        val resultat = aapService.hentVedtakMedSisteAapPeriodeFraApi(norskIdent.get(), oppfolgingStartdato.toLocalDate())
+        assertThat(resultat?.vedtak[0]).isEqualTo(vedtakInnenfor)
     }
 
     @Test
