@@ -1,14 +1,13 @@
 package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
-import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.InaktivAktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
@@ -16,6 +15,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
+import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -25,8 +26,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -40,9 +40,11 @@ public class TiltakRepositoryV3 {
     private final JdbcTemplate dbReadOnly;
     @Qualifier("PostgresNamedJdbcReadOnly")
     private final NamedParameterJdbcTemplate namedDb;
-    private final DefaultUnleash defaultUnleash;
 
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
+            .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
+
+    private static final String INAKTIV_AKTIVITET_STATUSER = Arrays.stream(InaktivAktivitetStatus.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
@@ -96,7 +98,6 @@ public class TiltakRepositoryV3 {
 
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
-        boolean brukAoKontor = FeatureToggle.brukKontorFraAoKontor(defaultUnleash);
         final String hentTiltakPaEnhetSql = """
                 SELECT *
                 FROM tiltakkodeverket WHERE
@@ -104,17 +105,17 @@ public class TiltakRepositoryV3 {
                     SELECT DISTINCT tiltakskode FROM
                     (
                         SELECT tiltakskode, aktoerid FROM brukertiltak
-                        UNION
+                        UNION ALL
                         SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
                     ) BT
                     INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
                     INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
                     LEFT JOIN ao_kontor ON ao_kontor.ident = ai.fnr
-                    WHERE coalesce(CASE WHEN ?::boolean THEN ao_kontor.kontor_id ELSE NULL END, OP.nav_kontor) = ?
+                    WHERE ao_kontor.kontor_id = ?
                 )
                 """;
         return new EnhetTiltak().setTiltak(
-                dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, brukAoKontor, enhetId.get())
+                dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, enhetId.get())
                         .stream().map(this::mapTilTiltak)
                         .collect(toMap(Tiltakkodeverk::getKode, Tiltakkodeverk::getVerdi))
         );
@@ -148,6 +149,43 @@ public class TiltakRepositoryV3 {
 
                         List<AktivitetEntityDto> list = result.get(aktoerId);
                         result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
+                    }
+                    return result;
+                });
+    }
+
+    public void leggTilTiltaksAktivitet(String aktorIder, boolean avtalt, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("aktorIder", aktorIder);
+        params.addValue("avtalt", avtalt);
+        params.addValue("aktivitetstype", "TILTAK");
+        params.addValue("ikkestatuser", INAKTIV_AKTIVITET_STATUSER);
+
+        String sql = """
+        SELECT AKTOR_ID,
+               CAST(TIL_DATO AS TIMESTAMP) AS TIL_DATO,
+               CAST(FRA_DATO AS TIMESTAMP) AS FRA_DATO,
+               TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
+        WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
+        AND AKTIVITET_TYPE = :aktivitetstype::varchar
+        AND AVTALT = :avtalt::boolean
+        AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
+        """;
+
+        ParsedSql parsed = NamedParameterUtils.parseSqlStatement(sql);
+        String executableSql = NamedParameterUtils.substituteNamedParameters(parsed, params);
+        Object[] paramArray = NamedParameterUtils.buildValueArray(parsed, params, null);
+        log.debug("Prepared SQL: {}", executableSql);
+        log.debug("Params array: {}", Arrays.toString(paramArray));
+
+        namedDb.query(sql,
+                params,
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        AktorId aktoerId = AktorId.of(rs.getString("AKTOR_ID"));
+                        AktivitetEntityDto aktivitet = mapTiltaksAktivitetTilEntity(rs);
+
+                        result.compute(aktoerId, (k, list) -> leggTilAktivitetPaResultat(aktivitet, list));
                     }
                     return result;
                 });

@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
@@ -147,6 +148,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             aap_kelvin = PortefoljebrukerOpensearchModell.AAP_KELVIN,
             aap_kelvin_rettighetstype = PortefoljebrukerOpensearchModell.AAP_KELVIN_RETTIGHETSTYPE,
             aap_kelvin_tom_vedtaksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_TOM_VEDTAKSDATO,
+            aap_kelvin_maksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_MAKSDATO,
             aapmaxtiduke = PortefoljebrukerOpensearchModell.AAP_MAXTID_UKE,
             aapordinerutlopsdato = PortefoljebrukerOpensearchModell.AAP_ORDINER_UTLOPSDATO,
             aapunntakukerigjen = PortefoljebrukerOpensearchModell.AAP_UNNTAK_UKER_IGJEN,
@@ -160,6 +162,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utlopsdato = PortefoljebrukerOpensearchModell.UTLOPSDATO,
             ytelse = PortefoljebrukerOpensearchModell.YTELSE,
             dagpenger = PortefoljebrukerOpensearchModell.DAGPENGER,
+            ungdomsprogram = PortefoljebrukerOpensearchModell.UNGDOMSPROGRAM,
 
             // Dialog
             venterpasvarfrabruker = PortefoljebrukerOpensearchModell.VENTER_PA_SVAR_FRA_BRUKER,
@@ -365,6 +368,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val AAP_KELVIN: Boolean = true
             val AAP_KELVIN_RETTIGHETSTYPE: AapRettighetstype = AapRettighetstype.BISTANDSBEHOV
             val AAP_KELVIN_TOM_VEDTAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
+            val AAP_KELVIN_MAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
             val AAP_MAXTID_UKE: Int = 50
             val AAP_ORDINER_UTLOPSDATO: LocalDate = LocalDate.parse("2025-12-17")
             val AAP_UNNTAK_UKER_IGJEN: Int = 10
@@ -387,6 +391,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
                 antallResterendeDager = null,
                 datoAntallDagerBleBeregnet = null
+            )
+            val UNGDOMSPROGRAM: UngdomsprogramForOpensearch = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.parse("2025-02-10"),
+                tilOgMed = null,
+                maksdato = LocalDate.parse("2026-02-10"),
+                harForlengetPeriode = false
             )
 
             // Dialog

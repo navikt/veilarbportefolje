@@ -14,5 +14,4 @@ public class Aktivitet {
     private String status;
     private Timestamp fraDato;
     private Timestamp tilDato;
-
 }

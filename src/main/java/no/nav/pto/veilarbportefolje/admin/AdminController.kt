@@ -9,6 +9,7 @@ import no.nav.common.job.JobRunner
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.*
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
@@ -17,7 +18,9 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
+import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -42,7 +45,9 @@ class AdminController(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val opensearchAdminService: OpensearchAdminService,
     private val pdlService: PdlService,
-    private val ensligForsorgerService: EnsligeForsorgereService
+    private val ensligForsorgerService: EnsligeForsorgereService,
+    private val aapService: AapService,
+    private val oppfolgingClient: OppfolgingClient
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -50,7 +55,10 @@ class AdminController(
     private val log = org.slf4j.LoggerFactory.getLogger(AdminController::class.java)
 
     // INDEKSERINGSJOBBER
-    @Operation(summary = "Indekser bruker med fødselsnummer", description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch).")
+    @Operation(
+        summary = "Indekser bruker med fødselsnummer",
+        description = "Hent og skriv oppdatert data for bruker, gitt ved fødselsnummer, til søkemotoren (OpenSearch)."
+    )
     @PutMapping("/indeks/bruker/fnr")
     fun indeks(@RequestBody adminFnrRequest: AdminFnrRequest): String {
         sjekkTilgangTilAdmin()
@@ -59,7 +67,10 @@ class AdminController(
         return "Indeksering fullfort"
     }
 
-    @Operation(summary = "Indekser bruker med Aktør-ID", description = "Hent og skriv oppdatert data for bruker, gitt ved Aktør-ID, til søkemotoren (OpenSearch).")
+    @Operation(
+        summary = "Indekser bruker med Aktør-ID",
+        description = "Hent og skriv oppdatert data for bruker, gitt ved Aktør-ID, til søkemotoren (OpenSearch)."
+    )
     @PutMapping("/indeks/bruker")
     fun indeksAktoerId(@RequestBody adminAktorIdRequest: AdminAktorIdRequest): String {
         sjekkTilgangTilAdmin()
@@ -194,6 +205,56 @@ class AdminController(
         return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført")
     }
 
+    @PostMapping("/lastInnTildelingsdatoForBrukere")
+    @Operation(
+        summary = "Oppdater tilordningsdato for alle brukere",
+        description = "Går gjennom alle brukere med tildelt veileder i løsningen og oppdaterer tilordningsdato for disse."
+    )
+    fun lastInnTildelingstidspunktForVeileder(
+        @RequestParam(required = false) limit: Int? = null
+    ): String {
+        sjekkTilgangTilAdmin()
+        val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder()
+        val brukereUnderOppfolging = if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
+        log.info("Tilordningsdato : prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
+        val antall = AtomicInteger(0)
+
+        brukereUnderOppfolging.forEach { aktorId ->
+            if (antall.getAndAdd(1) % 100 == 0) {
+                log.info(
+                    "Tilordningsdato brukerdata: innlasting {}% ferdig",
+                    (antall.get().toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
+                )
+            }
+            try {
+                val veilarbInfo: Veilarbportefoljeinfo = oppfolgingClient.hentVeilarbData(aktorId)
+                secureLog.info("Tilordningsdato : Starter prosessering for nr $antall med aktorId $aktorId")
+
+                if (veilarbInfo.erUnderOppfolging && veilarbInfo.tilordnetTidspunkt != null
+                ) {
+                    oppfolgingRepositoryV2.settTildeltTidspunkt(
+                        aktorId,
+                        veilarbInfo.tilordnetTidspunkt
+                    )
+                    secureLog.info("Tilordningsdato : dato ble oppdatert i databasen for nr $antall med aktorId $aktorId")
+                } else {
+                    secureLog.warn(
+                        "Tilordningsdato : blir ikke lagret fordi aktorId $aktorId har fra clientet at tilordnettidspunkt=${veilarbInfo.tilordnetTidspunkt} " +
+                                "og erUnderOppfolging=${veilarbInfo.erUnderOppfolging}"
+                    )
+                }
+            } catch (e: Exception) {
+                secureLog.error(
+                    "Tilordningsdato : Exception i OppfolgingsJobb tildelingstidspunkt for bruker $aktorId",
+                    e
+                )
+            }
+            Thread.sleep(50) // throttle: ~20 req/s mot veilarboppfolging
+
+        }
+        return "Innlastning av tilordningsdato for veileder har startet"
+    }
+
     @GetMapping("hentData/hentDataForBruker/muligeValg")
     @Operation(
         summary = "Henter mulige valg for datahenting",
@@ -225,6 +286,7 @@ class AdminController(
                 when (type) {
                     AdminDataType.PDL_DATA -> hentPdlData(request.aktorId)
                     AdminDataType.ENSLIG_FORSORGER_DATA -> hentOvergangsstønadData(request.aktorId)
+                    AdminDataType.AAP_DATA -> hentAapData(request.aktorId)
                 }
             } catch (e: Exception) {
                 secureLog.error("Feil ved henting av ${type.name} for aktorId ${request.aktorId}", e)
@@ -247,6 +309,11 @@ class AdminController(
     private fun hentPdlData(aktorId: AktorId) {
         secureLog.info("Starter datahenting for PDL for aktorId {}", aktorId)
         pdlService.hentOgLagrePdlData(aktorId)
+    }
+
+    private fun hentAapData(aktorId: AktorId) {
+        secureLog.info("Starter datahenting for AAP for aktorId {}", aktorId)
+        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId)
     }
 
     private fun sjekkTilgangTilAdmin() {

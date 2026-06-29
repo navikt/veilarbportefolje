@@ -23,7 +23,7 @@ class PortefoljeAktivitetKafkaMeldingService(
             kafkaRecords.last().offset(),
         )
 
-        val resultat = repository.tryLagreAktivitetDataBatch(
+        val resultat = repository.behandleAktivitetsKafkaMeldinger(
             kafkaRecords.map { it.tilKafkaMeldingMedMetadata().toEntity() },
         )
 

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
@@ -103,6 +104,7 @@ object DatafeltKeys {
         val AAP_KELVIN = PortefoljebrukerOpensearchModell::aap_kelvin.name
         val AAP_KELVIN_TOM_VEDTAKSDATO = PortefoljebrukerOpensearchModell::aap_kelvin_tom_vedtaksdato.name
         val AAP_KELVIN_RETTIGHETSTYPE = PortefoljebrukerOpensearchModell::aap_kelvin_rettighetstype.name
+        val AAP_KELVIN_MAKSDATO = PortefoljebrukerOpensearchModell::aap_kelvin_maksdato.name
         val AAP_ORDINER_UTLOPSDATO = PortefoljebrukerOpensearchModell::aapordinerutlopsdato.name
         val AAP_MAXTID_UKE = PortefoljebrukerOpensearchModell::aapmaxtiduke.name
         val AAP_UNNTAK_UKER_IGJEN = PortefoljebrukerOpensearchModell::aapunntakukerigjen.name
@@ -127,6 +129,12 @@ object DatafeltKeys {
         val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
         val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name
         val DAGPENGER_DATO_STANS = DagpengerForOpensearch::datoStans.name
+        val UNGDOMSPROGRAM = PortefoljebrukerOpensearchModell::ungdomsprogram.name
+        val UNGDOMSPROGRAM_FRA_OG_MED = UngdomsprogramForOpensearch::fraOgMed.name
+        val UNGDOMSPROGRAM_TIL_OG_MED = UngdomsprogramForOpensearch::tilOgMed.name
+        val UNGDOMSPROGRAM_MAKSDATO = UngdomsprogramForOpensearch::maksdato.name
+        val UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE = UngdomsprogramForOpensearch::harForlengetPeriode.name
+
     }
 
     object Dialog {

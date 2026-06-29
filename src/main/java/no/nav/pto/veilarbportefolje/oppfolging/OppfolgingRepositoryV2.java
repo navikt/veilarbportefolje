@@ -35,7 +35,7 @@ public class OppfolgingRepositoryV2 {
     }
 
     public void settVeileder(AktorId aktorId, VeilederId veilederId) {
-        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
+        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", Optional.ofNullable(veilederId).map(VeilederId::getValue).orElse(null), aktorId.get());
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
@@ -140,6 +140,15 @@ public class OppfolgingRepositoryV2 {
                     }
                     return result;
                 });
+    }
+
+
+    public List<AktorId> hentAlleBrukerUnderOppfolgingMedTildeltVeileder() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging AND veilederid IS NOT NULL AND tildelt_tidspunkt is NULL", AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
     }
 
     private static String listParam(List<String> identer) {

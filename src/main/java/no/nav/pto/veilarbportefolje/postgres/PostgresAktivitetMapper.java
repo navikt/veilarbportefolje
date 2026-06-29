@@ -21,14 +21,14 @@ public class PostgresAktivitetMapper {
         if (aktiviteter == null) {
             return entity;
         }
-        Set<String> aktiveAktiviteter = aktiviteter.stream()
+        Set<String> aktivitetsTyper = aktiviteter.stream()
                 .map(AktivitetEntityDto::getAktivitetsType)
                 .map(AktivitetsType::name)
                 .collect(Collectors.toSet());
         byggAktivitetStatusBrukerData(entity, aktiviteter);
-        byggStillingFraNavData(aktiviteter,aktiveAktiviteter,entity);
+        byggStillingFraNavData(aktiviteter, aktivitetsTyper, entity);
 
-        return entity.setAlleAktiviteter(aktiveAktiviteter);
+        return entity.setAlleAktiviteter(aktivitetsTyper);
     }
 
     public static AvtaltAktivitetEntity kalkulerAvtalteAktivitetInformasjon(List<AktivitetEntityDto> avtalteAktivteter) {
@@ -38,20 +38,22 @@ public class PostgresAktivitetMapper {
                     .setAktiviteter(new HashSet<>())
                     .setTiltak(new HashSet<>());
         }
-        Set<String> aktiveAktiviteter = avtalteAktivteter.stream()
+        Set<String> aktiveAktivitetsTyper = avtalteAktivteter.stream()
                 .map(AktivitetEntityDto::getAktivitetsType)
                 .map(AktivitetsType::name)
                 .collect(Collectors.toSet());
-        Set<String> aktiveTiltak = avtalteAktivteter.stream()
+
+        Set<String> aktiveTiltaksTyper = avtalteAktivteter.stream()
                 .map(AktivitetEntityDto::getMuligTiltaksNavn)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         byggAktivitetStatusBrukerData(entity, avtalteAktivteter);
         byggAktivitetBrukerData(entity, avtalteAktivteter);
+
         return entity
-                .setAktiviteter(aktiveAktiviteter)
-                .setTiltak(aktiveTiltak);
+                .setAktiviteter(aktiveAktivitetsTyper)
+                .setTiltak(aktiveTiltaksTyper);
     }
 
     private static void byggAktivitetStatusBrukerData(AktivitetStatusData aktivitetStatusData, List<AktivitetEntityDto> aktiviter) {

@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -349,8 +350,10 @@ class PortefoljebrukerFrontendModellMapperTest {
             aapmaxtiduke = 10,
             aapunntakukerigjen = 5,
             aapordinerutlopsdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin = true,
             aap_kelvin_rettighetstype = AapRettighetstype.VURDERES_FOR_UFØRETRYGD,
             aap_kelvin_tom_vedtaksdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin_maksdato = LocalDate.of(2026, 1, 1),
             tiltakspenger_rettighet = TILTAKSPENGER,
             tiltakspenger_vedtaksdato_tom = LocalDate.of(2026, 1, 1),
             enslige_forsorgere_overgangsstonad =
@@ -366,6 +369,12 @@ class PortefoljebrukerFrontendModellMapperTest {
                 null,
                 156,
                 LocalDate.of(2026, 1, 1),
+            ),
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                LocalDate.of(2026, 1, 1),
+                null,
+                LocalDate.of(2027, 1, 1),
+                false
             )
         )
 
@@ -388,12 +397,18 @@ class PortefoljebrukerFrontendModellMapperTest {
             ytelser.aap!!.rettighetstype
         )
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.maksdato)
         Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
         Assertions.assertEquals("Dagpenger under permittering", ytelser.dagpenger!!.rettighetstype)
         Assertions.assertEquals(null, ytelser.dagpenger.datoStans)
         Assertions.assertEquals("156 dager", ytelser.dagpenger.resterendeDager)
+        Assertions.assertNotNull(ytelser.ungdomsprogram)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ungdomsprogram!!.startdato)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram.sluttdato)
+        Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
+        Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
     }
 
     @Test
@@ -422,6 +437,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
         Assertions.assertEquals(null, ytelser.dagpenger)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram)
     }
 
     @Test

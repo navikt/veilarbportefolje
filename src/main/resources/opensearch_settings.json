@@ -287,6 +287,9 @@
       "aap_kelvin_tom_vedtaksdato": {
         "type": "date"
       },
+      "aap_kelvin_maksdato": {
+        "type": "date"
+      },
       "aap_kelvin_rettighetstype": {
         "type": "keyword"
       },
@@ -317,6 +320,22 @@
             "type": "date"
           },
           "datoStans": {
+            "type": "date"
+          }
+        }
+      },
+      "ungdomsprogram": {
+        "properties": {
+          "harForlengetPeriode": {
+            "type": "boolean"
+          },
+          "fraOgMed": {
+            "type": "date"
+          },
+          "tilOgMed": {
+            "type": "date"
+          },
+          "maksdato": {
             "type": "date"
           }
         }

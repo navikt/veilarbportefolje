@@ -44,7 +44,7 @@ public class OppfolgingRepositoryV2Test {
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
 
         assertThat(aktorIds.isEmpty()).isFalse();
-        assertThat(aktorIds.get(0)).isEqualTo(aktoerId);
+        assertThat(aktorIds.getFirst()).isEqualTo(aktoerId);
         assertThat(VeilederId.of(oppfolgingData.getVeilederId())).isEqualTo(veilederId);
     }
 

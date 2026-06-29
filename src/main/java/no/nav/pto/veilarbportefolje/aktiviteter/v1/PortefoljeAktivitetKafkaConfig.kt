@@ -44,7 +44,7 @@ class PortefoljeAktivitetKafkaConfig {
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to getRequiredProperty("KAFKA_BROKERS"),
             ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
             ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-            ConsumerConfig.MAX_POLL_RECORDS_CONFIG to 200,
+            ConsumerConfig.MAX_POLL_RECORDS_CONFIG to 400,
             CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to "SSL",
             SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG to getRequiredProperty("KAFKA_TRUSTSTORE_PATH"),
             SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to credstorePassword,

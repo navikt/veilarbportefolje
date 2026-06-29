@@ -25,7 +25,7 @@ class HendelseIntegrationTest(
     @Autowired private val opensearchService: OpensearchService,
     @Autowired private val hendelseService: HendelseService,
     @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val jdbcTemplate: JdbcTemplate
+    @Autowired private val jdbcTemplate: JdbcTemplate,
 ) : EndToEndTest() {
 
     @BeforeEach
