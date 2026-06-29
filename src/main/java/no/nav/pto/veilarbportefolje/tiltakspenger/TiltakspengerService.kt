@@ -106,7 +106,7 @@ class TiltakspengerService(
             }
         }
 
-        tiltakspengerRespository.upsertAap(personIdent, sisteTiltakspengerVedtak)
+        tiltakspengerRespository.upsertTiltakspenger(personIdent, sisteTiltakspengerVedtak)
     }
 
     fun slettTiltakspengerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {

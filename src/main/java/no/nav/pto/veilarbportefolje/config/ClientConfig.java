@@ -18,6 +18,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -82,6 +83,17 @@ public class ClientConfig {
         return new DagpengerClient(
                 environmentProperties.getDagpengerUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getDagpengerScope())
+        );
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new UngdomsprogramClient(
+                environmentProperties.getUngdomsprogramUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getUngdomsprogramScope())
         );
     }
 
