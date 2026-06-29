@@ -13,7 +13,7 @@ public class FeatureToggle {
     public static final String KAFKA_SISTE_14A_STOP = "veilarbportefolje.kafka_siste_14a_stop";
     public static final String KAFKA_PORTEFOLJE_AKTIVITET_V1_START = "veilarbportefolje.kafka_portefolje_aktivitet_v1_start";
     public static final String BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER = "veilarbportefolje.bruk_filter_for_brukerinnsyn_tilganger";
-    public static final String BRUK_KONTOR_FRA_AOKONTOR = "veilarbportefolje.bruk_kontor_fra_aokontor";
+    public static final String BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN = "veilarbportefolje.bruk_tiltaksaktivitet_fra_aktivitetsplan";
 
     public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -23,7 +23,7 @@ public class FeatureToggle {
         return defaultUnleash.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 
-    public static boolean brukKontorFraAoKontor(DefaultUnleash defaultUnleash) {
-        return defaultUnleash.isEnabled(FeatureToggle.BRUK_KONTOR_FRA_AOKONTOR);
+    public static boolean brukTiltaksaktivitetFraAktivitetsplan(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN);
     }
 }

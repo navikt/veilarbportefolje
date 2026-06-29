@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.json.JsonUtils;
-import tools.jackson.core.type.TypeReference;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
@@ -41,8 +40,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.core.type.TypeReference;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;

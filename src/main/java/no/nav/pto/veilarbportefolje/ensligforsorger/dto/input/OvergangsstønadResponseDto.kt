@@ -1,7 +1,9 @@
-package no.nav.pto.veilarbportefolje.ensligforsorger.dto.input;
+package no.nav.pto.veilarbportefolje.ensligforsorger.dto.input
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype
 import java.time.LocalDate
 
 data class OvergangsstønadBarn @JsonCreator constructor(

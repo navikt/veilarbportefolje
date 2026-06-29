@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -12,6 +13,7 @@ import no.nav.pto.veilarbportefolje.arenapakafka.TiltakStatuser;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.postgres.utils.TiltakaktivitetEntity;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -34,6 +36,7 @@ public class TiltakService {
     private final AktorClient aktorClient;
     private final ArenaHendelseRepository arenaHendelseRepository;
     private final OpensearchIndexer opensearchIndexer;
+    private final DefaultUnleash defaultUnleash;
 
     private final Cache<EnhetId, EnhetTiltak> enhetTiltakCachePostgres = Caffeine.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
@@ -82,7 +85,10 @@ public class TiltakService {
         }
 
         arenaHendelseRepository.upsertAktivitetHendelse(innhold.getAktivitetid(), innhold.getHendelseId());
-        opensearchIndexer.indekser(aktorId);
+
+        if(!FeatureToggle.brukTiltaksaktivitetFraAktivitetsplan(defaultUnleash)) {
+            opensearchIndexer.indekser(aktorId);
+        }
     }
 
     /*
