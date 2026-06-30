@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -45,6 +46,7 @@ class AdminController(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val opensearchAdminService: OpensearchAdminService,
     private val pdlService: PdlService,
+    private val pdlIdentRepository: PdlIdentRepository,
     private val ensligForsorgerService: EnsligeForsorgereService,
     private val aapService: AapService,
     private val oppfolgingClient: OppfolgingClient
@@ -142,8 +144,20 @@ class AdminController(
         return "Ok"
     }
 
-    // DATA FETCHING JOBBER
+    // SJEKK OM VI HAR BERØRTE AKTØRIDER I TILFELLER AV MERGE/SPLIT
+    @PostMapping("/aktoridSjekk")
+    @Operation(
+        summary = "Sjekk om vi har en aktørid i bruker_ident tabellen",
+        description = "Sjekker om vi har aktørider i bruker_ident våre." +
+                "Dette er i tilfeller ved merge/split og for å sjekke om vi er berørt."
+    )
+    fun sjekkOmViHarAktorId(@RequestBody adminAktorIdRequest: AdminAktorIdRequest): Boolean {
+        sjekkTilgangTilAdmin()
+        val responsPortefolje = pdlIdentRepository.hentPerson(adminAktorIdRequest.aktorId.get())
+        return !responsPortefolje.isNullOrEmpty()
+    }
 
+    // DATA FETCHING JOBBER - BATCH
     @PostMapping("/pdl/lastInnDataFraPdl")
     @Operation(
         summary = "Last inn PDL-data",
@@ -215,7 +229,8 @@ class AdminController(
     ): String {
         sjekkTilgangTilAdmin()
         val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleBrukerUnderOppfolgingMedTildeltVeileder()
-        val brukereUnderOppfolging = if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
+        val brukereUnderOppfolging =
+            if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
         log.info("Tilordningsdato : prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
         val antall = AtomicInteger(0)
 
@@ -255,6 +270,7 @@ class AdminController(
         return "Innlastning av tilordningsdato for veileder har startet"
     }
 
+    // DATA FETCHING JOBBER - FOR EN ENKELTBRUKER
     @GetMapping("hentData/hentDataForBruker/muligeValg")
     @Operation(
         summary = "Henter mulige valg for datahenting",
