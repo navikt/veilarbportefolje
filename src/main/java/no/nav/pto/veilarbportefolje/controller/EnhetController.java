@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltakskodeMapping;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -118,11 +119,11 @@ public class EnhetController {
 
     @GetMapping("/{enhet}/tiltakstyper")
     @Operation(summary = "Hent tiltakstyper for enhet", description = "Henter alle tiltakstyper for enheten hvor minst én bruker er tilknyttet tiltaket.")
-    public EnhetTiltak hentTiltakstyperForBrukerePaaEnhet(@PathVariable("enhet") String enhet) {
+    public TiltakskodeMapping hentTiltakstyperForEnhet(@PathVariable String enhet) {
         ValideringsRegler.sjekkEnhet(enhet);
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
-        return tiltaksaktivitetService.finnTiltakstyperBrukerDeltarPaa(EnhetId.of(enhet));
+        return tiltaksaktivitetService.hentTiltakstyper(EnhetId.of(enhet));
     }
 
     @GetMapping("/{enhet}/foedeland")
