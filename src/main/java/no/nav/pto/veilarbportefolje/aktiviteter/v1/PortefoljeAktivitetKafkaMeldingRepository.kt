@@ -38,7 +38,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         val endeligeAktiviteterEkskludertTiltak = beholdSisteMeldingPerAktivitet(aktiviteter).filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
 
         val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
-        val antallTiltaksAktiviteterBehandlet = behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter)
+        val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
         val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
         val aktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filterNot { it.historisk }
@@ -56,7 +56,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         )
     }
 
-    fun behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
+    fun behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
         val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
         val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk }
 
@@ -65,7 +65,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
         val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
 
-        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN) && tiltaksaktiviteter.isNotEmpty()) {
+        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
             if (antallTiltaksAktiviteterOppdatert == 1) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
             } else if (antallTiltaksAktiviteterSlettet == 1) {

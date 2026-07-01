@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.Decision;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
@@ -53,7 +54,7 @@ public class EnhetControllerTest {
                 mock(AzureAdMachineToMachineTokenClient.class),
                 poaoTilgangWrapper
         );
-        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class));
+        enhetController = new EnhetController(opensearchService, authService, mock(TiltakService.class), mock(PersonOpprinnelseService.class), mock(BostedService.class), mock(TiltaksaktivitetService.class));
     }
 
     @Test
