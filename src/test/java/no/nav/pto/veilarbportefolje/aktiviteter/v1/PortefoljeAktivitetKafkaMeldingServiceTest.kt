@@ -20,7 +20,7 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
         )
 
         `when`(repository.behandleAktivitetsKafkaMeldinger(listOf(expectedEntity))).thenReturn(
-            PortefoljeAktivitetBatchResult(mottatte = 1, dedupliserte = 0, prosesserte = 1, ignorert = 0),
+            PortefoljeAktivitetBatchResult(mottatte = 1, dupliserte = 0, prosesserte = 1, ignorert = 0),
         )
 
         service.behandleKafkaRecords(listOf(record))
@@ -50,7 +50,7 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
         )
 
         `when`(repository.behandleAktivitetsKafkaMeldinger(expectedEntities)).thenReturn(
-            PortefoljeAktivitetBatchResult(mottatte = 2, dedupliserte = 0, prosesserte = 2, ignorert = 0),
+            PortefoljeAktivitetBatchResult(mottatte = 2, dupliserte = 0, prosesserte = 2, ignorert = 0),
         )
 
         service.behandleKafkaRecords(listOf(record1, record2))
