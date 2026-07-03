@@ -12,8 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class TiltaksAktivitetServiceTest {
-    val brukertiltakRepository: BrukertiltakRepository = mock(BrukertiltakRepository::class.java)
-    val tiltaksaktivitetService = TiltaksaktivitetService(brukertiltakRepository)
+    val tiltaksaktivitetRepository: TiltaksaktivitetRepository = mock(TiltaksaktivitetRepository::class.java)
+    val tiltaksaktivitetService = TiltaksaktivitetService(tiltaksaktivitetRepository)
 
     @Test
     fun `skal hente tiltakstyper for enhet`() {
@@ -24,10 +24,10 @@ class TiltaksAktivitetServiceTest {
                 "TILTAK2" to "Tiltak 2"
             )
         )
-        `when`(brukertiltakRepository.hentTiltakstyperForEnhet(enhetId)).thenReturn(expectedTiltakskodeMapping)
+        `when`(tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)).thenReturn(expectedTiltakskodeMapping)
         val result = tiltaksaktivitetService.hentTiltakstyper(enhetId)
 
-        verify(brukertiltakRepository).hentTiltakstyperForEnhet(enhetId)
+        verify(tiltaksaktivitetRepository).hentTiltakstyperForEnhet(enhetId)
 
         assertEquals(expectedTiltakskodeMapping, result)
         assertThat(result.tiltak).hasSize(2)

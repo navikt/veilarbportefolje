@@ -25,7 +25,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.TABLE_
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class TiltaksaktivitetRepositoryTest (
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
-    @param:Autowired private val brukertiltakRepository: BrukertiltakRepository,
+    @param:Autowired private val tiltaksaktivitetRepository: TiltaksaktivitetRepository,
     @param:Autowired private val portefoljeAktivitetKafkaMeldingRepository: PortefoljeAktivitetKafkaMeldingRepository
 ){
     private lateinit var jdbcNameParameter: NamedParameterJdbcTemplate
@@ -53,7 +53,6 @@ class TiltaksaktivitetRepositoryTest (
         jdbcTemplate.execute("""INSERT INTO $AO_KONTOR_TABLE ($IDENT, $AKTORID, $KONTOR_ID) VALUES('${fnr.get()}', '${aktorid.get()}', '1234')""")
         jdbcTemplate.execute("""INSERT INTO $ARENA_OPPFOLGINGSBRUKER_TABLE ($FODSELSNR, $NAV_KONTOR) VALUES('${fnr.get()}', '1234')""")
 
-       // jdbcTemplate.execute("""INSERT INTO $KAFKA_AKTIVITET_MELDING_TABLE ($, $VERDI) VALUES('TILTAK1', 'Tiltak 1')""")
         val aktivitetEntity = aktivitetEntity(aktivitetId = "aktivitetId-1", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK1")
         val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitetId-2", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK2")
         val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitetId-3", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK3")
@@ -68,7 +67,7 @@ class TiltaksaktivitetRepositoryTest (
     fun `Tiltakstype returneres når tiltakskode eksisterer i tiltakskodeverket-tabellen`() {
         val enhetId = EnhetId("1234")
 
-        val tiltakskodeMapping = brukertiltakRepository.hentTiltakstyperForEnhet(enhetId)
+        val tiltakskodeMapping = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
 
         assertThat(tiltakskodeMapping.tiltak).hasSize(2)
         assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK1")).isTrue
@@ -82,7 +81,7 @@ class TiltaksaktivitetRepositoryTest (
     fun `Tiltakstype returneres ikke når tiltakskode ikke eksisterer i tiltakskodeverket-tabellen`() {
         val enhetId = EnhetId("1234")
 
-        val tiltakskodeMapping = brukertiltakRepository.hentTiltakstyperForEnhet(enhetId)
+        val tiltakskodeMapping = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
 
         assertThat(tiltakskodeMapping.tiltak).hasSize(2)
         assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK1")).isTrue
@@ -99,7 +98,7 @@ class TiltaksaktivitetRepositoryTest (
     fun `Tiltakstype returneres ikke for inaktive tiltaksaktiviteter`() {
         val enhetId = EnhetId("1234")
 
-        val tiltakskodeMapping = brukertiltakRepository.hentTiltakstyperForEnhet(enhetId)
+        val tiltakskodeMapping = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
 
         assertThat(tiltakskodeMapping.tiltak).hasSize(2)
         assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK1")).isTrue

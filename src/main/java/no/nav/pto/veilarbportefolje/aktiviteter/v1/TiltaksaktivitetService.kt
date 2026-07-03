@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service
 @Service
 @Component
 class TiltaksaktivitetService(
-    val brukertiltakRepository: BrukertiltakRepository,
+    val tiltaksaktivitetRepository: TiltaksaktivitetRepository,
 ) {
     fun hentTiltakstyper(
         enhetId: EnhetId,
     ): TiltakskodeMapping {
-        return brukertiltakRepository.hentTiltakstyperForEnhet(enhetId)
+        return tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
     }
 }

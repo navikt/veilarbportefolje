@@ -15,7 +15,7 @@ import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.v1.BrukertiltakRepository;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.PortefoljeAktivitetKafkaMeldingRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
@@ -149,7 +149,7 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV3.class,
         TiltakService.class,
-        BrukertiltakRepository.class,
+        TiltaksaktivitetRepository.class,
         PortefoljeAktivitetKafkaMeldingRepository.class,
         PostgresOpensearchMapper.class,
         AktivitetOpensearchService.class,

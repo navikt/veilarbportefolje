@@ -21,7 +21,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDI
 @Slf4j
 @Repository
 @Component
-class BrukertiltakRepository(
+class TiltaksaktivitetRepository(
     private val jdbc: NamedParameterJdbcTemplate
 ) {
     fun hentTiltakstyperForEnhet(
