@@ -125,6 +125,15 @@ public class PostgresTable {
 
     }
 
+    // AKTIVE_IDENTER
+    public static final class AKTIVE_IDENTER {
+        private AKTIVE_IDENTER() {
+        }
+        public static final String TABLE_NAME = "AKTIVE_IDENTER";
+        public static final String AKTORID = "AKTORID";
+        public static final String FNR = "FNR";
+    }
+
     public static final class OPPFOLGING_DATA {
         private OPPFOLGING_DATA() { /* no-op */ }
 

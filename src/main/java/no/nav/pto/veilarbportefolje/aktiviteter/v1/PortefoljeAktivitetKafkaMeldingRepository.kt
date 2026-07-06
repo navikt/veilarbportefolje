@@ -35,10 +35,10 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val endeligeAktiviteterEkskludertTiltak = beholdSisteMeldingPerAktivitet(aktiviteter).filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val endeligeAktiviteterEkskludertTiltak = endeligeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
 
         val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
-        val antallTiltaksAktiviteterBehandlet = behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter)
+        val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
         val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
         val aktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filterNot { it.historisk }
@@ -50,13 +50,13 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
         return PortefoljeAktivitetBatchResult(
             mottatte = aktiviteter.size,
-            dedupliserte = aktiviteter.size - endeligeAktiviteter.size,
+            dupliserte = aktiviteter.size - endeligeAktiviteter.size,
             prosesserte = antallMeldingerBehandlet,
             ignorert = endeligeAktiviteter.size - antallMeldingerBehandlet,
         )
     }
 
-    fun behandleTiltakaktivitetsKafkaMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
+    fun behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
         val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
         val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk }
 
@@ -65,7 +65,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
         val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
 
-        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN) && tiltaksaktiviteter.isNotEmpty()) {
+        if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
             if (antallTiltaksAktiviteterOppdatert == 1) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
             } else if (antallTiltaksAktiviteterSlettet == 1) {
@@ -164,12 +164,12 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             return
         }
         opensearchIndexer.indekserBolk(aktiviteter.map { AktorId.of(it.aktorId) })
-        secureLog.info("IndekserBolk: Indekserte {} aktivitetdmeldingne", aktiviteter.size)
+        secureLog.info("IndekserBolk: Indekserte {} aktivitetdmeldingne {}", aktiviteter.size)
     }
 
     private fun indekserAktivitet(aktorId: AktorId) {
         opensearchIndexer.indekser(aktorId)
-        secureLog.info("Indekserte en aktivitetdmelding med aktorId", aktorId)
+        secureLog.info("Indekserte en aktivitetdmelding med aktorId {}", aktorId)
     }
 
     private fun beholdSisteMeldingPerAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): List<KafkaAktivitetMeldingEntity> {
@@ -213,7 +213,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
 data class PortefoljeAktivitetBatchResult(
     val mottatte: Int,
-    val dedupliserte: Int,
+    val dupliserte: Int,
     val prosesserte: Int,
     val ignorert: Int,
 )

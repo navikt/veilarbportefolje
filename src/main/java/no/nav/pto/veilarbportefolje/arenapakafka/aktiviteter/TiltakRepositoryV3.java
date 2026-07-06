@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
-import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -61,7 +59,7 @@ public class TiltakRepositoryV3 {
                         (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version, status) VALUES (?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (aktivitetid) DO UPDATE SET (aktoerid, tiltakskode, fradato, tildato, version, status)
                         = (excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version, excluded.status)
-                        """,
+                   """,
                 tiltakaktivitet.getAktivitetId(), aktorId.get(), tiltakaktivitet.getTiltakskode(), fraDato, tilDato, tiltakaktivitet.getVersion(), tiltakaktivitet.getStatus()
         );
     }
@@ -171,12 +169,6 @@ public class TiltakRepositoryV3 {
         AND AVTALT = :avtalt::boolean
         AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
         """;
-
-        ParsedSql parsed = NamedParameterUtils.parseSqlStatement(sql);
-        String executableSql = NamedParameterUtils.substituteNamedParameters(parsed, params);
-        Object[] paramArray = NamedParameterUtils.buildValueArray(parsed, params, null);
-        log.debug("Prepared SQL: {}", executableSql);
-        log.debug("Params array: {}", Arrays.toString(paramArray));
 
         namedDb.query(sql,
                 params,

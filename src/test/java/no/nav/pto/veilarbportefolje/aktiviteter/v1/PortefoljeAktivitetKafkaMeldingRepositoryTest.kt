@@ -189,7 +189,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         val aktivitet2 = hentRad("aktivitet-2")!!
 
         assertThat(resultat.mottatte).isEqualTo(3)
-        assertThat(resultat.dedupliserte).isEqualTo(1)
+        assertThat(resultat.dupliserte).isEqualTo(1)
         assertThat(resultat.prosesserte).isEqualTo(2)
         assertThat(resultat.ignorert).isZero()
         assertThat(aktivitet1["version"]).isEqualTo(2L)
@@ -212,7 +212,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         )
 
         assertThat(resultat.mottatte).isEqualTo(5)
-        assertThat(resultat.dedupliserte).isEqualTo(2)
+        assertThat(resultat.dupliserte).isEqualTo(2)
         assertThat(resultat.prosesserte).isEqualTo(3)
 
         val a1 = hentRad("a1")!!
@@ -278,7 +278,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         )
 
         assertThat(resultat.mottatte).isEqualTo(2)
-        assertThat(resultat.dedupliserte).isEqualTo(1)
+        assertThat(resultat.dupliserte).isEqualTo(1)
         assertThat(resultat.prosesserte).isEqualTo(1)
         assertThat(hentRad("aktivitet-1")).isNull()
     }
