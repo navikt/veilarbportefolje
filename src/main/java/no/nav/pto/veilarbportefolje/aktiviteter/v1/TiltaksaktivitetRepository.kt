@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.EnhetId
+import no.nav.pto.veilarbportefolje.admin.AdminController
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.AKTORID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.FNR
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.IDENT
@@ -24,6 +25,8 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDI
 class TiltaksaktivitetRepository(
     private val jdbc: NamedParameterJdbcTemplate
 ) {
+    private val log = org.slf4j.LoggerFactory.getLogger(TiltaksaktivitetRepository::class.java)
+
     fun hentTiltakstyperForEnhet(
         enhetId: EnhetId,
     ): TiltakskodeMapping {
@@ -59,6 +62,7 @@ class TiltaksaktivitetRepository(
                 null
         }.filterNotNull().toMap()
 
+        log.info("Hentet ${tiltak.size} tiltakskoder for enhet $enhetId og de tiltakskoder er ${tiltak.toMutableMap().keys}")
         return TiltakskodeMapping(tiltak = tiltak.toMutableMap())
     }
 }
