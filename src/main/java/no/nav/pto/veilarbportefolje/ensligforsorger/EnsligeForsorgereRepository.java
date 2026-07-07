@@ -12,12 +12,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
@@ -169,23 +166,7 @@ public class EnsligeForsorgereRepository {
 
     private Integer hentStonadstypeFraDB(String stonadTypeConst) {
         String sql = "SELECT ID FROM enslige_forsorgere_stonad_type WHERE STONAD_TYPE = :stonadType::varchar";
-        Optional<Integer> stonadTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class));
-
-        return stonadTypeIdOptional.orElseGet(() -> lagreStonadstype(stonadTypeConst));
-    }
-
-    public Integer lagreStonadstype(String stonadTypeConst) {
-        try {
-            GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-            db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_stonad_type(stonad_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1, stonadTypeConst);
-                return preparedStatement;
-            }, generatedKeyHolder);
-            return generatedKeyHolder.getKey().intValue();
-        } catch (Exception e) {
-            throw new RuntimeException("Kan ikke lagre stonadstype " + e);
-        }
+        return namedDb.queryForObject(sql, new MapSqlParameterSource("stonadType", stonadTypeConst), Integer.class);
     }
 
     private Integer hentVedtakresultat(String vedtakResultatConst) {
@@ -194,23 +175,7 @@ public class EnsligeForsorgereRepository {
 
     private Integer hentVedtakresultatFraDB(String vedtakResultatConst) {
         String sql = "SELECT ID FROM enslige_forsorgere_vedtaksresultat_type WHERE vedtaksresultat_type = :vedtaksresultat_type::varchar";
-        Optional<Integer> vedtakResultatTypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("vedtaksresultat_type", vedtakResultatConst), Integer.class));
-
-        return vedtakResultatTypeIdOptional.orElseGet(() -> lagreVedtakresultat(vedtakResultatConst));
-    }
-
-    public Integer lagreVedtakresultat(String vedtakResultatTypeConst) {
-        try {
-            GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-            db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_vedtaksresultat_type(vedtaksresultat_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1, vedtakResultatTypeConst);
-                return preparedStatement;
-            }, generatedKeyHolder);
-            return generatedKeyHolder.getKey().intValue();
-        } catch (Exception e) {
-            throw new RuntimeException("Kan ikke lagre vedtakresultat " + e);
-        }
+        return namedDb.queryForObject(sql, new MapSqlParameterSource("vedtaksresultat_type", vedtakResultatConst), Integer.class);
     }
 
     private Integer hentPeriodetype(String periodeTypeConst) {
@@ -219,23 +184,7 @@ public class EnsligeForsorgereRepository {
 
     private Integer hentPeriodetypeFraDB(String periodeTypeConst) {
         String sql = "SELECT ID FROM enslige_forsorgere_vedtaksperiode_type WHERE periode_type = :periode_type::varchar";
-        Optional<Integer> vedtakPeriodetypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("periode_type", periodeTypeConst), Integer.class));
-
-        return vedtakPeriodetypeIdOptional.orElseGet(() -> lagreVedtakperiodeType(periodeTypeConst));
-    }
-
-    public Integer lagreVedtakperiodeType(String periodeTypeConst) {
-        try {
-            GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-            db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_vedtaksperiode_type(periode_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1, periodeTypeConst);
-                return preparedStatement;
-            }, generatedKeyHolder);
-            return generatedKeyHolder.getKey().intValue();
-        } catch (Exception e) {
-            throw new RuntimeException("Kan ikke lagre vedtak periodetype " + e);
-        }
+        return namedDb.queryForObject(sql, new MapSqlParameterSource("periode_type", periodeTypeConst), Integer.class);
     }
 
     private Integer hentVedtakAktivitetstype(String aktivitetsType) {
@@ -244,25 +193,8 @@ public class EnsligeForsorgereRepository {
 
     private Integer hentVedtakAktivitetstypeFraDB(String aktivitetsType) {
         String sql = "SELECT ID FROM enslige_forsorgere_aktivitet_type WHERE aktivitet_type = :aktivitet_type::varchar";
-        Optional<Integer> vedtakAktivitetstypeIdOptional = Optional.of(namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class));
-
-        return vedtakAktivitetstypeIdOptional.orElseGet(() -> lagreVedtakAktivitetstype(aktivitetsType));
+        return namedDb.queryForObject(sql, new MapSqlParameterSource("aktivitet_type", aktivitetsType), Integer.class);
     }
-
-    public Integer lagreVedtakAktivitetstype(String aktivitetsType) {
-        try {
-            GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-            db.update(conn -> {
-                PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO enslige_forsorgere_aktivitet_type(aktivitet_type) VALUES (?) RETURNING id", Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1, aktivitetsType);
-                return preparedStatement;
-            }, generatedKeyHolder);
-            return generatedKeyHolder.getKey().intValue();
-        } catch (Exception e) {
-            throw new RuntimeException("Kan ikke lagre vedtak aktivitetstype " + e);
-        }
-    }
-
 
     public Optional<EnsligeForsorgerOvergangsstønadTiltak> hentOvergangsstønadForEnsligeForsorger(String personIdent, boolean inkludereKommendeVedtakPeriode) {
         String vedtakPeriode = "now() BETWEEN efp.fra_dato and efp.til_dato";
@@ -285,7 +217,7 @@ public class EnsligeForsorgereRepository {
                   AND %s
                   ORDER BY efp.fra_dato ASC
                   LIMIT 1;
-                 """.formatted(vedtakPeriode);
+                """.formatted(vedtakPeriode);
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdent)
                 .stream().map(this::mapTilTiltak)
@@ -314,7 +246,7 @@ public class EnsligeForsorgereRepository {
                   AND ef.personIdent = ANY (?::varchar[])
                   AND %s
                   ORDER BY efp.fra_dato ASC
-                 """.formatted(vedtakPeriode);
+                """.formatted(vedtakPeriode);
 
         return dbReadOnly.queryForList(sql, Stønadstype.OVERGANGSSTØNAD.toString(), Vedtaksresultat.INNVILGET.toString(), personIdenterStr)
                 .stream().map(this::mapTilTiltak)
