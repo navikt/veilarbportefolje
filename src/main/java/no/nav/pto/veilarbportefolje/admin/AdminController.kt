@@ -317,6 +317,8 @@ class AdminController(
         }
     }
 
+    fun hentOpplysningMetadataForOppfolgingsbruker()
+
     private fun hentOvergangsstønadData(aktorId: AktorId) {
         secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", aktorId)
         ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
