@@ -11,19 +11,28 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerResponse
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg.Companion.defaultFiltervalg
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
+import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import org.opensearch.search.builder.SearchSourceBuilder
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -49,12 +58,14 @@ class AdminController(
     private val pdlIdentRepository: PdlIdentRepository,
     private val ensligForsorgerService: EnsligeForsorgereService,
     private val aapService: AapService,
-    private val oppfolgingClient: OppfolgingClient
+    private val oppfolgingClient: OppfolgingClient,
+    private val skjermingRepository: SkjermingRepository,
+    private val opensearchService: OpensearchService
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
     ).toString()
-    private val log = org.slf4j.LoggerFactory.getLogger(AdminController::class.java)
+    private val log = LoggerFactory.getLogger(AdminController::class.java)
 
     // INDEKSERINGSJOBBER
     @Operation(
@@ -318,7 +329,12 @@ class AdminController(
     }
 
     @PostMapping("/opplysning-metadata")
-    fun hentOpplysningMetadataForOppfolgingsbruker(@RequestBody request: AdminIdRequest): ResponseEntity<Any> {
+    fun hentOpplysningMetadataForOppfolgingsbruker(
+        @RequestBody request: AdminIdRequest,
+        @RequestParam opplysningstype: Opplysningstype
+    ): ResponseEntity<OpplysningMetadata> {
+        sjekkTilgangTilAdmin()
+
         val identer: Identer = when (request) {
             is AdminAktorIdRequest -> Identer(
                 aktorId = request.aktorId,
@@ -331,7 +347,53 @@ class AdminController(
             )
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build()
+        if (!oppfolgingRepositoryV2.erUnderOppfolgingOgErAktivIdent(identer.aktorId)) {
+            return ResponseEntity.notFound().build()
+        }
+
+        return when (opplysningstype) {
+            Opplysningstype.SKJERMING -> SkjermingOpplysningMetadata(
+                databaseSupplier = {
+                    skjermingRepository.hentSkjermingData(identer.fnr)?.map {
+                        SkjermingOpplysningMetadata.Database(
+                            it.isEr_skjermet,
+                            it.fnr,
+                            it.skjermet_fra,
+                            it.skjermet_til
+                        )
+                    }?.orElse(null)
+                },
+                opensearchSupplier = {
+                    opensearchService.search(
+                        SearchSourceBuilder().apply {
+                            from(0)
+                            size(1)
+                        }, BRUKERINDEKS_ALIAS, OpensearchResponse::class.java
+                    )?.hits?.hits?.first()?._source?.let {
+                        SkjermingOpplysningMetadata.OpenSearch(
+                            it.egen_ansatt,
+                            it.skjermet_til
+                        )
+                    }
+                },
+                apiSupplier = {
+                    opensearchService.search(
+                        SearchSourceBuilder().apply {
+                            from(0)
+                            size(1)
+                        }, BRUKERINDEKS_ALIAS, OpensearchResponse::class.java
+                    )?.hits?.hits?.first()?._source?.let {
+                        toPortefoljebrukerFrontendModell(
+                            it,
+                            false,
+                            defaultFiltervalg()
+                        )
+                    }?.let {
+                        SkjermingOpplysningMetadata.API(it.egenAnsatt, it.skjermetTil)
+                    }
+                }
+            )
+        }.let { ResponseEntity.ok(it) }
     }
 
     private fun hentOvergangsstønadData(aktorId: AktorId) {

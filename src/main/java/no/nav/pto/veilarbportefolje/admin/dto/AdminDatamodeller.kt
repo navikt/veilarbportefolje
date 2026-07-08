@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import java.sql.Timestamp
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 enum class AdminDataType(val displayName: String) {
     PDL_DATA("Persondata (PDL)"),
@@ -37,3 +40,40 @@ data class AdminFnrRequest(
 ) : AdminIdRequest
 
 data class Identer(val fnr: Fnr, val aktorId: AktorId)
+
+enum class Opplysningstype {
+    SKJERMING
+}
+
+sealed interface OpplysningMetadata {
+    val database: Any?
+    val opensearch: Any?
+    val api: Any?
+}
+
+data class SkjermingOpplysningMetadata(
+    private val databaseSupplier: () -> Database?,
+    private val opensearchSupplier: () -> OpenSearch?,
+    private val apiSupplier: () -> API?
+) : OpplysningMetadata {
+    override val database: Database? by lazy { databaseSupplier() }
+    override val opensearch: OpenSearch? by lazy { opensearchSupplier() }
+    override val api: API? by lazy { apiSupplier() }
+
+    data class Database(
+        val erSkjermet: Boolean?,
+        val fodselsnummer: Fnr?,
+        val skjermetFra: Timestamp?,
+        val skjermetTil: Timestamp?
+    )
+
+    data class OpenSearch(
+        val egenAnsatt: Boolean,
+        val skjermetTil: LocalDateTime?
+    )
+
+    data class API(
+        val egenAnsatt: Boolean,
+        val skjermetTil: LocalDate?,
+    )
+}
