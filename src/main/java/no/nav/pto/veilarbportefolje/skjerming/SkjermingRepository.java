@@ -18,6 +18,7 @@ import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.FNR;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.SKJERMET_FRA;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.NOM_SKJERMING.SKJERMET_TIL;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 
 @Slf4j
 @Service
@@ -44,11 +45,11 @@ public class SkjermingRepository {
     }
 
     public Optional<SkjermingData> hentSkjermingData(Fnr fnr) {
-        return Optional.ofNullable(db.queryForObject("""
+        return Optional.ofNullable(queryForObjectOrNull(() -> db.queryForObject("""
                         SELECT ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL FROM NOM_SKJERMING WHERE FODSELSNR = ?
                         """,
                 (rs, rowNum) -> new SkjermingData(fnr, rs.getBoolean(ER_SKJERMET), rs.getTimestamp(SKJERMET_FRA), rs.getTimestamp(SKJERMET_TIL)), fnr.get())
-        );
+        ));
     }
 
 
