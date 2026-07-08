@@ -317,7 +317,22 @@ class AdminController(
         }
     }
 
-    fun hentOpplysningMetadataForOppfolgingsbruker()
+    @PostMapping("/opplysning-metadata")
+    fun hentOpplysningMetadataForOppfolgingsbruker(@RequestBody request: AdminIdRequest): ResponseEntity<Any> {
+        val identer: Identer = when (request) {
+            is AdminAktorIdRequest -> Identer(
+                aktorId = request.aktorId,
+                fnr = pdlIdentRepository.hentFnrForAktivBruker(request.aktorId)
+            )
+
+            is AdminFnrRequest -> Identer(
+                fnr = request.fnr,
+                aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(request.fnr)
+            )
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build()
+    }
 
     private fun hentOvergangsstønadData(aktorId: AktorId) {
         secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", aktorId)
