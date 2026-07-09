@@ -487,7 +487,7 @@ class OpensearchSortQueryBuilder {
                     else if (doc.containsKey('$AAP_ORDINER_UTLOPSDATO') && !doc['$AAP_ORDINER_UTLOPSDATO'].empty) {
                         return doc['$AAP_ORDINER_UTLOPSDATO'].value.toInstant().toEpochMilli();
                     }
-                    else if (doc.containsKey('$AAP_MAXTID_UKE')) {
+                    else if (doc.containsKey('$AAP_MAXTID_UKE') && !doc['$AAP_MAXTID_UKE'].empty) {
                         // Legger til 01.01.2050 i millis for å sortere bak de som har dato
                         return 2524653462000.0 + doc['$AAP_MAXTID_UKE'].value;
                     }
