@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j
 import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
 import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.auth.AuthService
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.OppdaterVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler
 import org.springframework.web.bind.annotation.*
 
@@ -36,16 +37,27 @@ class VeiledergrupperController(
     }
 
     @PostMapping("/veiledergrupper/{enhetId}")
-    fun lagreVeilederGrupperForEnhet(
+    fun lagreNyVeiledergrupperForEnhet(
         @PathVariable enhetId: String,
         @RequestBody nyVeildergruppeRequest: NyVeiledergruppeRequest
     ): LagretVeiledergruppe {
         ValideringsRegler.sjekkEnhet(enhetId)
         authService.innloggetVeilederHarTilgangTilEnhet(enhetId)
         val lagretVeiledergruppe =
-            veiledergrupperService.lagreNyVeiledergrupperForEnhet(enhetId, nyVeildergruppeRequest)
+            veiledergrupperService.lagreNyVeiledergruppeForEnhet(enhetId, nyVeildergruppeRequest)
         return lagretVeiledergruppe
+    }
 
+    @PutMapping("/veiledergrupper/{enhetId}")
+    fun oppdaterLagretVeilederGruppeForEnhet(
+        @PathVariable enhetId: String,
+        @RequestBody oppdaterVeildergruppeRequest: OppdaterVeiledergruppeRequest
+    ): LagretVeiledergruppe {
+        ValideringsRegler.sjekkEnhet(enhetId)
+        authService.innloggetVeilederHarTilgangTilEnhet(enhetId)
+        val oppdatertVeiledergruppe =
+            veiledergrupperService.oppdaterVeiledergruppeForEnhet(enhetId, oppdaterVeildergruppeRequest)
+        return oppdatertVeiledergruppe
     }
 
 

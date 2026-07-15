@@ -1,8 +1,9 @@
 package no.nav.pto.veilarbportefolje.lagredefilter
 
+import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_VEILEDERGRUPPER.*
 import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
 import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
-import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_VEILEDERGRUPPER.*
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.OppdaterVeiledergruppeRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
@@ -63,6 +64,44 @@ class VeiledergrupperRepository(private val db: JdbcTemplate) {
             }
         ).first()
 
+    }
+
+    fun oppdaterVeiledergruppeForEnhet(
+        enhetId: String,
+        oppdaterVeiledergruppeRequest: OppdaterVeiledergruppeRequest
+    ): LagretVeiledergruppe {
+
+        val sql = """
+        UPDATE $TABLE_NAME
+        SET $FILTER_NAVN = ?,
+            $VEILEDER_IDENTER = ?,
+            $RAD_SIST_ENDRET = now()
+        WHERE $FILTER_ID = ? AND $ENHET_ID = ?
+        RETURNING $FILTER_ID, $FILTER_NAVN, $VEILEDER_IDENTER
+    """.trimIndent()
+
+        return db.query(
+            sql,
+            { ps: PreparedStatement ->
+                ps.setString(1, oppdaterVeiledergruppeRequest.filterNavn)
+                ps.setArray(
+                    2,
+                    ps.connection.createArrayOf("text", oppdaterVeiledergruppeRequest.veiledere.toTypedArray())
+                )
+                ps.setInt(3, oppdaterVeiledergruppeRequest.filterId)
+                ps.setString(4, enhetId)
+            },
+            { rs, _ ->
+                LagretVeiledergruppe(
+                    filterId = rs.getInt(FILTER_ID),
+                    filterNavn = rs.getString(FILTER_NAVN),
+                    veiledere = rs.getStringList(VEILEDER_IDENTER)
+                )
+            }
+        ).firstOrNull()
+            ?: throw NoSuchElementException(
+                "Fant ingen veiledergruppe med filterId=${oppdaterVeiledergruppeRequest.filterId} på enhet=$enhetId"
+            )
     }
 
     private fun ResultSet.getStringList(column: String): List<String> =
