@@ -1,11 +1,11 @@
-package no.nav.lagredefilter
+package no.nav.pto.veilarbportefolje.lagredefilter
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
-import no.nav.lagredefilter.domene.LagretVeiledergruppe
-import no.nav.lagredefilter.domene.NyVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler
 import org.springframework.web.bind.annotation.*

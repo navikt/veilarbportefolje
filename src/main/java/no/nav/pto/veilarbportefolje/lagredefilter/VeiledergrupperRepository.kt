@@ -1,7 +1,7 @@
-package no.nav.lagredefilter
+package no.nav.pto.veilarbportefolje.lagredefilter
 
-import no.nav.lagredefilter.domene.LagretVeiledergruppe
-import no.nav.lagredefilter.domene.NyVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
+import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_VEILEDERGRUPPER.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository

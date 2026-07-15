@@ -1,4 +1,4 @@
-package no.nav.lagredefilter.domene
+package no.nav.pto.veilarbportefolje.lagredefilter.domene
 
 data class NyVeiledergruppeRequest(
     val filterNavn: String,
