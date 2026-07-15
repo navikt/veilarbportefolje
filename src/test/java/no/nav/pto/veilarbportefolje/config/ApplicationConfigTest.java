@@ -15,8 +15,8 @@ import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
-import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.PortefoljeAktivitetKafkaMeldingRepository;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -44,6 +44,8 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
+import no.nav.pto.veilarbportefolje.lagredefilter.VeiledergrupperRepository;
+import no.nav.pto.veilarbportefolje.lagredefilter.VeiledergrupperService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
@@ -193,7 +195,9 @@ import static org.mockito.Mockito.when;
         DagpengerService.class,
         UngdomsprogramService.class,
         UngdomsprogramRepository.class,
-        OppfolgingsbrukerTestRepository.class
+        OppfolgingsbrukerTestRepository.class,
+        VeiledergrupperService.class,
+        VeiledergrupperRepository.class
 })
 public class ApplicationConfigTest {
 
