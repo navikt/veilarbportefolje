@@ -129,6 +129,7 @@ public class PostgresTable {
     public static final class AKTIVE_IDENTER {
         private AKTIVE_IDENTER() {
         }
+
         public static final String TABLE_NAME = "AKTIVE_IDENTER";
         public static final String AKTORID = "AKTORID";
         public static final String FNR = "FNR";
@@ -538,6 +539,18 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String HAR_FORLENGET_PERIODE = "HAR_FORLENGET_PERIODE";
         public static final String MAKSDATO = "MAKSDATO";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class LAGREDE_FILTER_VEILEDERGRUPPER {
+        private LAGREDE_FILTER_VEILEDERGRUPPER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "LAGREDE_FILTER_VEILEDERGRUPPER";
+        public static final String FILTER_ID = "FILTER_ID";
+        public static final String FILTER_NAVN = "FILTER_NAVN";
+        public static final String ENHET_ID = "ENHET_ID";
+        public static final String VEILEDER_IDENTER = "VEILEDER_IDENTER";
+        public static final String OPPRETTET = "OPPRETTET";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
