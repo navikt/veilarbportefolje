@@ -31,6 +31,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         veilederIdent: String,
         nyttFilterRequest: NyttFilterRequest
     ): LagretFilter {
+
         val sql = """
             INSERT INTO $TABLE_NAME (
                 $VEILEDER_IDENT,
@@ -105,6 +106,44 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         return hentFilterForVeileder(veilederIdent)
     }
 
+    fun eksistererFilterNavn(veilederIdent: String, filterNavn: String, ekskluderFilterId: Int? = null): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $VEILEDER_IDENT = ?
+                  AND $FILTER_NAVN = ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.queryForObject(
+            sql,
+            Boolean::class.java,
+            veilederIdent,
+            filterNavn,
+            ekskluderFilterId,
+            ekskluderFilterId
+        ) == true
+    }
+
+    fun eksistererFiltervalg(veilederIdent: String, filtervalg: Filtervalg, ekskluderFilterId: Int? = null): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $VEILEDER_IDENT = ?
+                  AND $AKTIVE_FILTER_VALG = ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.queryForObject(
+            sql,
+            Boolean::class.java,
+            veilederIdent,
+            filtervalg.toJsonb(),
+            ekskluderFilterId,
+            ekskluderFilterId
+        ) == true
+    }
+
     private fun ResultSet.toLagretFilter(): LagretFilter =
         LagretFilter(
             filterId = getInt(FILTER_ID),
@@ -120,4 +159,6 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             type = "jsonb"
             value = ekstraherAktiveFiltervalg(this@toJsonb).toString()
         }
+
+
 }

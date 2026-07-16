@@ -169,4 +169,118 @@ class VeiledergrupperRepositoryTest(
         assertThat(antallRaderSlettet).isEqualTo(0)
     }
 
+    @Test
+    fun `eksistererFilterNavn skal returnere true naar navn finnes for enhet`() {
+        val enhetId = "1234"
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Min gruppe", veiledere = listOf("v1"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererFilterNavn(enhetId, "Min gruppe")).isTrue()
+    }
+
+    @Test
+    fun `eksistererFilterNavn skal returnere false naar navn ikke finnes for enhet`() {
+        assertThat(veiledergrupperRepository.eksistererFilterNavn("1234", "Ukjent")).isFalse()
+    }
+
+    @Test
+    fun `eksistererFilterNavn skal ikke matche navn paa annen enhet`() {
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            "1111",
+            NyVeiledergruppeRequest(filterNavn = "Delt navn", veiledere = listOf("v1"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererFilterNavn("2222", "Delt navn")).isFalse()
+    }
+
+    @Test
+    fun `eksistererFilterNavn skal ekskludere angitt filterId`() {
+        val enhetId = "1234"
+        val lagret = veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Min gruppe", veiledere = listOf("v1"))
+        )
+
+        assertThat(
+            veiledergrupperRepository.eksistererFilterNavn(
+                enhetId,
+                "Min gruppe",
+                ekskluderFilterId = lagret.filterId
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal returnere true naar samme sett med veiledere finnes for enhet`() {
+        val enhetId = "1234"
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererVeiledere(enhetId, listOf("v1", "v2"))).isTrue()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal matche uavhengig av rekkefoelge`() {
+        val enhetId = "1234"
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2", "v3"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererVeiledere(enhetId, listOf("v3", "v1", "v2"))).isTrue()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal returnere false for ekte delmengde`() {
+        val enhetId = "1234"
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererVeiledere(enhetId, listOf("v1"))).isFalse()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal returnere false for ekte overmengde`() {
+        val enhetId = "1234"
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererVeiledere(enhetId, listOf("v1", "v2", "v3"))).isFalse()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal ikke matche identisk gruppe paa annen enhet`() {
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            "1111",
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2"))
+        )
+
+        assertThat(veiledergrupperRepository.eksistererVeiledere("2222", listOf("v1", "v2"))).isFalse()
+    }
+
+    @Test
+    fun `eksistererVeiledere skal ekskludere angitt filterId`() {
+        val enhetId = "1234"
+        val lagret = veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            enhetId,
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1", "v2"))
+        )
+
+        assertThat(
+            veiledergrupperRepository.eksistererVeiledere(
+                enhetId,
+                listOf("v1", "v2"),
+                ekskluderFilterId = lagret.filterId
+            )
+        ).isFalse()
+    }
+
 }

@@ -89,7 +89,8 @@ data class Filtervalg(
                 harYtelseTiltakspengerArenaFilter() ||
                 harYtelseDagpengerFilter() ||
                 harYtelseDagpengerArenaFilter() ||
-                harYtelseUngdomsprogramFilter()
+                harYtelseUngdomsprogramFilter() ||
+                harVisGeografiskBosted()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
         gjeldendeVedtak14a.isNotEmpty()
@@ -128,10 +129,13 @@ data class Filtervalg(
         ytelseDagpenger.isNotEmpty()
 
     fun harYtelseUngdomsprogramFilter(): Boolean =
-        !ytelseUngdomsprogram.isNullOrEmpty()
+        ytelseUngdomsprogram.isNotEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null
+
+    fun harVisGeografiskBosted(): Boolean =
+        visGeografiskBosted.isNotEmpty()
 
     fun harAktiviteterAvansert(): Boolean =
         aktiviteter.values.any {
