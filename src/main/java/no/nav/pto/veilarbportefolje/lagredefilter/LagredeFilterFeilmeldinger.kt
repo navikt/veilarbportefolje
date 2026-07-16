@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
+package no.nav.pto.veilarbportefolje.lagredefilter
 
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 

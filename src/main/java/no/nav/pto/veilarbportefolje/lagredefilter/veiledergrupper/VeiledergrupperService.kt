@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper
 
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.LagredeFilterFeilmeldinger
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.validerFilterNavn
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.validerUnikhet
+import no.nav.pto.veilarbportefolje.lagredefilter.LagredeFilterFeilmeldinger
+import no.nav.pto.veilarbportefolje.lagredefilter.validerFilterNavn
+import no.nav.pto.veilarbportefolje.lagredefilter.validerUnikhet
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.LagretVeiledergruppe
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.OppdaterVeiledergruppeRequest

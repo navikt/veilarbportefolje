@@ -47,7 +47,7 @@ class MineFilterController(
         return lagretFilter
     }
 
-    @PutMapping()
+    @PutMapping
     fun oppdaterLagretFilterForVeileder(
         @RequestBody oppdaterFilterRequest: OppdaterFilterRequest
     ): LagretFilter {

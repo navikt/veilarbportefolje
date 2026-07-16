@@ -5,6 +5,9 @@ import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.validerFilterNavn
+import no.nav.pto.veilarbportefolje.lagredefilter.validerFiltervalg
+import no.nav.pto.veilarbportefolje.lagredefilter.validerUnikhet
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
