@@ -1,13 +1,13 @@
-package no.nav.pto.veilarbportefolje.lagredefilter
+package no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.pto.veilarbportefolje.auth.AuthService
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.OppdaterVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.LagretVeiledergruppe
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.NyVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.OppdaterVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.util.ValideringsRegler
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @Slf4j
 @RestController
-@RequestMapping("/api/lagredefilter")
+@RequestMapping("/api/lagredefilter/veiledergruppe")
 @RequiredArgsConstructor
 @Tag(
     name = "Lagrede veiledergrupper",
@@ -31,7 +31,7 @@ class VeiledergrupperController(
     @Operation(
         summary = "Henter alle veiledergrupper på enheten",
     )
-    @GetMapping("/veiledergrupper/{enhetId}")
+    @GetMapping("/{enhetId}")
     fun hentVeiledergrupperForEnhet(@PathVariable enhetId: String): List<LagretVeiledergruppe> {
         ValideringsRegler.sjekkEnhet(enhetId)
         authService.innloggetVeilederHarTilgangTilEnhet(enhetId)
@@ -39,7 +39,7 @@ class VeiledergrupperController(
         return veilederGrupper
     }
 
-    @PostMapping("/veiledergrupper/{enhetId}")
+    @PostMapping("/{enhetId}")
     fun lagreNyVeiledergrupperForEnhet(
         @PathVariable enhetId: String,
         @RequestBody nyVeildergruppeRequest: NyVeiledergruppeRequest
@@ -51,7 +51,7 @@ class VeiledergrupperController(
         return lagretVeiledergruppe
     }
 
-    @PutMapping("/veiledergrupper/{enhetId}")
+    @PutMapping("/{enhetId}")
     fun oppdaterLagretVeilederGruppeForEnhet(
         @PathVariable enhetId: String,
         @RequestBody oppdaterVeildergruppeRequest: OppdaterVeiledergruppeRequest
@@ -63,7 +63,7 @@ class VeiledergrupperController(
         return oppdatertVeiledergruppe
     }
 
-    @DeleteMapping("/veiledergrupper/{enhetId}/filter/{filterId}")
+    @DeleteMapping("/{enhetId}/filter/{filterId}")
     fun slettVeiledergruppe(
         @PathVariable enhetId: String,
         @PathVariable filterId: Int
