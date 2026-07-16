@@ -554,4 +554,17 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class MINE_FILTER {
+        private MINE_FILTER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "MINE_FILTER";
+        public static final String FILTER_ID = "FILTER_ID";
+        public static final String FILTER_NAVN = "FILTER_NAVN";
+        public static final String VEILEDER_IDENT = "VEILEDER_IDENT";
+        public static final String AKTIVE_FILTER_VALG = "AKTIVE_FILTER_VALG";
+        public static final String SORT_ORDER = "SORT_ORDER";
+        public static final String OPPRETTET = "OPPRETTET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }

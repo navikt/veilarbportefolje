@@ -44,6 +44,8 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository;
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterService;
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.VeiledergrupperRepository;
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.VeiledergrupperService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -197,7 +199,9 @@ import static org.mockito.Mockito.when;
         UngdomsprogramRepository.class,
         OppfolgingsbrukerTestRepository.class,
         VeiledergrupperService.class,
-        VeiledergrupperRepository.class
+        VeiledergrupperRepository.class,
+        MineFilterService.class,
+        MineFilterRepository.class
 })
 public class ApplicationConfigTest {
 

@@ -46,7 +46,8 @@ data class Filtervalg(
     val ytelseTiltakspengerArena: List<YtelseTiltakspengerArena>,
     val ytelseDagpenger: List<YtelseDagpenger>,
     val ytelseDagpengerArena: List<YtelseDagpengerArena>,
-    val ytelseUngdomsprogram: List<YtelseUngdomsprogram>? = emptyList() // Nullable til frontenden er oppdatert
+    val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
+    val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
     fun harAktiveFilter(): Boolean =
