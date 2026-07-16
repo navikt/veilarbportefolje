@@ -109,13 +109,15 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         LagretFilter(
             filterId = getInt(FILTER_ID),
             filterNavn = getString(FILTER_NAVN),
-            filterValg = JsonUtils.fromJson(getString(AKTIVE_FILTER_VALG), Filtervalg::class.java),
+            filterValg = rekonstruerFiltervalgFraAktive(
+                JsonUtils.getMapper().readTree(getString(AKTIVE_FILTER_VALG))
+            ),
             sortOrder = getInt(SORT_ORDER),
         )
 
     private fun Filtervalg.toJsonb(): PGobject =
         PGobject().apply {
             type = "jsonb"
-            value = JsonUtils.toJson(this@toJsonb)
+            value = ekstraherAktiveFiltervalg(this@toJsonb).toString()
         }
 }
