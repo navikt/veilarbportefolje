@@ -37,7 +37,6 @@ class VeiledergrupperRepositoryTest(
         assertThat(lagretGruppe.veiledere).isEqualTo(listOf("veileder1", "veileder2"))
     }
 
-
     @Test
     fun `hente veiledergrupper for enhet skal hente alle rader fra enhet`() {
         val enhet1 = "1111"
@@ -144,6 +143,29 @@ class VeiledergrupperRepositoryTest(
                 )
             )
         }.isInstanceOf(NoSuchElementException::class.java)
+    }
+
+    @Test
+    fun `slette en veildergruppe for enhet skal fjerne filteret`() {
+        val veiledergruppeRequest = NyVeiledergruppeRequest(
+            filterNavn = "Test Gruppe",
+            veiledere = listOf("veileder1", "veileder2")
+        )
+
+        val lagretGruppe = veiledergrupperRepository.lagreNyVeiledergruppeForEnhet("1234", veiledergruppeRequest)
+        assertThat(lagretGruppe).isNotNull
+
+        val antallRaderSlettet = veiledergrupperRepository.slettVeiledergruppeForEnhet("1234", lagretGruppe.filterId)
+        assertThat(antallRaderSlettet).isEqualTo(1)
+
+        val lagretGrupperPåEnhet = veiledergrupperRepository.hentVeiledergrupperForEnhet("1234")
+        assertThat(lagretGrupperPåEnhet).isEmpty()
+    }
+
+    @Test
+    fun `slette en veildergruppe som ikke finnes skal returnere 0 for antall rader slettet`() {
+        val antallRaderSlettet = veiledergrupperRepository.slettVeiledergruppeForEnhet("1234", 112211)
+        assertThat(antallRaderSlettet).isEqualTo(0)
     }
 
 }

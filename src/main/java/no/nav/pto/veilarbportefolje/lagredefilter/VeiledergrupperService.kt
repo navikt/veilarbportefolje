@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 @Service
 class VeiledergrupperService(private val veiledergrupperRepository: VeiledergrupperRepository) {
 
-
     fun hentVeiledergrupperForEnhet(enhetId: String): List<LagretVeiledergruppe> {
         return veiledergrupperRepository.hentVeiledergrupperForEnhet(enhetId)
     }
@@ -25,5 +24,9 @@ class VeiledergrupperService(private val veiledergrupperRepository: Veiledergrup
         oppdaterVeildergruppeRequest: OppdaterVeiledergruppeRequest
     ): LagretVeiledergruppe {
         return veiledergrupperRepository.oppdaterVeiledergruppeForEnhet(enhetId, oppdaterVeildergruppeRequest)
+    }
+
+    fun slettVeiledergruppeForEnhet(enhetId: String, filterId: Int): Int {
+        return veiledergrupperRepository.slettVeiledergruppeForEnhet(enhetId, filterId)
     }
 }

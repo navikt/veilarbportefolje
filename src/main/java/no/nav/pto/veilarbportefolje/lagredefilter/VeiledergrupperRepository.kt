@@ -104,6 +104,19 @@ class VeiledergrupperRepository(private val db: JdbcTemplate) {
             )
     }
 
+    fun slettVeiledergruppeForEnhet(enhetId: String, filterId: Int): Int {
+        val sql = """
+            DELETE FROM $TABLE_NAME
+            WHERE $FILTER_ID = ? AND $ENHET_ID = ?
+        """.trimIndent()
+
+        val antallRaderSletta = db.update(sql, filterId, enhetId)
+        if (antallRaderSletta > 0) {
+            // todo - opprydning av veiledergruppene i "mine filter", se deactivateMineFilterWithDeletedVeilederGroup i veilarbfilter
+        }
+        return antallRaderSletta
+    }
+
     private fun ResultSet.getStringList(column: String): List<String> =
         (getArray(column).array as Array<*>).map { it as String }
 }
