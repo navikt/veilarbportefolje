@@ -76,7 +76,7 @@ class MineFilterController(
 
     @PostMapping("/lagresortering")
     fun lagreFilterSortering(
-        @RequestBody sortOrderRequest: SortOrderRequest
+        @RequestBody sortOrderRequest: List<SortOrderRequest>
     ): List<LagretFilter> {
         val veilederIdent = getInnloggetVeilederIdent()
 

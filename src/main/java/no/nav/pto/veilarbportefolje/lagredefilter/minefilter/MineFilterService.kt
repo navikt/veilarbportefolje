@@ -48,7 +48,7 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
         return mineFilterRepository.slettFilterForVeileder(veilederIdent, filterId)
     }
 
-    fun lagreSortering(veilederIdent: String, sortOrderRequest: SortOrderRequest): List<LagretFilter> {
+    fun lagreSortering(veilederIdent: String, sortOrderRequest: List<SortOrderRequest>): List<LagretFilter> {
         return mineFilterRepository.lagreSortering(veilederIdent, sortOrderRequest)
     }
 
