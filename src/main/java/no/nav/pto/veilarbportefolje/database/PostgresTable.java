@@ -563,6 +563,8 @@ public class PostgresTable {
         public static final String VEILEDER_IDENT = "VEILEDER_IDENT";
         public static final String AKTIVE_FILTER_VALG = "AKTIVE_FILTER_VALG";
         public static final String SORT_ORDER = "SORT_ORDER";
+        public static final String AKTIV = "AKTIV";
+        public static final String IKKE_AKTIV_BESKRIVELSE = "IKKE_AKTIV_BESKRIVELSE";
         public static final String OPPRETTET = "OPPRETTET";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }

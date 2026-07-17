@@ -42,7 +42,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
                 $RAD_SIST_ENDRET
             )
             VALUES (?, ?, ?, 0, now(), now())
-            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER
+            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER, $AKTIV, $IKKE_AKTIV_BESKRIVELSE
         """.trimIndent()
 
         return db.query(
@@ -66,7 +66,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
                 $AKTIVE_FILTER_VALG = ?,
                 $RAD_SIST_ENDRET = now()
             WHERE $FILTER_ID = ? AND $VEILEDER_IDENT = ?
-            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER
+            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER, $AKTIV, $IKKE_AKTIV_BESKRIVELSE
         """.trimIndent()
 
         return db.query(
@@ -152,6 +152,8 @@ class MineFilterRepository(private val db: JdbcTemplate) {
                 JsonUtils.getMapper().readTree(getString(AKTIVE_FILTER_VALG))
             ),
             sortOrder = getInt(SORT_ORDER),
+            aktiv = getBoolean(AKTIV),
+            ikkeAktivBeskrivelse = getString(IKKE_AKTIV_BESKRIVELSE)
         )
 
     private fun Filtervalg.toJsonb(): PGobject =
