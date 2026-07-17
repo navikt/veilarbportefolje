@@ -17,12 +17,20 @@ public class TiltakshendelseService extends KafkaCommonNonKeyedConsumerService<K
     private final TiltakshendelseRepository repository;
     private final BrukerServiceV2 brukerServiceV2;
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
+    private final TiltakshendelseCleanupService tiltakshendelseCleanupService;
 
     @Override
     protected void behandleKafkaMeldingLogikk(KafkaTiltakshendelse tiltakshendelseData) {
 
         AktorId aktorId = brukerServiceV2.hentAktorId(tiltakshendelseData.fnr())
-                .orElseThrow(() -> new RuntimeException("Kunne ikke hente aktørid for fnr"));
+                .orElseGet(() -> {
+                    // Slett før vi feiler, og gjør det i egen transaksjon så det ikke rulles tilbake
+                    tiltakshendelseCleanupService.slettConsumerRecordOgTiltakshendelse(
+                            tiltakshendelseData.id(),
+                            tiltakshendelseData.fnr().toString()
+                    );
+                    throw new RuntimeException("Kunne ikke hente aktørid for fnr");
+                });
 
         if (Boolean.TRUE.equals(tiltakshendelseData.aktiv())) {
             behandleAktivHendelse(tiltakshendelseData, aktorId);
