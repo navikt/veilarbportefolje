@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.lagredefilter
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.database.PostgresTable.MINE_FILTER
+import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository
@@ -24,7 +24,7 @@ class MineFilterRepositoryTest(
 
     @BeforeEach
     fun reset() {
-        jdbcTemplate.update("TRUNCATE TABLE ${MINE_FILTER.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${LAGREDE_FILTER_MINE_FILTER.TABLE_NAME}")
     }
 
     @Test

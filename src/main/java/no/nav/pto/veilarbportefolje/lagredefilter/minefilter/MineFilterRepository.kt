@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import no.nav.common.json.JsonUtils
-import no.nav.pto.veilarbportefolje.database.PostgresTable.MINE_FILTER.*
+import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
