@@ -1,13 +1,14 @@
-package no.nav.pto.veilarbportefolje.lagredefilter
+package no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper
 
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_VEILEDERGRUPPER.*
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.LagretVeiledergruppe
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.NyVeiledergruppeRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.domene.OppdaterVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.LagretVeiledergruppe
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.NyVeiledergruppeRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.OppdaterVeiledergruppeRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Types
 
 @Repository
 class VeiledergrupperRepository(private val db: JdbcTemplate) {
@@ -115,6 +116,54 @@ class VeiledergrupperRepository(private val db: JdbcTemplate) {
             // todo - opprydning av veiledergruppene i "mine filter", se deactivateMineFilterWithDeletedVeilederGroup i veilarbfilter
         }
         return antallRaderSletta
+    }
+
+    fun eksistererFilterNavn(enhetId: String, filterNavn: String, ekskluderFilterId: Int? = null): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $ENHET_ID = ?
+                  AND $FILTER_NAVN = ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.queryForObject(
+            sql,
+            Boolean::class.java,
+            enhetId,
+            filterNavn,
+            ekskluderFilterId,
+            ekskluderFilterId
+        ) == true
+    }
+
+    fun eksistererVeiledere(enhetId: String, veiledere: List<String>, ekskluderFilterId: Int? = null): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $ENHET_ID = ?
+                  AND $VEILEDER_IDENTER @> ?
+                  AND $VEILEDER_IDENTER <@ ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.query(
+            sql,
+            { ps: PreparedStatement ->
+                ps.setString(1, enhetId)
+                val veiledereArray = ps.connection.createArrayOf("text", veiledere.toTypedArray())
+                ps.setArray(2, veiledereArray)
+                ps.setArray(3, veiledereArray)
+                if (ekskluderFilterId == null) {
+                    ps.setNull(4, Types.INTEGER)
+                    ps.setNull(5, Types.INTEGER)
+                } else {
+                    ps.setInt(4, ekskluderFilterId)
+                    ps.setInt(5, ekskluderFilterId)
+                }
+            },
+            { rs, _ -> rs.getBoolean(1) }
+        ).first()
     }
 
     private fun ResultSet.getStringList(column: String): List<String> =

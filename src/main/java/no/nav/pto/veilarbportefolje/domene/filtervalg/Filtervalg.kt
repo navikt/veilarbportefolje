@@ -46,7 +46,8 @@ data class Filtervalg(
     val ytelseTiltakspengerArena: List<YtelseTiltakspengerArena>,
     val ytelseDagpenger: List<YtelseDagpenger>,
     val ytelseDagpengerArena: List<YtelseDagpengerArena>,
-    val ytelseUngdomsprogram: List<YtelseUngdomsprogram>? = emptyList() // Nullable til frontenden er oppdatert
+    val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
+    val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
     fun harAktiveFilter(): Boolean =
@@ -88,7 +89,8 @@ data class Filtervalg(
                 harYtelseTiltakspengerArenaFilter() ||
                 harYtelseDagpengerFilter() ||
                 harYtelseDagpengerArenaFilter() ||
-                harYtelseUngdomsprogramFilter()
+                harYtelseUngdomsprogramFilter() ||
+                harVisGeografiskBosted()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
         gjeldendeVedtak14a.isNotEmpty()
@@ -127,10 +129,13 @@ data class Filtervalg(
         ytelseDagpenger.isNotEmpty()
 
     fun harYtelseUngdomsprogramFilter(): Boolean =
-        !ytelseUngdomsprogram.isNullOrEmpty()
+        ytelseUngdomsprogram.isNotEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null
+
+    fun harVisGeografiskBosted(): Boolean =
+        visGeografiskBosted.isNotEmpty()
 
     fun harAktiviteterAvansert(): Boolean =
         aktiviteter.values.any {

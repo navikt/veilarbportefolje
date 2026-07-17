@@ -554,4 +554,19 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class LAGREDE_FILTER_MINE_FILTER {
+        private LAGREDE_FILTER_MINE_FILTER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "LAGREDE_FILTER_MINE_FILTER";
+        public static final String FILTER_ID = "FILTER_ID";
+        public static final String FILTER_NAVN = "FILTER_NAVN";
+        public static final String VEILEDER_IDENT = "VEILEDER_IDENT";
+        public static final String AKTIVE_FILTER_VALG = "AKTIVE_FILTER_VALG";
+        public static final String SORT_ORDER = "SORT_ORDER";
+        public static final String AKTIV = "AKTIV";
+        public static final String IKKE_AKTIV_BESKRIVELSE = "IKKE_AKTIV_BESKRIVELSE";
+        public static final String OPPRETTET = "OPPRETTET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
 }
