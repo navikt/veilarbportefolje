@@ -200,11 +200,17 @@ class MineFilterRepositoryTest(
             NyttFilterRequest(filterNavn = "Filter C", filterValg = getFiltervalgDefaults())
         )
 
-        mineFilterRepository.lagreSortering(veilederIdent, SortOrderRequest(filterId = filterA.filterId, sortOrder = 3))
-        mineFilterRepository.lagreSortering(veilederIdent, SortOrderRequest(filterId = filterB.filterId, sortOrder = 1))
+        mineFilterRepository.lagreSortering(
+            veilederIdent,
+            listOf(SortOrderRequest(filterId = filterA.filterId, sortOrder = 3))
+        )
+        mineFilterRepository.lagreSortering(
+            veilederIdent,
+            listOf(SortOrderRequest(filterId = filterB.filterId, sortOrder = 1))
+        )
         val resultat = mineFilterRepository.lagreSortering(
             veilederIdent,
-            SortOrderRequest(filterId = filterC.filterId, sortOrder = 2)
+            listOf(SortOrderRequest(filterId = filterC.filterId, sortOrder = 2))
         )
 
         assertThat(resultat.map { it.filterId })

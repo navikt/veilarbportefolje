@@ -93,15 +93,17 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         return db.update(sql, filterId, veilederIdent)
     }
 
-    fun lagreSortering(veilederIdent: String, sortOrderRequest: SortOrderRequest): List<LagretFilter> {
+    fun lagreSortering(veilederIdent: String, sortOrderRequests: List<SortOrderRequest>): List<LagretFilter> {
         val updateSql = """
             UPDATE $TABLE_NAME
             SET $SORT_ORDER = ?,
-                $RAD_SIST_ENDRET = now()
+            $RAD_SIST_ENDRET = now()
             WHERE $FILTER_ID = ? AND $VEILEDER_IDENT = ?
-        """.trimIndent()
+    """.trimIndent()
 
-        db.update(updateSql, sortOrderRequest.sortOrder, sortOrderRequest.filterId, veilederIdent)
+        sortOrderRequests.forEach { req ->
+            db.update(updateSql, req.sortOrder, req.filterId, veilederIdent)
+        }
 
         return hentFilterForVeileder(veilederIdent)
     }
