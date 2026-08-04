@@ -1,13 +1,12 @@
 package no.nav.pto.veilarbportefolje.skjerming;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,13 +14,19 @@ import java.time.LocalDateTime;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class SkjermingService {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(SkjermingService.class);
     private final SkjermingRepository skjermingRepository;
     private final BrukerServiceV2 brukerService;
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
+
+    @java.beans.ConstructorProperties({"skjermingRepository", "brukerService", "opensearchIndexerPaDatafelt"})
+    public SkjermingService(SkjermingRepository skjermingRepository, BrukerServiceV2 brukerService, OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt) {
+        this.skjermingRepository = skjermingRepository;
+        this.brukerService = brukerService;
+        this.opensearchIndexerPaDatafelt = opensearchIndexerPaDatafelt;
+    }
 
     @SneakyThrows
     public void behandleSkjermedePersoner(ConsumerRecord<String, SkjermingDTO> kafkaMelding) {
@@ -36,22 +41,22 @@ public class SkjermingService {
             return;
         }
 
-        if (skjermingDTO.getSkjermetFra() != null && skjermingDTO.getSkjermetFra().length >= 5) {
-            skjermetFra = LocalDateTime.of(skjermingDTO.getSkjermetFra()[0],
-                    skjermingDTO.getSkjermetFra()[1],
-                    skjermingDTO.getSkjermetFra()[2],
-                    skjermingDTO.getSkjermetFra()[3],
-                    skjermingDTO.getSkjermetFra()[4],
+        if (skjermingDTO.skjermetFra() != null && skjermingDTO.skjermetFra().length >= 5) {
+            skjermetFra = LocalDateTime.of(skjermingDTO.skjermetFra()[0],
+                    skjermingDTO.skjermetFra()[1],
+                    skjermingDTO.skjermetFra()[2],
+                    skjermingDTO.skjermetFra()[3],
+                    skjermingDTO.skjermetFra()[4],
                     0);
         } else {
             skjermetFra = null;
         }
-        if (skjermingDTO.getSkjermetTil() != null && skjermingDTO.getSkjermetTil().length >= 5) {
-            skjermetTil = LocalDateTime.of(skjermingDTO.getSkjermetTil()[0],
-                    skjermingDTO.getSkjermetTil()[1],
-                    skjermingDTO.getSkjermetTil()[2],
-                    skjermingDTO.getSkjermetTil()[3],
-                    skjermingDTO.getSkjermetTil()[4],
+        if (skjermingDTO.skjermetTil() != null && skjermingDTO.skjermetTil().length >= 5) {
+            skjermetTil = LocalDateTime.of(skjermingDTO.skjermetTil()[0],
+                    skjermingDTO.skjermetTil()[1],
+                    skjermingDTO.skjermetTil()[2],
+                    skjermingDTO.skjermetTil()[3],
+                    skjermingDTO.skjermetTil()[4],
                     0);
         } else {
             skjermetTil = null;

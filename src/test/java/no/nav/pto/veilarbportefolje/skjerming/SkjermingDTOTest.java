@@ -15,8 +15,8 @@ public class SkjermingDTOTest {
             ObjectMapper objectMapper = new ObjectMapper();
             SkjermingDTO skjermingDTO = objectMapper.readValue(json, SkjermingDTO.class);
 
-            Assertions.assertEquals(skjermingDTO.getSkjermetFra().length, 6);
-            Assertions.assertNull(skjermingDTO.getSkjermetTil());
+            Assertions.assertEquals(skjermingDTO.skjermetFra().length, 6);
+            Assertions.assertNull(skjermingDTO.skjermetTil());
         } catch (Exception e) {
             Assertions.fail();
         }

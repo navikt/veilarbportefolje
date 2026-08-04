@@ -45,13 +45,13 @@ public class SkjermingRepositoryTest {
         Optional<SkjermingData> skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
 
         Assertions.assertTrue(skjermingDataOptional.isPresent());
-        Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
-        Assertions.assertNull(skjermingDataOptional.get().getSkjermet_til());
+        Assertions.assertEquals(skjermingDataOptional.get().skjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
+        Assertions.assertNull(skjermingDataOptional.get().skjermet_til());
 
         skjermingRepository.settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-21 13:14:00"), Timestamp.valueOf("2022-04-21 13:14:00"));
         skjermingDataOptional = skjermingRepository.hentSkjermingData(fnr);
-        Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
-        Assertions.assertEquals(skjermingDataOptional.get().getSkjermet_til(), Timestamp.valueOf("2022-04-21 13:14:00"));
+        Assertions.assertEquals(skjermingDataOptional.get().skjermet_fra(), Timestamp.valueOf("2022-02-21 13:14:00"));
+        Assertions.assertEquals(skjermingDataOptional.get().skjermet_til(), Timestamp.valueOf("2022-04-21 13:14:00"));
 
     }
 
