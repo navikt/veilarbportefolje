@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.skjerming
 
-import lombok.SneakyThrows
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
@@ -18,8 +17,7 @@ class SkjermingService(
     private val brukerService: BrukerServiceV2,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
-    @SneakyThrows
-    fun behandleSkjermedePersoner(kafkaMelding: ConsumerRecord<String?, SkjermingDTO?>) {
+    fun behandleSkjermedePersoner(kafkaMelding: ConsumerRecord<String, SkjermingDTO?>) {
         val fnr = Fnr.of(kafkaMelding.key())
         val skjermingDTO = kafkaMelding.value()
 
@@ -73,15 +71,15 @@ class SkjermingService(
             DateUtils.toTimestamp(skjermetTil)
         )
 
-        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId? ->
+        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId ->
             opensearchIndexerPaDatafelt.updateSkjermetTil(
-                aktorId!!,
+                aktorId,
                 skjermetTil
             )
         }
     }
 
-    fun behandleSkjermingStatus(kafkaMelding: ConsumerRecord<String?, String?>) {
+    fun behandleSkjermingStatus(kafkaMelding: ConsumerRecord<String, String?>) {
         val fnr = Fnr.of(kafkaMelding.key())
         val erSkjermet = kafkaMelding.value() != null && kafkaMelding.value().toBoolean()
 
@@ -91,9 +89,9 @@ class SkjermingService(
             skjermingRepository.deleteSkjermingData(fnr)
         }
 
-        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId? ->
+        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId ->
             opensearchIndexerPaDatafelt.updateErSkjermet(
-                aktorId!!,
+                aktorId,
                 erSkjermet
             )
         }
