@@ -75,7 +75,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
@@ -161,7 +161,7 @@ import static org.mockito.Mockito.when;
         YtelsesRepositoryV2.class,
         YtelsesStatusRepositoryV2.class,
         OppfolgingPeriodeService.class,
-        SkjermingService.class,
+        SkjermedePersonerService.class,
         SkjermingRepository.class,
         PdlService.class,
         PdlIdentRepository.class,

@@ -3,66 +3,71 @@ package no.nav.pto.veilarbportefolje.skjerming
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class SkjermingService(
+class SkjermedePersonerService(
     private val skjermingRepository: SkjermingRepository,
     private val brukerService: BrukerServiceV2,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
-) {
-    fun behandleSkjermedePersoner(kafkaMelding: ConsumerRecord<String, SkjermingDTO?>) {
-        val fnr = Fnr.of(kafkaMelding.key())
-        val skjermingDTO = kafkaMelding.value()
+) : KafkaCommonKeyedConsumerService<SkjermingDTO?>() {
+
+    override fun behandleKafkaRecordLogikk(
+        kafkaRecordValue: SkjermingDTO?,
+        kafkaKey: String
+    ) {
+        val fnr = Fnr.of(kafkaKey)
 
         val isDev: Boolean = EnvironmentUtils.isDevelopment().orElse(false) ?: false
-        if (isDev && skjermingDTO == null) {
+        if (isDev && kafkaRecordValue == null) {
             secureLog.info(
                 String.format(
                     "Ignorerer dårlig datakvalitet i dev, bruker fnr %s, kafka melding: %s",
                     fnr.get(),
-                    kafkaMelding.value()
+                    kafkaRecordValue
                 )
             )
             return
         }
 
-        val skjermetFra: LocalDateTime? = if (skjermingDTO?.skjermetFra != null && skjermingDTO.skjermetFra.size >= 5) {
-            LocalDateTime.of(
-                skjermingDTO.skjermetFra[0],
-                skjermingDTO.skjermetFra[1],
-                skjermingDTO.skjermetFra[2],
-                skjermingDTO.skjermetFra[3],
-                skjermingDTO.skjermetFra[4],
-                0
-            )
-        } else {
-            null
-        }
-
-        val skjermetTil: LocalDateTime? = if (skjermingDTO?.skjermetTil != null && skjermingDTO.skjermetTil.size >= 5) {
-            skjermingDTO.skjermetTil.let {
+        val skjermetFra: LocalDateTime? =
+            if (kafkaRecordValue?.skjermetFra != null && kafkaRecordValue.skjermetFra.size >= 5) {
                 LocalDateTime.of(
-                    it[0],
-                    it[1],
-                    it[2],
-                    it[3],
-                    it[4],
+                    kafkaRecordValue.skjermetFra[0],
+                    kafkaRecordValue.skjermetFra[1],
+                    kafkaRecordValue.skjermetFra[2],
+                    kafkaRecordValue.skjermetFra[3],
+                    kafkaRecordValue.skjermetFra[4],
                     0
                 )
+            } else {
+                null
             }
-        } else {
-            null
-        }
+
+        val skjermetTil: LocalDateTime? =
+            if (kafkaRecordValue?.skjermetTil != null && kafkaRecordValue.skjermetTil.size >= 5) {
+                kafkaRecordValue.skjermetTil.let {
+                    LocalDateTime.of(
+                        it[0],
+                        it[1],
+                        it[2],
+                        it[3],
+                        it[4],
+                        0
+                    )
+                }
+            } else {
+                null
+            }
 
         if (skjermetFra == null && skjermetTil == null) {
-            throw Exception("Possible illegal data about skjerming period, kafka message: " + kafkaMelding.value())
+            throw Exception("Possible illegal data about skjerming period, kafka message: $kafkaRecordValue")
         }
 
         skjermingRepository.settSkjermingPeriode(
@@ -78,10 +83,18 @@ class SkjermingService(
             )
         }
     }
+}
 
-    fun behandleSkjermingStatus(kafkaMelding: ConsumerRecord<String, String?>) {
-        val fnr = Fnr.of(kafkaMelding.key())
-        val erSkjermet = kafkaMelding.value() != null && kafkaMelding.value().toBoolean()
+@Service
+class SkjermingStatusService(
+    private val skjermingRepository: SkjermingRepository,
+    private val brukerService: BrukerServiceV2,
+    private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+) : KafkaCommonKeyedConsumerService<String?>() {
+
+    override fun behandleKafkaRecordLogikk(kafkaRecordValue: String?, kafkaKey: String) {
+        val fnr = Fnr.of(kafkaKey)
+        val erSkjermet = kafkaRecordValue != null && kafkaRecordValue.toBoolean()
 
         if (erSkjermet) {
             skjermingRepository.settSkjerming(fnr, true)

@@ -58,7 +58,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingStatusService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -139,7 +140,6 @@ public class KafkaConfigCommon {
 
         YTELSER_TOPIC("obo.ytelser-v1");
 
-
         final String topicName;
 
         Topic(String topicName) {
@@ -156,19 +156,35 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVServiceV2 cvServiceV2,
-                             SistLestService sistLestService, AktivitetService aktivitetService,
-                             Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
-                             DialogService dialogService, ManuellStatusService manuellStatusService,
-                             NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
-                             UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
-                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService,
-                             JdbcTemplate jdbcTemplate, DefaultUnleash defaultUnleash, PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
-                             EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
-                             ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
-                             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService, YtelserKafkaService ytelserKafkaService
+    public KafkaConfigCommon(
+            AktivitetService aktivitetService,
+            ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
+            ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
+            ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService,
+            CVServiceV2 cvServiceV2,
+            DefaultUnleash defaultUnleash,
+            DialogService dialogService,
+            EnsligeForsorgereService ensligeForsorgereService,
+            GruppeAktivitetService gruppeAktivitetService,
+            HendelseService hendelseService,
+            JdbcTemplate jdbcTemplate,
+            MalService malService,
+            ManuellStatusService manuellStatusService,
+            NyForVeilederService nyForVeilederService,
+            OppfolgingPeriodeService oppfolgingPeriodeService,
+            OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2,
+            PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
+            SistLestService sistLestService,
+            Siste14aVedtakService siste14aVedtakService,
+            SkjermedePersonerService skjermedePersonerService,
+            SkjermingStatusService skjermingStatusService,
+            TiltakService tiltakService,
+            TiltakshendelseService tiltakshendelseService,
+            UtdanningsAktivitetService utdanningsAktivitetService,
+            Utkast14aStatusendringService utkast14aStatusendringService,
+            VeilederTilordnetService veilederTilordnetService,
+            YtelserKafkaService ytelserKafkaService,
+            YtelsesService ytelsesService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -358,7 +374,7 @@ public class KafkaConfigCommon {
                                         Topic.NOM_SKJERMING_STATUS.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.stringDeserializer(),
-                                        skjermingService::behandleSkjermingStatus
+                                        skjermingStatusService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, SkjermingDTO>()
                                 .withLogging()
@@ -368,7 +384,7 @@ public class KafkaConfigCommon {
                                         Topic.NOM_SKJERMEDE_PERSONER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SkjermingDTO.class),
-                                        skjermingService::behandleSkjermedePersoner
+                                        skjermedePersonerService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, DialogdataDto>()
                                 .withLogging()
