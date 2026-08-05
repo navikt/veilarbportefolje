@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.kodeverk;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Rule;
-import org.junit.Test;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -11,14 +11,13 @@ import static no.nav.pto.veilarbportefolje.kodeverk.KodeverkService.KODEVERK_SPR
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@WireMockTest
 public class KodeverkClientImplTest {
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(0);
 
     @Test
-    public void testFindingMostRecentValue() {
+    public void testFindingMostRecentValue(WireMockRuntimeInfo wireMockRuntimeInfo) {
         String kodeverkJson = readTestResourceFile("kodeverk-spraak.json");
-        String apiUrl = "http://localhost:" + wireMockRule.port();
+        String apiUrl = "http://localhost:" + wireMockRuntimeInfo.getHttpPort();
         KodeverkClientImpl kodeverkClient = new KodeverkClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(anyUrl())

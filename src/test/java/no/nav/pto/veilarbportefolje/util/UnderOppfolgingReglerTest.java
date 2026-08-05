@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static no.nav.pto.veilarbportefolje.util.UnderOppfolgingRegler.erUnderOppfolging;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
