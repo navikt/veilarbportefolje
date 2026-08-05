@@ -4,8 +4,8 @@ import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseReposi
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -13,29 +13,28 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class ArenaUtilsTest {
-    private JdbcTemplate db;
     private ArenaHendelseRepository arenaHendelseRepository;
     private final String hendelsesId = "T-123";
 
-    @Before
+    @BeforeEach
     public void setup() {
-        db = SingletonPostgresContainer.init().createJdbcTemplate();
+        JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         arenaHendelseRepository = new ArenaHendelseRepository(db);
 
-        db.execute("DELETE FROM "+ PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.TABLE_NAME);
+        db.execute("DELETE FROM " + PostgresTable.LEST_ARENA_HENDELSE_AKTIVITETER.TABLE_NAME);
     }
 
     @Test
-    public void skalLagreNyMeldinger(){
+    public void skalLagreNyMeldinger() {
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
-        boolean erGammelHendelse = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L,false);
+        boolean erGammelHendelse = ArenaUtils.erGammelHendelseBasertPaOperasjon(hendelseIDB, 1L, false);
 
         assertThat(hendelseIDB).isNull();
         assertThat(erGammelHendelse).isFalse();
     }
 
     @Test
-    public void skalIkkeLagreGammelMelding(){
+    public void skalIkkeLagreGammelMelding() {
         long lagretHendelse = 3L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);
@@ -46,7 +45,7 @@ public class ArenaUtilsTest {
     }
 
     @Test
-    public void deleteMeldingerSkalLagresHvisHendelsesIDErLikSomIDB(){
+    public void deleteMeldingerSkalLagresHvisHendelsesIDErLikSomIDB() {
         long lagretHendelse = 4L;
         arenaHendelseRepository.upsertAktivitetHendelse(hendelsesId, lagretHendelse);
         Long hendelseIDB = arenaHendelseRepository.retrieveAktivitetHendelse(hendelsesId);

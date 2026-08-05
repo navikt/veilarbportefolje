@@ -4,8 +4,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -16,7 +16,7 @@ public class CVServiceV2Test {
     private CVRepositoryV2 cvRepositoryV2;
     private CVServiceV2 cvServiceV2;
 
-    @Before
+    @BeforeEach
     public void setup() {
         OpensearchIndexerPaDatafelt opensearchIndexer = mock(OpensearchIndexerPaDatafelt.class);
         cvRepositoryV2 = mock(CVRepositoryV2.class);
