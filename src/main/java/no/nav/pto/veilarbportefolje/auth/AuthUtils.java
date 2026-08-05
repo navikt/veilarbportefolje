@@ -39,12 +39,6 @@ public class AuthUtils {
         return bruker;
     }
 
-    static void test(String navn, Object data, boolean matches) {
-        if (!matches) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("sjekk av %s feilet, %s", navn, data));
-        }
-    }
-
     public static String getInnloggetBrukerToken() {
         return AuthContextHolderThreadLocal
                 .instance().getIdTokenString()
