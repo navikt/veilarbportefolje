@@ -183,17 +183,10 @@
             <artifactId>pto-schema</artifactId>
             <version>1.2025.09.29_11.36-6e568fa24c23</version>
         </dependency>
-
-        <!-- Funksjonell programmering-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.42</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vavr</groupId>
-            <artifactId>vavr</artifactId>
-            <version>1.0.1</version>
         </dependency>
 
 

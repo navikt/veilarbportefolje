@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.auth;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.vavr.Tuple;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -12,12 +11,13 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -51,15 +51,19 @@ public class AuthService {
     }
 
     public void innloggetVeilederHarTilgangTilOppfolging() {
-        VeilederId veilederId = getInnloggetVeilederIdent();
         Decision decisionPoaoTilgang = poaoTilgangWrapper.harVeilederTilgangTilModia();
-        boolean harTilgang = Decision.Type.PERMIT.equals(decisionPoaoTilgang.getType());
-        AuthUtils.test("oppfølgingsbruker", veilederId, harTilgang);
+
+        if (decisionPoaoTilgang.isDeny()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 
     public void innloggetVeilederHarTilgangTilEnhet(String enhet) {
         String veilederId = getInnloggetVeilederIdent().toString();
-        AuthUtils.test("tilgang til enhet", Tuple.of(enhet, veilederId), harVeilederTilgangTilEnhet(veilederId, enhet));
+
+        if (!harVeilederTilgangTilEnhet(veilederId, enhet)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 
     public boolean harVeilederTilgangTilEnhet(String veilederId, String enhet) {
@@ -71,8 +75,11 @@ public class AuthService {
     }
 
     public void innloggetVeilederHarTilgangTilBruker(String fnr) {
-        boolean response = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr)).isPermit();
-        AuthUtils.test("tilgangTilBruker", fnr, response);
+        Decision decisionPoaoTilgang = poaoTilgangWrapper.harTilgangTilPerson(Fnr.of(fnr));
+
+        if (decisionPoaoTilgang.isDeny()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 
     public List<PortefoljebrukerFrontendModell> sensurerBrukere(List<PortefoljebrukerFrontendModell> brukere) {
