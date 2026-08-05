@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.skjerming
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.common.json.JsonUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class SkjermingDTOTest {
@@ -18,10 +17,10 @@ class SkjermingDTOTest {
         try {
             val skjermingDTO = JsonUtils.fromJson(json, SkjermingDTO::class.java)
 
-            Assertions.assertEquals(skjermingDTO.skjermetFra?.size, 6)
-            Assertions.assertNull(skjermingDTO.skjermetTil)
+            assertEquals(skjermingDTO.skjermetFra?.size, 6)
+            assertNull(skjermingDTO.skjermetTil)
         } catch (_: Exception) {
-            Assertions.fail()
+            fail()
         }
     }
 }

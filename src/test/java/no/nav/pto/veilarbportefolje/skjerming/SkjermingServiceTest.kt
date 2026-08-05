@@ -8,6 +8,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.sql.Timestamp
 import java.util.*
@@ -18,12 +21,12 @@ class SkjermingServiceTest {
 
     @BeforeEach
     fun setUp() {
-        skjermingRepository = Mockito.mock(SkjermingRepository::class.java)
-        val brukerServiceV2 = Mockito.mock(BrukerServiceV2::class.java)
-        `when`(brukerServiceV2.hentAktorId(Mockito.any<Fnr?>()))
+        skjermingRepository = mock(SkjermingRepository::class.java)
+        val brukerServiceV2 = mock(BrukerServiceV2::class.java)
+        `when`(brukerServiceV2.hentAktorId(Mockito.any()))
             .thenReturn(Optional.of(AktorId.of("1111")))
         val opensearchIndexerPaDatafelt =
-            Mockito.mock(OpensearchIndexerPaDatafelt::class.java)
+            mock(OpensearchIndexerPaDatafelt::class.java)
         skjermingService = SkjermingService(skjermingRepository, brukerServiceV2, opensearchIndexerPaDatafelt)
     }
 
@@ -33,12 +36,12 @@ class SkjermingServiceTest {
         var consumerRecord = ConsumerRecord("topic", 1, 2, fnr.get(), "true")
         skjermingService.behandleSkjermingStatus(consumerRecord)
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjerming(fnr, true)
+        verify(skjermingRepository, times(1)).settSkjerming(fnr, true)
 
         consumerRecord = ConsumerRecord("topic", 1, 2, fnr.get(), "false")
         skjermingService.behandleSkjermingStatus(consumerRecord)
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).deleteSkjermingData(fnr)
+        verify(skjermingRepository, times(1)).deleteSkjermingData(fnr)
     }
 
     @Test
@@ -56,7 +59,7 @@ class SkjermingServiceTest {
         )
         skjermingService.behandleSkjermedePersoner(consumerRecord)
 
-        Mockito.verify(skjermingRepository, Mockito.times(1))
+        verify(skjermingRepository, times(1))
             .settSkjermingPeriode(fnr, Timestamp.valueOf("2022-02-22 13:14:00"), null)
 
         consumerRecord = ConsumerRecord(
@@ -68,7 +71,7 @@ class SkjermingServiceTest {
         )
         skjermingService.behandleSkjermedePersoner(consumerRecord)
 
-        Mockito.verify(skjermingRepository, Mockito.times(1)).settSkjermingPeriode(
+        verify(skjermingRepository, times(1)).settSkjermingPeriode(
             fnr,
             Timestamp.valueOf("2022-02-22 13:14:00"),
             Timestamp.valueOf("2022-04-22 13:14:00")

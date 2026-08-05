@@ -4,6 +4,9 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -29,11 +32,11 @@ class SkjermingRepositoryTest {
 
         skjermingRepository.settSkjerming(fnr, true)
         val forventetSkjermet: Set<Fnr> = skjermingRepository.hentSkjermetPersoner(listOf(fnr))
-        Assertions.assertTrue(forventetSkjermet.contains(fnr))
+        assertTrue(forventetSkjermet.contains(fnr))
 
         skjermingRepository.settSkjerming(fnr, false)
         val forventetIkkeSkjermet = skjermingRepository.hentSkjermetPersoner(listOf(fnr))
-        Assertions.assertFalse(forventetIkkeSkjermet.contains(fnr))
+        assertFalse(forventetIkkeSkjermet.contains(fnr))
     }
 
     @ParameterizedTest
@@ -47,9 +50,9 @@ class SkjermingRepositoryTest {
         val actualSkjermingdataOutput: Optional<SkjermingData> =
             skjermingRepository.hentSkjermingData(skjermingdataInput.fnr)
 
-        Assertions.assertTrue(actualSkjermingdataOutput.isPresent)
-        Assertions.assertEquals(actualSkjermingdataOutput.get().skjermetFra, forventetSkjermingdataOutput.skjermetFra)
-        Assertions.assertEquals(actualSkjermingdataOutput.get().skjermetTil, forventetSkjermingdataOutput.skjermetTil)
+        assertTrue(actualSkjermingdataOutput.isPresent)
+        assertEquals(actualSkjermingdataOutput.get().skjermetFra, forventetSkjermingdataOutput.skjermetFra)
+        assertEquals(actualSkjermingdataOutput.get().skjermetTil, forventetSkjermingdataOutput.skjermetTil)
     }
 
     @Test
@@ -60,7 +63,7 @@ class SkjermingRepositoryTest {
         skjermingRepository.deleteSkjermingData(fnr)
 
         val skjermingDataOptional = skjermingRepository.hentSkjermetPersoner(listOf(fnr))
-        Assertions.assertFalse(skjermingDataOptional.contains(fnr))
+        assertFalse(skjermingDataOptional.contains(fnr))
     }
 
     @Test
@@ -74,9 +77,9 @@ class SkjermingRepositoryTest {
 
         val fnrSkjermingOptional: Set<Fnr> =
             skjermingRepository.hentSkjermetPersoner(listOf(fnr1, fnr2, fnr3))
-        Assertions.assertTrue(fnrSkjermingOptional.contains(fnr1))
-        Assertions.assertTrue(fnrSkjermingOptional.contains(fnr2))
-        Assertions.assertFalse(fnrSkjermingOptional.contains(fnr3))
+        assertTrue(fnrSkjermingOptional.contains(fnr1))
+        assertTrue(fnrSkjermingOptional.contains(fnr2))
+        assertFalse(fnrSkjermingOptional.contains(fnr3))
     }
 
     companion object {
