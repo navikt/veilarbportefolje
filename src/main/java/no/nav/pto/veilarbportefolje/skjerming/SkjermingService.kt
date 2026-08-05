@@ -1,0 +1,101 @@
+package no.nav.pto.veilarbportefolje.skjerming
+
+import lombok.SneakyThrows
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
+import no.nav.common.utils.EnvironmentUtils
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
+import no.nav.pto.veilarbportefolje.service.BrukerServiceV2
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+
+@Service
+class SkjermingService(
+    private val skjermingRepository: SkjermingRepository,
+    private val brukerService: BrukerServiceV2,
+    private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+) {
+    @SneakyThrows
+    fun behandleSkjermedePersoner(kafkaMelding: ConsumerRecord<String?, SkjermingDTO?>) {
+        val fnr = Fnr.of(kafkaMelding.key())
+        val skjermingDTO = kafkaMelding.value()
+
+        val isDev: Boolean = EnvironmentUtils.isDevelopment().orElse(false) ?: false
+        if (isDev && skjermingDTO == null) {
+            secureLog.info(
+                String.format(
+                    "Ignorerer dårlig datakvalitet i dev, bruker fnr %s, kafka melding: %s",
+                    fnr.get(),
+                    kafkaMelding.value()
+                )
+            )
+            return
+        }
+
+        val skjermetFra: LocalDateTime? = if (skjermingDTO?.skjermetFra != null && skjermingDTO.skjermetFra.size >= 5) {
+            LocalDateTime.of(
+                skjermingDTO.skjermetFra[0],
+                skjermingDTO.skjermetFra[1],
+                skjermingDTO.skjermetFra[2],
+                skjermingDTO.skjermetFra[3],
+                skjermingDTO.skjermetFra[4],
+                0
+            )
+        } else {
+            null
+        }
+
+        val skjermetTil: LocalDateTime? = if (skjermingDTO?.skjermetTil != null && skjermingDTO.skjermetTil.size >= 5) {
+            skjermingDTO.skjermetTil.let {
+                LocalDateTime.of(
+                    it[0],
+                    it[1],
+                    it[2],
+                    it[3],
+                    it[4],
+                    0
+                )
+            }
+        } else {
+            null
+        }
+
+        if (skjermetFra == null && skjermetTil == null) {
+            throw Exception("Possible illegal data about skjerming period, kafka message: " + kafkaMelding.value())
+        }
+
+        skjermingRepository.settSkjermingPeriode(
+            fnr,
+            DateUtils.toTimestamp(skjermetFra),
+            DateUtils.toTimestamp(skjermetTil)
+        )
+
+        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId? ->
+            opensearchIndexerPaDatafelt.updateSkjermetTil(
+                aktorId!!,
+                skjermetTil
+            )
+        }
+    }
+
+    fun behandleSkjermingStatus(kafkaMelding: ConsumerRecord<String?, String?>) {
+        val fnr = Fnr.of(kafkaMelding.key())
+        val erSkjermet = kafkaMelding.value() != null && kafkaMelding.value().toBoolean()
+
+        if (erSkjermet) {
+            skjermingRepository.settSkjerming(fnr, true)
+        } else {
+            skjermingRepository.deleteSkjermingData(fnr)
+        }
+
+        brukerService.hentAktorId(fnr).ifPresent { aktorId: AktorId? ->
+            opensearchIndexerPaDatafelt.updateErSkjermet(
+                aktorId!!,
+                erSkjermet
+            )
+        }
+    }
+}
