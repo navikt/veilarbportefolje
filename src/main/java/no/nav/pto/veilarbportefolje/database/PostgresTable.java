@@ -21,11 +21,13 @@ public class PostgresTable {
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR = "OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO";
-        public static final String OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR = "OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE = "OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO";
+
+        // AO_KONTOR
+        public static final String AO_KONTOR_KONTOR_ID = "AO_KONTOR_KONTOR_ID";
 
         // NOM_SKJERMING
         public static final String NOM_SKJERMING_ER_SKJERMET = "NOM_SKJERMING_ER_SKJERMET";
@@ -167,10 +169,10 @@ public class PostgresTable {
 
         private AO_KONTOR() { /* no-op */ }
 
-        public static final String TABLE_NAME = "ao_kontor";
-        public static final String AKTORID = "aktorid";
-        public static final String IDENT = "ident";
-        public static final String KONTOR_ID = "kontor_id";
+        public static final String TABLE_NAME = "AO_KONTOR";
+        public static final String AKTORID = "AKTORID";
+        public static final String IDENT = "IDENT";
+        public static final String KONTOR_ID = "KONTOR_ID";
     }
 
     public static final class DIALOG {
