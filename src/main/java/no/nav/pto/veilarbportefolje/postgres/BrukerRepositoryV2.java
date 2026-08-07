@@ -63,8 +63,7 @@ public class BrukerRepositoryV2 {
                                OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                                OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-                               ao_kontor.kontor_id
-                                                                                        as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
+                               AO_KONTOR.KONTOR_ID                                      as AO_KONTOR_KONTOR_ID,
                                OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                                OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
@@ -153,7 +152,7 @@ public class BrukerRepositoryV2 {
                                  left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                                  left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
-                                 left join ao_kontor                                    on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
+                                 left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                                  where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                         """;
 
@@ -181,13 +180,10 @@ public class BrukerRepositoryV2 {
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                            ao_kontor.kontor_id
-                             as OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR,
                             ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                             RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
                             HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
-                        left join ao_kontor on ao_kontor.ident = OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
                                 (select PERSON from BRUKER_IDENTER where IDENT = ?)
@@ -246,6 +242,7 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)));
         brukerOpensearchModell.setFargekategori(rs.getString(FARGEKATEGORI_VERDI));
         brukerOpensearchModell.setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
+        brukerOpensearchModell.setEnhet_id(rs.getString(AO_KONTOR_KONTOR_ID));
 
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
@@ -386,7 +383,6 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
 
         brukerOpensearchModell.setFnr(fnr);
-        brukerOpensearchModell.setEnhet_id(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR));
         brukerOpensearchModell.setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)));
         brukerOpensearchModell.setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE));
         brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
