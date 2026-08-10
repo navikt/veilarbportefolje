@@ -138,15 +138,13 @@ public class OppfolgingsbrukerRepositoryV3 {
                 """, params, String.class);
     }
 
-    public Optional<NavKontor> hentNavKontor(Fnr fnr) {
+    public Optional<NavKontor> hentNavKontor(AktorId aktorId) {
         var sql = """
-            SELECT ao.kontor_id AS kontor_id
-                FROM oppfolgingsbruker_arena_v2 ob
-                LEFT JOIN ao_kontor ao ON ob.fodselsnr = ao.ident
-                WHERE ob.fodselsnr = :ident
+            SELECT kontor_id FROM ao_kontor
+            WHERE aktorid = :aktorId
                 """;
         var params = new MapSqlParameterSource()
-            .addValue("ident", fnr.get());
+            .addValue("aktorId", aktorId.get());
         return Optional.ofNullable(
                 queryForObjectOrNull(
                         () -> dbNamed.queryForObject(sql, params, (rs, i) ->
