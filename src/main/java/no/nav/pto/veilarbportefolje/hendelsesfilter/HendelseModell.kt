@@ -36,13 +36,22 @@ data class HendelseRecordValue @JsonCreator constructor(
         @JsonProperty("lenke")
         val lenke: URL,
         @JsonProperty("detaljer")
-        val detaljer: String?
+        val detaljer: String?,
+        @JsonProperty("utmeldingsKandidatDetaljer")
+        val utmeldingsKandidatDetaljer: UtmeldingsKandidatDetaljer?,
     )
+}
+
+enum class UtmeldingsKandidatDetaljer {
+    ARBEIDSSOKERPERIODE_AVSLUTTET_SVARTE_NEI_I_BEKREFTELSE,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_IKKE_LEVERT_MELDEKORT,
+    ARBEIDSSOKERPERIODE_AVSLUTTET_ANNET
 }
 
 enum class Kategori {
     UTGATT_VARSEL,
-    UDELT_SAMTALEREFERAT
+    UDELT_SAMTALEREFERAT,
+    KANDIDAT_FOR_UTMELDING
 }
 
 enum class Operasjon {
