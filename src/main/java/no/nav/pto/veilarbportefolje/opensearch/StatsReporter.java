@@ -6,9 +6,15 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys;
+import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
+import org.opensearch.action.search.SearchRequest;
+import org.opensearch.action.search.SearchResponse;
 import org.opensearch.client.OpenSearchClient;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.index.query.QueryBuilders;
+import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.concurrent.TimeUnit;
 
 import static no.nav.pto.veilarbportefolje.config.SchedulConfig.*;
+import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.calculateTimeElapsed;
 
 @Component
@@ -44,6 +51,10 @@ public class StatsReporter implements MeterBinder {
                 .register(meterRegistry);
 
         Gauge.builder("veilarbportefolje.hovedindeksering.slett_data_for_barn_over_18.last_run", this::slettDataForBarnOver18LastRun)
+                .register(meterRegistry);
+
+        Gauge.builder("veilarbportefolje.opensearch.antall_personer_uten_enhet_id", this::antallPersonerUtenEnhetId)
+                .description("Antall personer i OpenSearch med manglende enhet_id")
                 .register(meterRegistry);
     }
 
@@ -106,5 +117,26 @@ public class StatsReporter implements MeterBinder {
             return 0;
         }
 
+    }
+
+    private Long antallPersonerUtenEnhetId() {
+        try {
+            SearchSourceBuilder query = new SearchSourceBuilder()
+                    .size(0)
+                    .trackTotalHits(true)
+                    .query(QueryBuilders.boolQuery()
+                            .mustNot(QueryBuilders.existsQuery(DatafeltKeys.Oppfolging.INSTANCE.getENHET_ID()))
+                    );
+
+            SearchRequest request = new SearchRequest()
+                    .indices(BRUKERINDEKS_ALIAS)
+                    .source(query);
+
+            SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+            return response.getHits().getTotalHits().value;
+        } catch (Exception e) {
+            log.error("Klarte ikke hente antall personer uten enhet_id fra OpenSearch", e);
+            return -1L;
+        }
     }
 }
