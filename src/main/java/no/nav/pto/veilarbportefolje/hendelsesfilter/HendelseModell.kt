@@ -29,6 +29,8 @@ data class HendelseRecordValue @JsonCreator constructor(
     val hendelse: HendelseInnhold
 ) {
     data class HendelseInnhold @JsonCreator constructor(
+        // Det er produsent som må bestemme kobling mellom beskrivelse og beskrivelseEnum.
+        // Førstnenvte er tekst som vises i frontend, og enum er for lettere sortering og filtrering i backend.
         @JsonProperty("beskrivelse")
         val beskrivelse: String,
         @JsonProperty("beskrivelseEnum")
