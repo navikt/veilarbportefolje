@@ -31,8 +31,12 @@ data class HendelseRecordValue @JsonCreator constructor(
     data class HendelseInnhold @JsonCreator constructor(
         @JsonProperty("beskrivelse")
         val beskrivelse: String,
+        @JsonProperty("beskrivelseEnum")
+        val beskrivelseEnum: String?,
         @JsonProperty("dato")
         val dato: ZonedDateTime,
+        @JsonProperty("datoFrist")
+        val datoFrist: ZonedDateTime?,
         @JsonProperty("lenke")
         val lenke: URL,
         @JsonProperty("detaljer")
@@ -42,7 +46,8 @@ data class HendelseRecordValue @JsonCreator constructor(
 
 enum class Kategori {
     UTGATT_VARSEL,
-    UDELT_SAMTALEREFERAT
+    UDELT_SAMTALEREFERAT,
+    KANDIDAT_FOR_UTMELDING
 }
 
 enum class Operasjon {
@@ -66,8 +71,12 @@ data class Hendelse @JsonCreator constructor(
     data class HendelseInnhold @JsonCreator constructor(
         @JsonProperty("beskrivelse")
         val beskrivelse: String,
+        @JsonProperty("beskrivelseEnum")
+        val beskrivelseEnum: String?,
         @JsonProperty("dato")
         val dato: ZonedDateTime,
+        @JsonProperty("datoFrist")
+        val datoFrist: ZonedDateTime?,
         @JsonProperty("lenke")
         val lenke: URL,
         @JsonProperty("detaljer")
@@ -83,7 +92,9 @@ fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): H
         kategori = hendelseRecordValue.kategori,
         hendelse = Hendelse.HendelseInnhold(
             beskrivelse = hendelseRecordValue.hendelse.beskrivelse,
+            beskrivelseEnum = hendelseRecordValue.hendelse.beskrivelseEnum,
             dato = hendelseRecordValue.hendelse.dato,
+            datoFrist = hendelseRecordValue.hendelse.datoFrist,
             lenke = hendelseRecordValue.hendelse.lenke,
             detaljer = hendelseRecordValue.hendelse.detaljer,
         )
