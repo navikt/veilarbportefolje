@@ -483,6 +483,7 @@ public class PostgresTable {
         public static final String ID = "ID";
         public static final String PERSON_IDENT = "PERSON_IDENT";
         public static final String HENDELSE_NAVN = "HENDELSE_NAVN";
+        public static final String HENDELSE_NAVN_ENUM = "HENDELSE_NAVN_ENUM";
         public static final String HENDELSE_DATO = "HENDELSE_DATO";
         public static final String HENDELSE_LENKE = "HENDELSE_LENKE";
         public static final String HENDELSE_DETALJER = "HENDELSE_DETALJER";

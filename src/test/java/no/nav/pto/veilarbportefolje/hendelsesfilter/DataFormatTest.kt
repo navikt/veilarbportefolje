@@ -26,6 +26,7 @@ class DataformatTest {
               "operasjon": "START",
               "hendelse": {
                 "beskrivelse": "Bruker har et utgått varsel",
+                "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00.000+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -42,6 +43,7 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -60,6 +62,7 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -77,6 +80,7 @@ class DataformatTest {
               "operasjon": "START",
               "hendelse": {
                 "beskrivelse": "Bruker har et utgått varsel",
+                "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -97,6 +101,7 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -112,6 +117,7 @@ class DataformatTest {
             kategori = Kategori.UTGATT_VARSEL,
             hendelse = Hendelse.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
