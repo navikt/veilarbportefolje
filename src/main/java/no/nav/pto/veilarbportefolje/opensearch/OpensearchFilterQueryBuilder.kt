@@ -1011,6 +1011,11 @@ class OpensearchFilterQueryBuilder {
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
                 "$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}"
+            ),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.KANDIDAT_FOR_UTMELDING.key,
+                "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}"
             )
         )
 

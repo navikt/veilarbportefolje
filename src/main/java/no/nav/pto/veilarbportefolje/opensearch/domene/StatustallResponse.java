@@ -85,7 +85,8 @@ public class StatustallResponse {
         FARGEKATEGORI_INGEN_KATEGORI("fargekategoriIngenKategori"),
         TILTAKSHENDELSER("tiltakshendelser"),
         UTGATTE_VARSEL("utgatteVarsel"),
-        UDELTE_SAMTALEREFERAT("udelteSamtalereferat");
+        UDELTE_SAMTALEREFERAT("udelteSamtalereferat"),
+        KANDIDAT_FOR_UTMELDING("kandidatForUtmelding");
 
         public final String key;
 
