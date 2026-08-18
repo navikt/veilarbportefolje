@@ -19,6 +19,7 @@ fun genererRandomHendelse(): Hendelse {
         randomAvsender(),
         randomKategori(),
         randomBeskrivelse(),
+        randomBeskrivelseEnum(),
         randomZonedDate(),
         randomUrl(),
         randomDetaljer(),
@@ -33,6 +34,7 @@ fun genererRandomHendelse(kategori: Kategori): Hendelse {
         randomAvsender(),
         kategori,
         randomBeskrivelse(),
+        randomBeskrivelseEnum(),
         randomZonedDate(),
         randomUrl(),
         randomDetaljer(),
@@ -47,6 +49,7 @@ fun genererRandomHendelse(kategori: Kategori, hendelseDato: ZonedDateTime): Hend
         randomAvsender(),
         kategori,
         randomBeskrivelse(),
+        randomBeskrivelseEnum(),
         hendelseDato,
         randomUrl(),
         randomDetaljer(),
@@ -59,6 +62,7 @@ fun genererRandomHendelse(
     avsender: String = randomAvsender(),
     kategori: Kategori = randomKategori(),
     hendelseBeskrivelse: String = randomBeskrivelse(),
+    hendelseBekrivelseEnum: String? = randomBeskrivelseEnum(),
     hendelseDato: ZonedDateTime = randomZonedDate(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
@@ -70,6 +74,7 @@ fun genererRandomHendelse(
         kategori = kategori,
         hendelse = Hendelse.HendelseInnhold(
             beskrivelse = hendelseBeskrivelse,
+            beskrivelseEnum = hendelseBekrivelseEnum,
             dato = hendelseDato,
             lenke = hendelseLenke,
             detaljer = hendelseDetaljer
@@ -83,6 +88,7 @@ fun genererRandomHendelseRecordValue(
     kategori: Kategori = randomKategori(),
     operasjon: Operasjon = randomOperasjon(),
     hendelseBeskrivelse: String = randomBeskrivelse(),
+    hendelseBeskrivelseEnum: String? = randomBeskrivelseEnum(),
     hendelseDato: ZonedDateTime = randomZonedDate(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
@@ -94,6 +100,7 @@ fun genererRandomHendelseRecordValue(
         operasjon = operasjon,
         hendelse = HendelseRecordValue.HendelseInnhold(
             beskrivelse = hendelseBeskrivelse,
+            beskrivelseEnum = hendelseBeskrivelseEnum,
             dato = hendelseDato,
             lenke = hendelseLenke,
             detaljer = hendelseDetaljer,
@@ -136,6 +143,14 @@ fun randomOperasjon(): Operasjon {
 fun randomDetaljer(): String? {
     return if (Random.nextBoolean()) {
         "Detaljer_${Random.nextInt(until = 10)}"
+    } else {
+        null
+    }
+}
+
+fun randomBeskrivelseEnum(): String? {
+    return if (Random.nextBoolean()) {
+        "BESKRIVELSE_ENUM_${Random.nextInt(until = 10)}"
     } else {
         null
     }

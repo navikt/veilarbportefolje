@@ -26,6 +26,7 @@ class DataformatTest {
               "operasjon": "START",
               "hendelse": {
                 "beskrivelse": "Bruker har et utgått varsel",
+                "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00.000+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -42,6 +43,82 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
+                dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
+                detaljer = null,
+            ),
+        )
+        assertThat(deserialisertHendelseRecordValue).isNotNull
+        assertThat(deserialisertHendelseRecordValue).isEqualTo(forventetHendelseRecordValue)
+    }
+
+    @Test
+    fun `deserialisering av JSON payload med beskrivelseEnum gir forventet HendelseRecordValue`() {
+        // language=json
+        val jsonInput = """
+            {
+              "personID": "11111199999",
+              "avsender": "veilarbdialog",
+              "kategori": "UTGATT_VARSEL",
+              "operasjon": "START",
+              "hendelse": {
+                "beskrivelse": "Bruker har et utgått varsel",
+                "beskrivelseEnum": "UTGATT_VARSEL_28_DAGER",
+                "dato": "2024-11-27T00:00:00.000+01:00",
+                "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
+                "detaljer": null
+              }
+            }
+        """.trimIndent()
+
+        val deserialisertHendelseRecordValue = JsonUtils.fromJson(jsonInput, HendelseRecordValue::class.java)
+
+        val forventetHendelseRecordValue = HendelseRecordValue(
+            personID = NorskIdent("11111199999"),
+            avsender = "veilarbdialog",
+            kategori = Kategori.UTGATT_VARSEL,
+            operasjon = Operasjon.START,
+            hendelse = HendelseRecordValue.HendelseInnhold(
+                beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = "UTGATT_VARSEL_28_DAGER",
+                dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
+                detaljer = null,
+            ),
+        )
+        assertThat(deserialisertHendelseRecordValue).isNotNull
+        assertThat(deserialisertHendelseRecordValue).isEqualTo(forventetHendelseRecordValue)
+    }
+
+    @Test
+    fun `deserialisering av JSON payload uten beskrivelseEnum gir forventet HendelseRecordValue (bakoverkompatibilitet)`() {
+        // language=json
+        val jsonInput = """
+            {
+              "personID": "11111199999",
+              "avsender": "veilarbdialog",
+              "kategori": "UTGATT_VARSEL",
+              "operasjon": "START",
+              "hendelse": {
+                "beskrivelse": "Bruker har et utgått varsel",
+                "dato": "2024-11-27T00:00:00.000+01:00",
+                "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
+                "detaljer": null
+              }
+            }
+        """.trimIndent()
+
+        val deserialisertHendelseRecordValue = JsonUtils.fromJson(jsonInput, HendelseRecordValue::class.java)
+
+        val forventetHendelseRecordValue = HendelseRecordValue(
+            personID = NorskIdent("11111199999"),
+            avsender = "veilarbdialog",
+            kategori = Kategori.UTGATT_VARSEL,
+            operasjon = Operasjon.START,
+            hendelse = HendelseRecordValue.HendelseInnhold(
+                beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -60,6 +137,7 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -77,6 +155,7 @@ class DataformatTest {
               "operasjon": "START",
               "hendelse": {
                 "beskrivelse": "Bruker har et utgått varsel",
+                "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
@@ -97,6 +176,7 @@ class DataformatTest {
             operasjon = Operasjon.START,
             hendelse = HendelseRecordValue.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
@@ -112,6 +192,7 @@ class DataformatTest {
             kategori = Kategori.UTGATT_VARSEL,
             hendelse = Hendelse.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,

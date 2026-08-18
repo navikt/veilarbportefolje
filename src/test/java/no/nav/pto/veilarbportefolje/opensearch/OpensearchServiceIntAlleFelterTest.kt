@@ -434,6 +434,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             )
             val UTGATT_VARSEL: Hendelse.HendelseInnhold = Hendelse.HendelseInnhold(
                 beskrivelse = "Bruker har et utgått varsel",
+                beskrivelseEnum = null,
                 dato = ZonedDateTime.parse("2025-07-01T13:37:00.000+02:00"),
                 lenke = URI.create("https://veilarbpersonflate.ansatt.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null

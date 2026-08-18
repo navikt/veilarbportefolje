@@ -68,7 +68,7 @@ class HendelseRepository(
      */
     fun insert(hendelse: Hendelse) {
         val (id, personIdent, avsender, kategori, hendelseInnhold) = hendelse
-        val (navn, dato, lenke, detaljer) = hendelseInnhold
+        val (navn, navnEnum, dato, lenke, detaljer) = hendelseInnhold
 
         // language=postgresql
         val sql = """
@@ -76,6 +76,7 @@ class HendelseRepository(
                 ${HENDELSE.ID},
                 ${HENDELSE.PERSON_IDENT},
                 ${HENDELSE.HENDELSE_NAVN},
+                ${HENDELSE.HENDELSE_NAVN_ENUM},
                 ${HENDELSE.HENDELSE_DATO},
                 ${HENDELSE.HENDELSE_LENKE},
                 ${HENDELSE.HENDELSE_DETALJER},
@@ -83,7 +84,7 @@ class HendelseRepository(
                 ${HENDELSE.AVSENDER},
                 ${HENDELSE.OPPRETTET},
                 ${HENDELSE.SIST_ENDRET}
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (${HENDELSE.ID}) DO NOTHING
             """
 
@@ -93,6 +94,7 @@ class HendelseRepository(
             id,
             personIdent.get(),
             navn,
+            navnEnum,
             toTimestamp(dato),
             lenke.toString(),
             detaljer,
@@ -115,20 +117,21 @@ class HendelseRepository(
      */
     fun update(hendelse: Hendelse) {
         val (id, personIdent, avsender, kategori, hendelseInnhold) = hendelse
-        val (navn, dato, lenke, detaljer) = hendelseInnhold
+        val (navn, navnEnum, dato, lenke, detaljer) = hendelseInnhold
 
         // language=postgresql
         val sql = """
             UPDATE ${HENDELSE.TABLE_NAME} SET (
                 ${HENDELSE.PERSON_IDENT},
                 ${HENDELSE.HENDELSE_NAVN},
+                ${HENDELSE.HENDELSE_NAVN_ENUM},
                 ${HENDELSE.HENDELSE_DATO},
                 ${HENDELSE.HENDELSE_LENKE},
                 ${HENDELSE.HENDELSE_DETALJER},
                 ${HENDELSE.KATEGORI},
                 ${HENDELSE.AVSENDER},
                 ${HENDELSE.SIST_ENDRET}
-            ) = (?, ?, ?, ?, ?, ?, ?, ?)
+            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?)
             WHERE ${HENDELSE.ID} = ?
             """
 
@@ -136,6 +139,7 @@ class HendelseRepository(
             sql,
             personIdent.get(),
             navn,
+            navnEnum,
             toTimestamp(dato),
             lenke.toString(),
             detaljer,
@@ -175,6 +179,7 @@ private fun toHendelse(resultSet: ResultSet, affectedRows: Int): Hendelse {
         kategori = Kategori.valueOf(resultSet.getString(HENDELSE.KATEGORI)),
         hendelse = Hendelse.HendelseInnhold(
             beskrivelse = resultSet.getString(HENDELSE.HENDELSE_NAVN),
+            beskrivelseEnum = resultSet.getString(HENDELSE.HENDELSE_NAVN_ENUM),
             dato = toZonedDateTime(resultSet.getTimestamp(HENDELSE.HENDELSE_DATO)),
             lenke = URI.create(resultSet.getString(HENDELSE.HENDELSE_LENKE)).toURL(),
             detaljer = resultSet.getString(HENDELSE.HENDELSE_DETALJER),

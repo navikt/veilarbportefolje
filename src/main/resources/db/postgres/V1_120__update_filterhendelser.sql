@@ -1,0 +1,2 @@
+ALTER TABLE FILTERHENDELSER
+    ADD COLUMN IF NOT EXISTS hendelse_navn_enum text;

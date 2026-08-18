@@ -89,6 +89,7 @@ class HendelseServiceTest(
                 kategori = it.kategori,
                 hendelse = Hendelse.HendelseInnhold(
                     beskrivelse = it.hendelse.beskrivelse,
+                    beskrivelseEnum = it.hendelse.beskrivelseEnum,
                     dato = it.hendelse.dato,
                     lenke = it.hendelse.lenke,
                     detaljer = it.hendelse.detaljer,
