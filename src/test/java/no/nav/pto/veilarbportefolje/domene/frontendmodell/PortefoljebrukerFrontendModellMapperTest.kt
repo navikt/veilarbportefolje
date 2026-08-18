@@ -139,6 +139,34 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `etiketter for kandidatForUtmelding skal settes riktig`() {
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
+        val opensearchBruker = PortefoljebrukerOpensearchModell(
+            hendelser =
+                mapOf(
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
+                )
+        )
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketter = frontendBruker.etiketter
+
+        val frontendBrukerIkkeKandidat = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker.copy(hendelser = mapOf()),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketterIkkeKandidat = frontendBrukerIkkeKandidat.etiketter
+
+        Assertions.assertEquals(true, etiketter.kandidatForUtmelding)
+        Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForUtmelding)
+    }
+
+    @Test
     fun `personaliadata og en til en variabler skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             fnr = "12345678901",

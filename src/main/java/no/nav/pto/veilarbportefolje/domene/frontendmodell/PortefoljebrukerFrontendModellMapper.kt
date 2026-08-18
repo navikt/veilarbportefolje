@@ -63,7 +63,8 @@ object PortefoljebrukerFrontendModellMapper {
                 harBehovForArbeidsevneVurdering = harBehovForArbeidsevneVurdering,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
                 diskresjonskodeFortrolig = diskresjonskodeFortrolig,
-                profileringResultat = profileringResultat
+                profileringResultat = profileringResultat,
+                kandidatForUtmelding = opensearchBruker.hendelser!![Kategori.KANDIDAT_FOR_UTMELDING] != null,
             ),
             fnr = opensearchBruker.fnr,
             fornavn = opensearchBruker.fornavn,
