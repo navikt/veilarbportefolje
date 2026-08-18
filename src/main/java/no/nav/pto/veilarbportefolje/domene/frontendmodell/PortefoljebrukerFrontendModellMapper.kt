@@ -331,6 +331,9 @@ object PortefoljebrukerFrontendModellMapper {
         } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
             val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
             return mapHendelseTilFrontendModell(innhold)
+        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING)) {
+            val innhold = opensearchBruker.hendelser!![Kategori.KANDIDAT_FOR_UTMELDING]
+            return mapHendelseTilFrontendModell(innhold)
         } else {
             return null
         }

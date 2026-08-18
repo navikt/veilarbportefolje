@@ -867,6 +867,82 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         Assertions.assertThat(bruker3.aktoer_id).isNotIn(response.brukere)
     }
 
+    @Test
+    fun skal_kunne_sortere_pa_beksrivelse_enum_for_hendelsefilter_kandidat_for_utgang() {
+        // Given
+        val aktoridBruker1 = AktorId.of("1111111111111")
+        val aktoridBruker2 = AktorId.of("2222222222222")
+        val aktoridBruker3 = AktorId.of("3333333333333")
+
+        val kandidatBruker1 = genererRandomHendelse(
+            kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+            hendelseBekrivelseEnum = "BBB"
+        ).hendelse
+        val kandidatBruker2 = genererRandomHendelse(
+            kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+            hendelseBekrivelseEnum = "CCC"
+        ).hendelse
+        val kandidatBruker3 = genererRandomHendelse(
+            kategori = Kategori.KANDIDAT_FOR_UTMELDING,
+            hendelseBekrivelseEnum = "AAA"
+        ).hendelse
+
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker1.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.KANDIDAT_FOR_UTMELDING to kandidatBruker1),
+        )
+
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker2.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.KANDIDAT_FOR_UTMELDING to kandidatBruker2),
+        )
+
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = aktoridBruker3.toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            ny_for_veileder = false,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.KANDIDAT_FOR_UTMELDING to kandidatBruker3),
+        )
+
+        val brukere = listOf(bruker1, bruker2, bruker3)
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+        // When
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.KANDIDAT_FOR_UTMELDING)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.FILTERHENDELSE_BESKRIVELSE_ENUM,
+            filterValg,
+            null,
+            null
+        )
+
+        // Then
+        Assertions.assertThat(response.antall).isEqualTo(3)
+        Assertions.assertThat(bruker3.aktoer_id).isEqualTo(response.brukere[0].aktoerid)
+        Assertions.assertThat(bruker1.aktoer_id).isEqualTo(response.brukere[1].aktoerid)
+        Assertions.assertThat(bruker2.aktoer_id).isEqualTo(response.brukere[2].aktoerid)
+    }
+
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }

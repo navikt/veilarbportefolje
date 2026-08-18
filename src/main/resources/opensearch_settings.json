@@ -276,6 +276,9 @@
           "beskrivelse": {
             "type": "keyword"
           },
+          "beskrivelseEnum": {
+            "type": "keyword"
+          },
           "dato": {
             "type": "date"
           }

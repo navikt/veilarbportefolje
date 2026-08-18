@@ -277,11 +277,13 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `hendelser skal velge riktig hendelseskategori for mapping basert på filtervalg`() {
         val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
         val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             hendelser =
                 mapOf(
                     Kategori.UTGATT_VARSEL to utgattVarselHendelse,
-                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
+                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse,
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
                 )
         )
 
@@ -301,8 +303,18 @@ class PortefoljebrukerFrontendModellMapperTest {
                 )
             )
 
+        val frontendBrukerKandidatForUtmeldingFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = getFiltervalgDefaults().copy(
+                    ferdigfilterListe = listOf(Brukerstatus.KANDIDAT_FOR_UTMELDING)
+                )
+            )
+
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
+        val restultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
@@ -316,6 +328,11 @@ class PortefoljebrukerFrontendModellMapperTest {
             udeltSamtalereferatHendelse.dato.dayOfMonth,
             resultUdeltSamtalereferat.dato!!.dayOfMonth
         )
+
+        Assertions.assertNotNull(restultKandidat)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, restultKandidat!!.beskrivelse)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, restultKandidat.lenke)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, restultKandidat.dato!!.dayOfMonth)
     }
 
     @Test
