@@ -31,6 +31,7 @@ public class Statustall {
     private long tiltakshendelser;
     private long utgatteVarsel;
     private long udelteSamtalereferat;
+    private long kandidatForUtmelding;
 
     public Statustall() {
         this.totalt = 0;
@@ -57,6 +58,7 @@ public class Statustall {
         this.tiltakshendelser = 0;
         this.utgatteVarsel = 0;
         this.udelteSamtalereferat = 0;
+        this.kandidatForUtmelding = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets) {
@@ -84,5 +86,6 @@ public class Statustall {
         this.tiltakshendelser = buckets.getTiltakshendelser().getDoc_count();
         this.utgatteVarsel = buckets.getUtgatteVarsel().getDoc_count();
         this.udelteSamtalereferat = buckets.getUdelteSamtalereferat().getDoc_count();
+        this.kandidatForUtmelding = buckets.getKandidatForUtmelding().getDoc_count();
     }
 }

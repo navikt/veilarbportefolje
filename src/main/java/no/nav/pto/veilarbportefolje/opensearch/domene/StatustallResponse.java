@@ -43,6 +43,7 @@ public class StatustallResponse {
                 Bucket tiltakshendelser;
                 Bucket utgatteVarsel;
                 Bucket udelteSamtalereferat;
+                Bucket kandidatForUtmelding;
             }
         }
     }
