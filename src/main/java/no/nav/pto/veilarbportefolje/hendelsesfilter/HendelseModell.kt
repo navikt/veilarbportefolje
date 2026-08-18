@@ -18,7 +18,6 @@ data class HendelseRecordValue(
         val beskrivelse: String,
         val beskrivelseEnum: String?,
         val dato: ZonedDateTime,
-        //val datoFrist: ZonedDateTime?,
         val lenke: URL,
         val detaljer: String?
     )
@@ -47,7 +46,6 @@ data class Hendelse(
         val beskrivelse: String,
         val beskrivelseEnum: String?,
         val dato: ZonedDateTime,
-        //val datoFrist: ZonedDateTime?,
         val lenke: URL,
         val detaljer: String?
     )
@@ -63,7 +61,6 @@ fun toHendelse(hendelseRecordValue: HendelseRecordValue, hendelseKey: String): H
             beskrivelse = hendelseRecordValue.hendelse.beskrivelse,
             beskrivelseEnum = hendelseRecordValue.hendelse.beskrivelseEnum,
             dato = hendelseRecordValue.hendelse.dato,
-            //datoFrist = hendelseRecordValue.hendelse.datoFrist,
             lenke = hendelseRecordValue.hendelse.lenke,
             detaljer = hendelseRecordValue.hendelse.detaljer,
         )
