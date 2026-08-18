@@ -16,7 +16,7 @@ data class HendelseRecordValue(
         // Det er produsent som må bestemme kobling mellom beskrivelse og beskrivelseEnum.
         // Førstnenvte er tekst som vises i frontend, og enum er for lettere sortering og filtrering i backend.
         val beskrivelse: String,
-        val beskrivelseEnum: String?,
+        val beskrivelseEnum: String? = null,
         val dato: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?
@@ -44,7 +44,7 @@ data class Hendelse(
 ) {
     data class HendelseInnhold(
         val beskrivelse: String,
-        val beskrivelseEnum: String?,
+        val beskrivelseEnum: String? = null,
         val dato: ZonedDateTime,
         val lenke: URL,
         val detaljer: String?
