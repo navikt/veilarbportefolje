@@ -64,7 +64,11 @@ class UngdomsprogramService(
 
                 upsertUngdomsprogramForAktivIdentForBruker(bruker.deltakerIdent, bruker.periode)
 
-                val harAktivYtelse = tilOgMed == null || !tilOgMed.isBefore(LocalDate.now())
+                // Aktiv hvis åpen periode (tom == null) eller til og med ikke er i fortiden, OG hvis maksdato ikke er i fortiden
+                val harAktivYtelse =
+                    (tilOgMed == null || !tilOgMed.isBefore(LocalDate.now())) && !bruker.periode.periodeMaksDato.isBefore(
+                        LocalDate.now()
+                    )
                 if (harAktivYtelse) {
                     opensearchIndexerPaDatafelt.oppdaterUngdomsprogram(aktorId, bruker.periode)
                 } else {
