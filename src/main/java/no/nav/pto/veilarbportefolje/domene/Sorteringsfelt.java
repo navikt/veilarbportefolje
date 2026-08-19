@@ -107,7 +107,8 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_TEKST("tiltakshendelse_tekst"),
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet"),
 
-    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet");
+    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet"),
+    FILTERHENDELSE_BESKRIVELSE_ENUM("filterhendelse_beskrivelse_enum");
 
     /**
      * Filterverdien som vert sendt mellom frontend og backend

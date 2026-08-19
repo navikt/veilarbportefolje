@@ -63,7 +63,8 @@ object PortefoljebrukerFrontendModellMapper {
                 harBehovForArbeidsevneVurdering = harBehovForArbeidsevneVurdering,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
                 diskresjonskodeFortrolig = diskresjonskodeFortrolig,
-                profileringResultat = profileringResultat
+                profileringResultat = profileringResultat,
+                kandidatForUtmelding = opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null,
             ),
             fnr = opensearchBruker.fnr,
             fornavn = opensearchBruker.fornavn,
@@ -330,6 +331,9 @@ object PortefoljebrukerFrontendModellMapper {
             return mapHendelseTilFrontendModell(innhold)
         } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
             val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
+            return mapHendelseTilFrontendModell(innhold)
+        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING)) {
+            val innhold = opensearchBruker.hendelser!![Kategori.KANDIDAT_FOR_UTMELDING]
             return mapHendelseTilFrontendModell(innhold)
         } else {
             return null
