@@ -171,6 +171,43 @@ class UngdomsprogramServiceTest(
         }
     }
 
+    @Test
+    fun `skal ikke populere bruker i opensearch-filter når tilOgMed er null og maksdato er i fortiden`() {
+        val aktorId = randomAktorId()
+        val navKontor = NavKontor.of("1123")
+        val veilederId = VeilederId.of("Z12345")
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        populateOpensearch(navKontor, veilederId, aktorId.get())
+
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriodeMedNullTilOgMedOgMaksdatoIFortiden)
+
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+
+        val getResponse = opensearchTestClient.fetchDocument(aktorId)
+        assertThat(getResponse.sourceAsMap[UNGDOMSPROGRAM]).isNull()
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseUngdomsprogram = listOf(YtelseUngdomsprogram.HAR_UNGDOMSPROGRAMYTELSE)
+        )
+
+        verifiserAsynkront(
+            2, TimeUnit.SECONDS
+        ) {
+            val responseBrukere: BrukereMedAntall = opensearchService.hentBrukere(
+                "1123",
+                Optional.empty(),
+                Sorteringsrekkefolge.STIGENDE,
+                Sorteringsfelt.IKKE_SATT,
+                filtervalg,
+                null,
+                null
+            )
+
+            assertThat(responseBrukere.antall).isEqualTo(0)
+        }
+    }
 
     @Test
     fun `skal populere og filtrere riktig i opensearch ved sletting av ungdomsprogram `() {
@@ -267,6 +304,20 @@ val mockedPeriodeFortid = UngdomsprogramResponseDto(
                 tilOgMed = LocalDate.now().minusMonths(11),
                 harForlengetPeriode = false,
                 periodeMaksDato = LocalDate.now().plusMonths(12)
+            )
+        )
+    )
+)
+
+val mockedPeriodeMedNullTilOgMedOgMaksdatoIFortiden = UngdomsprogramResponseDto(
+    deltakelser = listOf(
+        Deltakelse(
+            deltakerIdent = "10108000000",
+            periode = Periode(
+                fraOgMed = LocalDate.now().minusMonths(1),
+                tilOgMed = null,
+                harForlengetPeriode = false,
+                periodeMaksDato = LocalDate.now().minusDays(1)
             )
         )
     )
