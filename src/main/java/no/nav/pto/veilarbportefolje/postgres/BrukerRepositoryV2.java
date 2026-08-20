@@ -299,7 +299,6 @@ public class BrukerRepositoryV2 {
         DagpengerRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : DagpengerRettighetstype.valueOf(rettighetstype);
         LocalDate vedtaksDatoTom = rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
         Integer antallDagerResterende = rs.getObject(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) != null ? rs.getInt(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) : null;
-        LocalDate datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET) != null ? rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET).toLocalDate() : null;
 
         boolean harEnDagpengeperiodeIDatabasen = rettighetstype != null;
         boolean vedtakErFortsattGjeldende = harEnDagpengeperiodeIDatabasen && (vedtaksDatoTom == null || vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1)));
@@ -308,8 +307,7 @@ public class BrukerRepositoryV2 {
                 vedtakErFortsattGjeldende,
                 rettighetstypeOrNull,
                 vedtaksDatoTom,
-                antallDagerResterende,
-                datoAntallDagerBleBeregnet
+                antallDagerResterende
         );
 
         brukerOpensearchModell.setDagpenger(dagpenger);
