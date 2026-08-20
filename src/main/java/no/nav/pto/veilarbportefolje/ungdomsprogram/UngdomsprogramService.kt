@@ -114,6 +114,8 @@ class UngdomsprogramService(
     }
 
     fun slettUngdomsprogramForAlleIdenterForBruker(personIdent: String) {
+        //redundancy for bruker som ikke finnes i pdlIdentRepository, men som fortsatt har data i ungdomsprogramdatabasen
+        ungdomsprogramRepository.slettUngdomsprogramForBruker(personIdent)
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->
             ungdomsprogramRepository.slettUngdomsprogramForBruker(ident)
