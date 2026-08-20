@@ -84,11 +84,6 @@ public class PostgresOpensearchMapper {
     private void flettInnAktivitetData(AktivitetEntity aktivitetData, PortefoljebrukerOpensearchModell brukerOpensearchModell) {
         brukerOpensearchModell.setAlle_aktiviteter_mote_startdato(aktivitetData.getAktivitetMoteStartdato());
         brukerOpensearchModell.setAlle_aktiviteter_mote_utlopsdato(aktivitetData.getAktivitetMoteUtlopsdato());
-        brukerOpensearchModell.setAlle_aktiviteter_stilling_utlopsdato(aktivitetData.getAktivitetStillingUtlopsdato());
-        brukerOpensearchModell.setAlle_aktiviteter_egen_utlopsdato(aktivitetData.getAktivitetEgenUtlopsdato());
-        brukerOpensearchModell.setAlle_aktiviteter_behandling_utlopsdato(aktivitetData.getAktivitetBehandlingUtlopsdato());
-        brukerOpensearchModell.setAlle_aktiviteter_ijobb_utlopsdato(aktivitetData.getAktivitetIjobbUtlopsdato());
-        brukerOpensearchModell.setAlle_aktiviteter_sokeavtale_utlopsdato(aktivitetData.getAktivitetSokeavtaleUtlopsdato());
         brukerOpensearchModell.setNeste_cv_kan_deles_status(aktivitetData.getNesteCvKanDelesStatus());
         brukerOpensearchModell.setNeste_svarfrist_stilling_fra_nav(aktivitetData.getNesteSvarfristStillingFraNav());
         brukerOpensearchModell.setAlleAktiviteter(aktivitetData.getAlleAktiviteter());
@@ -121,7 +116,6 @@ public class PostgresOpensearchMapper {
         Map<Fnr, List<Statsborgerskap>> statsborgerskaps = pdlService.hentStatsborgerskap(fnrs);
         brukerOpensearchModellList.forEach(bruker -> {
             List<Statsborgerskap> statsborgerskapList = statsborgerskaps.getOrDefault(Fnr.of(bruker.getFnr()), Collections.emptyList());
-            bruker.setHarFlereStatsborgerskap(statsborgerskapList.size() > 1);
             bruker.setHovedStatsborgerskap(getHovedStatsborgerskap(statsborgerskapList));
         });
     }

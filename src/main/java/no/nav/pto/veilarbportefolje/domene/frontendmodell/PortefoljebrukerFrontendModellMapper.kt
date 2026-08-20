@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter.ofPattern
 import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
@@ -159,20 +158,13 @@ object PortefoljebrukerFrontendModellMapper {
     private fun mapTiltakspenger(opensearchBruker: PortefoljebrukerOpensearchModell): Tiltakspenger? {
         val vedtaksdato = opensearchBruker.tiltakspenger_vedtaksdato_tom
         val rettighet = opensearchBruker.tiltakspenger_rettighet
-        if (vedtaksdato == null && rettighet == null) {
+        if (vedtaksdato == null || rettighet == null) {
             return null
         }
-        // TODO: 2026-01-05, Sondre
-        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet!!)
+        val rettighetTekst = TiltakspengerRettighet.tilFrontendtekst(rettighet)
 
         return Tiltakspenger(
-            vedtaksdatoTilOgMed = opensearchBruker.tiltakspenger_vedtaksdato_tom!!,
+            vedtaksdatoTilOgMed = vedtaksdato,
             rettighet = rettighetTekst
         )
     }
@@ -181,9 +173,6 @@ object PortefoljebrukerFrontendModellMapper {
         opensearchModell.dagpenger?.harDagpenger ?: return null
         val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
         val antallDager = opensearchModell.dagpenger?.antallResterendeDager
-        // Avventer tilbakemeldinger på hvordan denne skal vises i frontend, lar den derfor stå enn så lenge.
-        val datoAntallDagerBleBeregnet =
-            opensearchModell.dagpenger?.datoAntallDagerBleBeregnet?.format(ofPattern("dd.MM.yyyy"))
 
         val resterendeDagerMedDato = if (antallDager != null) {
             if (antallDager == 1) {
@@ -197,7 +186,6 @@ object PortefoljebrukerFrontendModellMapper {
             rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
             datoStans = opensearchModell.dagpenger?.datoStans,
             resterendeDager = resterendeDagerMedDato
-
         )
     }
 

@@ -73,16 +73,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
             foedelandFulltNavn = PortefoljebrukerOpensearchModell.FOEDELAND_FULLT_NAVN,
             fornavn = PortefoljebrukerOpensearchModell.FORNAVN,
             fullt_navn = PortefoljebrukerOpensearchModell.FULLT_NAVN,
-            harFlereStatsborgerskap = PortefoljebrukerOpensearchModell.HAR_FLERE_STATSBORGERSKAP,
             harUkjentBosted = PortefoljebrukerOpensearchModell.HAR_UKJENT_BOSTED,
             hovedStatsborgerskap = PortefoljebrukerOpensearchModell.HOVED_STATSBORGERSKAP,
             kjonn = PortefoljebrukerOpensearchModell.KJONN,
             kommunenummer = PortefoljebrukerOpensearchModell.KOMMUNENUMMER,
             landgruppe = PortefoljebrukerOpensearchModell.LANDGRUPPE,
             sikkerhetstiltak = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK,
-            sikkerhetstiltak_beskrivelse = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_BESKRIVELSE,
-            sikkerhetstiltak_gyldig_fra = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_GYLDIG_FRA,
-            sikkerhetstiltak_gyldig_til = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_GYLDIG_TIL,
             talespraaktolk = PortefoljebrukerOpensearchModell.TALESPRAAK_TOLK,
             tegnspraaktolk = PortefoljebrukerOpensearchModell.TEGNSPRAAK_TOLK,
             tolkBehovSistOppdatert = PortefoljebrukerOpensearchModell.TOLKBEHOV_SIST_OPPDATERT,
@@ -91,8 +87,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             // Oppfølging
             enhet_id = PortefoljebrukerOpensearchModell.ENHET_ID,
             gjeldendeVedtak14a = PortefoljebrukerOpensearchModell.GJELDENDE_VEDTAK_14A,
-            hovedmaalkode = PortefoljebrukerOpensearchModell.HOVEDMAAL_KODE,
-            iserv_fra_dato = PortefoljebrukerOpensearchModell.ISERV_FRA_DATO,
             kvalifiseringsgruppekode = PortefoljebrukerOpensearchModell.KVALIFISERINGSGRUPPE_KODE,
             manuell_bruker = PortefoljebrukerOpensearchModell.MANUELL_BRUKER,
             ny_for_veileder = PortefoljebrukerOpensearchModell.NY_FOR_VEILEDER,
@@ -131,13 +125,8 @@ class OpensearchServiceSerderAlleFelterIntTest(
             aktivitet_utdanningaktivitet_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_UTDANNINGAKTIVITET_UTLOPSDATO,
             aktiviteter = PortefoljebrukerOpensearchModell.AKTIVITETER,
             alleAktiviteter = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER,
-            alle_aktiviteter_behandling_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_BEHANDLING_UTLOPSDATO,
-            alle_aktiviteter_egen_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_EGEN_UTLOPSDATO,
-            alle_aktiviteter_ijobb_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_IJOBB_UTLOPSDATO,
             alle_aktiviteter_mote_startdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_MOTE_STARTDATO,
             alle_aktiviteter_mote_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_MOTE_UTLOPSDATO,
-            alle_aktiviteter_sokeavtale_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_SOKE_AVTALE_UTLOPSDATO,
-            alle_aktiviteter_stilling_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_STILLING_UTLOPSDATO,
             forrige_aktivitet_start = PortefoljebrukerOpensearchModell.FORRIGE_AKTIVITET_START,
             neste_aktivitet_start = PortefoljebrukerOpensearchModell.NESTE_AKTIVITET_START,
             nyesteutlopteaktivitet = PortefoljebrukerOpensearchModell.NYESTE_UTLOPTE_AKTIVITET,
@@ -183,7 +172,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             formidlingsgruppekode = PortefoljebrukerOpensearchModell.FORMIDLINGSGRUPPE_KODE,
             huskelapp = PortefoljebrukerOpensearchModell.HUSKELAPP,
             tiltakshendelse = PortefoljebrukerOpensearchModell.TILTAKSHENDELSE,
-            utgatt_varsel = PortefoljebrukerOpensearchModell.UTGATT_VARSEL,
         )
 
         object PortefoljebrukerOpensearchModell {
@@ -203,16 +191,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val FOEDELAND_FULLT_NAVN: String = "NORGE"
             val FORNAVN: String = "Ola"
             val FULLT_NAVN: String = "Ola Nordmann"
-            val HAR_FLERE_STATSBORGERSKAP: Boolean = false
             val HAR_UKJENT_BOSTED: Boolean = false
             val HOVED_STATSBORGERSKAP: Statsborgerskap = Statsborgerskap("NORGE", LocalDate.parse("1974-10-04"), null)
             val KJONN: String = "K"
             val KOMMUNENUMMER: String = "3324"
             val LANDGRUPPE: String = "3"
             val SIKKERHETSTILTAK: String = "TFUS"
-            val SIKKERHETSTILTAK_BESKRIVELSE: String = "Telefonisk utestengelse"
-            val SIKKERHETSTILTAK_GYLDIG_FRA: String = "2025-11-07"
-            val SIKKERHETSTILTAK_GYLDIG_TIL: String = "2025-12-07"
             val TALESPRAAK_TOLK: String = "NN"
             val TEGNSPRAAK_TOLK: String = "EN"
             val TOLKBEHOV_SIST_OPPDATERT: LocalDate = LocalDate.parse("2025-11-07")
@@ -225,8 +209,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 Hovedmal.BEHOLDE_ARBEID,
                 ZonedDateTime.parse("2025-11-07T12:00:00.000000+01:00")
             )
-            val HOVEDMAAL_KODE: String = "BEHOLDEA"
-            val ISERV_FRA_DATO: String = "2025-11-10T00:00:00.000000Z"
             val KVALIFISERINGSGRUPPE_KODE: String = "BFORM"
             val MANUELL_BRUKER: String = "MANUELL"
             val NY_FOR_VEILEDER: Boolean = true
@@ -287,13 +269,8 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 "gruppeaktivitet",
                 "utdanningaktivitet",
             )
-            val ALLE_AKTIVITETER_BEHANDLING_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
-            val ALLE_AKTIVITETER_EGEN_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
-            val ALLE_AKTIVITETER_IJOBB_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
             val ALLE_AKTIVITETER_MOTE_STARTDATO: String = "2025-10-10T10:00:00.000Z"
             val ALLE_AKTIVITETER_MOTE_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
-            val ALLE_AKTIVITETER_SOKE_AVTALE_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
-            val ALLE_AKTIVITETER_STILLING_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
             val FORRIGE_AKTIVITET_START: String = "2025-10-10T10:00:00.000Z"
             val NESTE_AKTIVITET_START: String = "2025-10-10T10:00:00.000Z"
             val NYESTE_UTLOPTE_AKTIVITET: String = "2025-10-10T10:00:00.000Z"
@@ -389,8 +366,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val DAGPENGER: DagpengerForOpensearch = DagpengerForOpensearch(
                 harDagpenger = true,
                 rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
-                antallResterendeDager = null,
-                datoAntallDagerBleBeregnet = null
+                antallResterendeDager = null
             )
             val UNGDOMSPROGRAM: UngdomsprogramForOpensearch = UngdomsprogramForOpensearch(
                 fraOgMed = LocalDate.parse("2025-02-10"),
@@ -431,13 +407,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 "/arbeidsmarkedstiltak/deltakelse/deltaker/cffaf928-bdeb-4994-88b7-d3f3ae194470",
                 Tiltakstype.ARBFORB,
                 Fnr.of("11111111111")
-            )
-            val UTGATT_VARSEL: Hendelse.HendelseInnhold = Hendelse.HendelseInnhold(
-                beskrivelse = "Bruker har et utgått varsel",
-                beskrivelseEnum = null,
-                dato = ZonedDateTime.parse("2025-07-01T13:37:00.000+02:00"),
-                lenke = URI.create("https://veilarbpersonflate.ansatt.dev.nav.no/aktivitetsplan").toURL(),
-                detaljer = null
             )
         }
     }
