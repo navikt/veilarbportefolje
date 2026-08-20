@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import org.jetbrains.annotations.TestOnly
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -69,6 +70,13 @@ class UngdomsprogramRepository(private val db: JdbcTemplate) {
             "DELETE FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME} WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?",
             norskIdent
         )
+    }
+
+    fun hentAlleIdenterMedUngdomsprogram(): List<String> {
+        return db.queryForList(
+            "SELECT ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME}",
+            String::class.java
+        ).filterNotNull()
     }
 
 }

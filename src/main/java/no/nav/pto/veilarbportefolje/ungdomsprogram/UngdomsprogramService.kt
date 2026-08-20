@@ -13,6 +13,7 @@ import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
+import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Deltakelse
 
 
 /**
@@ -40,9 +41,10 @@ class UngdomsprogramService(
                 val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(bruker.deltakerIdent)
                 if (!erUnderOppfolging) {
                     secureLog.info(
-                        "Bruker {} er ikke under oppfølging, ignorerer ungdomsprogram-data på bruker",
+                        "Bruker {} er ikke under oppfølging, ignorerer ungdomsprogram-data på bruker og sletter evt eksisterende ytelse-periode i databasen",
                         bruker.deltakerIdent
                     )
+                    slettUngdomsprogramForAlleIdenterForBruker(bruker.deltakerIdent)
                     continue
                 }
                 val aktorId = aktorClient.hentAktorId(Fnr.of(bruker.deltakerIdent))
@@ -79,6 +81,7 @@ class UngdomsprogramService(
                 secureLog.error("Feil ved behandling av ungdomsprogram for ${bruker.deltakerIdent}", e)
             }
         }
+        slettUngdomsprogramForBrukereIkkeLengerIApiResponsen(alleBrukere)
     }
 
     fun upsertUngdomsprogramForAktivIdentForBruker(
@@ -114,6 +117,26 @@ class UngdomsprogramService(
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->
             ungdomsprogramRepository.slettUngdomsprogramForBruker(ident)
+        }
+    }
+
+    private fun slettUngdomsprogramForBrukereIkkeLengerIApiResponsen(brukereFraApi: List<Deltakelse>) {
+        val identerFraApi = brukereFraApi.map { it.deltakerIdent }.toSet()
+        val lagredeIdenter = ungdomsprogramRepository.hentAlleIdenterMedUngdomsprogram()
+        val identerSomSkalSlettes = lagredeIdenter.filterNot { identerFraApi.contains(it) }
+
+        identerSomSkalSlettes.forEach { ident ->
+            try {
+                secureLog.info(
+                    "Bruker {} er ikke lenger i ungdomsprogram-API-responsen, sletter eksisterende ytelse-periode",
+                    ident
+                )
+                slettUngdomsprogramForAlleIdenterForBruker(ident)
+                val aktorId = aktorClient.hentAktorId(Fnr.of(ident))
+                opensearchIndexerPaDatafelt.slettUngdomsprogram(aktorId)
+            } catch (e: Exception) {
+                secureLog.error("Feil ved sletting av ungdomsprogram for bruker ikke lenger i API: $ident", e)
+            }
         }
     }
 

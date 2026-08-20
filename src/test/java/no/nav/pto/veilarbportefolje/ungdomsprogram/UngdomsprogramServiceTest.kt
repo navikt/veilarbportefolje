@@ -131,6 +131,30 @@ class UngdomsprogramServiceTest(
     }
 
     @Test
+    fun `hentUngdomsprogramForAlleBrukere skal slette bruker som ikke lenger finnes i API-responsen`() {
+        // Given: bruker er lagret i DB fra en tidligere kjøring
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        pdlIdentRepository.upsertIdenter(identerBruker)
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+
+        val kunDenneBrukeren = UngdomsprogramResponseDto(
+            deltakelser = listOf(mockedPeriode.deltakelser[0])
+        )
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(kunDenneBrukeren)
+
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+        assertThat(undomsprogramRepository.hentUngdomsprogram(norskIdent.get())).isNotNull
+
+        // When: bruker fjernes fra API-responsen
+        `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram())
+            .thenReturn(UngdomsprogramResponseDto(deltakelser = emptyList()))
+        ungdomsprogramService.hentUngdomsprogramForAlleBrukere()
+
+        // Then: bruker skal være slettet fra databasen
+        assertThat(undomsprogramRepository.hentUngdomsprogram(norskIdent.get())).isNull()
+    }
+
+    @Test
     fun `Ungdomsprogram skal populere og filtrere riktig i opensearch når man har ytelsen`() {
         val aktorId = randomAktorId()
         setInitialState(aktorId)
