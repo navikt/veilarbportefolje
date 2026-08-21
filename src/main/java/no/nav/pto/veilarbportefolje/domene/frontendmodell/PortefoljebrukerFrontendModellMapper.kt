@@ -317,36 +317,27 @@ object PortefoljebrukerFrontendModellMapper {
         opensearchBruker: PortefoljebrukerOpensearchModell,
         filtervalg: Filtervalg
     ): HendelseInnhold? {
-        // TODO: 2026-01-05, Sondre
-        //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-        //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-        //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-        //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-        //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-        //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-
         if (!filtervalg.harFerdigFilter()) return null
-        if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL)) {
-            val innhold = opensearchBruker.hendelser!![Kategori.UTGATT_VARSEL]
-            return mapHendelseTilFrontendModell(innhold)
-        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT)) {
-            val innhold = opensearchBruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]
-            return mapHendelseTilFrontendModell(innhold)
-        } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING)) {
-            val innhold = opensearchBruker.hendelser!![Kategori.KANDIDAT_FOR_UTMELDING]
-            return mapHendelseTilFrontendModell(innhold)
-        } else {
-            return null
+
+        val kategori = when {
+            filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL) -> Kategori.UTGATT_VARSEL
+            filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT) -> Kategori.UDELT_SAMTALEREFERAT
+            filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING) -> Kategori.KANDIDAT_FOR_UTMELDING
+            else -> return null
         }
+
+        val innhold = opensearchBruker.hendelser?.get(kategori) ?: return null
+        return mapHendelseTilFrontendModell(innhold)
     }
 
     private fun mapHendelseTilFrontendModell(
-        hendelseOpensearch: Hendelse.HendelseInnhold?
+        hendelseOpensearch: Hendelse.HendelseInnhold
     ): HendelseInnhold {
         return HendelseInnhold(
-            beskrivelse = hendelseOpensearch?.beskrivelse,
-            dato = fromZonedDateTimeToLocalDateOrNull(hendelseOpensearch?.dato),
-            lenke = hendelseOpensearch?.lenke
+            beskrivelse = hendelseOpensearch.beskrivelse,
+            dato = fromZonedDateTimeToLocalDateOrNull(hendelseOpensearch.dato),
+            datoFrist = fromZonedDateTimeToLocalDateOrNull(hendelseOpensearch.datoFrist),
+            lenke = hendelseOpensearch.lenke
         )
     }
 
