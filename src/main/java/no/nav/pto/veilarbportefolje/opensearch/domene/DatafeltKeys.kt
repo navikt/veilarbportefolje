@@ -172,6 +172,7 @@ object DatafeltKeys {
         val HENDELSER_BESKRIVELSE = Hendelse.HendelseInnhold::beskrivelse.name
         val HENDELSER_BESKRIVELSE_ENUM = Hendelse.HendelseInnhold::beskrivelseEnum.name
         val HENDELSER_DATO = Hendelse.HendelseInnhold::dato.name
+        val HENDELSER_DATO_FRIST = Hendelse.HendelseInnhold::datoFrist.name
         val HENDELSER_LENKE = Hendelse.HendelseInnhold::lenke.name
         val HENDELSER_DETALJER = Hendelse.HendelseInnhold::detaljer.name
     }

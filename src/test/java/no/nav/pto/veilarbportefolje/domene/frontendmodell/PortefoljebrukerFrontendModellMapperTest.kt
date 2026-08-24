@@ -342,25 +342,26 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
-        val restultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
+        val resultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
         Assertions.assertEquals(utgattVarselHendelse.lenke, resultUtgåttVarsel.lenke)
-        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
+        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato.dayOfMonth)
 
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
         Assertions.assertEquals(
             udeltSamtalereferatHendelse.dato.dayOfMonth,
-            resultUdeltSamtalereferat.dato!!.dayOfMonth
+            resultUdeltSamtalereferat.dato.dayOfMonth
         )
 
-        Assertions.assertNotNull(restultKandidat)
-        Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, restultKandidat!!.beskrivelse)
-        Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, restultKandidat.lenke)
-        Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, restultKandidat.dato!!.dayOfMonth)
+        Assertions.assertNotNull(resultKandidat)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, resultKandidat!!.beskrivelse)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, resultKandidat.lenke)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, resultKandidat.dato!!.dayOfMonth)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth, resultKandidat.datoFrist?.dayOfMonth)
     }
 
     @Test

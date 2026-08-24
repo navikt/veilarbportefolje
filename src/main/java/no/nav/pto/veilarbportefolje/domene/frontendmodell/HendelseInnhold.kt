@@ -4,7 +4,8 @@ import java.net.URL
 import java.time.LocalDate
 
 data class HendelseInnhold(
-    val beskrivelse: String?,
-    val dato: LocalDate?,
-    val lenke: URL?,
+    val beskrivelse: String,
+    val dato: LocalDate,
+    val datoFrist: LocalDate?,
+    val lenke: URL,
 )
