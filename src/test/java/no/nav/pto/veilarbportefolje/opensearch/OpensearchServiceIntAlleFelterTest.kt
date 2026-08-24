@@ -10,7 +10,6 @@ import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
@@ -29,7 +28,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.springframework.beans.factory.annotation.Autowired
-import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -125,8 +123,13 @@ class OpensearchServiceSerderAlleFelterIntTest(
             aktivitet_utdanningaktivitet_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_UTDANNINGAKTIVITET_UTLOPSDATO,
             aktiviteter = PortefoljebrukerOpensearchModell.AKTIVITETER,
             alleAktiviteter = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER,
+            alle_aktiviteter_behandling_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_BEHANDLING_UTLOPSDATO,
+            alle_aktiviteter_egen_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_EGEN_UTLOPSDATO,
+            alle_aktiviteter_ijobb_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_IJOBB_UTLOPSDATO,
             alle_aktiviteter_mote_startdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_MOTE_STARTDATO,
             alle_aktiviteter_mote_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_MOTE_UTLOPSDATO,
+            alle_aktiviteter_sokeavtale_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_SOKE_AVTALE_UTLOPSDATO,
+            alle_aktiviteter_stilling_utlopsdato = PortefoljebrukerOpensearchModell.ALLE_AKTIVITETER_STILLING_UTLOPSDATO,
             forrige_aktivitet_start = PortefoljebrukerOpensearchModell.FORRIGE_AKTIVITET_START,
             neste_aktivitet_start = PortefoljebrukerOpensearchModell.NESTE_AKTIVITET_START,
             nyesteutlopteaktivitet = PortefoljebrukerOpensearchModell.NYESTE_UTLOPTE_AKTIVITET,
@@ -269,8 +272,13 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 "gruppeaktivitet",
                 "utdanningaktivitet",
             )
+            val ALLE_AKTIVITETER_BEHANDLING_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
+            val ALLE_AKTIVITETER_EGEN_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
+            val ALLE_AKTIVITETER_IJOBB_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
             val ALLE_AKTIVITETER_MOTE_STARTDATO: String = "2025-10-10T10:00:00.000Z"
             val ALLE_AKTIVITETER_MOTE_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
+            val ALLE_AKTIVITETER_SOKE_AVTALE_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
+            val ALLE_AKTIVITETER_STILLING_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
             val FORRIGE_AKTIVITET_START: String = "2025-10-10T10:00:00.000Z"
             val NESTE_AKTIVITET_START: String = "2025-10-10T10:00:00.000Z"
             val NYESTE_UTLOPTE_AKTIVITET: String = "2025-10-10T10:00:00.000Z"
