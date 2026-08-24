@@ -75,6 +75,7 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
         ),
         avtalt = true,
         historisk = false,
+        oppfolgingsperiodeId = "oppfolgingsperiodeId-1",
         tiltakskode = "ARBFORB",
     )
 }
