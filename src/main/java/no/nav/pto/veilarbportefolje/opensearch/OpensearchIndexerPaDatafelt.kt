@@ -327,6 +327,7 @@ class OpensearchIndexerPaDatafelt(
             .field(DatafeltKeys.Annet.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
             .field(DatafeltKeys.Annet.HENDELSER_BESKRIVELSE_ENUM, hendelse.hendelse.beskrivelseEnum)
             .field(DatafeltKeys.Annet.HENDELSER_DATO, hendelse.hendelse.dato)
+            .field(DatafeltKeys.Annet.HENDELSER_DATO_FRIST, hendelse.hendelse.datoFrist)
             .field(DatafeltKeys.Annet.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
             .field(DatafeltKeys.Annet.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
             .endObject()

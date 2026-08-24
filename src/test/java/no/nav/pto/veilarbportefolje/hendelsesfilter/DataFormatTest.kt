@@ -28,6 +28,7 @@ class DataformatTest {
                 "beskrivelse": "Bruker har et utgått varsel",
                 "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00.000+01:00",
+                "datoFrist": "2024-12-04T00:00:00.000+01:00",
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
               }
@@ -45,13 +46,14 @@ class DataformatTest {
                 beskrivelse = "Bruker har et utgått varsel",
                 beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                datoFrist = ZonedDateTime.of(2024, 12, 4, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
             ),
         )
         assertThat(deserialisertHendelseRecordValue).isNotNull
         assertThat(deserialisertHendelseRecordValue).isEqualTo(forventetHendelseRecordValue)
-    }
+  }
 
     @Test
     fun `deserialisering av JSON payload med beskrivelseEnum gir forventet HendelseRecordValue`() {
@@ -92,7 +94,7 @@ class DataformatTest {
     }
 
     @Test
-    fun `deserialisering av JSON payload uten beskrivelseEnum gir forventet HendelseRecordValue (bakoverkompatibilitet)`() {
+    fun `deserialisering av JSON payload uten beskrivelseEnum og datoFrist gir forventet HendelseRecordValue (bakoverkompatibilitet)`() {
         // language=json
         val jsonInput = """
             {
@@ -120,6 +122,7 @@ class DataformatTest {
                 beskrivelse = "Bruker har et utgått varsel",
                 beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                datoFrist = null,
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
             ),
@@ -139,6 +142,7 @@ class DataformatTest {
                 beskrivelse = "Bruker har et utgått varsel",
                 beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                datoFrist = null,
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
             ),
@@ -157,6 +161,7 @@ class DataformatTest {
                 "beskrivelse": "Bruker har et utgått varsel",
                 "beskrivelseEnum": null,
                 "dato": "2024-11-27T00:00:00+01:00",
+                "datoFrist": null,
                 "lenke": "https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan",
                 "detaljer": null
               }
@@ -178,6 +183,7 @@ class DataformatTest {
                 beskrivelse = "Bruker har et utgått varsel",
                 beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                datoFrist = ZonedDateTime.of(2024, 12, 4, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
             ),
@@ -194,6 +200,7 @@ class DataformatTest {
                 beskrivelse = "Bruker har et utgått varsel",
                 beskrivelseEnum = null,
                 dato = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                datoFrist = ZonedDateTime.of(2024, 12, 4, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
                 lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
                 detaljer = null,
             ),

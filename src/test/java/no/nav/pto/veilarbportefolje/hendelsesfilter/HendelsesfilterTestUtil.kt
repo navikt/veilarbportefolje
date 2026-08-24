@@ -21,6 +21,7 @@ fun genererRandomHendelse(): Hendelse {
         randomBeskrivelse(),
         randomBeskrivelseEnum(),
         randomZonedDate(),
+        randomDatoFrist(),
         randomUrl(),
         randomDetaljer(),
     )
@@ -36,6 +37,7 @@ fun genererRandomHendelse(kategori: Kategori): Hendelse {
         randomBeskrivelse(),
         randomBeskrivelseEnum(),
         randomZonedDate(),
+        randomDatoFrist(),
         randomUrl(),
         randomDetaljer(),
     )
@@ -51,6 +53,7 @@ fun genererRandomHendelse(kategori: Kategori, hendelseDato: ZonedDateTime): Hend
         randomBeskrivelse(),
         randomBeskrivelseEnum(),
         hendelseDato,
+        randomDatoFrist(),
         randomUrl(),
         randomDetaljer(),
     )
@@ -64,6 +67,7 @@ fun genererRandomHendelse(
     hendelseBeskrivelse: String = randomBeskrivelse(),
     hendelseBekrivelseEnum: String? = randomBeskrivelseEnum(),
     hendelseDato: ZonedDateTime = randomZonedDate(),
+    hendelseDatoFrist: ZonedDateTime? = randomDatoFrist(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
 ): Hendelse {
@@ -76,6 +80,7 @@ fun genererRandomHendelse(
             beskrivelse = hendelseBeskrivelse,
             beskrivelseEnum = hendelseBekrivelseEnum,
             dato = hendelseDato,
+            datoFrist = hendelseDatoFrist,
             lenke = hendelseLenke,
             detaljer = hendelseDetaljer
         )
@@ -90,6 +95,7 @@ fun genererRandomHendelseRecordValue(
     hendelseBeskrivelse: String = randomBeskrivelse(),
     hendelseBeskrivelseEnum: String? = randomBeskrivelseEnum(),
     hendelseDato: ZonedDateTime = randomZonedDate(),
+    hendelseDatoFrist: ZonedDateTime? = randomDatoFrist(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
 ): HendelseRecordValue {
@@ -102,6 +108,7 @@ fun genererRandomHendelseRecordValue(
             beskrivelse = hendelseBeskrivelse,
             beskrivelseEnum = hendelseBeskrivelseEnum,
             dato = hendelseDato,
+            datoFrist = hendelseDatoFrist,
             lenke = hendelseLenke,
             detaljer = hendelseDetaljer,
         ),
@@ -143,6 +150,14 @@ fun randomOperasjon(): Operasjon {
 fun randomDetaljer(): String? {
     return if (Random.nextBoolean()) {
         "Detaljer_${Random.nextInt(until = 10)}"
+    } else {
+        null
+    }
+}
+
+fun randomDatoFrist(): ZonedDateTime? {
+    return if (Random.nextBoolean()) {
+        randomZonedDate()
     } else {
         null
     }

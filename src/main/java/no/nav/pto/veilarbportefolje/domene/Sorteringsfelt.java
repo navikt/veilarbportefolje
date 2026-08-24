@@ -108,6 +108,7 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet"),
 
     FILTERHENDELSE_DATO("filterhendelse_dato_opprettet"),
+    FILTERHENDELSE_DATO_FRIST("filterhendelse_dato_frist"),
     FILTERHENDELSE_BESKRIVELSE_ENUM("filterhendelse_beskrivelse_enum");
 
     /**

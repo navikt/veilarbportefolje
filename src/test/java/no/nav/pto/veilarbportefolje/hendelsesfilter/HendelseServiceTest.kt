@@ -16,8 +16,8 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.util.*
 
 class HendelseServiceTest(
-    @Autowired private val hendelseService: HendelseService,
-    @Autowired private val jdbcTemplate: JdbcTemplate
+    @param:Autowired private val hendelseService: HendelseService,
+    @param:Autowired private val jdbcTemplate: JdbcTemplate
 ) : EndToEndTest() {
 
     @BeforeEach
@@ -91,6 +91,7 @@ class HendelseServiceTest(
                     beskrivelse = it.hendelse.beskrivelse,
                     beskrivelseEnum = it.hendelse.beskrivelseEnum,
                     dato = it.hendelse.dato,
+                    datoFrist = it.hendelse.datoFrist,
                     lenke = it.hendelse.lenke,
                     detaljer = it.hendelse.detaljer,
                 ),

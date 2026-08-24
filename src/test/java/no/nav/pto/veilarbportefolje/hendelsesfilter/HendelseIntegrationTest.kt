@@ -22,10 +22,10 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.util.*
 
 class HendelseIntegrationTest(
-    @Autowired private val opensearchService: OpensearchService,
-    @Autowired private val hendelseService: HendelseService,
-    @Autowired private val hendelseRepository: HendelseRepository,
-    @Autowired private val jdbcTemplate: JdbcTemplate,
+    @param:Autowired private val opensearchService: OpensearchService,
+    @param:Autowired private val hendelseService: HendelseService,
+    @param:Autowired private val hendelseRepository: HendelseRepository,
+    @param:Autowired private val jdbcTemplate: JdbcTemplate,
 ) : EndToEndTest() {
 
     @BeforeEach
@@ -49,9 +49,12 @@ class HendelseIntegrationTest(
             genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UTGATT_VARSEL)
         val hendelseUdeltSamtalereferat =
             genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+        val hendelseKandiatForUtmelding =
+            genererRandomHendelse(personIdent = brukerNorskIdent, kategori = Kategori.KANDIDAT_FOR_UTMELDING)
         testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
         hendelseRepository.insert(hendelseUtgåttVarsel)
         hendelseRepository.insert(hendelseUdeltSamtalereferat)
+        hendelseRepository.insert(hendelseKandiatForUtmelding)
 
         // When
         opensearchIndexer.indekser(brukerAktorId)
@@ -61,6 +64,8 @@ class HendelseIntegrationTest(
         val brukerFraResponsUtgåttVarsel = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
         val brukerFraResponsUdeltSamtalereferat =
             hentHendelseBruker(Brukerstatus.UDELT_SAMTALEREFERAT, brukerOppfolgingsEnhet)
+        val brukerFraResponsKandiatForUtmelding =
+            hentHendelseBruker(Brukerstatus.KANDIDAT_FOR_UTMELDING, brukerOppfolgingsEnhet)
 
         assertThat(brukerFraResponsUtgåttVarsel).isNotNull
         assertThat(brukerFraResponsUtgåttVarsel.hendelse).isNotNull
@@ -71,6 +76,12 @@ class HendelseIntegrationTest(
         )
         assertThat(brukerFraResponsUdeltSamtalereferat.hendelse!!.lenke).isEqualTo(
             hendelseUdeltSamtalereferat.hendelse.lenke
+        )
+        assertThat(brukerFraResponsKandiatForUtmelding.hendelse!!.beskrivelse).isEqualTo(
+            hendelseKandiatForUtmelding.hendelse.beskrivelse
+        )
+        assertThat(brukerFraResponsKandiatForUtmelding.hendelse!!.lenke).isEqualTo(
+            hendelseKandiatForUtmelding.hendelse.lenke
         )
 
     }
