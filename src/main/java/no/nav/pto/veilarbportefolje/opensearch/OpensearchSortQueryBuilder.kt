@@ -265,11 +265,6 @@ class OpensearchSortQueryBuilder {
                 searchSourceBuilder
             }
 
-            Sorteringsfelt.BRUKERS_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort(BRUKERS_SITUASJON_SIST_ENDRET, sorteringsrekkefolgeOpenSearch)
-                searchSourceBuilder
-            }
-
             Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET -> {
                 searchSourceBuilder.sort(UTDANNING_OG_SITUASJON_SIST_ENDRET, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder

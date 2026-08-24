@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
@@ -174,7 +175,7 @@ object PortefoljebrukerFrontendModellMapper {
         val rettighetstype = opensearchModell.dagpenger?.rettighetstype ?: return null
         val antallDager = opensearchModell.dagpenger?.antallResterendeDager
 
-        val resterendeDagerMedDato = if (antallDager != null) {
+        val resterendeDagerTekst = if (antallDager != null) {
             if (antallDager == 1) {
                 "$antallDager dag"
             } else {
@@ -185,7 +186,7 @@ object PortefoljebrukerFrontendModellMapper {
         return Dagpenger(
             rettighetstype = DagpengerRettighetstype.tilFrontendtekst(rettighetstype),
             datoStans = opensearchModell.dagpenger?.datoStans,
-            resterendeDager = resterendeDagerMedDato
+            resterendeDager = resterendeDagerTekst
         )
     }
 
@@ -244,41 +245,8 @@ object PortefoljebrukerFrontendModellMapper {
     }
 
     private fun mapVedtak14a(opensearchBruker: PortefoljebrukerOpensearchModell): Vedtak14aForBruker {
-        val vedtak14a = opensearchBruker.gjeldendeVedtak14a
-
-        val gjeldendeVedtak14a = buildIfAnyNotNull(vedtak14a?.innsatsgruppe, vedtak14a?.fattetDato) {
-            Vedtak14aForBruker.GjeldendeVedtak14a(
-                // TODO: 2026-01-05, Sondre
-                //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-                //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-                //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-                //     * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-                //      puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-                innsatsgruppe = opensearchBruker.gjeldendeVedtak14a?.innsatsgruppe!!,
-                hovedmal = opensearchBruker.gjeldendeVedtak14a?.hovedmal,
-                fattetDato = fromZonedDateTimeToLocalDateOrNull(opensearchBruker.gjeldendeVedtak14a?.fattetDato)
-            )
-        }
-
-        val utkast14a = buildIfAnyNotNull(
-            opensearchBruker.utkast_14a_status,
-            opensearchBruker.utkast_14a_status_endret,
-            opensearchBruker.utkast_14a_ansvarlig_veileder
-        ) {
-            Vedtak14aForBruker.Utkast14a(
-                // TODO: 2026-01-05, Sondre
-                //  Fjern bruk av "non-null assertion (!!) her". Dette er ei reserveløysing for å gjere kompilatoren
-                //  glad etter at PortefoljebrukerOpensearchModell vart skriven om til Kotlin.
-                //  PortefoljebrukerOpensearchModell er per dags dato meir "korrekt" mtp. nullability sidan den gjenspeglar
-                //  databasen 1-til-1. For å kunne kvitte oss med non-null assertion må vi difor:
-                //    * endre database-schema og sette dei relevante kolonnene til "not null" samt validere dataen som
-                //    puttast i tabellen, og endre respektive felt i PortefoljebrukerOpensearchModell til å ikkje vere nullable
-                status = opensearchBruker.utkast_14a_status!!,
-                dagerSidenStatusEndretSeg = lagDagerSidenTekst(opensearchBruker.utkast_14a_status_endret!!),
-                ansvarligVeileder = opensearchBruker.utkast_14a_ansvarlig_veileder!!
-            )
-        }
+        val gjeldendeVedtak14a = mapGjeldendeVedtak14a(opensearchBruker.gjeldendeVedtak14a)
+        val utkast14a = mapUtkast14a(opensearchBruker)
 
         return Vedtak14aForBruker(
             gjeldendeVedtak14a = gjeldendeVedtak14a,
@@ -286,8 +254,28 @@ object PortefoljebrukerFrontendModellMapper {
         )
     }
 
-    inline fun <T> buildIfAnyNotNull(vararg fields: Any?, builder: () -> T): T? =
-        if (fields.any { it != null }) builder() else null
+    private fun mapUtkast14a(b: PortefoljebrukerOpensearchModell): Vedtak14aForBruker.Utkast14a? {
+        val status = b.utkast_14a_status ?: return null
+        val endret = b.utkast_14a_status_endret ?: return null
+        val veileder = b.utkast_14a_ansvarlig_veileder ?: return null
+        return Vedtak14aForBruker.Utkast14a(
+            status = status,
+            dagerSidenStatusEndretSeg = lagDagerSidenTekst(endret),
+            ansvarligVeileder = veileder,
+        )
+    }
+
+
+    private fun mapGjeldendeVedtak14a(vedtak: GjeldendeVedtak14a?): Vedtak14aForBruker.GjeldendeVedtak14a? {
+        val innsatsgruppe = vedtak?.innsatsgruppe ?: return null
+        val fattetDato = vedtak.fattetDato?.let(::fromZonedDateTimeToLocalDateOrNull) ?: return null
+
+        return Vedtak14aForBruker.GjeldendeVedtak14a(
+            innsatsgruppe = innsatsgruppe,
+            hovedmal = vedtak.hovedmal,
+            fattetDato = fattetDato,
+        )
+    }
 
     private fun lagDagerSidenTekst(utcDato: String): String {
         val parsed = fromIsoUtcToLocalDateOrNull(utcDato)
