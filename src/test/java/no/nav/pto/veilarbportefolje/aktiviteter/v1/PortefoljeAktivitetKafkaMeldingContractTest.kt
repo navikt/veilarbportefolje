@@ -118,7 +118,7 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
               "endringsType": "REDIGERT",
               "lagtInnAv": "SYSTEM",
               "historisk": false,
-              "oppfolgingsperiodeId": "342687"
+              "oppfolgingsperiodeId": null
             }
         """.trimIndent()
 
