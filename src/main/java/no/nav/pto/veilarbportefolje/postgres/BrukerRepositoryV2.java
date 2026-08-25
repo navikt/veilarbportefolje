@@ -299,7 +299,6 @@ public class BrukerRepositoryV2 {
         DagpengerRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : DagpengerRettighetstype.valueOf(rettighetstype);
         LocalDate vedtaksDatoTom = rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
         Integer antallDagerResterende = rs.getObject(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) != null ? rs.getInt(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) : null;
-        LocalDate datoAntallDagerBleBeregnet = rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET) != null ? rs.getDate(YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET).toLocalDate() : null;
 
         boolean harEnDagpengeperiodeIDatabasen = rettighetstype != null;
         boolean vedtakErFortsattGjeldende = harEnDagpengeperiodeIDatabasen && (vedtaksDatoTom == null || vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1)));
@@ -308,8 +307,7 @@ public class BrukerRepositoryV2 {
                 vedtakErFortsattGjeldende,
                 rettighetstypeOrNull,
                 vedtaksDatoTom,
-                antallDagerResterende,
-                datoAntallDagerBleBeregnet
+                antallDagerResterende
         );
 
         brukerOpensearchModell.setDagpenger(dagpenger);
@@ -385,7 +383,6 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
 
         brukerOpensearchModell.setFnr(fnr);
-        brukerOpensearchModell.setIserv_fra_dato(toIsoUTC(rs.getTimestamp(OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO)));
         brukerOpensearchModell.setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE));
         brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
         brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
@@ -431,9 +428,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setHarUkjentBosted(rs.getBoolean(BRUKER_DATA_HARUKJENTBOSTED));
         brukerOpensearchModell.setBostedSistOppdatert(toLocalDateOrNull(rs.getString(BRUKER_DATA_BOSTEDSISTOPPDATERT)));
         brukerOpensearchModell.setSikkerhetstiltak(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_TYPE) : null);
-        brukerOpensearchModell.setSikkerhetstiltak_gyldig_fra(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA) : null);
-        brukerOpensearchModell.setSikkerhetstiltak_gyldig_til(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL) : null);
-        brukerOpensearchModell.setSikkerhetstiltak_beskrivelse(showSikkerhetsTiltak ? rs.getString(BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE) : null);
         brukerOpensearchModell.setDiskresjonskode(rs.getString(BRUKER_DATA_DISKRESJONKODE));
     }
 }

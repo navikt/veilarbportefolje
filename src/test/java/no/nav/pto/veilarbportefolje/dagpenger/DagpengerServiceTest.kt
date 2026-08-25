@@ -246,13 +246,11 @@ class DagpengerServiceTest(
         val harDagpenger = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER]
         val rettighetstype = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE]
         val antallDager = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER]
-        val datoAntallDager = dagpengerMap[DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET]
 
         assertThat(dagpengerMap).isNotNull
         assertThat(harDagpenger).isEqualTo(true)
         assertThat(rettighetstype).isEqualTo(DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER.name)
         assertThat(antallDager).isEqualTo(118)
-        assertThat(datoAntallDager).isEqualTo(LocalDate.of(2026, 1, 3).toString())
 
         val filtervalg = getFiltervalgDefaults().copy(
             ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_ORDINAER)

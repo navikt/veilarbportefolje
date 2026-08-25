@@ -94,7 +94,6 @@ public enum Sorteringsfelt {
 
     BARN_UNDER_18_AR("barn_under_18_aar"),
 
-    BRUKERS_SITUASJON_SIST_ENDRET("brukersSituasjonSistEndret"),
     UTDANNING_OG_SITUASJON_SIST_ENDRET("utdanningOgSituasjonSistEndret"),
 
     HUSKELAPP_KOMMENTAR("huskelapp_kommentar"),

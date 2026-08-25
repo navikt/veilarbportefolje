@@ -414,7 +414,6 @@ class PortefoljebrukerFrontendModellMapperTest {
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 156,
-                LocalDate.of(2026, 1, 1),
             ),
             ungdomsprogram = UngdomsprogramForOpensearch(
                 LocalDate.of(2026, 1, 1),

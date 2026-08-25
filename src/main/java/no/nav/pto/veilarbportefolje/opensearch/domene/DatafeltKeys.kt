@@ -127,7 +127,6 @@ object DatafeltKeys {
         val DAGPENGER_HAR_DAGPENGER = DagpengerForOpensearch::harDagpenger.name
         val DAGPENGER_RETTIGHETSTYPE = DagpengerForOpensearch::rettighetstype.name
         val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
-        val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name
         val DAGPENGER_DATO_STANS = DagpengerForOpensearch::datoStans.name
         val UNGDOMSPROGRAM = PortefoljebrukerOpensearchModell::ungdomsprogram.name
         val UNGDOMSPROGRAM_FRA_OG_MED = UngdomsprogramForOpensearch::fraOgMed.name

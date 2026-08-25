@@ -223,12 +223,6 @@
           }
         }
       },
-      "sikkerhetstiltak_gyldig_fra": {
-        "type": "keyword"
-      },
-      "sikkerhetstiltak_gyldig_til": {
-        "type": "keyword"
-      },
       "fargekategori": {
         "type": "keyword"
       },
@@ -318,9 +312,6 @@
           },
           "antallResterendeDager": {
             "type": "integer"
-          },
-          "datoAntallDagerBleBeregnet": {
-            "type": "date"
           },
           "datoStans": {
             "type": "date"
