@@ -390,6 +390,7 @@ public class PostgresTable {
         public static final String AVTALT = "AVTALT";
         public static final String VERSION = "VERSION";
         public static final String HISTORISK = "HISTORISK";
+        public static final String OPPFOLGINGSPERIODE_ID = "OPPFOLGINGSPERIODE_ID";
         public static final String CV_KAN_DELES_STATUS = "CV_KAN_DELES_STATUS";
         public static final String SVARFRIST_STILLING_FRA_NAV = "SVARFRIST_STILLING_FRA_NAV";
         public static final String RECORD_OFFSET = "RECORD_OFFSET";
