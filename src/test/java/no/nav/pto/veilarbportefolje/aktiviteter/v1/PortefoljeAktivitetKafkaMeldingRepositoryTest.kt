@@ -314,6 +314,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         avtalt = true,
         version = version,
         historisk = historisk,
+        oppfolgingsperiodeId = "oppfolgingsperiodeId-1",
         cvKanDelesStatus = "IKKE_SVART",
         svarfristStillingFraNav = "2024-04-01",
         recordOffset = recordOffset,

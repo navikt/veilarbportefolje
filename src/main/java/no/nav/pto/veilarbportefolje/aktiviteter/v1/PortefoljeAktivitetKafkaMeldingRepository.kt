@@ -97,6 +97,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 $AVTALT,
                 $VERSION,
                 $HISTORISK,
+                $OPPFOLGINGSPERIODE_ID,
                 $CV_KAN_DELES_STATUS,
                 $SVARFRIST_STILLING_FRA_NAV,
                 $RECORD_OFFSET,
@@ -108,7 +109,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             VALUES (
                 :aktivitetId, :aktorId, :aktivitetType, :aktivitetStatus, :endringsType,
                 :fraDato, :tilDato, :endretDato, :tiltakskode, :lagtInnAv,
-                :avtalt, :version, :historisk, :cvKanDelesStatus, :svarfristStillingFraNav,
+                :avtalt, :version, :historisk, :oppfolgingsperiodeId, :cvKanDelesStatus, :svarfristStillingFraNav,
                 :recordOffset, :recordPartition, :recordKey,
                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )
@@ -125,6 +126,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 $AVTALT = excluded.$AVTALT,
                 $VERSION = excluded.$VERSION,
                 $HISTORISK = excluded.$HISTORISK,
+                $OPPFOLGINGSPERIODE_ID = excluded.$OPPFOLGINGSPERIODE_ID,
                 $CV_KAN_DELES_STATUS = excluded.$CV_KAN_DELES_STATUS,
                 $SVARFRIST_STILLING_FRA_NAV = excluded.$SVARFRIST_STILLING_FRA_NAV,
                 $RECORD_OFFSET = excluded.$RECORD_OFFSET,
@@ -204,6 +206,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         .addValue("avtalt", avtalt)
         .addValue("version", version)
         .addValue("historisk", historisk)
+        .addValue("oppfolgingsperiodeId", oppfolgingsperiodeId)
         .addValue("cvKanDelesStatus", cvKanDelesStatus)
         .addValue("svarfristStillingFraNav", svarfristStillingFraNav)
         .addValue("recordOffset", recordOffset)
