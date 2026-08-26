@@ -325,7 +325,9 @@ class OpensearchIndexerPaDatafelt(
             .startObject(DatafeltKeys.Annet.HENDELSER)
             .startObject(hendelse.kategori.name)
             .field(DatafeltKeys.Annet.HENDELSER_BESKRIVELSE, hendelse.hendelse.beskrivelse)
+            .field(DatafeltKeys.Annet.HENDELSER_BESKRIVELSE_ENUM, hendelse.hendelse.beskrivelseEnum)
             .field(DatafeltKeys.Annet.HENDELSER_DATO, hendelse.hendelse.dato)
+            .field(DatafeltKeys.Annet.HENDELSER_DATO_FRIST, hendelse.hendelse.datoFrist)
             .field(DatafeltKeys.Annet.HENDELSER_LENKE, hendelse.hendelse.lenke.toString())
             .field(DatafeltKeys.Annet.HENDELSER_DETALJER, hendelse.hendelse.detaljer)
             .endObject()
@@ -408,7 +410,6 @@ class OpensearchIndexerPaDatafelt(
         harDagpenger: Boolean,
         rettighetstype: DagpengerRettighetstype,
         antallResterendeDager: Int?,
-        datoAntallDagerBleBeregnet: LocalDate?,
         datoStans: LocalDate?
     ) {
         val content = XContentFactory.jsonBuilder()
@@ -418,7 +419,6 @@ class OpensearchIndexerPaDatafelt(
             .field(DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE, rettighetstype)
             .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_STANS, datoStans)
             .field(DatafeltKeys.Ytelser.DAGPENGER_ANTALL_RESTERENDE_DAGER, antallResterendeDager)
-            .field(DatafeltKeys.Ytelser.DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET, datoAntallDagerBleBeregnet)
             .endObject()
             .endObject()
 

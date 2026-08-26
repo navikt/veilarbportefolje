@@ -390,6 +390,7 @@ public class PostgresTable {
         public static final String AVTALT = "AVTALT";
         public static final String VERSION = "VERSION";
         public static final String HISTORISK = "HISTORISK";
+        public static final String OPPFOLGINGSPERIODE_ID = "OPPFOLGINGSPERIODE_ID";
         public static final String CV_KAN_DELES_STATUS = "CV_KAN_DELES_STATUS";
         public static final String SVARFRIST_STILLING_FRA_NAV = "SVARFRIST_STILLING_FRA_NAV";
         public static final String RECORD_OFFSET = "RECORD_OFFSET";
@@ -483,7 +484,9 @@ public class PostgresTable {
         public static final String ID = "ID";
         public static final String PERSON_IDENT = "PERSON_IDENT";
         public static final String HENDELSE_NAVN = "HENDELSE_NAVN";
+        public static final String HENDELSE_NAVN_ENUM = "HENDELSE_NAVN_ENUM";
         public static final String HENDELSE_DATO = "HENDELSE_DATO";
+        public static final String HENDELSE_DATO_FRIST = "HENDELSE_DATO_FRIST";
         public static final String HENDELSE_LENKE = "HENDELSE_LENKE";
         public static final String HENDELSE_DETALJER = "HENDELSE_DETALJER";
         public static final String KATEGORI = "KATEGORI";

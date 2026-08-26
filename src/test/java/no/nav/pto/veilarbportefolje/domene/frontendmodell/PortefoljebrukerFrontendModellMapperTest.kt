@@ -139,6 +139,34 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `etiketter for kandidatForUtmelding skal settes riktig`() {
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
+        val opensearchBruker = PortefoljebrukerOpensearchModell(
+            hendelser =
+                mapOf(
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
+                )
+        )
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketter = frontendBruker.etiketter
+
+        val frontendBrukerIkkeKandidat = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker.copy(hendelser = mapOf()),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketterIkkeKandidat = frontendBrukerIkkeKandidat.etiketter
+
+        Assertions.assertEquals(true, etiketter.kandidatForUtmelding)
+        Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForUtmelding)
+    }
+
+    @Test
     fun `personaliadata og en til en variabler skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             fnr = "12345678901",
@@ -277,11 +305,13 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `hendelser skal velge riktig hendelseskategori for mapping basert på filtervalg`() {
         val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
         val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             hendelser =
                 mapOf(
                     Kategori.UTGATT_VARSEL to utgattVarselHendelse,
-                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
+                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse,
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
                 )
         )
 
@@ -301,21 +331,37 @@ class PortefoljebrukerFrontendModellMapperTest {
                 )
             )
 
+        val frontendBrukerKandidatForUtmeldingFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = getFiltervalgDefaults().copy(
+                    ferdigfilterListe = listOf(Brukerstatus.KANDIDAT_FOR_UTMELDING)
+                )
+            )
+
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
+        val resultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
         Assertions.assertEquals(utgattVarselHendelse.lenke, resultUtgåttVarsel.lenke)
-        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
+        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato.dayOfMonth)
 
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
         Assertions.assertEquals(
             udeltSamtalereferatHendelse.dato.dayOfMonth,
-            resultUdeltSamtalereferat.dato!!.dayOfMonth
+            resultUdeltSamtalereferat.dato.dayOfMonth
         )
+
+        Assertions.assertNotNull(resultKandidat)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, resultKandidat!!.beskrivelse)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, resultKandidat.lenke)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, resultKandidat.dato!!.dayOfMonth)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth, resultKandidat.datoFrist?.dayOfMonth)
     }
 
     @Test
@@ -368,7 +414,6 @@ class PortefoljebrukerFrontendModellMapperTest {
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 156,
-                LocalDate.of(2026, 1, 1),
             ),
             ungdomsprogram = UngdomsprogramForOpensearch(
                 LocalDate.of(2026, 1, 1),

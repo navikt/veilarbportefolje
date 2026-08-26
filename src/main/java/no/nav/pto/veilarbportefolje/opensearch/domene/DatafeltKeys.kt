@@ -128,7 +128,6 @@ object DatafeltKeys {
         val DAGPENGER_HAR_DAGPENGER = DagpengerForOpensearch::harDagpenger.name
         val DAGPENGER_RETTIGHETSTYPE = DagpengerForOpensearch::rettighetstype.name
         val DAGPENGER_ANTALL_RESTERENDE_DAGER = DagpengerForOpensearch::antallResterendeDager.name
-        val DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = DagpengerForOpensearch::datoAntallDagerBleBeregnet.name
         val DAGPENGER_DATO_STANS = DagpengerForOpensearch::datoStans.name
         val UNGDOMSPROGRAM = PortefoljebrukerOpensearchModell::ungdomsprogram.name
         val UNGDOMSPROGRAM_FRA_OG_MED = UngdomsprogramForOpensearch::fraOgMed.name
@@ -172,7 +171,9 @@ object DatafeltKeys {
         val TILTAKSHENDELSE_TILTAKSTYPE = Tiltakshendelse::tiltakstype.name
         val HENDELSER = PortefoljebrukerOpensearchModell::hendelser.name
         val HENDELSER_BESKRIVELSE = Hendelse.HendelseInnhold::beskrivelse.name
+        val HENDELSER_BESKRIVELSE_ENUM = Hendelse.HendelseInnhold::beskrivelseEnum.name
         val HENDELSER_DATO = Hendelse.HendelseInnhold::dato.name
+        val HENDELSER_DATO_FRIST = Hendelse.HendelseInnhold::datoFrist.name
         val HENDELSER_LENKE = Hendelse.HendelseInnhold::lenke.name
         val HENDELSER_DETALJER = Hendelse.HendelseInnhold::detaljer.name
     }
