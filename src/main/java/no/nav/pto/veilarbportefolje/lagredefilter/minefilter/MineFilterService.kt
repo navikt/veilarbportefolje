@@ -23,25 +23,36 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
         veilederIdent: String,
         nyttFilterRequest: NyttFilterRequest
     ): LagretFilter {
+        val aktiveFiltervalg = ekstraherAktiveFiltervalg(nyttFilterRequest.filterValg)
         validerFilterNavnEllerKast(nyttFilterRequest.filterNavn)
         validerFiltervalgEllerKast(nyttFilterRequest.filterValg)
-        validerUnikhetEllerKast(veilederIdent, nyttFilterRequest.filterNavn, nyttFilterRequest.filterValg)
-        return mineFilterRepository.lagreNyttFilterForVeileder(veilederIdent, nyttFilterRequest)
+        validerUnikhetEllerKast(veilederIdent, nyttFilterRequest.filterNavn, aktiveFiltervalg)
+        return mineFilterRepository.lagreNyttFilterForVeileder(
+            veilederIdent = veilederIdent,
+            filterNavn = nyttFilterRequest.filterNavn,
+            aktiveFiltervalg = aktiveFiltervalg
+        )
     }
 
     fun oppdaterLagretFilterForVeileder(
         veilederIdent: String,
         oppdaterFilterRequest: OppdaterFilterRequest
     ): LagretFilter {
+        val aktiveFiltervalg = ekstraherAktiveFiltervalg(oppdaterFilterRequest.filterValg)
         validerFilterNavnEllerKast(oppdaterFilterRequest.filterNavn)
         validerFiltervalgEllerKast(oppdaterFilterRequest.filterValg)
         validerUnikhetEllerKast(
             veilederIdent,
             oppdaterFilterRequest.filterNavn,
-            oppdaterFilterRequest.filterValg,
+            aktiveFiltervalg,
             ekskluderFilterId = oppdaterFilterRequest.filterId
         )
-        return mineFilterRepository.oppdaterLagretFilterForVeileder(veilederIdent, oppdaterFilterRequest)
+        return mineFilterRepository.oppdaterLagretFilterForVeileder(
+            veilederIdent = veilederIdent,
+            filterId = oppdaterFilterRequest.filterId,
+            filterNavn = oppdaterFilterRequest.filterNavn,
+            aktiveFiltervalg = aktiveFiltervalg
+        )
     }
 
     fun slettFilterForVeileder(veilederIdent: String, filterId: Int): Int {
@@ -67,11 +78,11 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
     private fun validerUnikhetEllerKast(
         veilederIdent: String,
         filterNavn: String,
-        filtervalg: Filtervalg,
+        aktiveFiltervalg: AktiveFiltervalg,
         ekskluderFilterId: Int? = null
     ) {
         val navnEksisterer = mineFilterRepository.eksistererFilterNavn(veilederIdent, filterNavn, ekskluderFilterId)
-        val valgEksisterer = mineFilterRepository.eksistererFiltervalg(veilederIdent, filtervalg, ekskluderFilterId)
+        val valgEksisterer = mineFilterRepository.eksistererFiltervalg(veilederIdent, aktiveFiltervalg, ekskluderFilterId)
         validerUnikhet(navnEksisterer, valgEksisterer)?.let {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
         }
