@@ -56,6 +56,7 @@ object DatafeltKeys {
 
     object Oppfolging {
         val ENHET_ID = PortefoljebrukerOpensearchModell::enhet_id.name
+        val OPPFOLGING_STARTDATO = PortefoljebrukerOpensearchModell::oppfolging_startdato.name
         val GJELDENDE_VEDTAK_14A = PortefoljebrukerOpensearchModell::gjeldendeVedtak14a.name
         val GJELDENDE_VEDTAK_14A_INNSATSGRUPPE = GjeldendeVedtak14a::innsatsgruppe.name
         val GJELDENDE_VEDTAK_14A_HOVEDMAL = GjeldendeVedtak14a::hovedmal.name
