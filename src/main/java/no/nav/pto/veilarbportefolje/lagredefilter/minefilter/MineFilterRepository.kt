@@ -2,10 +2,7 @@ package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.JdbcTemplate
@@ -29,7 +26,8 @@ class MineFilterRepository(private val db: JdbcTemplate) {
 
     fun lagreNyttFilterForVeileder(
         veilederIdent: String,
-        nyttFilterRequest: NyttFilterRequest
+        filterNavn: String,
+        aktiveFiltervalg: AktiveFiltervalg
     ): LagretFilter {
 
         val sql = """
@@ -49,8 +47,8 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             sql,
             { ps: PreparedStatement ->
                 ps.setString(1, veilederIdent)
-                ps.setString(2, nyttFilterRequest.filterNavn)
-                ps.setObject(3, nyttFilterRequest.filterValg.toJsonb())
+                ps.setString(2, filterNavn)
+                ps.setObject(3, aktiveFiltervalg.toJsonb())
             },
             { rs, _ -> rs.toLagretFilter() }
         ).first()
@@ -58,7 +56,9 @@ class MineFilterRepository(private val db: JdbcTemplate) {
 
     fun oppdaterLagretFilterForVeileder(
         veilederIdent: String,
-        oppdaterFilterRequest: OppdaterFilterRequest
+        filterId: Int,
+        filterNavn: String,
+        aktiveFiltervalg: AktiveFiltervalg
     ): LagretFilter {
         val sql = """
             UPDATE $TABLE_NAME
@@ -72,15 +72,15 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         return db.query(
             sql,
             { ps: PreparedStatement ->
-                ps.setString(1, oppdaterFilterRequest.filterNavn)
-                ps.setObject(2, oppdaterFilterRequest.filterValg.toJsonb())
-                ps.setInt(3, oppdaterFilterRequest.filterId)
+                ps.setString(1, filterNavn)
+                ps.setObject(2, aktiveFiltervalg.toJsonb())
+                ps.setInt(3, filterId)
                 ps.setString(4, veilederIdent)
             },
             { rs, _ -> rs.toLagretFilter() }
         ).firstOrNull()
             ?: throw NoSuchElementException(
-                "Fant ingen mine filter med filterId=${oppdaterFilterRequest.filterId} for veileder=$veilederIdent"
+                "Fant ingen mine filter med filterId=$filterId for veileder=$veilederIdent"
             )
     }
 
@@ -127,7 +127,11 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         ) == true
     }
 
-    fun eksistererFiltervalg(veilederIdent: String, filtervalg: Filtervalg, ekskluderFilterId: Int? = null): Boolean {
+    fun eksistererFiltervalg(
+        veilederIdent: String,
+        aktiveFiltervalg: AktiveFiltervalg,
+        ekskluderFilterId: Int? = null
+    ): Boolean {
         val sql = """
             SELECT EXISTS(
                 SELECT 1 FROM $TABLE_NAME
@@ -140,7 +144,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             sql,
             Boolean::class.java,
             veilederIdent,
-            filtervalg.toJsonb(),
+            aktiveFiltervalg.toJsonb(),
             ekskluderFilterId,
             ekskluderFilterId
         ) == true
@@ -151,18 +155,16 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             filterId = getInt(FILTER_ID),
             filterNavn = getString(FILTER_NAVN),
             filterValg = rekonstruerFiltervalgFraAktive(
-                JsonUtils.getMapper().readTree(getString(AKTIVE_FILTER_VALG))
+                JsonUtils.fromJson(getString(AKTIVE_FILTER_VALG), AktiveFiltervalg::class.java)
             ),
             sortOrder = getInt(SORT_ORDER),
             aktiv = getBoolean(AKTIV),
             ikkeAktivBeskrivelse = getString(IKKE_AKTIV_BESKRIVELSE)
         )
 
-    private fun Filtervalg.toJsonb(): PGobject =
+    private fun AktiveFiltervalg.toJsonb(): PGobject =
         PGobject().apply {
             type = "jsonb"
-            value = ekstraherAktiveFiltervalg(this@toJsonb).toString()
+            value = JsonUtils.toJson(this@toJsonb)
         }
-
-
 }
