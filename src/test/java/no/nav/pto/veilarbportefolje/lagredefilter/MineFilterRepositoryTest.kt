@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
@@ -368,4 +370,33 @@ class MineFilterRepositoryTest(
             mineFilterRepository.eksistererFiltervalg(veilederIdent, nyttFiltervalgLiktMinusDefaults)
         ).isTrue()
     }
+
+    private fun MineFilterRepository.lagreNyttFilterForVeileder(
+        veilederIdent: String,
+        nyttFilterRequest: NyttFilterRequest
+    ) = lagreNyttFilterForVeileder(
+        veilederIdent = veilederIdent,
+        filterNavn = nyttFilterRequest.filterNavn,
+        aktiveFiltervalg = ekstraherAktiveFiltervalg(nyttFilterRequest.filterValg)
+    )
+
+    private fun MineFilterRepository.oppdaterLagretFilterForVeileder(
+        veilederIdent: String,
+        oppdaterFilterRequest: OppdaterFilterRequest
+    ) = oppdaterLagretFilterForVeileder(
+        veilederIdent = veilederIdent,
+        filterId = oppdaterFilterRequest.filterId,
+        filterNavn = oppdaterFilterRequest.filterNavn,
+        aktiveFiltervalg = ekstraherAktiveFiltervalg(oppdaterFilterRequest.filterValg)
+    )
+
+    private fun MineFilterRepository.eksistererFiltervalg(
+        veilederIdent: String,
+        filtervalg: Filtervalg,
+        ekskluderFilterId: Int? = null
+    ) = eksistererFiltervalg(
+        veilederIdent = veilederIdent,
+        aktiveFiltervalg = ekstraherAktiveFiltervalg(filtervalg),
+        ekskluderFilterId = ekskluderFilterId
+    )
 }
