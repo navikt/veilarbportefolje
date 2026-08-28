@@ -3,8 +3,10 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.VeiledergrupperService
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
+@Component
 class VeiledergrupperSchedulerConfig(
     private val veilederGrupperService: VeiledergrupperService,
     private val leaderElectionClient: LeaderElectionClient
