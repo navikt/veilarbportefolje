@@ -2,9 +2,8 @@ package no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper
 
 import no.nav.common.types.identer.EnhetId
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
-import no.nav.pto.veilarbportefolje.lagredefilter.LagredeFilterFeilmeldinger
-import no.nav.pto.veilarbportefolje.lagredefilter.validerFilterNavn
-import no.nav.pto.veilarbportefolje.lagredefilter.validerUnikhet
+import no.nav.pto.veilarbportefolje.lagredefilter.harGyldigFilterNavn
+import no.nav.pto.veilarbportefolje.lagredefilter.harUniktNavnOgFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.LagretVeiledergruppe
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.OppdaterVeiledergruppeRequest
@@ -101,16 +100,15 @@ class VeiledergrupperService(
     }
 
     private fun validerFilterNavnEllerKast(filterNavn: String) {
-        validerFilterNavn(filterNavn)?.let {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
+        if (!harGyldigFilterNavn(filterNavn)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
     }
 
     private fun validerVeiledereEllerKast(veiledere: List<String>) {
         if (veiledere.isEmpty()) {
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                LagredeFilterFeilmeldinger.FILTERVALG_TOMT.message
+                HttpStatus.BAD_REQUEST
             )
         }
     }
@@ -123,8 +121,8 @@ class VeiledergrupperService(
     ) {
         val navnEksisterer = veiledergrupperRepository.eksistererFilterNavn(enhetId, filterNavn, ekskluderFilterId)
         val veiledereEksisterer = veiledergrupperRepository.eksistererVeiledere(enhetId, veiledere, ekskluderFilterId)
-        validerUnikhet(navnEksisterer, veiledereEksisterer)?.let {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
+        if (!harUniktNavnOgFiltervalg(navnEksisterer, veiledereEksisterer)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
     }
 }

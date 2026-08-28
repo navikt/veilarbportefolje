@@ -1,13 +1,12 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.lagredefilter.harGyldigFilterNavn
+import no.nav.pto.veilarbportefolje.lagredefilter.harUniktNavnOgFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.validerFilterNavn
-import no.nav.pto.veilarbportefolje.lagredefilter.validerFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.validerUnikhet
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -64,14 +63,14 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
     }
 
     private fun validerFilterNavnEllerKast(filterNavn: String) {
-        validerFilterNavn(filterNavn)?.let {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
+        if (!harGyldigFilterNavn(filterNavn)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
     }
 
     private fun validerFiltervalgEllerKast(filtervalg: Filtervalg) {
-        validerFiltervalg(filtervalg)?.let {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
+        if (!filtervalg.harAktiveFilter()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
     }
 
@@ -82,9 +81,10 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
         ekskluderFilterId: Int? = null
     ) {
         val navnEksisterer = mineFilterRepository.eksistererFilterNavn(veilederIdent, filterNavn, ekskluderFilterId)
-        val valgEksisterer = mineFilterRepository.eksistererFiltervalg(veilederIdent, aktiveFiltervalg, ekskluderFilterId)
-        validerUnikhet(navnEksisterer, valgEksisterer)?.let {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, it.message)
+        val valgEksisterer =
+            mineFilterRepository.eksistererFiltervalg(veilederIdent, aktiveFiltervalg, ekskluderFilterId)
+        if (!harUniktNavnOgFiltervalg(navnEksisterer, valgEksisterer)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
     }
 }

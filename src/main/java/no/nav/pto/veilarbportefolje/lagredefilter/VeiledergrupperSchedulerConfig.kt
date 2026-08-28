@@ -5,11 +5,11 @@ import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.Veiledergruppe
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.concurrent.TimeUnit
 
-class LagredeFilterSchedulerConfig(
+class VeiledergrupperSchedulerConfig(
     private val veilederGrupperService: VeiledergrupperService,
     private val leaderElectionClient: LeaderElectionClient
 ) {
-    private val log = org.slf4j.LoggerFactory.getLogger(LagredeFilterSchedulerConfig::class.java)
+    private val log = org.slf4j.LoggerFactory.getLogger(VeiledergrupperSchedulerConfig::class.java)
 
     @Scheduled(fixedDelay = 30, initialDelay = 2, timeUnit = TimeUnit.MINUTES)
     fun fjernVeiledereSomErIkkeAktive() {
