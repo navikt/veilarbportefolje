@@ -76,12 +76,12 @@ class VeiledergrupperService(
                         return@forEach
                     }
 
-                    log.warn("Fjernet veiledere: ${veiledereSomIkkeErAktive.joinToString(", ")}")
+                    log.info("Fjernet veiledere: ${veiledereSomIkkeErAktive.joinToString(", ")}")
 
                     // Hvis ingen veiledere er aktive lenger, slett hele veiledergruppen.
                     if (veiledereSomFortsattErAktive.isEmpty()) {
                         slettVeiledergruppeForEnhet(enhetId, lagretVeiledergruppe.filterId)
-                        log.warn("Fjernet veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
+                        log.info("Fjernet veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
 
                     } else {
                         val updatedVeilederGruppe = OppdaterVeiledergruppeRequest(
@@ -90,7 +90,7 @@ class VeiledergrupperService(
                             veiledere = veiledereSomFortsattErAktive
                         )
                         oppdaterVeiledergruppeForEnhet(enhetId, updatedVeilederGruppe)
-                        log.warn("Oppdatert veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
+                        log.info("Oppdatert veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
                     }
                 }
             } catch (e: Exception) {
