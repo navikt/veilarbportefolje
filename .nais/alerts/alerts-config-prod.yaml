@@ -21,7 +21,7 @@ spec:
             namespace: obo
             severity: critical
 
-        # Spring Boot spesifikke alerts
+        # Spring Boot-spesifikke alerts
         - alert: Høy andel serverfeil (HTTP 5XX)
           expr: (100 * (sum(rate(http_server_requests_seconds_count{app="veilarbportefolje", outcome=~"SERVER_ERROR"}[5m])) / sum(rate(http_server_requests_seconds_count{app="veilarbportefolje"}[5m])))) > 1
           for: 5m
@@ -43,6 +43,8 @@ spec:
           labels:
             namespace: obo
             severity: warning
+
+        # Kafka-spesifikke alerts
         - alert: Veilarbarena - unable to send kafka message(s)
           expr: sum by (topic)(delta(kafka_producer_status_total{app="veilarbarena", status != "ok"}[5m])) >= 1
           for: 5m
@@ -60,6 +62,18 @@ spec:
             summary: "Veilarboppfolging can't send kafka messages on one or more topics: {{ $labels.topic }}."
             consequence: "We will miss important changes about one or more bruker"
             action: "Check logs in veilarboppfolging!"
+          labels:
+            namespace: obo
+            severity: critical
+
+        # Forretningsspesifikke alerts
+        - alert: Personer i OpenSearch mangler enhet_id
+          expr: max(veilarbportefolje_opensearch_antall_personer_uten_enhet_id{ app="veilarbportefolje"}) > 0
+          for: 5m
+          annotations:
+            summary: "Vi har minst en person i OpenSearch som mangler enhet_id"
+            consequence: "Personen(e) det gjelder vil ikke dukke opp i Oversikten. I verste konsekvens vil ikke personen få oppfølgingen hen har krav på."
+            action: "Sjekk om/hvorfor vi mangler oppfølgingsenhet på personen: har indeksering feilet, mangler det enhet i datagrunnlaget (AO_KONTOR-tabellen), er det kafka-meldinger vi ikke har prosessert (poao.siste-oppfolgingsperiode-v3), osv."
           labels:
             namespace: obo
             severity: critical
