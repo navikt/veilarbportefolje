@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.binder.MeterBinder
 import no.nav.pto.veilarbportefolje.config.SchedulConfig
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.ENHET_ID
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.OPPFOLGING_STARTDATO
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.opensearch.action.search.SearchRequest
 import org.opensearch.client.OpenSearchClient
@@ -142,6 +143,7 @@ class StatsReporter(
                 .trackTotalHits(true)
                 .query(
                     QueryBuilders.boolQuery()
+                        .filter(QueryBuilders.rangeQuery(OPPFOLGING_STARTDATO).lte("now-1h"))
                         .mustNot(QueryBuilders.existsQuery(ENHET_ID))
                 )
 

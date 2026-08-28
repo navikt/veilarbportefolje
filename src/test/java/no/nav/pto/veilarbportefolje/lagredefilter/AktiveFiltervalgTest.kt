@@ -1,20 +1,25 @@
 package no.nav.pto.veilarbportefolje.lagredefilter
 
+import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.AktiveFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraAktive
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
 
 class AktiveFiltervalgTest {
 
     @Test
-    fun `defaults skal gi tom object node`() {
-        val aktive = ekstraherAktiveFiltervalg(getFiltervalgDefaults())
+    fun `defaults skal serialiseres til tomt objekt`() {
+        val aktive: AktiveFiltervalg = ekstraherAktiveFiltervalg(getFiltervalgDefaults())
+        val json = JsonUtils.toJson(aktive)
 
-        assertThat(aktive.isEmpty).isTrue()
+        assertJsonEquals("{}", json)
     }
 
     @Test
@@ -26,16 +31,25 @@ class AktiveFiltervalgTest {
         )
 
         val aktive = ekstraherAktiveFiltervalg(filtervalg)
+        val json = JsonUtils.toJson(aktive)
 
-        assertThat(aktive.propertyNames()).containsExactlyInAnyOrder(
-            "navnEllerFnrQuery", "veiledere", "kjonn"
+        assertThat(aktive).isEqualTo(
+            AktiveFiltervalg(
+                navnEllerFnrQuery = "Ola Nordmann",
+                veiledere = listOf("Z123456", "Z654321"),
+                kjonn = Kjonn.K
+            )
         )
-        assertThat(aktive.get("navnEllerFnrQuery").asString()).isEqualTo("Ola Nordmann")
-        assertThat(aktive.get("kjonn").asString()).isEqualTo("K")
-        val veiledere = aktive.get("veiledere")
-        assertThat(veiledere).hasSize(2)
-        assertThat(veiledere[0].asString()).isEqualTo("Z123456")
-        assertThat(veiledere[1].asString()).isEqualTo("Z654321")
+        assertJsonEquals(
+            """
+                {
+                  "navnEllerFnrQuery": "Ola Nordmann",
+                  "veiledere": ["Z123456", "Z654321"],
+                  "kjonn": "K"
+                }
+            """.trimIndent(),
+            json
+        )
     }
 
     @Test
@@ -49,7 +63,8 @@ class AktiveFiltervalgTest {
 
         val aktive = ekstraherAktiveFiltervalg(filtervalg)
 
-        assertThat(aktive.has("aktiviteter")).isFalse()
+        assertThat(aktive.aktiviteter).isEmpty()
+        assertJsonEquals("{}", JsonUtils.toJson(aktive))
     }
 
     @Test
@@ -63,17 +78,24 @@ class AktiveFiltervalgTest {
 
         val aktive = ekstraherAktiveFiltervalg(filtervalg)
 
-        val lagretAktiviteter = aktive.get("aktiviteter")
-        assertThat(lagretAktiviteter).isNotNull
-        assertThat(lagretAktiviteter.propertyNames())
-            .containsExactlyInAnyOrder("MOTE", "EGEN", "BEHANDLING")
-        assertThat(lagretAktiviteter.get("MOTE").asString()).isEqualTo("JA")
-        assertThat(lagretAktiviteter.get("EGEN").asString()).isEqualTo("NA")
+        assertThat(aktive.aktiviteter).isEqualTo(aktiviteter)
+        assertJsonEquals(
+            """
+                {
+                  "aktiviteter": {
+                    "MOTE": "JA",
+                    "EGEN": "NA",
+                    "BEHANDLING": "NA"
+                  }
+                }
+            """.trimIndent(),
+            JsonUtils.toJson(aktive)
+        )
     }
 
     @Test
-    fun `rekonstruksjon av tom aktive-node skal gi defaults`() {
-        val tom = ekstraherAktiveFiltervalg(getFiltervalgDefaults())
+    fun `rekonstruksjon av tom aktive-dto skal gi defaults`() {
+        val tom = AktiveFiltervalg()
 
         val rekonstruert = rekonstruerFiltervalgFraAktive(tom)
 
@@ -105,5 +127,9 @@ class AktiveFiltervalgTest {
         val rekonstruert = rekonstruerFiltervalgFraAktive(ekstraherAktiveFiltervalg(defaults))
 
         assertThat(rekonstruert).isEqualTo(defaults)
+    }
+
+    private fun assertJsonEquals(expectedJson: String, actualJson: String) {
+        JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.LENIENT)
     }
 }
