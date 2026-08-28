@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper
 
+import no.nav.common.types.identer.EnhetId
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.lagredefilter.LagredeFilterFeilmeldinger
 import no.nav.pto.veilarbportefolje.lagredefilter.validerFilterNavn
 import no.nav.pto.veilarbportefolje.lagredefilter.validerUnikhet
@@ -11,7 +13,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 
 @Service
-class VeiledergrupperService(private val veiledergrupperRepository: VeiledergrupperRepository) {
+class VeiledergrupperService(
+    private val veiledergrupperRepository: VeiledergrupperRepository,
+    private val veilarbVeilederClient: VeilarbVeilederClient,
+) {
+
+    private val log = org.slf4j.LoggerFactory.getLogger(VeiledergrupperService::class.java)
 
     fun hentVeiledergrupperForEnhet(enhetId: String): List<LagretVeiledergruppe> {
         return veiledergrupperRepository.hentVeiledergrupperForEnhet(enhetId)
@@ -44,6 +51,53 @@ class VeiledergrupperService(private val veiledergrupperRepository: Veiledergrup
 
     fun slettVeiledergruppeForEnhet(enhetId: String, filterId: Int): Int {
         return veiledergrupperRepository.slettVeiledergruppeForEnhet(enhetId, filterId)
+    }
+
+    fun slettVeiledereSomIkkeErAktiveForHverEnhet() {
+        val enheter = veiledergrupperRepository.hentAlleEnheter()
+
+        enheter.forEach { enhetId ->
+            try {
+                val aktiveVeilederePaEnheten = veilarbVeilederClient
+                    .hentVeilederePaaEnhetMachineToMachine(EnhetId.of(enhetId))
+                    .toSet()
+
+                if (aktiveVeilederePaEnheten.isEmpty()) {
+                    log.warn("Ingen aktive veiledere returnert for enhet $enhetId, hopper over")
+                    return@forEach
+                }
+
+                val lagredeVeiledergrupperPaEnheten = veiledergrupperRepository.hentVeiledergrupperForEnhet(enhetId)
+
+                lagredeVeiledergrupperPaEnheten.forEach { lagretVeiledergruppe ->
+                    val (veiledereSomFortsattErAktive, veiledereSomIkkeErAktive) =
+                        lagretVeiledergruppe.veiledere.partition { it in aktiveVeilederePaEnheten }
+
+                    if (veiledereSomIkkeErAktive.isEmpty()) {
+                        return@forEach
+                    }
+
+                    log.warn("Fjernet veiledere: ${veiledereSomIkkeErAktive.joinToString(", ")}")
+
+                    // Hvis ingen veiledere er aktive lenger, slett hele veiledergruppen.
+                    if (veiledereSomFortsattErAktive.isEmpty()) {
+                        slettVeiledergruppeForEnhet(enhetId, lagretVeiledergruppe.filterId)
+                        log.warn("Fjernet veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
+
+                    } else {
+                        val updatedVeilederGruppe = OppdaterVeiledergruppeRequest(
+                            filterId = lagretVeiledergruppe.filterId,
+                            filterNavn = lagretVeiledergruppe.filterNavn,
+                            veiledere = veiledereSomFortsattErAktive
+                        )
+                        oppdaterVeiledergruppeForEnhet(enhetId, updatedVeilederGruppe)
+                        log.warn("Oppdatert veiledergruppe: ${lagretVeiledergruppe.filterNavn} fra enhet: $enhetId")
+                    }
+                }
+            } catch (e: Exception) {
+                log.error("Feil ved opprydding av veiledergrupper for enhet: $enhetId", e)
+            }
+        }
     }
 
     private fun validerFilterNavnEllerKast(filterNavn: String) {

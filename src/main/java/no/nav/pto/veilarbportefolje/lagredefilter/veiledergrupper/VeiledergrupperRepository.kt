@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.LagretV
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.NyVeiledergruppeRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.domene.OppdaterVeiledergruppeRequest
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -111,11 +112,16 @@ class VeiledergrupperRepository(private val db: JdbcTemplate) {
             WHERE $FILTER_ID = ? AND $ENHET_ID = ?
         """.trimIndent()
 
-        val antallRaderSletta = db.update(sql, filterId, enhetId)
-        if (antallRaderSletta > 0) {
-            // todo - opprydning av veiledergruppene i "mine filter", se deactivateMineFilterWithDeletedVeilederGroup i veilarbfilter
-        }
-        return antallRaderSletta
+        return db.update(sql, filterId, enhetId)
+    }
+
+    fun hentAlleEnheter(): List<String> {
+        val sql = """
+            SELECT DISTINCT $ENHET_ID
+            FROM $TABLE_NAME
+        """.trimIndent()
+
+        return db.queryForList<String>(sql).filterNotNull()
     }
 
     fun eksistererFilterNavn(enhetId: String, filterNavn: String, ekskluderFilterId: Int? = null): Boolean {

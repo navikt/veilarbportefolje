@@ -170,6 +170,25 @@ class VeiledergrupperRepositoryTest(
     }
 
     @Test
+    fun `hentAlleEnheter skal hente alle unike enheter`() {
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            "1111",
+            NyVeiledergruppeRequest(filterNavn = "Gruppe A", veiledere = listOf("v1"))
+        )
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            "2222",
+            NyVeiledergruppeRequest(filterNavn = "Gruppe B", veiledere = listOf("v2"))
+        )
+        veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
+            "1111",
+            NyVeiledergruppeRequest(filterNavn = "Gruppe C", veiledere = listOf("v3"))
+        )
+
+        val enheter = veiledergrupperRepository.hentAlleEnheter()
+        assertThat(enheter).containsExactlyInAnyOrder("1111", "2222")
+    }
+
+    @Test
     fun `eksistererFilterNavn skal returnere true naar navn finnes for enhet`() {
         val enhetId = "1234"
         veiledergrupperRepository.lagreNyVeiledergruppeForEnhet(
