@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.nais/alerts/**'
   pull_request:
+    paths-ignore:
+      - '.nais/alerts/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
