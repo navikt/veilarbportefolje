@@ -7,6 +7,4 @@ data class LagretFilter(
     val filterNavn: String,
     val filterValg: Filtervalg,
     val sortOrder: Int,
-    val aktiv: Boolean,
-    val ikkeAktivBeskrivelse: String
 )
