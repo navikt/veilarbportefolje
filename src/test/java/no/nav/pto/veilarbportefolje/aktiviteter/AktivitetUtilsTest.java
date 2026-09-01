@@ -3,21 +3,20 @@ package no.nav.pto.veilarbportefolje.aktiviteter;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
-import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import static java.util.Arrays.asList;
 import static no.nav.pto.veilarbportefolje.aktiviteter.AktivitetUtils.finnNyesteUtlopteAktivAktivitet;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
 @ContextConfiguration(classes = {ApplicationConfigTest.class})
 public class AktivitetUtilsTest {
 

@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.vedtakstotte;
 
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ public class Utkast14aStatusRepositoryTest {
     private static final String VEILEDER_IDENT = "Z1234";
     private static final String VEILEDER_NAVN = "Veileder 1234";
 
-    @Before
+    @BeforeEach
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         this.utkast14aStatusRepository = new Utkast14aStatusRepository(db);
@@ -86,6 +86,7 @@ public class Utkast14aStatusRepositoryTest {
         Optional<Kafka14aStatusendring> endringer = utkast14aStatusRepository.hentStatusEndringForBruker(AKTORID);
         assertThat(endringer.isEmpty()).isTrue();
     }
+
     @Test
     public void skallOppdatereVedtak() {
         insertVedtakIDB();
@@ -110,7 +111,6 @@ public class Utkast14aStatusRepositoryTest {
         assertThat(endringer.get().vedtakId).isEqualTo(VEDTAKID);
         assertThat(endringer.get().getTimestamp()).isEqualTo(time);
     }
-
 
     private void insertVedtakIDB() {
         LocalDateTime time = LocalDateTime.now().withNano(0);

@@ -3,8 +3,8 @@ package no.nav.pto.veilarbportefolje.vedtakstotte;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class Utkast14aStatusendringServiceeTest {
+public class Utkast14aStatusendringServiceTest {
 
     private Utkast14aStatusRepository vedtakStatusRepository;
     private Utkast14aStatusendringService utkast14aStatusendringService;
@@ -33,7 +33,7 @@ public class Utkast14aStatusendringServiceeTest {
             .setVeilederIdent(VEILEDER_IDENT)
             .setVeilederNavn(VEILEDER_NAVN);
 
-    @Before
+    @BeforeEach
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         this.vedtakStatusRepository = new Utkast14aStatusRepository(db);

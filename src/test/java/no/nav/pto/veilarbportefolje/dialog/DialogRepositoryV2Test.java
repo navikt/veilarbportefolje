@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.dialog;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -16,12 +16,11 @@ public class DialogRepositoryV2Test {
     private DialogRepositoryV2 dialogRepositoryV2;
     private final AktorId aktoerId = randomAktorId();
 
-    @Before
+    @BeforeEach
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         dialogRepositoryV2 = new DialogRepositoryV2(db);
     }
-
 
     @Test
     public void oppdaterDialogInfoForBruker_skal_sette_inn_i_tabell() {
