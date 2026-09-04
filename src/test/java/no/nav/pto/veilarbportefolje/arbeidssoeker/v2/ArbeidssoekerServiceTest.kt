@@ -161,7 +161,7 @@ class ArbeidssoekerServiceTest(
     fun meldinger_om_periode_og_opplysninger_om_arbeidssoeker_skal_ignoreres_dersom_bruker_ikke_er_under_oppfolging() {
         val periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -285,7 +285,7 @@ class ArbeidssoekerServiceTest(
         val nyPeriodeId = UUID.randomUUID()
         val gammelOpplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -354,7 +354,7 @@ class ArbeidssoekerServiceTest(
         val nyPeriodeId = UUID.randomUUID()
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -412,7 +412,7 @@ class ArbeidssoekerServiceTest(
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -476,7 +476,7 @@ class ArbeidssoekerServiceTest(
         // Arrange
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -525,7 +525,7 @@ class ArbeidssoekerServiceTest(
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val periodeIdVedEndring = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab20a45")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
