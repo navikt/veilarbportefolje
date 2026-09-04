@@ -11,9 +11,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.FiltervalgRekonstruksjonException
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraJson
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.catchThrowable
 
 class AktiveFiltervalgTest {
 
+    // Ekstrahering av filtermodell med alle defaults til aktive filtervalg:
     @Test
     fun `defaults skal serialiseres til tomt objekt`() {
         val aktive: AktiveFiltervalg = ekstraherAktiveFiltervalg(getFiltervalgDefaults())
@@ -93,12 +98,11 @@ class AktiveFiltervalgTest {
         )
     }
 
+    // Rekonstruksjon av aktive filtervalg til filtermodell med alle defaults:
     @Test
     fun `rekonstruksjon av tom aktive-dto skal gi defaults`() {
         val tom = AktiveFiltervalg()
-
         val rekonstruert = rekonstruerFiltervalgFraAktive(tom)
-
         assertThat(rekonstruert).isEqualTo(getFiltervalgDefaults())
     }
 
@@ -116,18 +120,62 @@ class AktiveFiltervalgTest {
         )
 
         val rekonstruert = rekonstruerFiltervalgFraAktive(ekstraherAktiveFiltervalg(original))
-
         assertThat(rekonstruert).isEqualTo(original)
     }
 
     @Test
     fun `roundtrip av kun defaults skal gi defaults`() {
         val defaults = getFiltervalgDefaults()
-
         val rekonstruert = rekonstruerFiltervalgFraAktive(ekstraherAktiveFiltervalg(defaults))
-
         assertThat(rekonstruert).isEqualTo(defaults)
     }
+
+
+    // Mapping av lagret JSON til først aktive filtervalg og så filtermodell med defaults:
+    @Test
+    fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ugyldig enum-verdi`() {
+        val json = """{ "kjonn": "IKKE_EN_GYLDIG_VERDI" }"""
+
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+            .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
+    @Test
+    fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved umappbar aktivitet-verdi`() {
+        val json = """{ "aktiviteter": { "MOTE": "UGYLDIG_VERDI" } }"""
+
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+            .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
+    @Test
+    fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ukjent key-verdi`() {
+        val json = """{ "ukjent_key": "UKJENT_VERDI" }"""
+
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+            .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
+    @Test
+    fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ukjent enum-verdi i liste`() {
+        val json = """
+                {
+                  "navnEllerFnrQuery": "Ola Nordmann",
+                  "ytelseDagpenger": ["HAR_DAGPENGER_ORDINAER", "UGYLDIG_VERDI"],
+                  "kjonn": "K"
+                }
+            """.trimIndent()
+
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+            .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
+    @Test
+    fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ugyldig JSON`() {
+        assertThatThrownBy { rekonstruerFiltervalgFraJson("{ ikke gyldig json") }
+            .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
 
     private fun assertJsonEquals(expectedJson: String, actualJson: String) {
         JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.LENIENT)

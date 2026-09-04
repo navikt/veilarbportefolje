@@ -1,31 +1,14 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.BarnUnder18Aar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.CVjobbprofil
-import no.nav.pto.veilarbportefolje.domene.filtervalg.EnsligeForsorgere
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Formidlingsgruppe
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Rettighetsgruppe
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Servicegruppe
-import no.nav.pto.veilarbportefolje.domene.filtervalg.StillingFraNAVFilter
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapArena
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapKelvin
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpengerArena
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseTiltakspenger
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseTiltakspengerArena
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseUngdomsprogram
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
-import com.fasterxml.jackson.annotation.JsonInclude
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class AktiveFiltervalg(
@@ -161,3 +144,36 @@ fun rekonstruerFiltervalgFraAktive(aktive: AktiveFiltervalg): Filtervalg =
         ytelseUngdomsprogram = aktive.ytelseUngdomsprogram,
         visGeografiskBosted = aktive.visGeografiskBosted
     )
+
+
+class FiltervalgRekonstruksjonException(message: String, cause: Throwable? = null) :
+    RuntimeException(message, cause)
+
+/**
+ * Deserialiserer og rekonstruerer et [Filtervalg] fra lagret JSON.
+ * Kaster [FiltervalgRekonstruksjonException] ved ugyldig enum-verdi, umappbar nøkkel
+ * eller annen deserialiserings-/rekonstruksjonsfeil.
+ */
+
+private val strictAktiveFiltervalgMapper = ObjectMapper()
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+
+fun rekonstruerFiltervalgFraJson(aktiveFiltervalgJson: String?): Filtervalg {
+    val aktive = try {
+        strictAktiveFiltervalgMapper.readValue(aktiveFiltervalgJson, AktiveFiltervalg::class.java)
+    } catch (e: Exception) {
+        throw FiltervalgRekonstruksjonException(
+            "Klarte ikke å deserialisere lagret AktiveFiltervalg-JSON. " +
+                    "Kan skyldes en enum-verdi eller nøkkel som ikke lenger kan mappes.",
+            e
+        )
+    }
+    return try {
+        rekonstruerFiltervalgFraAktive(aktive)
+    } catch (e: Exception) {
+        throw FiltervalgRekonstruksjonException(
+            "Klarte ikke å rekonstruere Filtervalg fra AktiveFiltervalg.",
+            e
+        )
+    }
+}
