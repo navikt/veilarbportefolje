@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER.*
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.HentLagretFilterResponse
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
 import org.postgresql.util.PGobject
@@ -12,8 +13,9 @@ import java.sql.ResultSet
 
 @Repository
 class MineFilterRepository(private val db: JdbcTemplate) {
+    private val logger = org.slf4j.LoggerFactory.getLogger(MineFilterRepository::class.java)
 
-    fun hentFilterForVeileder(veilederIdent: String): List<LagretFilter> {
+    fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
         val sql = """
             SELECT *
             FROM $TABLE_NAME
@@ -21,7 +23,24 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             ORDER BY $SORT_ORDER
         """.trimIndent()
 
-        return db.query(sql, { rs, _ -> rs.toLagretFilter() }, veilederIdent)
+        var antallFiltreSomFeilet = 0
+
+        val filtre = db.query(sql, { rs, _ ->
+            try {
+                rs.toLagretFilter()
+            } catch (e: FiltervalgRekonstruksjonException) {
+                antallFiltreSomFeilet++
+                logger.error(
+                    "Kunne ikke rekonstruere filter (filterId={}) så hopper over lagret filter: message='{}', cause='{}'",
+                    rs.getInt(FILTER_ID),
+                    e.message,
+                    e.cause?.message,
+                    e
+                )
+                null
+            }
+        }, veilederIdent).filterNotNull()
+        return HentLagretFilterResponse(filtre, antallFiltreSomFeilet)
     }
 
     fun lagreNyttFilterForVeileder(
@@ -29,7 +48,6 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         filterNavn: String,
         aktiveFiltervalg: AktiveFiltervalg
     ): LagretFilter {
-
         val sql = """
             INSERT INTO $TABLE_NAME (
                 $VEILEDER_IDENT,
@@ -105,7 +123,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
             db.update(updateSql, req.sortOrder, req.filterId, veilederIdent)
         }
 
-        return hentFilterForVeileder(veilederIdent)
+        return hentFilterForVeileder(veilederIdent).filtre
     }
 
     fun eksistererFilterNavn(veilederIdent: String, filterNavn: String, ekskluderFilterId: Int? = null): Boolean {
@@ -154,9 +172,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         LagretFilter(
             filterId = getInt(FILTER_ID),
             filterNavn = getString(FILTER_NAVN),
-            filterValg = rekonstruerFiltervalgFraAktive(
-                JsonUtils.fromJson(getString(AKTIVE_FILTER_VALG), AktiveFiltervalg::class.java)
-            ),
+            filterValg = rekonstruerFiltervalgFraJson(getString(AKTIVE_FILTER_VALG)),
             sortOrder = getInt(SORT_ORDER)
         )
 
