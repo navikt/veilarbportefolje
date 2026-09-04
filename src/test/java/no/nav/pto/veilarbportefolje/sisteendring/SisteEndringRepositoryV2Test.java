@@ -5,9 +5,8 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
@@ -19,14 +18,14 @@ import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.AV
 import static no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori.NY_IJOBB;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toIsoUTC;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SisteEndringRepositoryV2Test {
 
     private SisteEndringRepositoryV2 sisteEndringRepository;
     private static AktorId AKTORID = AktorId.of("123456789");
 
-
-    @Before
+    @BeforeEach
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         this.sisteEndringRepository = new SisteEndringRepositoryV2(db, db);
@@ -105,11 +104,10 @@ public class SisteEndringRepositoryV2Test {
     public void testFetchingEmptySisteEndring() {
         try {
             Map<String, Endring> sisteEndringer = sisteEndringRepository.getSisteEndringer(AktorId.of("123"));
-            Assert.assertNotNull(sisteEndringer);
-            Assert.assertTrue(sisteEndringer.isEmpty());
+            assertNotNull(sisteEndringer);
+            assertTrue(sisteEndringer.isEmpty());
         } catch (Exception e) {
-            Assert.fail();
+            fail();
         }
     }
-
 }

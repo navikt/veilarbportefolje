@@ -1,28 +1,24 @@
 package no.nav.pto.veilarbportefolje.oppfolgingsbruker
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.rest.client.RestClient
 import no.nav.common.types.identer.Fnr
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
 import java.util.*
-import java.util.function.Supplier
 
+@WireMockTest
 class VeilarbarenaClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = VeilarbarenaClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
@@ -78,11 +74,11 @@ class VeilarbarenaClientTest {
     }
 
     @Test
-    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_ikke_eksisterer() {
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_bruker_ikke_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = VeilarbarenaClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
@@ -102,11 +98,11 @@ class VeilarbarenaClientTest {
     }
 
     @Test
-    fun hentOppfolgingsbruker_gir_forventet_respons_naar_downstream_server_har_feil() {
+    fun hentOppfolgingsbruker_gir_forventet_respons_naar_downstream_server_har_feil(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = VeilarbarenaClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
