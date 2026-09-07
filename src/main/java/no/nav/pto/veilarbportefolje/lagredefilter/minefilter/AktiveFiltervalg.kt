@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 
@@ -146,8 +147,8 @@ fun rekonstruerFiltervalgFraAktive(aktive: AktiveFiltervalg): Filtervalg =
     )
 
 
-class FiltervalgRekonstruksjonException(message: String, cause: Throwable? = null) :
-    RuntimeException(message, cause)
+class FiltervalgRekonstruksjonException() :
+    RuntimeException()
 
 /**
  * Deserialiserer og rekonstruerer et [Filtervalg] fra lagret JSON.
@@ -158,22 +159,25 @@ class FiltervalgRekonstruksjonException(message: String, cause: Throwable? = nul
 private val strictAktiveFiltervalgMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
 
-fun rekonstruerFiltervalgFraJson(aktiveFiltervalgJson: String?): Filtervalg {
+fun rekonstruerFiltervalgFraJson(filterId: Int, aktiveFiltervalgJson: String?): Filtervalg {
     val aktive = try {
         strictAktiveFiltervalgMapper.readValue(aktiveFiltervalgJson, AktiveFiltervalg::class.java)
     } catch (e: Exception) {
-        throw FiltervalgRekonstruksjonException(
-            "Klarte ikke å deserialisere lagret AktiveFiltervalg-JSON. " +
-                    "Kan skyldes en enum-verdi eller nøkkel som ikke lenger kan mappes.",
+        secureLog.error(
+            "Kunne ikke rekonstruere filter (filterId=${filterId}) så hopper over lagret filter. " +
+                    "Årsaken: Klarte ikke å deserialisere lagret AktiveFiltervalg-JSON",
             e
         )
+        throw FiltervalgRekonstruksjonException()
     }
     return try {
         rekonstruerFiltervalgFraAktive(aktive)
     } catch (e: Exception) {
-        throw FiltervalgRekonstruksjonException(
-            "Klarte ikke å rekonstruere Filtervalg fra AktiveFiltervalg.",
+        secureLog.error(
+            "Kunne ikke rekonstruere filter (filterId=${filterId}) så hopper over lagret filter. " +
+                    "Årsaken: Klarte ikke å rekonstruere Filtervalg fra AktiveFiltervalg",
             e
         )
+        throw FiltervalgRekonstruksjonException()
     }
 }

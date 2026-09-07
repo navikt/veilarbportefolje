@@ -136,7 +136,7 @@ class AktiveFiltervalgTest {
     fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ugyldig enum-verdi`() {
         val json = """{ "kjonn": "IKKE_EN_GYLDIG_VERDI" }"""
 
-        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, json) }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
     }
 
@@ -144,7 +144,7 @@ class AktiveFiltervalgTest {
     fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved umappbar aktivitet-verdi`() {
         val json = """{ "aktiviteter": { "MOTE": "UGYLDIG_VERDI" } }"""
 
-        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, json) }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
     }
 
@@ -152,7 +152,7 @@ class AktiveFiltervalgTest {
     fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ukjent key-verdi`() {
         val json = """{ "ukjent_key": "UKJENT_VERDI" }"""
 
-        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, json) }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
     }
 
@@ -166,13 +166,13 @@ class AktiveFiltervalgTest {
                 }
             """.trimIndent()
 
-        assertThatThrownBy { rekonstruerFiltervalgFraJson(json) }
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, json) }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
     }
 
     @Test
     fun `rekonstruksjon skal kaste FiltervalgRekonstruksjonException ved ugyldig JSON`() {
-        assertThatThrownBy { rekonstruerFiltervalgFraJson("{ ikke gyldig json") }
+        assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, "{ ikke gyldig json") }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
     }
 

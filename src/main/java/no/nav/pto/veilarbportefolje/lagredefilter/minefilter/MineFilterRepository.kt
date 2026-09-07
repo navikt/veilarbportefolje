@@ -13,7 +13,6 @@ import java.sql.ResultSet
 
 @Repository
 class MineFilterRepository(private val db: JdbcTemplate) {
-    private val logger = org.slf4j.LoggerFactory.getLogger(MineFilterRepository::class.java)
 
     fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
         val sql = """
@@ -30,13 +29,6 @@ class MineFilterRepository(private val db: JdbcTemplate) {
                 rs.toLagretFilter()
             } catch (e: FiltervalgRekonstruksjonException) {
                 antallFiltreSomFeilet++
-                logger.error(
-                    "Kunne ikke rekonstruere filter (filterId={}) så hopper over lagret filter: message='{}', cause='{}'",
-                    rs.getInt(FILTER_ID),
-                    e.message,
-                    e.cause?.message,
-                    e
-                )
                 null
             }
         }, veilederIdent).filterNotNull()
@@ -172,7 +164,7 @@ class MineFilterRepository(private val db: JdbcTemplate) {
         LagretFilter(
             filterId = getInt(FILTER_ID),
             filterNavn = getString(FILTER_NAVN),
-            filterValg = rekonstruerFiltervalgFraJson(getString(AKTIVE_FILTER_VALG)),
+            filterValg = rekonstruerFiltervalgFraJson(getInt(FILTER_ID), getString(AKTIVE_FILTER_VALG)),
             sortOrder = getInt(SORT_ORDER)
         )
 
