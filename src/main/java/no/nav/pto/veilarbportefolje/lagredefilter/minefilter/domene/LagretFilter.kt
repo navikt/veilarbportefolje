@@ -6,6 +6,5 @@ data class LagretFilter(
     val filterId: Int,
     val filterNavn: String,
     val filterValg: Filtervalg,
-    val sortOrder: Int,
-    val antallFiltreSomFeilet: Int? = null
+    val sortOrder: Int
 )
