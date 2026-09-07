@@ -79,6 +79,10 @@ class ArbeidssoekerServiceTest(
     @BeforeEach
     fun setup() {
         db.update("truncate TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
+        // Alle tester i denne klassen deler samme fnr. Uten truncate her kan en test som setter
+        // bruker under oppfølging (via bruker_identer/oppfolging_data) lekke inn i neste test.
+        db.update("truncate bruker_identer")
+        db.update("truncate oppfolging_data")
     }
 
     @Test
