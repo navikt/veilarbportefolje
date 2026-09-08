@@ -819,6 +819,7 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
             Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}")
             Brukerstatus.KANDIDAT_FOR_UTMELDING -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}")
+            Brukerstatus.MINE_FARGEKATEGORIER -> QueryBuilders.boolQuery()  // Denne håndteres kun i frontend, så vi trenger ikke å filtrere på noe her
         }
         return queryBuilder
     }
