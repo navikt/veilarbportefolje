@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
@@ -10,6 +9,8 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.json.JsonMapper
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class AktiveFiltervalg(
@@ -156,8 +157,10 @@ class FiltervalgRekonstruksjonException() :
  * eller annen deserialiserings-/rekonstruksjonsfeil.
  */
 
-private val strictAktiveFiltervalgMapper = ObjectMapper()
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+private val strictAktiveFiltervalgMapper = (JsonUtils.getMapper() as JsonMapper)
+    .rebuild()
+    .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .build()
 
 fun rekonstruerFiltervalgFraJson(filterId: Int, aktiveFiltervalgJson: String?): Filtervalg {
     val aktive = try {
