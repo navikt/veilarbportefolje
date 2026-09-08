@@ -3,18 +3,14 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.CVjobbprofil
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.AktiveFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraAktive
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.FiltervalgRekonstruksjonException
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraJson
-import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.assertj.core.api.Assertions.catchThrowable
 
 class AktiveFiltervalgTest {
 
@@ -138,6 +134,17 @@ class AktiveFiltervalgTest {
 
         assertThatThrownBy { rekonstruerFiltervalgFraJson(12345, json) }
             .isInstanceOf(FiltervalgRekonstruksjonException::class.java)
+    }
+
+    @Test
+    fun `rekonstruksjon skal handtere baade gammel og ny cvJobbprofil-verdi`() {
+        val gammel = """{ "cvJobbprofil": "HAR_DELT_CV" }"""
+        val ny = """{ "cvJobbprofil": "HAR_CV_HOS_NAV" }"""
+
+        val forventet = getFiltervalgDefaults().copy(cvJobbprofil = CVjobbprofil.HAR_CV_HOS_NAV)
+
+        assertThat(rekonstruerFiltervalgFraJson(12345, gammel)).isEqualTo(forventet)
+        assertThat(rekonstruerFiltervalgFraJson(12345, ny)).isEqualTo(forventet)
     }
 
     @Test
