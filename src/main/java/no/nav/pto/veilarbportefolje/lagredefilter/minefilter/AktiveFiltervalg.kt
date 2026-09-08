@@ -157,6 +157,7 @@ class FiltervalgRekonstruksjonException() :
  * eller annen deserialiserings-/rekonstruksjonsfeil.
  */
 
+// Må castes til JsonMapper for å få tilgang på rebuild, usikket hvorfor.
 private val strictAktiveFiltervalgMapper = (JsonUtils.getMapper() as JsonMapper)
     .rebuild()
     .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
