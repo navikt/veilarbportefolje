@@ -12,6 +12,29 @@ import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.json.JsonMapper
 
+/*
+*** Migrerings-guide ****
+* For enkle migreringer er det nok å gjøre endringer i koden, og så migrere i gcloud ved hjelp av ferdig definerte scripts.
+* For mer komplekse migreringer bør man ha mappinger som et mellomsteg til man har migreret over til det nye formatet:
+*
+* ENDRINGER:
+* For endringer i key/filternavn, må man legge til @JsonAlias("gameltNavn") over filternavnet i AktiveFiltervalg.
+* For endringer i enums må man legge til @JsonAlias("GAMMEL_VERDI") eller over enumen i data classen.
+* Legge til en test som sjekker at alt blir riktig.
+*
+* SLETTING AV VERDIER / HELE FILTRE:
+* Oppdater databasen først. Så fjern filteret eller enumen fra koden.
+*
+* SPLITTING/ANDRE KOMPLEKSE TING:
+* 1. I AktiveFiltervalg, endre classen til å kunne deserializere "gammle" filtre i databasen.
+* Kan f eks være å endre typen fra en enum til en string (eller list<String>) så den kan deserialiseres.
+* 2. Lag en mapper-funksjon som tar inn filteret i rekonstruerFiltervalgFraAktive.
+* Lag custom logikk for det du ønsker å endre.
+* 3. ekstraherAktiveFiltervalg -> mapper om nødvendig så riktig verdi blir sendt inn til AktiveFiltervalg
+* 4. Lag tester for å verifiser at alt blir riktig.
+* 5. RYDD OPP etter migreringen er ferdig.
+*/
+
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class AktiveFiltervalg(
     val ferdigfilterListe: List<Brukerstatus> = emptyList(),

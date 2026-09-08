@@ -4,7 +4,6 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
-import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
@@ -71,11 +70,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.lucene.search.join.ScoreMode
-import org.opensearch.index.query.BoolQueryBuilder
-import org.opensearch.index.query.Operator
-import org.opensearch.index.query.QueryBuilder
-import org.opensearch.index.query.QueryBuilders
-import org.opensearch.index.query.RangeQueryBuilder
+import org.opensearch.index.query.*
 import org.opensearch.search.aggregations.AggregationBuilders
 import org.opensearch.search.aggregations.BucketOrder
 import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator
@@ -497,7 +492,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harCvFilter()) {
-            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_DELT_CV) {
+            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_CV_HOS_NAV) {
                 queryBuilder.must(QueryBuilders.matchQuery(CV_EKSISTERE, true))
             } else {
                 val orQuery = QueryBuilders.boolQuery()
@@ -809,6 +804,7 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
                 .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
+
             Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
