@@ -163,6 +163,10 @@ class HendelseService(
 
     private fun slettHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+        if (aktorId == null) {
+            logger.info("Fant ingen aktiv aktorId for person med hendelse ID ${hendelse.id} (bruker er trolig ikke under oppfølging). Hopper over sletting i OpenSearch.")
+            return
+        }
         opensearchIndexerPaDatafelt.slettHendelse(hendelse.kategori, aktorId)
     }
 }
