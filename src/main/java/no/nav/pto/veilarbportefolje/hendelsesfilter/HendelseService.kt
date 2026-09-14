@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
@@ -42,9 +43,7 @@ class HendelseService(
     @Transactional
     override fun behandleKafkaRecordLogikk(hendelseRecordValue: HendelseRecordValue, hendelseId: String) {
         val operasjon = hendelseRecordValue.operasjon
-        val hendelse = toHendelse(hendelseRecordValue, hendelseId)
-
-        val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelse.personIdent.get())
+        val isUnderArbeidsrettetOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(hendelseRecordValue.personID.get())
 
         if (!isUnderArbeidsrettetOppfolging && operasjon != Operasjon.STOPP) {
             logger.info("Fikk melding/hendelse med hendelse ID $hendelseId for bruker som ikke er under oppfølging. Ignorerer melding.")
@@ -52,9 +51,14 @@ class HendelseService(
         }
 
         when (operasjon) {
-            Operasjon.START -> startHendelse(hendelse)
-            Operasjon.OPPDATER -> oppdaterHendelse(hendelse)
-            Operasjon.STOPP -> stoppHendelse(hendelse, isUnderArbeidsrettetOppfolging)
+            Operasjon.START -> startHendelse(toHendelse(hendelseRecordValue, hendelseId))
+            Operasjon.OPPDATER -> oppdaterHendelse(toHendelse(hendelseRecordValue, hendelseId))
+            Operasjon.STOPP -> stoppHendelse(
+                hendelseId = UUID.fromString(hendelseId),
+                personIdent = hendelseRecordValue.personID,
+                kategori = hendelseRecordValue.kategori,
+                isUnderArbeidsrettetOppfolging = isUnderArbeidsrettetOppfolging
+            )
         }
     }
 
@@ -118,9 +122,14 @@ class HendelseService(
 
     }
 
-    private fun stoppHendelse(hendelse: Hendelse, isUnderArbeidsrettetOppfolging: Boolean = true) {
+    private fun stoppHendelse(
+        hendelseId: UUID,
+        personIdent: NorskIdent,
+        kategori: Kategori,
+        isUnderArbeidsrettetOppfolging: Boolean = true
+    ) {
         val resultatAvDeleteHendelse = try {
-            hendelseRepository.delete(hendelse.id)
+            hendelseRepository.delete(hendelseId)
         } catch (ex: IngenHendelseMedIdException) {
             ex
         }
@@ -130,29 +139,29 @@ class HendelseService(
             // Per no ignorer vi melding, då vi forventar å alltid få ei "START"-melding før ei eventuell "OPPDATER"- eller "STOPP"-melding.
             // Dette går fint så lenge vi ikkje har skrudd på "compaction" på topic-et. Dersom vi har "compaction" på er det ikkje gitt
             // at vi berre kan ignorere, sidan vi då potensielt går glipp av hendelsar ved ein eventuell rewind på topic-et.
-            logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP}, ID ${hendelse.id} og kategori ${hendelse.kategori}, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
+            logger.warn("Fikk hendelse med operasjon ${Operasjon.STOPP}, ID $hendelseId og kategori $kategori, men ingen hendelse med denne ID-en finnes. Ignorerer melding.")
             return
         }
         if (!isUnderArbeidsrettetOppfolging) {
-            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} for innbygger som ikke er i arbeidsrettet oppfølging, ble slettet")
+            logger.info("Hendelse med id $hendelseId og kategori $kategori for innbygger som ikke er i arbeidsrettet oppfølging, ble slettet")
         }
 
         val resultatAvGetEldsteHendelseIKategorien = try {
-            hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
+            hendelseRepository.getEldste(personIdent, kategori)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
 
         if (resultatAvGetEldsteHendelseIKategorien is IngenHendelseForPersonException) {
             // All good - det var ingen flere hendelser for personen i kategorien etter at vi slettet den som kom inn som argument
-            slettHendelseForBrukerIOpenSearch(hendelse)
-            logger.info("Hendelse med id ${hendelse.id} og kategori ${hendelse.kategori} ble slettet i DB og fjernet for person i OpenSearch.")
+            slettHendelseForBrukerIOpenSearch(hendelseId, personIdent, kategori)
+            logger.info("Hendelse med id $hendelseId og kategori $kategori ble slettet i DB og fjernet for person i OpenSearch.")
             return
         }
 
         if (resultatAvGetEldsteHendelseIKategorien is Hendelse) {
             oppdaterHendelseForBrukerIOpenSearch(resultatAvGetEldsteHendelseIKategorien)
-            logger.info("Hendelse med id ${hendelse.id}  og kategori ${hendelse.kategori} ble slettet i DB og OpenSearch ble oppdatert med ny eldste hendelse i kategorien for person, med id ${resultatAvGetEldsteHendelseIKategorien.id}")
+            logger.info("Hendelse med id $hendelseId og kategori $kategori ble slettet i DB og OpenSearch ble oppdatert med ny eldste hendelse i kategorien for person, med id ${resultatAvGetEldsteHendelseIKategorien.id}")
         }
     }
 
@@ -161,12 +170,12 @@ class HendelseService(
         opensearchIndexerPaDatafelt.oppdaterHendelse(hendelse, aktorId)
     }
 
-    private fun slettHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+    private fun slettHendelseForBrukerIOpenSearch(hendelseId: UUID, personIdent: NorskIdent, kategori: Kategori) {
+        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(personIdent.get()))
         if (aktorId == null) {
-            logger.info("Fant ingen aktiv aktorId for person med hendelse ID ${hendelse.id} (bruker er trolig ikke under oppfølging). Hopper over sletting i OpenSearch.")
+            logger.info("Fant ingen aktiv aktorId for person med hendelse ID $hendelseId (bruker er trolig ikke under oppfølging). Hopper over sletting i OpenSearch.")
             return
         }
-        opensearchIndexerPaDatafelt.slettHendelse(hendelse.kategori, aktorId)
+        opensearchIndexerPaDatafelt.slettHendelse(kategori, aktorId)
     }
 }

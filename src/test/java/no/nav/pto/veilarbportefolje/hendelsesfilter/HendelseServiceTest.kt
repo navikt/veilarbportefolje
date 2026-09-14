@@ -35,7 +35,7 @@ class HendelseServiceTest(
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
-        val hendelseRecord =
+        val hendelseRecord: ConsumerRecord<String, HendelseRecordValue> =
             ConsumerRecord(
                 KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
                 0,

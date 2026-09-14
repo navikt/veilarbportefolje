@@ -98,13 +98,13 @@ fun genererRandomHendelseRecordValue(
     hendelseDatoFrist: ZonedDateTime? = randomDatoFrist(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
-): HendelseRecordValue {
-    return HendelseRecordValue(
+): HendelseRecordValueV1 {
+    return HendelseRecordValueV1(
         personID = personID,
         avsender = avsender,
         kategori = kategori,
         operasjon = operasjon,
-        hendelse = HendelseRecordValue.HendelseInnhold(
+        hendelse = HendelseRecordValueV1.HendelseInnhold(
             beskrivelse = hendelseBeskrivelse,
             beskrivelseEnum = hendelseBeskrivelseEnum,
             dato = hendelseDato,
