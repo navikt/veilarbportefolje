@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.hendelsesfilter
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.NorskIdent
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import java.net.URI
@@ -159,6 +160,45 @@ class DataformatTest {
         val asV2 = deserialisertHendelseRecordValue as HendelseRecordValueV2
         assertThat(asV2.hendelse).isNull()
         assertThat(asV2.operasjon).isEqualTo(Operasjon.STOPP)
+    }
+
+    @Test
+    fun `skal ikke tillate V2 START-melding med null hendelse`() {
+        val operasjon = Operasjon.START
+
+        assertThatThrownBy {
+            HendelseRecordValueV2(
+                personID = NorskIdent("11111199999"),
+                avsender = "veilarbdialog",
+                kategori = Kategori.UTGATT_VARSEL,
+                operasjon = operasjon,
+                hendelse = null,
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("HendelseRecordValueV2.hendelse må være satt når operasjon er $operasjon.")
+    }
+
+    @Test
+    fun `skal ikke tillate V2 STOPP-melding med hendelse`() {
+        val operasjon = Operasjon.STOPP
+
+        assertThatThrownBy {
+            HendelseRecordValueV2(
+                personID = NorskIdent("11111199999"),
+                avsender = "veilarbdialog",
+                kategori = Kategori.UTGATT_VARSEL,
+                operasjon = operasjon,
+                hendelse = HendelseRecordValueV2.HendelseInnhold(
+                    beskrivelse = "Bruker har et utgått varsel",
+                    beskrivelseEnum = "UTGATT_VARSEL_28_DAGER",
+                    tidspunkt = ZonedDateTime.of(2024, 11, 27, 0, 0, 0, 0, ZoneOffset.of("+01:00")),
+                    tidspunktFrist = null,
+                    lenke = URI.create("https://veilarbpersonflate.intern.dev.nav.no/aktivitetsplan").toURL(),
+                    detaljer = null
+                ),
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("HendelseRecordValueV2.hendelse må være null når operasjon er $operasjon.")
     }
 
     @Test

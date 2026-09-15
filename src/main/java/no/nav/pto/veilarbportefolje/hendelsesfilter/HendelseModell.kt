@@ -37,7 +37,7 @@ data class HendelseRecordValueV1(
         val beskrivelse: String,
         val beskrivelseEnum: String? = null,
         val dato: ZonedDateTime,
-        val datoFrist: ZonedDateTime ? = null,
+        val datoFrist: ZonedDateTime? = null,
         val lenke: URL,
         val detaljer: String?
     )
@@ -50,13 +50,27 @@ data class HendelseRecordValueV2(
     override val operasjon: Operasjon,
     val hendelse: HendelseInnhold?,
 ) : HendelseRecordValue {
+    init {
+        if (operasjon != Operasjon.STOPP) {
+            require(hendelse != null) {
+                "HendelseRecordValueV2.hendelse må være satt når operasjon er $operasjon."
+            }
+        }
+
+        if (operasjon == Operasjon.STOPP) {
+            require(hendelse == null) {
+                "HendelseRecordValueV2.hendelse må være null når operasjon er $operasjon."
+            }
+        }
+    }
+
     data class HendelseInnhold(
         // Det er produsent som må bestemme kobling mellom beskrivelse og beskrivelseEnum.
         // Førstnenvte er tekst som vises i frontend, og enum er for lettere sortering og filtrering i backend.
         val beskrivelse: String,
         val beskrivelseEnum: String? = null,
         val tidspunkt: ZonedDateTime,
-        val tidspunktFrist: ZonedDateTime ? = null,
+        val tidspunktFrist: ZonedDateTime? = null,
         val lenke: URL,
         val detaljer: String?
     )
@@ -85,7 +99,7 @@ data class Hendelse(
         val beskrivelse: String,
         val beskrivelseEnum: String? = null,
         val dato: ZonedDateTime,
-        val datoFrist: ZonedDateTime ? = null,
+        val datoFrist: ZonedDateTime? = null,
         val lenke: URL,
         val detaljer: String?
     )
@@ -113,6 +127,7 @@ private fun toHendelseInnhold(hendelseRecordValue: HendelseRecordValue): Hendels
                 detaljer = hendelseRecordValue.hendelse.detaljer,
             )
         }
+
         is HendelseRecordValueV2 -> {
             val hendelseInnhold = requireNotNull(hendelseRecordValue.hendelse) {
                 "HendelseInnhold må være satt for HendelseRecordValueV2 ved operasjon ${hendelseRecordValue.operasjon}."
