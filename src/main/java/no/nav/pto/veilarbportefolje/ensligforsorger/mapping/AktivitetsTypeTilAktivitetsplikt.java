@@ -10,7 +10,19 @@ import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype.MIGRERING;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype.*;
 
+/**
+ * Avgjør om en enslig forsørger har aktivitetsplikt basert på periodetype og aktivitetstype for
+ * vedtaket om overgangsstønad.
+ */
 public class AktivitetsTypeTilAktivitetsplikt {
+    /**
+     * @return {@code Optional.of(true/false)} når kombinasjonen av periodetype og aktivitetstype er
+     * kjent, ellers {@code Optional.empty()}. Dette er en gyldig domenetilstand — typisk for
+     * {@link Periodetype#MIGRERING} (vedtak migrert fra Infotrygd uten fullstendig informasjon) eller
+     * en periodetype/aktivitetstype-kombinasjon som ikke er eksplisitt mappet ennå. Konsumenter (se
+     * {@code EnsligeForsorgereService}/{@code OpensearchIndexerPaDatafelt}) må håndtere denne
+     * {@code null}-verdien eksplisitt og ikke anta at aktivitetsplikt alltid er kjent.
+     */
     public static Optional<Boolean> harAktivitetsplikt(Periodetype periodetype, Aktivitetstype aktivitetstypes) {
         if (periodetype.equals(PERIODE_FØR_FØDSEL)) {
             return Optional.of(false);
@@ -67,9 +79,11 @@ public class AktivitetsTypeTilAktivitetsplikt {
         }
 
         if (periodetype.equals(MIGRERING) || aktivitetstypes.equals(Aktivitetstype.MIGRERING)) {
+            // Migrerte vedtak fra Infotrygd mangler informasjon om aktivitetsplikt.
             return Optional.empty();
         }
 
+        // Fallback for periodetype/aktivitetstype-kombinasjoner som ikke er eksplisitt mappet over.
         return Optional.empty();
     }
 }
