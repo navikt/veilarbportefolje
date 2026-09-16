@@ -1,0 +1,65 @@
+= Dataminimering, ferske data og driftskompleksitet — kortversjon
+:doctype: article
+:sectanchors:
+
+*17. september 2026.* Kortversjon av link:DATAMINIMERING_KAFKA_RAPPORT.adoc[hovedrapporten], revidert 16. september. Kodegrunnlag: `14bae23c5eea845be5502b6318a5977c7c609c61`. Lokale, ikke-innsjekkede endringer er utelatt. Kodefunn dokumenterer ikke produksjonsomfang, historiske årsaker eller lovbrudd alene.
+
+== Anbefaling
+
+*Avklar mulige avvik, rett bekreftede mangler og prøv deretter ut alternativ B:* felles kontrollregler, forsvarlig avgrensede nye forsøk og periodisk etterhenting, bygd på eksisterende oppstartsoppslag. Anbefalingen er foreløpig. Ingen garanti om fullstendighet kan loves uten dokumentert kildedekning, kapasitet og vern mot at eldre meldinger overskriver nyere tilstand eller gjenoppretter slettede data. Påkrevd avvikshåndtering må ikke vente på arkitekturvalget.
+
+== Systemet og dilemmaet
+
+Veilarbportefolje samler fagdata via Kafka og API, lagrer i Postgres og bygger søkeindeksen `brukerindeks` i OpenSearch for Oversikten i Modia. Den felles konfigurasjonen omfatter 28 hendelsesstrømmer; dette er ikke antallet kildesystemer eller aktive produksjonsmottak. Egne notater og markeringer blir også lagret. Oppfølgingsfilter og tilgangsstyring avgrenser visningen, men dokumenterer verken lovlig lagring eller alltid korrekt, oppdatert visning.
+
+Rapporten forutsetter personavgrensning til arbeidsrettet oppfølging. Lokal status kommer fra `poao.siste-oppfolgingsperiode-v3`, men fagmeldinger kan komme først: Kafka bevarer lagringsrekkefølgen bare *per partisjon*, ikke mellom partisjoner/strømmer eller nødvendigvis faktisk hendelsesrekkefølge. Forkasting kan gi hull; venting innebærer behandling av personopplysninger. Manglende lokal status beviser ikke manglende faktisk oppfølging.
+
+Fire hensyn må balanseres: *personvern, ferskhet, dokumentert datakvalitet og lav driftskompleksitet*. Flere mekanismer krever vedlikehold og øker mulighetene for feil. Gamle data og umerkede mangler kan gi feilprioritering: «ingen ytelse» må skilles fra «vet ikke». Fullstendighet betyr nødvendige opplysninger for riktig personkrets, ikke alt fra kildene.
+
+== Rettslige rammer
+
+GDPR artikkel 5 krever formålsbegrensning, dataminimering, korrekte/oppdaterte opplysninger og begrenset lagringstid. Datakvalitet kan derfor ikke fritt prioriteres bort. Relevant utgangspunkt er artikkel 6 nr. 1 bokstav e med supplerende nasjonalt grunnlag, blant annet Nav-loven § 4 a. Arbeidsmarkedsloven § 10 om registrering som arbeidssøker er ikke alene en generell behandlingshjemmel. Helseopplysninger krever også dokumentert unntak etter artikkel 9.
+
+Personkrets, nødvendige felt, lagringstider og behandling ved oppstart, avslutning og nye forsøk må bekreftes mot behandlingsprotokoll, personvernvurdering og kildeavtaler. Dokumentene skaper ikke hjemmelen; aktiv oppfølging legitimerer ikke alle meldingsfelt.
+
+Lagring uten grunnlag er et personvernavvik, ikke automatisk et sikkerhetsbrudd etter artikkel 4 nr. 12. Artikkel 33 krever melding ved sikkerhetsbrudd uten ugrunnet opphold, om mulig innen 72 timer etter kjennskap, med mindre risiko sannsynligvis ikke foreligger. Vurderingen skal dokumenteres. Brudd på artikkel 5 er i strengeste bøteklasse; rapporten fastslår ikke meldeplikt eller reaksjon.
+
+== Dokumenterte kodefunn
+
+* Flere Kafka-metoder har eksplisitt oppfølgingskontroll, blant annet AAP, dagpenger, tiltakspenger, ungdomsprogram og arbeidssøker-v2. Elleve søketreff på `erBrukerUnderOppfolging` er ti kall og én definisjon; PDL har også `harAktorIdUnderOppfolging`. Dette tallfester ikke dekkede strømmer eller lagringsveier.
+* Dialog- og aktivitetsmottaket mangler eksplisitt oppfølgingskontroll i undersøkte skriveløp. `DIALOG` og `KAFKA_AKTIVITET_MELDING` er ikke koblet til den sentrale avslutningskjeden. Aktivitetssletting ved historiske meldinger erstatter ikke sletting ved oppfølgingsslutt.
+* Arbeidssøker-v2 sletter perioden, med videreført sletting gjennom fremmednøkler til opplysninger, profilering og jobbsituasjon. Manglende eksplisitt tabellkall beviser dermed ikke manglende sletting.
+* Etterhenting er både manuell og automatisk: oppfølgingsstart henter blant annet PDL, 14a-vedtak, arbeidssøkerdata og ytelser. Periodemottak henter opplysninger/profilering. En felles, målt dekningsgaranti er ikke dokumentert.
+
+Kartleggingen er begrenset; alle innganger, mellomlagre, databasevilkår, transaksjoner, feil og ryddejobber må undersøkes. Se link:DATAMINIMERING_KAFKA_RAPPORT.adoc#tilstand[kapittel 9 med kodehenvisninger].
+
+== Seks tilnærminger
+
+Alternativene kan kombineres. Vurderingene er kvalitative, ikke målte rangeringer; etterlevelse må avklares for alle.
+
+[cols="1,3", options="header"]
+|===
+| Alternativ | Gevinst og begrensning
+| *A: Manuell etterhenting* | Få nye mekanismer, men manuelt arbeid og ingen automatisk frist for restbehovet. Slettede kildedata kan være varig tapt.
+| *B: Nye forsøk og periodisk etterhenting* | Kan automatisere håndtering av mangler; krever avklart venting/lagring, behovssporing, kildedekning og kapasitet.
+| *C: Egen etterhentingstjeneste* | Separat skalering, men mer drift og samordning. Felles database, Kafka og API-kvoter kan fortsatt begrense; manglende historikk blir ikke løst.
+| *D: Bredere mellomlager* | Kan gi raske oppslag ved oppstart. Krever særskilt grunnlag, ansvar og sletting; rettslig ansvar blir ikke flyttet til juridisk.
+| *E: Tilstandsbasert strømbehandling* | Rammeverk som Kafka Streams støtter sammenkobling. Domenehåndtering, kompetanse og personvern for tilstandslagre, endringslogger og kopier gjenstår.
+| *F: Endret produsentmodell* | Mer kontekst kan fjerne periodeoppslag, ikke forsinket lokal oppfølgingsstatus. Krever produsentprioritering; mer personinformasjon må begrunnes.
+|===
+
+== Vilkår før innføring og garantier
+
+. *Kildedekning:* Dokumenter API-dekning, Kafka-lagringstid, loggkomprimering, nøkler, fulltilstand/endringsmeldinger og slettemarkører. Ingen jobb kan hente slettede kildedata. «Etter hvert-konsistens» gir ikke automatisk tidsfrist eller fullstendighet.
+. *Nye forsøk og behov:* Venting kan blokkere partisjonen; kø/minne/metadata krever avklart behandling, tidsgrenser, omstart og sletting. Utelat uforsvarlige nye forsøk og revurder ferskheten. Finn etterhentingsbehov gjennom oppstart eller avstemming; telling av forkastinger identifiserer ikke manglende data.
+. *Korrekt skriving:* Gjentakssikkerhet alene hindrer ikke at eldre data overskriver nyere data. Bruk sammenlignbare versjonsregler; Kafka-posisjoner er ikke sammenlignbare mellom partisjoner. Samordne kontroll og skriving med sletting på alle konkurrerende skriveveier.
+. *Livsløp og rekkefølge:* Skill mellom etablering, fagoppdatering, avslutning og slettemeldinger. Ved omkjøring må oppfølgingsstrømmen nå dokumenterte ferdigpunkter per partisjon før avhengige strømmer. For arbeidssøker-v2: *periode før opplysninger og profilering*. Samordne løpende mottak; gamle oppfølgingshendelser må ikke gjenopprette avsluttede forhold.
+. *Drift og etterprøvbarhet:* Mål dekning og forsinkelse helt til indeksering, inkludert feilmargin innen kildens lagringstid. Overvåk forkastingsårsaker, nye forsøk, køalder/-størrelse og dekningsavvik uten personidenter i merkelapper. Dokumenter sletting for faglagre, køer, indeks, logger og kopier, også etter gjenoppretting. Tellinger alene beviser ikke etterlevelse.
+
+== Beslutninger og manglende grunnlag
+
+Avtal ansvar og frister for avvik med den behandlingsansvarlige; datadekning og forsinkelse med fagsiden; kildetilgjengelighet med produsentene. Kartlegg produksjonsversjon, funksjonsbrytere og faktisk datamengde. Dimensjoner volum og kapasitet for to år og avklar eierskap/beredskap for en eventuell ny tjeneste.
+
+Prøv B på representative kilder før utvidelse. Vurder C bare når målinger viser at separat kjøring hjelper. Juridisk vurdering må omfatte *B, D og E*, ikke bare D. Dersom kildene ikke støtter kravene, må avtaler, løsning eller lovnader endres innenfor rettslige og faglige rammer.
+
+Detaljgrunnlag: link:DATAMINIMERING_KAFKA_RAPPORT.adoc#foresetnader-etterhenting[vilkår for etterhenting] og link:DATAMINIMERING_KAFKA_RAPPORT.adoc#kjelder[kilder og uavklarte punkter].

@@ -1,0 +1,1000 @@
+= Dataminimering, ferske data og driftskompleksitet
+:doctype: article
+:icons: font
+:experimental:
+:source-highlighter: highlight.js
+:sectanchors:
+
+*Grunnlag for veivalg i teamet — datamottak i veilarbportefolje*
+
+*Status:* Revidert 16. september 2026. Foreløpig beslutningsgrunnlag; rettslig avgrensning, produksjonsomfang og garantiene for etterhenting må avklares. Kilderevisjonen er oppgitt i <<kjelder-b>>.
+
+'''
+
+[[samandrag]]
+== Sammendrag
+
+Veilarbportefolje bygger oversikten veilederne i Nav bruker for å følge opp brukere. Den felles Kafka-konfigurasjonen omfatter 28 hendelsesstrømmer, i tillegg til direkte oppslag. Antallet strømmer er ikke det samme som antallet kildesystemer eller aktive mottak i produksjon.
+
+Rapporten legger til grunn at personopplysningene i Oversikten skal avgrenses til personer under arbeidsrettet oppfølging. Den systemspesifikke avgrensningen må bekreftes mot behandlingsprotokollen og personvernvurderingen. Opplysninger kan komme fram _før_ vi har registrert oppfølgingsstatus lokalt. Med en regel om bekreftet status før lagring må de da forkastes eller håndteres gjennom en særskilt avklart ordning for nye forsøk. Manglende lokal status er ikke i seg selv bevis på manglende faktisk oppfølgingsforhold eller ulovlig lagring.
+
+[IMPORTANT]
+====
+*Etterlevelsen er ikke tilstrekkelig dokumentert.* Koden viser ulike kontrollmønstre, blant annet lagring av dialog- og aktivitetsdata uten eksplisitt oppfølgingskontroll i de undersøkte skriveløpene. Filtrering i søkeindeksen dokumenterer ikke at databasen har riktig personavgrensning. Den sentrale sletterutinen dekker heller ikke alle undersøkte tabeller. Dette gir grunn til å undersøke mulige avvik, men omfang og lovlighet kan ikke fastslås ut fra koden alene.
+====
+
+Systemet har vokst fram siden 2016, med flere mønstre for datamottak. Historisk praksis og kompleksitet kan forklare forskjellene, men gjennomgangen dokumenterer ikke årsaken eller når kravene eventuelt ble endret.
+
+Beslutningen er vanskelig fordi fire legitime hensyn trekker i hver sin retning: *personvern* (lagre minst mulig), *ferskhet* (ha oppdaterte data), *datakvalitetsgarantier* (kunne love hvor fullstendige data er) og *lav kompleksitet* (en løsning teamet greier å eie over tid). Ingen løsning er best på alle fire. Spenningsfeltet er beskrevet i <<spenningsfelt>>.
+
+Rapporten beskriver seks tilnærminger som delvis kan kombineres. *Den foreløpige anbefalingen er alternativ B*: felles kontrollregler, et begrenset omfang av nye forsøk der dette er avklart, og periodisk etterhenting. B kan bare gi en avtalt datakvalitet dersom kildene fortsatt har de nødvendige opplysningene, etterhentingen holder tritt, og gamle meldinger ikke overskriver nyere tilstand eller gjenoppretter slettede data. Dette må dokumenteres før B blir valgt som felles løsning.
+
+*Fem spørsmål vi må ta stilling til* (utdypet i <<spoersmaal>>):
+
+. Hvor raskt skal mulige avvik avklares og bekreftede avvik rettes?
+. Hvilken datadekning og forsinkelse er akseptabel, og kan kildene støtte dette?
+. Hvilke datamengder og hvilken kapasitet skal vi dimensjonere for?
+. Har vi kapasitet til å eie og drifte en egen tjeneste for etterhenting?
+. Hvilke juridiske avklaringer trengs for inngangsvilkåret, nye forsøk og mellomlagring, inkludert D?
+
+'''
+
+== Innhold
+
+[cols="2,3", options="header"]
+|===
+| Kapittel | Hva det handler om
+
+| <<samandrag,Sammendrag>> | Hele saken på én side
+| <<kontekst,1. Hva Oversikten er og hvordan den virker>> | Hva systemet gjør, for hvem, og hvordan data flyter gjennom det
+| <<spenningsfelt,2. Spenningsfeltet>> | De fire hensynene som ikke kan maksimeres samtidig
+| <<ordliste,3. Ordliste>> | Forklaring av faguttrykk
+| <<dataminimering,4. Hvorfor dataminimering er viktig>> | Det rettslige grunnlaget og hva som står på spill
+| <<ferskheit,5. Hvorfor ferske data er viktig>> | Hva utdaterte data gjør med oppfølgingsarbeidet
+| <<datakvalitet,6. Hvorfor datakvalitetsgarantier er viktige>> | Hvorfor det å _vite_ hva som gjelder er et eget hensyn
+| <<kompleksitet,7. Hvorfor lav kompleksitet er viktig>> | Hvordan kompleksitet blir betalt i alle de andre hensynene
+| <<historikk,8. Kort historikk>> | Hvordan systemet har vokst fram siden 2016
+| <<tilstand,9. Dagens tilstand: vi står i spagat>> | Hva vi faktisk fant da vi gikk gjennom koden
+| <<problemstilling,10. Problemstillingen>> | Hvorfor rekkefølgen på meldinger skaper et dilemma
+| <<krav,11. Krav til løsningen>> | Hva en god løsning må oppfylle
+| <<alternativ,12. Alternativer>> | Seks framgangsmåter med fordeler og ulemper
+| <<samanlikning,13. Sammenligning>> | Kvalitative vurderinger og forutsetninger for valget
+| <<avvegingar,14. Hva vi gir fra oss i hvert valg>> | Avveiningene gjort eksplisitte
+| <<anbefaling,15. Anbefaling>> | Hva vi mener vi bør gjøre
+| <<spoersmaal,16. Spørsmål vi må ta stilling til>> | Valg som gjenstår, og hva som avgjør dem
+| <<drift,17. Følger for driften>> | Hva som må på plass uansett valg
+| <<konklusjon,18. Konklusjon>> | Oppsummering
+| <<kjelder,19. Kilder>> | Rettslige kilder, kodehenvisninger og kilder som mangler
+|===
+
+[TIP]
+====
+*Kjenner du ikke systemet fra før?* Start med <<kontekst>>.
+
+*Har du fem minutter?* Les sammendraget, <<spenningsfelt>> og <<spoersmaal>>.
+
+*Har du femten?* Legg til <<tilstand>> og <<anbefaling>>.
+====
+
+'''
+
+[[kontekst]]
+== 1. Hva Oversikten er og hvordan den virker
+
+Dette kapittelet er for deg som ikke kjenner systemet fra før. Kjenner du det godt, kan du hoppe rett til <<ordliste>>.
+
+=== 1.1 Hvilket problem systemet løser
+
+En veileder i Nav har ansvar for mange brukere samtidig. For å kunne prioritere arbeidet sitt trenger veilederen å se alle disse under ett: hvem har nylig fått et vedtak, hvem har en frist som går ut snart, hvem har ikke hatt kontakt på lenge, hvem er i tiltak.
+
+Opplysningene som trengs for å svare på slike spørsmål ligger spredt i mange ulike fagsystemer. Ingen av dem kan svare alene. *Oversikten* er løsningen på dette: et sted der opplysningene fra alle fagsystemene er samlet og kan søkes i og filtreres på tvers.
+
+Teknisk er dette bygd som to deler:
+
+* *Oversikten* — brukerflaten veilederen ser, som ligger i Modia.
+* *veilarbportefolje* — baksystemet som denne rapporten handler om. Det samler inn opplysningene, lagrer dem og svarer på søk fra brukerflaten.
+
+=== 1.2 Hvordan opplysningene kommer inn
+
+Fagopplysningene kommer i hovedsak fra andre systemer, på to måter. I tillegg lagrer veilarbportefolje egne markeringer og notater fra veilederen, som beskrevet i kapittel 1.4.
+
+*Hendelsesstrømmer (Kafka).* Hovedveien. Når noe skjer i et fagsystem — et vedtak blir fattet, en person blir tildelt en veileder, en aktivitet blir opprettet — publiserer fagsystemet en melding. Den felles konfigurasjonen definerer 28 slike strømmer med mottaksoppsett. Hvilke mottak som faktisk er aktive, avhenger også av miljø og funksjonsbrytere. Meldingene blir filtrert, omformet eller brukt til å utløse oppslag før relevante data blir lagret.
+
+*Direkte oppslag.* For noen opplysninger spør vi fagsystemet direkte, for eksempel Persondataløsningen (PDL) for navn og fødselsdato.
+
+Eksempler på hva som kommer inn: hvem som er under oppfølging, hvem som er tildelt hvilken veileder, ytelser (dagpenger, arbeidsavklaringspenger, tiltakspenger), tiltak, aktiviteter og frister, CV og jobbønsker, dialoger mellom veileder og bruker, vedtak etter § 14 a, og personopplysninger som fødeland og tolkebehov.
+
+=== 1.3 Fra database til søkeindeks
+
+Opplysningene blir først lagret i en Postgres-database, fordelt på tabeller for fagdata, koblinger og mottatte meldingsdata.
+
+For fritekstsøk kombinert med filter, sortering og telling bygger vi i tillegg en *søkeindeks* i OpenSearch (aliaset heter `brukerindeks`). Rapporten sammenligner ikke ytelsen til Postgres og OpenSearch; den tar utgangspunkt i den valgte arkitekturen.
+
+Når noe endrer seg, kan systemet bygge opp igjen dokumentet for personen eller oppdatere enkelte felt i søkeindeksen. Indeksen setter sammen opplysninger fra ulike fagområder til et samlet bilde per person.
+
+.Dataflyten i korte trekk
+[source]
+----
+Fagsystem  ──hendelsesstrøm──▶  veilarbportefolje  ──▶  Postgres
+                                                          │
+                                                          ▼
+                                                    Søkeindeks
+                                                   (OpenSearch)
+                                                          │
+Veileder  ◀────── Oversikten (Modia) ◀──søk/filter──────┘
+----
+
+=== 1.4 Hva veilederen får se
+
+Brukerflaten spør baksystemet gjennom et fåtall endepunkter. De to viktigste er:
+
+* `POST /api/enhet/{enhet}/portefolje` — alle brukere ved en Nav-enhet
+* `POST /api/veileder/{veilederident}/portefolje` — brukerne en enkelt veileder har ansvar for
+
+I tillegg finnes endepunkter for tellinger (`/statustall`, `/portefoljestorrelser`) og for å fylle filtermenyer (`/tiltak`, `/foedeland`, `/tolkSpraak`, `/geografiskbosted`). Veilederen kan også legge til egne notater og markeringer — huskelapper, fargekategorier og lagrede filtre — som er det eneste veilarbportefolje selv eier data om.
+
+Ingen får se alt. For hvert søk blir svaret kontrollert mot tilgangsstyringen: veilederen må ha tilgang til enheten, og personer med adressesperre (kode 6 og 7) eller skjerming som egen ansatt blir filtrert bort hvis veilederen mangler den aktuelle tilgangen.
+
+[IMPORTANT]
+====
+Legg merke til skillet mellom *hva vi lagrer* og *hva vi viser*. Tilgangsstyringen over gjelder hva veilederen får *se*. Den sier ingenting om hva som ligger lagret i databasen vår. Dette skillet er kjernen i hele rapporten, og blir utdypet i <<tilstand>>.
+====
+
+=== 1.5 Hvorfor arkitekturen ser slik ut
+
+Kopiering av data er ikke et mål i seg selv. Det finnes to grunner til at det likevel er gjort slik:
+
+*Svartid og tilgjengelighet.* Oppslag mot flere fagsystemer mens veilederen venter ville gjort svartiden og tilgjengeligheten avhengig av disse systemene. Hvor stor kostnaden ville vært, er ikke målt i denne rapporten.
+
+*Søk og filtrering på tvers.* «Vis alle brukere ved enheten som har dagpenger, er i tiltak og har frist innen to uker» krever at opplysningene blir koblet sammen. En lokal søkeindeks gjør dette uten direkte oppslag mot alle kildene for hvert søk.
+
+Prisen vi betaler for dette er nettopp det rapporten handler om: vi holder en kopi av personopplysninger fra mange fagsystemer, og må da selv svare for at kopien ikke inneholder mer enn vi har lov til.
+
+'''
+
+[[spenningsfelt]]
+== 2. Spenningsfeltet: fire hensyn som trekker i hver sin retning
+
+Resten av rapporten handler i realiteten om én ting: at fire legitime hensyn ikke kan maksimeres samtidig. Dette kapittelet gir det overordnede bildet. Hvert hensyn er utdypet i et eget kapittel etterpå: <<dataminimering>>, <<ferskheit>>, <<datakvalitet>> og <<kompleksitet>>.
+
+=== 2.1 De fire hensynene
+
+[cols="1,3,3", options="header"]
+|===
+| Hensyn | Hva det krever av oss | Hva det trekker mot
+
+| *Personvern* +
+_(herunder dataminimering)_
+| Vi skal bare lagre opplysninger vi har rettslig grunnlag for, om de personene grunnlaget gjelder, og ikke lenger enn nødvendig.
+| Avgrense personkrets, felt og lagringstid til det nødvendige, uten å miste opplysninger formålet krever.
+
+| *Ferskhet*
+| Det veilederen ser skal speile virkeligheten nå, ikke slik den var i går.
+| Gjøre nødvendige opplysninger tilgjengelige raskt innenfor det avklarte behandlingsgrunnlaget.
+
+| *Datakvalitetsgarantier*
+| Vi må kunne si hva som gjelder: at data er fullstendige, at de er korrekte, og innen hvor lang tid dette er sant.
+| Forutsigbare, målbare mekanismer med tydelig definert atferd — ikke «det pleier å gå bra».
+
+| *Lav kompleksitet*
+| Løsningen må kunne eies, forstås, overvåkes og feilsøkes av et team på vår størrelse, over år.
+| Færrest mulig mekanismer, færrest mulig særtilfeller, minst mulig som må driftes.
+|===
+
+=== 2.2 Hvorfor de kolliderer
+
+Konflikten oppstår i konkrete valg:
+
+*Personavgrensning mot ferskhet.* Med forutsetningen om bekreftet oppfølgingsstatus før lagring kan en tidlig melding bli forkastet selv om personen faktisk er under oppfølging. Å holde den tilbake krever en avklart håndtering av personopplysninger, enten den ligger i minne, en kø eller et annet lager.
+
+*Personavgrensning mot datakvalitetsgarantier.* Forkasting kan gi hull dersom opplysningene senere blir nødvendige og ikke kan hentes igjen. Fullstendighet betyr her dekning av avtalte, nødvendige opplysninger for riktig personkrets — ikke at vi skal lagre alt fra kildene.
+
+*Datakvalitetsgarantier mot lav kompleksitet.* Hver garanti må realiseres av en mekanisme: nye forsøk, tilbakefylling, avstemming, overvåking. Hver mekanisme er noe som kan feile, må eies og må feilsøkes klokka tre om natta.
+
+*Ferskhet mot lav kompleksitet.* Den enkleste måten å tette hull på er en periodisk jobb som kjører sjelden. Den ferskeste måten er å hente inn manglende data i det sekundet de trengs — men det krever langt mer maskineri.
+
+=== 2.3 Hva dette betyr for rapporten
+
+Det finnes ikke et alternativ som er best på alle fire. Alternativene i <<alternativ>> er ulike måter å fordele tapet på:
+
+[cols="1,4", options="header"]
+|===
+| Hvis vi vektlegger mest … | … så betaler vi med
+
+| Personvern | Ferskhet og fullstendighet — vi kaster data vi senere kunne hatt bruk for
+| Ferskhet | Kompleksitet — etterhenting i sanntid krever mer maskineri
+| Datakvalitetsgarantier | Kompleksitet — hver garanti er en mekanisme som må eies
+| Lav kompleksitet | Ferskhet — vi venter på neste periodiske kjøring
+|===
+
+[IMPORTANT]
+====
+Etterlevelse er en ramme for valget, ikke et hensyn vi kan prioritere bort. Rammen omfatter også datakvalitet: GDPR artikkel 5 nr. 1 bokstav d krever korrekte og om nødvendig oppdaterte opplysninger. Vi kan avveie kostnad og konkrete tjenestenivåer innenfor denne rammen, men ikke fritt velge feilaktige eller misvisende data.
+
+Det er nettopp derfor spenningsfeltet er reelt: vi kan ikke løse det ved å velge bort det vanskeligste hensynet.
+====
+
+Rapporten gjør disse avveiningene eksplisitte tre steder: som krav i <<krav>>, som sammenligning i <<samanlikning>>, og som en direkte oppstilling av hva hvert valg koster i <<avvegingar>>.
+
+'''
+
+[[ordliste]]
+== 3. Ordliste
+
+[cols="1,3", options="header"]
+|===
+| Uttrykk | Forklaring
+
+| *Hendelse* | En melding om at noe har skjedd, for eksempel at en person har fått et vedtak.
+| *Hendelsesstrøm* | En navngitt kanal der ett system publiserer hendelser og andre systemer leser dem. Kalt _topic_ i teknisk dokumentasjon.
+| *Kafka* | Plattformen som transporterer hendelsesstrømmene mellom systemene i Nav.
+| *Datamottak* | At systemet vårt leser hendelser fra en hendelsesstrøm og behandler dem.
+| *Inngangsvilkår* | Rapportens forutsetning om arbeidsrettet oppfølging som personavgrensning. Lokal kontroll av status er en teknisk mekanisme, ikke selve behandlingsgrunnlaget.
+| *Partisjon* | En del av en hendelsesstrøm. Kafka bevarer lagringsrekkefølgen innenfor denne delen, ikke en samlet rekkefølge for hele strømmen.
+| *Nye forsøk* | At vi prøver å behandle en melding på nytt etter kort tid, i stedet for å gi opp med en gang.
+| *Tilbakefylling* | At vi i etterkant henter inn opplysninger vi ikke kunne lagre da de kom første gang.
+| *Omkjøring* | At vi leser tilgjengelige meldinger på nytt fra valgte posisjoner for å bygge opp igjen data. Slettede meldinger kan ikke hentes tilbake på denne måten.
+| *Loggkomprimering* | Kafka kan fjerne eldre verdier med samme meldingsnøkkel og holde igjen den siste. Slettemeldinger og tidsbasert opprydding kan også fjerne denne; dette er noe annet enn bytekomprimering.
+| *Ferskhet* | Hvor kort tid det går fra noe skjer i kildesystemet til det er synlig hos oss.
+| *Etter hvert-konsistens* | At kopier av tilstand etter hvert samsvarer når oppdateringene slutter og blir levert og behandlet. Begrepet gir ikke i seg selv en tidsfrist eller fullstendige kildedata.
+| *Gjentakssikker skriving* | At behandling av samme melding flere ganger har samme virkning som én gang. Det sikrer ikke i seg selv at eldre meldinger ikke overskriver nyere tilstand.
+| *Søkeindeks* | En egen, søkeoptimalisert kopi av data som veilederoversikten leser fra. Hos oss OpenSearch.
+| *Tjenestenivå (SLA)* | Et avtalt og målbart løfte om for eksempel hvor ferske eller fullstendige data skal være.
+|===
+
+'''
+
+[[dataminimering]]
+== 4. Hvorfor dataminimering er viktig
+
+Dataminimering er ikke en teknisk preferanse, men et rettslig krav.
+
+=== 4.1 Kravet om dataminimering
+
+Personvernforordningen (GDPR) artikkel 5 nr. 1 bokstav c slår fast at personopplysninger skal være
+
+[quote]
+____
+«adekvate, relevante og begrenset til det som er nødvendig for formålene de behandles for».footnote:gdpr5[GDPR art. 5 nr. 1 bokstav c, jf. kilde A1.]
+____
+
+Samme artikkel bokstav b krever at opplysninger bare blir samlet inn for «spesifikke, uttrykkelig angitte og berettigede formål». Forordningen gjelder som norsk lov gjennom personopplysningsloven § 1.footnote:popplyl[Personopplysningsloven § 1, jf. kilde A5.]
+
+=== 4.2 Grunnlaget vårt for å behandle opplysninger
+
+Et relevant rettslig utgangspunkt er GDPR artikkel 6 nr. 1 bokstav e, om oppgaver i allmennhetens interesse eller utøvelse av offentlig myndighet, sammen med supplerende nasjonalt rettsgrunnlag. Nav-loven § 4 a regulerer behandling av personopplysninger; arbeidsmarkedsloven § 10 gjelder registrering som arbeidssøker og er ikke alene en generell behandlingshjemmel for Oversikten.footnote:navlova[Kildene A2, A6 og A7. Den konkrete kombinasjonen av behandlingsgrunnlag og supplerende hjemler for løsningen må bekreftes mot C1 og C2.]
+
+Poenget er hva grunnlaget _dekker_. Rapporten forutsetter at fagdata i Oversikten skal avgrenses til personer under arbeidsrettet oppfølging. Det må avklares hvilke opplysninger som er nødvendige, hvor lenge de kan lagres, og hva som gjelder ved etablering og avslutning av oppfølging, feilretting og nye tekniske forsøk. Aktiv oppfølging gir ikke automatisk grunnlag for å lagre alle felt i en melding.
+
+[WARNING]
+.Merknad om verifikasjon
+====
+Den konkrete avgrensningen må følge av et dokumentert formål og behandlingsgrunnlag for systemet, ikke av en enkelt lovparagraf som nevner systemet. Et forsinket lokalt oppfølgingsflagg kan ikke alene avgjøre om behandlingen er lovlig.
+
+Behandlingsprotokollen og personvernvurderingen (DPIA) dokumenterer avgrensningen, men skaper ikke hjemmelen. Disse ligger ikke i kodebasen og må hentes inn og siteres direkte før rapporten blir brukt som grunnlag for en formell beslutning. Se <<kjelder-c>>.
+====
+
+=== 4.3 Hva slags opplysninger det gjelder
+
+Systemet tar imot opplysninger om blant annet ytelser, utdanning, jobbsituasjon, tiltaksdeltakelse og vedtak.footnote:topics[Oversikt over fagområder fra `KafkaConfigCommon.java:88-141`, jf. kilde B1; dette er ikke en klassifisering av hvert meldingsfelt.] Noen opplysninger kan røpe helseforhold. Helseopplysninger er en særlig kategori etter GDPR artikkel 9. For slike opplysninger må et relevant unntak fra forbudet i artikkel 9 nr. 1 dokumenteres i tillegg til grunnlaget etter artikkel 6. Klassifiseringen må gjøres ut fra innholdet, ikke navnet på hendelsesstrømmen alene.
+
+=== 4.4 Konsekvenser ved brudd
+
+Lagring uten behandlingsgrunnlag er et personvernavvik som må vurderes og håndteres. Det er ikke automatisk et brudd på personopplysningssikkerheten etter artikkel 4 nr. 12, som er vilkåret for meldeplikten i artikkel 33. Ved et slikt sikkerhetsbrudd skal den behandlingsansvarlige melde uten ugrunnet opphold og om mulig innen 72 timer etter å ha fått kjennskap til det, med mindre bruddet sannsynligvis ikke medfører risiko for rettighetene og frihetene til de registrerte. Vurderingen må dokumenteres.footnote:meldeplikt[Kildene A4 og A8.]
+
+Brudd på artikkel 5 er omfattet av den strengeste bøteklassen etter artikkel 83 nr. 5. Denne rapporten fastslår ikke om det foreligger et meldepliktig brudd eller hvilken reaksjon som eventuelt er aktuell.
+
+=== 4.5 Konklusjon for dette arbeidet
+
+Alle alternativene må respektere den dokumenterte rettslige avgrensningen. Inntil denne er bekreftet, bruker rapporten oppfølging som forutsetning for personavgrensningen, uten å konkludere med lovligheten til hvert eksisterende skriveløp.
+
+'''
+
+[[ferskheit]]
+== 5. Hvorfor ferske data er viktig
+
+*Ferskhet* er hvor kort tid det går fra noe skjer i et fagsystem til det er synlig i Oversikten.
+
+=== 5.1 Veilederen tar beslutninger på grunnlaget vi gir
+
+Oversikten blir brukt til å prioritere: hvem skal kontaktes i dag, hvem har en frist som nærmer seg, hvem har fått et vedtak som utløser et neste steg. Er opplysningene utdaterte, får det praktiske følger:
+
+* Veilederen tar beslutninger på feil grunnlag.
+* Brukere kan bli oversett eller feilprioritert.
+* Veilederen bruker tid på noen som allerede er fulgt opp av en annen.
+
+=== 5.2 Utdaterte data kan være verre enn en synlig mangel
+
+Gammelt innhold kan se riktig ut og bli brukt uten kontroll. En tom rubrikk er heller ikke entydig: den kan bli tolket som at brukeren ikke har en ytelse eller en aktivitet. Derfor bør kjent mangel eller forsinkelse synliggjøres, slik at veilederen kan vurdere behovet for oppslag i fagsystemet.
+
+=== 5.3 Ferskhet er en forutsetning for at systemet blir brukt
+
+Oppdager veilederen gjentatte ganger at Oversikten ligger etter, blir vanen å sjekke fagsystemene direkte. Da faller gevinsten bort, mens vi fortsatt bærer hele personvernkostnaden ved å holde kopien.
+
+=== 5.4 Konklusjon for dette arbeidet
+
+Ferskhet er en forutsetning for at systemet gjør nytte, og kan også være nødvendig for å oppfylle kravet om korrekte opplysninger. Målet er rask tilgang til nødvendige data, ikke raskest mulig lagring av alt.
+
+'''
+
+[[datakvalitet]]
+== 6. Hvorfor datakvalitetsgarantier er viktige
+
+En *datakvalitetsgaranti* er et løfte vi kan stå inne for og måle. For eksempel: «alle endringer fra et fagsystem er synlige i Oversikten innen fem minutter», eller «ingen person i Oversikten mangler opplysning om hvem som er tildelt veileder».
+
+Forskjellen fra ferskhet er viktig. Ferskhet handler om _hvor raskt_ data blir oppdatert. Garantier handler om at vi *vet og kan si* hva som gjelder — også når svaret er «data kan være inntil en time gamle».
+
+=== 6.1 Uten garantier vet ikke veilederen hva et tomt felt betyr
+
+Dette er den viktigste grunnen. Når en rubrikk er tom, kan det bety to helt ulike ting:
+
+* Det har ikke skjedd noe — brukeren har ingen aktiv ytelse.
+* Det har skjedd noe, men vi har ikke fått det inn ennå, eller vi kastet det.
+
+Veilederen kan ikke se forskjellen. Et system som ikke kan skille «ingenting» fra «vet ikke» flytter risikoen over på den som bruker det.
+
+[NOTE]
+====
+Å vite at data mangler er bedre enn å tro at data er komplette. En synlig mangel kan veilederen håndtere — ved å sjekke fagsystemet. En usynlig mangel kan ingen håndtere.
+====
+
+=== 6.2 Garantier er forutsetningen for tillit
+
+Oversikten har ingen tvungen bruk. Stoler ikke veilederen på tallene, går vedkommende til fagsystemene i stedet og dobbeltsjekker. Da har vi mistet hele gevinsten ved å ha et aggregert bilde, men sitter fortsatt med hele personvernkostnaden ved å lagre kopien.
+
+=== 6.3 Uten garantier kan vi ikke skille feil fra normal atferd
+
+Har vi ikke definert hva som er forventet, kan vi heller ikke overvåke det. Et avvik som «en bruker mangler ytelsesopplysninger» blir da umulig å vurdere: er dette en feil vi må rette, eller er det slik systemet skal oppføre seg? I praksis blir alle slike avvik liggende uavklart.
+
+Manglende målbare forventninger kan gjøre slike problemer vanskeligere å oppdage. Rapporten dokumenterer ikke om dette var årsaken til tilstanden beskrevet i <<tilstand>>.
+
+=== 6.4 Personvernet krever det også
+
+Garantier er ikke bare et faglig hensyn. Skal vi kunne svare på innsyn og retting, og skal vi kunne slette fullstendig når oppfølgingen er avsluttet, må vi vite hva vi har og hvor det ligger. En ufullstendig sletterutine er i praksis en manglende garanti.
+
+=== 6.5 Konklusjon for dette arbeidet
+
+Vi må velge en løsning der vi kan si hva som gjelder, og måle at det holder. Et alternativ som gir et «litt bedre» resultat vi ikke kan si noe sikkert om, er svakere enn et alternativ som gir et dårligere, men kjent resultat.
+
+'''
+
+[[kompleksitet]]
+== 7. Hvorfor lav kompleksitet er viktig
+
+Det er lett å avfeie kompleksitet som et rent utviklerhensyn. Det er det ikke. Kompleksitet er en løpende utgift som blir betalt i alle de andre hensynene.
+
+=== 7.1 Systemet er allerede stort, og teamet er ikke det
+
+veilarbportefolje har vokst i snart ti år: den felles konfigurasjonen omfatter 28 hendelsesstrømmer, og den undersøkte revisjonen har 120 migrasjonsfiler. Historiske tabellopprettinger gir ikke antallet tabeller som eksisterer i dag. Hver ny mekanisme må vurderes opp mot det som allerede skal driftes.
+
+En mekanisme er ikke ferdig når den er skrevet. Den må deretter overvåkes, feilsøkes, dokumenteres og forstås av folk som ikke var med da den ble laget. Over en tiårshorisont er det denne kostnaden som dominerer, ikke den opprinnelige utviklingstiden.
+
+=== 7.2 Kompleksitet svekker personvernet
+
+Dette er den minst opplagte, men kanskje viktigste sammenhengen.
+
+Tilstanden beskrevet i <<tilstand>> viser ulike kontroll- og lagringsmønstre. Flere mønstre gjør det mer krevende å holde oversikt og kan bidra til mangler. Koden alene dokumenterer ikke hva utviklerne visste eller hvorfor mønstrene ble valgt.
+
+[IMPORTANT]
+====
+Ulik håndtering av datamottak og sletting øker behovet for en samlet oversikt. Gjennomgangen viser konkrete mangler i dokumentert dekning, ikke hvor lenge eventuelle personvernavvik har eksistert.
+====
+
+Én mekanisme som gjelder alle datakilder er derfor ikke bare enklere. Den er også lettere å revidere, og vanskeligere å glemme.
+
+=== 7.3 Kompleksitet svekker datakvaliteten
+
+Hver mekanisme er noe som kan feile. En løsning med nye forsøk, tilbakefylling, mellomlagring og avstemming har fire ledd som kan svikte, og som kan svikte i kombinasjon. Flere ledd gir flere tilstander, og flere tilstander gir flere måter å ende opp med feil data på.
+
+=== 7.4 Kompleksitet svekker ferskheten på sikt
+
+Et system som er tungt å endre, blir endret sjeldnere. Ny funksjonalitet tar lengre tid, og feilretting tar lengre tid. Det slår direkte ut i ferskhet når noe går galt — tiden fra feil oppstår til den er rettet, øker.
+
+=== 7.5 Konklusjon for dette arbeidet
+
+Kompleksitet skal ikke unngås for enhver pris; noen av kravene kan bare innfris med mer maskineri. Men når to alternativer gir omtrent samme resultat, er det enkleste å foretrekke — og et alternativ som er *mye* mer komplekst må gi en tilsvarende mye bedre gevinst for å forsvare seg.
+
+En nyttig kontroll: kan den som har beredskapsvakt forstå og feilsøke løsningen klokka tre om natta, uten å ha vært med og bygd den?
+
+'''
+
+[[historikk]]
+== 8. Kort historikk
+
+For å forstå hvorfor vi står der vi står, er det nyttig å vite hvordan systemet har blitt til.
+
+*Systemet har historikk tilbake til 2016.* Første commit i den undersøkte historikken er datert 12. desember 2016.footnote:git[Kilde B11.] Kilderevisjonen har 120 sporede migrasjonsfiler og 66 linjer med `CREATE TABLE`. Dette er historiske opprettinger, ikke antallet eksisterende tabeller.footnote:migrasjonar[Kilde B9. Tallene er avgrenset til revisjonen oppgitt i <<kjelder-b>>.]
+
+*Måten vi henter data på er skiftet ut flere ganger.* README beskriver en tidligere databasekobling til Arena, senere flyttet til `veilarbindexer`, og merker KRR-integrasjonen som «ikke fungerende».footnote:readme[`README.md:7-20`. Kilde B10; historisk dokumentasjon, ikke en bekreftelse av dagens driftsstatus.] Historikken har Oracle-relaterte endringer fram til 30. mai 2022 og Aiven-relaterte endringer fra juni 2021. Commit-meldingene alene daterer ikke når en flytting var fullført i produksjon.footnote:plattform[Kilde B11.]
+
+*Flere mottaksmønstre lever side om side.* Den innsjekkede koden har både den felles klienten i `KafkaConfigCommon` og et eget bolkbasert aktivitetsmottak med `@KafkaListener`. Domenehåndteringen varierer også.footnote:mottak[Kilde B12.] Dette er ikke en telling av uavhengige rammeverk; domenespesifikke tjenester kan bruke den felles klienten.
+
+*Kontrollpraksisen varierer.* Flere tjenester har eksplisitt kontroll av oppfølgingsstatus, mens andre undersøkte skriveløp ikke har det.footnote:gategap[Kilde B4 og den avgrensede kartleggingen i kapittel 9.1.] At dette skyldes skjerpede krav eller skillet mellom gammel og ny kode, er en mulig forklaring som krever historiske beslutninger eller annen dokumentasjon.
+
+Det er dette som er bakgrunnen for tilstanden i neste kapittel.
+
+'''
+
+[[tilstand]]
+== 9. Dagens tilstand: vi står i spagat
+
+Dette kapittelet skiller mellom observerte kodeveier, manglende dokumentert dekning og uavklarte rettslige konsekvenser. Grunnlaget er den innsjekkede revisjonen i <<kjelder-b>>, ikke en måling av produksjon.
+
+=== 9.1 Ulike kontrollmønstre før lagring
+
+Et søk etter `erBrukerUnderOppfolging` gir 11 treff i kilderevisjonen: ti kallsteder og én metodedefinisjon. Tre kall ligger i arbeidssøkertjenesten. PDL bruker også `harAktorIdUnderOppfolging`. Tallene kan derfor ikke omsettes til en andel av de 28 hendelsesstrømmene.footnote:gategap[]
+
+*Eksplisitt kontroll finnes blant annet i Kafka-håndteringen for AAP, dagpenger, tiltakspenger, ungdomsprogram og arbeidssøkerdata.* Dette sier noe om disse kodeveiene, ikke at alle lagringsveier i fagområdet er dekket. Et forkortet eksempel:
+
+.aap/AapService.kt:49-55
+[source,kotlin]
+----
+val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(kafkaMelding.personId)
+if (!erUnderOppfolging) {
+    secureLog.info("Bruker {} er ikke under oppfølging, ignorerer aap-ytelse melding.", ...)
+    return
+}
+----
+
+*Dialogmottaket er et konkret eksempel uten slik kontroll i skriveløpet.* Tjenesten kaller en databaseinnsetting med oppdatering ved eksisterende nøkkel, uten oppfølgingsvilkår i SQL-setningen (`DialogRepositoryV2.java:27-35`). Fravær av et bestemt metodenavn alene ville ikke vært nok til å fastslå dette. Et forkortet utdrag:
+
+.dialog/DialogService.java:20-25
+[source,java]
+----
+public void behandleKafkaMeldingLogikk(DialogdataDto melding) {
+    dialogRepositoryV2.oppdaterDialogInfoForBruker(melding);
+    ...
+    opensearchIndexerPaDatafelt.updateDialog(melding);
+}
+----
+
+En avgrenset kartlegging gir disse konkrete observasjonene:
+
+[cols="1,2,2,2", options="header"]
+|===
+| Undersøkt mottak | Kontroll før lagring | Lagring | Kobling til sletting ved oppfølgingsslutt
+
+| AAP (B2)
+| Eksplisitt oppfølgingskontroll i Kafka-metoden før oppslag og lagring
+| AAP-fagdata fra API; ikke hele innmeldingen
+| `slettAapData` blir kalt fra avslutningsrutinen (B7)
+
+| Arbeidssøker-v2 (B17)
+| Oppfølgingskontroll; opplysninger og profilering krever også lagret periode
+| Periode, opplysninger, jobbsituasjon og profilering
+| Perioden blir slettet; fremmednøkler fører slettingen videre (B18)
+
+| Dialog (B3)
+| Ingen eksplisitt oppfølgingskontroll i tjenestemetoden eller innsettingssetningen
+| `DIALOG`, med aktør-ID som nøkkel
+| Ingen kobling funnet i den sentrale avslutningskjeden (B7)
+
+| Aktivitetsmottak v1 (B16)
+| Filtrerer blant annet på historisk status, men har ikke oppfølgingskontroll i det undersøkte skriveløpet
+| `KAFKA_AKTIVITET_MELDING`, med personkoblede meldingsfelt og metadata
+| Sletter per aktivitet ved historisk melding; ikke koblet til sentral avslutning per person
+|===
+
+Dette er ikke en fullstendig oversikt over alle mottak. Den dokumenterer heller ikke at sletting alltid lykkes eller at samtidige oppdateringer er trygge. Før endelig klassifisering må hvert fagområde følges fra alle innganger, inkludert oppstartsoppslag, administrative kall og mellomlager, gjennom SQL, transaksjoner, fremmednøkler og eventuelle egne ryddejobber.
+
+=== 9.2 Filtrering ved visning erstatter ikke kontroll av lagring
+
+Opplysningene våre går gjennom to steg: først blir de lagret i databasen, deretter blir de kopiert til søkeindeksen som veilederoversikten leser fra.
+
+Ved full indeksering sjekker systemet et lokalt oppfølgingsflagg. Dokumenter for personer som ikke er registrert under oppfølging blir slettet fra søkeindeksen (`opensearch/OpensearchIndexer.java:146-152`, `util/UnderOppfolgingRegler.java:6-13`). Søk har også oppfølgingsfilter.footnote:indeksfilter[Kildene B5 og B6.]
+
+Dette dokumenterer mekanismer for å avgrense visningen, ikke at oversikten alltid er korrekt eller oppdatert. Den faktiske visningen avhenger også av at meldinger er behandlet, indeksen er oppdatert og tilgangsstyringen virker.
+
+[NOTE]
+====
+Filtrering ved visning dokumenterer ikke lovlig innsamling og lagring. Dataminimering etter GDPR artikkel 5 nr. 1 bokstav c gjelder behandlingen av opplysningene, ikke bare hva veilederen får se.
+====
+
+=== 9.3 Slettingen er omfattende, men ikke fullstendig
+
+Når en person avslutter oppfølgingen, kaller `OppfolgingAvsluttetService` flere domenespesifikke sletterutiner og sletting i søkeindeksen.footnote:sletting[Kilde B7.] Det er en sentral kobling, men antallet kall sier ikke hvor mange tabeller som blir slettet eller om alle operasjonene lykkes.
+
+*Indirekte sletting finnes.* For arbeidssøker-v2 sletter tjenesten perioden. Fremmednøkler med `ON DELETE CASCADE` sletter tilhørende opplysninger og profilering; sletting av opplysninger sletter videre jobbsituasjon. Det er derfor feil å regne hver tabell uten eget kall i avslutningsrutinen som udekket.footnote:kaskade[Kildene B17 og B18.]
+
+*Konkrete mangler i koblingen finnes også.* Vi finner ikke `DIALOG` eller `KAFKA_AKTIVITET_MELDING` i den sentrale avslutningskjeden. Aktivitetstabellen har sletting per aktivitet ved historiske meldinger, men dette er ikke det samme som sletting ved avsluttet oppfølging.footnote:lagringsdekning[Kildene B3, B7 og B16.] Resten av fagområdene må kartlegges før vi kan gi en uttømmende liste over udekkede tabeller.
+
+Lokale, ikke-innsjekkede arbeidssøker-mottak og migrasjonen `V1_124` er ikke brukt som bevis på produksjonslagring. Ved nye tabeller må slettingen enten inngå i en eksisterende kjede eller kobles til eksplisitt håndtering. Dekningen må kunne etterprøves, også ved feil og manglende identkoblinger.
+
+=== 9.4 Vi har allerede etterhenting, men bare stykkevis
+
+Det finnes administrative funksjoner for å hente inn data i etterkant, blant annet for persondata fra PDL, enslige forsørgere og tilordningstidspunkt, samt manuell henting for enkeltbrukere (`admin/AdminController.kt`).footnote:admin[Kilde B8.]
+
+Det finnes også *automatisk innhenting ved oppfølgingsstart*. `OppfolgingStartetService.startOppfolging` henter blant annet persondata, siste 14a-vedtak, arbeidssøkerdata, enslig-forsørger-data, AAP, tiltakspenger og dagpenger. Arbeidssøkertjenesten henter dessuten opplysninger og profilering ved mottak av en periode.footnote:automatisketterhenting[Kildene B17 og B19.]
+
+Etterhentingen er dermed ikke bare manuell. Den er domenespesifikk, og rapporten har ikke dokumentert en felles periodisk mekanisme med målt dekning og tidsfrist for alle kilder. En videre løsning bør bygge på de eksisterende oppslagene der de dekker behovet, heller enn å erstatte dem med omkjøring uten grunn.
+
+=== 9.5 Oppsummert
+
+Vi har begynt på rett vei, men er ikke i mål:
+
+[cols="3,1", options="header"]
+|===
+| Område | Status
+
+| Eksplisitt oppfølgingskontroll i flere Kafka-metoder | Dokumentert for konkrete kodeveier
+| Kontroll av alle lagringsveier og mellomlager | Ikke fullstendig kartlagt
+| Oppfølgingsfilter og tilgangsstyring ved visning | Mekanismer på plass; ikke en garanti om alltid korrekt visning
+| Rettslig grunnlag og faktisk personavgrensning i databasen | Må avklares mot dokumentasjon og produksjonsdata
+| Sletting ved avsluttet oppfølging | Eksplisitte kall og fremmednøkler; konkrete hull i koblingen
+| Etterhenting av data vi gikk glipp av | Både automatisk ved oppstart og manuell; ingen dokumentert felles dekningsgaranti
+|===
+
+Det er denne spagaten rapporten skal hjelpe oss ut av.
+
+'''
+
+[[problemstilling]]
+== 10. Problemstillingen
+
+=== 10.1 Inngangsvilkåret
+
+Hendelsesstrømmen `poao.siste-oppfolgingsperiode-v3` gir grunnlag for den lokale oppfølgingsstatusen. Rapporten forutsetter at annen faglagring skal avgrenses ut fra oppfølgingsforholdet, men etablering av status og nødvendige identkoblinger må ha sitt eget avklarte behandlingsløp.
+
+En regel om å kreve et allerede lagret oppfølgingsflagg kan ikke ukritisk legges foran selve etableringen av flagget. Felles kontrollregler må derfor skille mellom etablering og avslutning av oppfølging, vanlige fagoppdateringer og slettemeldinger.
+
+=== 10.2 Rekkefølgen er ikke garantert
+
+Kafka bevarer lagringsrekkefølgen *innenfor én partisjon*, ikke på tvers av partisjoner eller hendelsesstrømmer. Dette er heller ikke en garanti om rekkefølgen hendelsene faktisk skjedde i kildesystemene.footnote:kafkarekkjefolgje[Kilde D1.] En vedtaksmelding kan derfor bli behandlet før meldingen om oppfølging, selv om hendelsene skjedde i motsatt rekkefølge.
+
+Konsekvensen er at en lokal kontroll kan avvise en melding om en person som faktisk er under oppfølging. Forkasting kan gi et hull i data. Å ta vare på meldingen mens vi venter krever avklart behandlingsgrunnlag, begrenset lagringstid og sletting; rapporten forutsetter ikke at dette automatisk er lovlig eller ulovlig.
+
+=== 10.3 Noen områder har også interne avhengigheter
+
+Noen hendelsesstrømmer har avhengigheter seg imellom i tillegg til kontrollen av oppfølgingsstatus. Det gjør håndteringen mer krevende.
+
+Arbeidssøkerregisteret er et konkret eksempel: opplysninger og profilering viser til en periode-identifikator. Den undersøkte håndteringen finner personidenten gjennom den lokalt lagrede perioden. Uten denne koblingen kan den ikke kontrollere oppfølgingsstatus og returnerer uten faglagring.footnote:periodeavhengigheit[Kilde B17.] Det finnes også oppslag ved periodemottak som kan hente noe av det som mangler; rekkefølgeproblemet må vurderes sammen med disse.
+
+Dette er en tilleggskomplikasjon, ikke selve hovedproblemet. Løsningen vi velger må håndtere den, men skal ikke utformes for dette fagområdet alene.
+
+=== 10.4 Hva vi ikke kan forutsette
+
+To nærliggende tilnærminger krever avklaring:
+
+Mellomlagre alt og filtrere senere:: Flytter problemet til et annet lager, men fjerner ikke kravene til behandlingsgrunnlag og nødvendig datamengde. Bred mellomlagring er ikke et godkjent utgangspunkt i rapporten.
+
+Hente alle opplysninger fra API ved behov:: Noen områder har allerede slike oppslag (kapittel 9.4). Det er ikke dokumentert at alle kilder tilbyr nødvendig tilstand, historikk og kapasitet. Dette må kartlegges per kilde, ikke avvises eller forutsettes generelt.
+
+'''
+
+[[krav]]
+== 11. Krav til løsningen
+
+[cols="1,2,2", options="header"]
+|===
+| Krav | Hva det betyr | Eksempel
+
+| *Etterlevelse*
+| Personkrets, nødvendige felt, lagringstid og kontroll ved skriving skal være avklart for hver behandlingsvei.
+| En fagmelding uten bekreftede vilkår blir ikke lagret «i tilfelle»; eventuelle nye forsøk følger en særskilt avklart ordning.
+
+| *Ferskhet*
+| Når inngangsvilkåret er oppfylt, skal nye opplysninger bli synlige raskt.
+| En bruker får et nytt vedtak kl. 09:00. Veilederen ser det i oversikten samme formiddag, ikke dagen etter.
+
+| *Fullstendighet*
+| Avtalte, nødvendige opplysninger skal kunne hentes inn innen en avtalt frist. Manglende kildedekning skal synliggjøres, ikke skjules bak en garanti.
+| Et fortsatt relevant vedtak fra før oppfølgingsstart må kunne hentes fra kilden dersom det skal inngå i den avtalte dekningen.
+
+| *Korrekt tilstand og sletting*
+| Eldre meldinger skal ikke overskrive nyere tilstand eller gjenopprette data som skal være slettet.
+| Oppfølging blir avsluttet mens en etterhenting går. Etterhentingen skal ikke kunne skrive personen inn igjen.
+
+| *Driftbarhet*
+| Løsningen skal ikke kreve omfattende manuell koordinering i det daglige.
+| En utvikler skal ikke måtte starte omkjøringer for hånd hver uke for å holde data oppdatert.
+
+| *Skalerbarhet*
+| Må fungere også for hendelsesstrømmer med millioner av meldinger.
+| En etterhenting som må lese gjennom fem millioner meldinger, skal ikke ta dager eller stanse ordinær drift.
+
+| *Etterprøvbarhet*
+| Vi skal kunne dokumentere hva som er lagret, hvorfor, og hva vi eventuelt gikk glipp av.
+| Vi skal kunne forklare kontrollreglene og dokumentere dekning og avvik. Aggregerte tellinger alene beviser ikke at hver forkasting var riktig.
+
+| *Ensartethet*
+| Samme kontrollprinsipp skal gjelde på tvers av datakilder, med dokumenterte forskjeller for oppstart, avslutning, sletting og kildespesifikke avhengigheter.
+| En utvikler som legger til datakilde nummer 29 skal følge et ferdig mønster, ikke finne opp et nytt.
+|===
+
+Det siste kravet er lagt til på bakgrunn av de ulike mønstrene i <<tilstand>>. Det krever ikke identisk kode for alle datakilder.
+
+[[foresetnader-etterhenting]]
+=== 11.1 Forutsetninger før vi kan love etterhenting
+
+Disse punktene må dokumenteres per kilde før et tjenestenivå blir lovet:
+
+. *Hva som kan hentes igjen.* Oppgi API-dekning eller Kafka-lagringstid, oppryddingsregler, meldingsnøkkel og om meldingene inneholder full tilstand eller bare endringer. Loggkomprimering kan fjerne eldre verdier per nøkkel, og dermed historikk vi trenger. En egen tjeneste kan ikke hente meldinger kilden har slettet.footnote:kafkalagring[Kilde D2.]
+. *Hvordan behovet blir funnet.* Definer om etterhenting blir utløst ved oppfølgingsstart, avstemming av den aktuelle personkretsen eller omkjøring av kilden. Et tellepunkt for forkastede meldinger er ikke en liste over hva som mangler. Identifikatorer og metadata i en arbeidskø må også ha avklart formål og lagringstid.
+. *Tidsfrist og kapasitet.* Mål tid fra behov til ferdig faglagring og indeksering, inkludert ventetid, kildeutfall og køvekst. Fristen må passe innenfor kildens tilgjengelige tidsrom, med margin for feil og ny kjøring.
+. *Nyere tilstand skal vinne.* Definer sammenlignbare kildeversjoner eller andre dokumenterte rekkefølgeregler. Kafka-posisjoner kan ikke sammenlignes på tvers av partisjoner. Gjentakssikker skriving alene er ikke nok.
+. *Sletting skal stå seg.* Håndter slettemeldinger, utløpte slettemarkører og avsluttet oppfølging. Kontroll og skriving må samordnes med avslutning slik at en pågående etterhenting ikke skriver data tilbake etter sletting, for eksempel gjennom låsing eller vilkårsbundne skriv knyttet til gjeldende oppfølgingsperiode. Den valgte mekanismen må gjelde alle konkurrerende skriveveier.
+. *Avhengigheter og ferdigpunkt.* Definer ferdigbehandlet posisjon per partisjon før neste avhengige strøm blir behandlet. Avklar også samordning med løpende mottak. For arbeidssøkerdata må perioden være på plass før opplysninger og profilering.
+
+Der kilden ikke kan gi nødvendig dekning, må vi endre kildeavtalen eller løsningen, eller avgrense hva vi lover sammen med fagsiden. En slik avgrensning må fortsatt oppfylle de rettslige og faglige kravene.
+
+'''
+
+[[alternativ]]
+== 12. Alternativer
+
+Alternativene er tilnærminger, ikke ferdig spesifiserte løsninger med dokumentert etterlevelse. A og B beskriver håndtering av manglende data; C beskriver plassering av etterhentingen; D en lagringsarkitektur; E et rammeverk; og F en endring hos produsenten. Flere kan kombineres.
+
+Felles for alle er avklart behandlingsgrunnlag, kontroll av alle relevante lagringsveier og dokumentert sletting. Etterhenting forutsetter også punktene i <<foresetnader-etterhenting>>. B, D og E har særlig behov for å avklare hvilke personopplysninger som blir holdt tilbake eller lagret underveis.
+
+=== Alternativ A — Kontroll i sanntid, manuell omkjøring ved behov
+
+*Slik virker det.* Vi kontrollerer vilkårene før faglagring. Meldinger uten bekreftede vilkår blir forkastet, med særskilt håndtering av etablering, avslutning og slettemeldinger. Ved behov henter vi tilgjengelige data igjen. Omkjøring av avhengige strømmer følger dokumenterte ferdigpunkt per partisjon, med vern mot eldre tilstand og gjenoppretting etter sletting.
+
+.Fordeler
+* Enkleste modellen å forstå og forklare.
+* Minst endring utover den oppryddingen vi uansett må gjøre.
+* Lavest kostnad å innføre.
+
+.Ulemper
+* Opplysninger kan mangle fram til manuell etterhenting, eller varig dersom kilden ikke lenger har dem og eksisterende oppstartsoppslag ikke dekker behovet.
+* Omkjøringen må gjøres i riktig rekkefølge. Gjør noen feil, blir resultatet feil.
+* Manuelt arbeid øker i takt med datamengde og antall driftsavvik.
+* Restbehovet utover eksisterende automatiske oppslag ville bli håndtert manuelt.
+
+=== Alternativ B — Kontroll i sanntid, nye forsøk og periodisk tilbakefylling [.underline]#(foreløpig anbefalt)#
+
+*Slik virker det.* Som A, men med et begrenset omfang av nye forsøk der dette er avklart, og periodisk etterhenting for behov eksisterende oppslag ikke dekker. Dersom forutsetningen fortsatt mangler etter de nye forsøkene, slutter vi å prøve meldingen og registrerer utfallet i et aggregert målepunkt. Kafka-posisjonen må bare kvitteres ut i samsvar med ferdigbehandlingen av tidligere meldinger i samme partisjon.
+
+Etterhentingen tar utgangspunkt i aktuell personkrets og avtalte kilder, ikke i en forutsetning om at forkastet meldingsinnhold er lagret lokalt. Den må ha eksplisitt behovsidentifisering og framdriftssporing, som beskrevet i <<foresetnader-etterhenting>>.
+
+[IMPORTANT]
+====
+*Nye forsøk skjer ikke automatisk uten lagring eller blokkering.* Venting i mottaksløpet kan forsinke partisjonen, mens en egen kø kan holde på personopplysninger. Før innføring må vi velge og dokumentere håndteringen: hva som ligger i minne eller lager, maksimal ventetid, omstart, sletting og påvirkning på andre meldinger. Dersom slike nye forsøk ikke kan forsvares, må de utelates, og konsekvensen for etterhenting og ferskhet vurderes på nytt.
+====
+
+.Fordeler
+* Kan løse kortvarige rekkefølgeproblemer automatisk når forutsetningen blir tilgjengelig innen ventetiden.
+* Vesentlig mindre manuelt arbeid enn A.
+* Kan hente inn etterslep automatisk der kilden gir nødvendig dekning.
+* Etterhentingen kan kjøres skilt fra det ordinære mottaket, med begrenset ressursbruk.
+* Gir felles kontrollprinsipp og oppfølging av mangler, med kildespesifikk henting.
+
+.Ulemper
+* Mer logikk å bygge og vedlikeholde (nye forsøk, kø, statussporing).
+* Ingen garanti om at opplysninger fra før oppfølgingsstart fortsatt er tilgjengelige i kilden.
+* Nye forsøk kan forsinke mottaket; kø og mellomlagring krever avklaring av personvern og sletting.
+* Krever målt datadekning, kapasitet, versjonsregler og samordning med sletting før en tidsfrist kan loves.
+
+=== Alternativ C — Egen tjeneste for tilbakefylling
+
+*Slik virker det.* Systemet fortsetter med løpende mottak, mens en egen tjeneste utfører etterhentingen. Den kan være en videreføring av B. Skriving må både være gjentakssikker og avvise eldre tilstand etter definerte versjonsregler. Kontroll ved skriving må samordnes med oppfølgingsslutt og andre slettinger.
+
+.Fordeler
+* Kan gi separat skalering og ressursstyring ved store volum.
+* Skiller etterhentingsarbeidet fra mottaksprosessen, men kan fortsatt belaste felles Kafka, database, indeks og kilde-API.
+* Kan støtte et avtalt tjenestenivå dersom målinger viser at kildedekning og kapasitet er tilstrekkelige.
+
+.Ulemper
+* En ny tjeneste må eies, overvåkes og vedlikeholdes.
+* Høyere kostnad å bygge enn A og B.
+* Samlet løsning blir mer kompleks.
+* Flere prosesser krever tydelig eierskap til skriving og samordning. Flytting alene løser verken manglende kildedata eller konflikter med sletting.
+
+=== Alternativ D — Mellomlager med regelstyrt utlevering [.underline]#(krever juridisk avklaring)#
+
+*Slik virker det.* En egen tjeneste lagrer opplysninger for en bredere personkrets enn rapporten forutsetter for Oversikten. Oversikten ber om nødvendige opplysninger når en person blir aktuell. Dette skiller tekniske oppgaver, men flytter ikke automatisk det rettslige ansvaret. Formål, behandlingsgrunnlag og ansvar for mellomlageret må dokumenteres særskilt.
+
+.Fordeler
+* Kan flytte håndteringen av rekkefølge og datadekning ut av Oversikten.
+* Kan gi rask utfylling når en person blir aktuell, dersom mellomlageret har korrekt og tilstrekkelig tilstand.
+* Kan gi tydelig teknisk ansvarsdeling mellom innsamling og utlevering.
+
+.Ulemper
+* Forutsetter dokumentert rettslig grunnlag for mellomlageret og beslutning hos den behandlingsansvarlige, med juridisk bistand. Uten dette er alternativet ikke aktuelt.
+* Strenge krav til lagringstid, sletterutiner og sporbarhet.
+* Ny og kritisk komponent som resten av løsningen blir avhengig av.
+
+=== Alternativ E — Tilstandsbasert strømbehandling
+
+*Slik virker det.* Vi flytter håndteringen av avhengigheter inn i et rammeverk laget for formålet (Kafka Streams eller lignende), som holder orden på tilstand og kobler sammen hendelser fra flere strømmer.
+
+.Fordeler
+* Rammeverket gir mekanismer for tilstand og sammenkobling; domeneavhengighetene må fortsatt modelleres.
+* Mindre egenutviklet koordineringslogikk.
+
+.Ulemper
+* Krever avklart kompetansebehov og gir nye driftsoppgaver.
+* Lokale tilstandslager, endringslogger og eventuelle kopier innebærer behandling av personopplysninger. Kontroll, lagringstid og sletting må avklares for disse, ikke bare for sluttresultatet.footnote:streams[Kilde D3.]
+* Innfører et nytt mottaksmønster dersom det ikke erstatter eksisterende løsninger.
+* Gir ikke automatisk historisk dekning eller en tidsavgrenset garanti om fullstendighet.
+
+=== Alternativ F — Endre hendelsesmodellen hos produsent
+
+*Slik virker det.* Vi ber kildesystemene om å publisere nødvendig kontekst, for eksempel personkobling i en melding som i dag bare har periode-ID. Dette kan redusere interne avhengigheter. Det sikrer ikke at lokal oppfølgingsstatus er tilgjengelig når meldingen kommer, og erstatter ikke etterhenting eller personavgrensning.
+
+.Fordeler
+* Kan fjerne enkelte periodeoppslag og andre interne koblinger.
+* Kan forenkle håndteringen hos mottakerne dersom konteksten er nødvendig og pålitelig.
+
+.Ulemper
+* Vi eier ikke beslutningen. Krever prioritering hos mange andre team, ikke bare ett.
+* Lang gjennomføringstid.
+* Kan ikke legges til grunn på kort sikt uten avtale med produsentene, og løser ikke eksisterende kontroll- og slettemangler.
+* Tillegg av personidenter eller annen kontekst øker datamengden i meldingene og må vurderes opp mot dataminimering.
+* En løsning på hovedproblemet krever mer enn kontekst: for eksempel avtalt etterhenting eller en produsentløsning for korrekt personavgrensning. Dette er ikke spesifisert her.
+
+'''
+
+[[samanlikning]]
+== 13. Sammenligning
+
+Vurderingene er kvalitative hypoteser, ikke målte rangeringer. Rapporten har ikke kapasitetsmålinger eller fullstendige kildeavtaler som grunnlag for å gi alternativene karakteren «høy fullstendighet». Siden tilnærmingene delvis kan kombineres, må sammenligningen brukes til å avklare behov, ikke til å velge en vinner fra en poengtabell.
+
+[cols="1,2,2,2", options="header"]
+|===
+| Alternativ | Mulig gevinst for ferskhet og dekning | Kostnad og drift | Avgjørende forutsetning
+
+| *A* Manuell etterhenting
+| Kan rette kjente hull, men har ingen automatisk tidsfrist utover eksisterende oppslag
+| Få nye mekanismer; manuelt arbeid ved avvik
+| Kilden må ha data tilgjengelig når arbeidet blir gjort
+
+| *B* Nye forsøk og periodisk etterhenting
+| Kan begrense kortvarige hull og automatisere restbehovet
+| Nye forsøk, behovssporing og avstemming må driftes
+| Avklart venting/lagring, kildedekning og målt kapasitet
+
+| *C* Egen etterhentingstjeneste
+| Kan gi større kapasitet, men gir ikke mer kildedekning enn B
+| En tjeneste til og samordning med felles lager og løpende mottak
+| Målinger må vise at separat kjøring avhjelper den faktiske flaskehalsen
+
+| *D* Mellomlager
+| Kan gi raskt tilgjengelig tilstand ved oppfølgingsstart
+| Bredere lager med krav til eierskap, sletting og tilgjengelighet
+| Dokumentert behandlingsgrunnlag og datadekning i mellomlageret
+
+| *E* Tilstandsbasert strømbehandling
+| Kan håndtere sammenkobling og tilstand mer systematisk
+| Kompetanse og drift av tilstandslager og endringslogger
+| Avklart lagring og egnet modell for avhengighetene
+
+| *F* Endret produsentmodell
+| Kan redusere interne avhengigheter; løser ikke alene etterslep i lokal oppfølgingsstatus
+| Endringer og avtaler på tvers av team
+| Produsentene må prioritere en konkret modell med nødvendig kontekst og eventuelt etterhenting
+|===
+
+*Etterlevelse må avklares for alle alternativene.* B, D og E kan innebære lagring underveis. A, B og C er avhengige av at kildene kan tilby nødvendig etterhenting. F er avhengig av produsentbeslutninger. Ingen av alternativene er derfor helt uavhengig av avklaringer utenfor teamet.
+
+=== 13.1 Hva som må avgjøre valget
+
+En presis plassering i en kostnad–datakvalitet-matrise ville gitt et inntrykk av målinger rapporten ikke har. De avgjørende spørsmålene er i stedet:
+
+* *Kan kildene gi nødvendige data innen fristen?* Hvis nei, må kildeavtalen eller løsningen endres; høyere lesehastighet er ikke nok.
+* *Er nye forsøk og eventuell mellomlagring avklart?* Hvis nei, kan ikke den delen av B, D eller E legges til grunn.
+* *Kan eksisterende oppslag og periodisk etterhenting dekke behovet innen kapasiteten vi har?* Hvis ja, er B et naturlig første steg å prøve ut.
+* *Er flaskehalsen faktisk plasseringen av etterhentingen?* Bare da er C et begrunnet kapasitetsgrep; felles database eller kildekvoter kan ellers begrense like mye.
+
+'''
+
+[[avvegingar]]
+== 14. Hva vi gir fra oss i hvert valg
+
+Alternativene er ikke gradert fra dårlig til god. De representerer ulike avveininger:
+
+Velger vi A:: Får vi lavest kostnad nå, men betaler i form av manuelt arbeid og perioder med ufullstendige data.
+Velger vi B:: Kan vi redusere manuelt arbeid, men tar på oss nye forsøk, avstemming og en kildeavhengig forsinkelse. Datadekningen må dokumenteres.
+Velger vi C:: Kan vi få mer uavhengig kapasitetsstyring, men tar på oss en ny tjeneste og samordning av flere skriveprosesser.
+Velger vi D:: Kan vi få raskere oppslag ved oppfølgingsstart, men tar på oss et bredere lager med eget dokumentasjons- og forvaltningsbehov. Ansvaret blir ikke flyttet over på juridisk.
+Velger vi E:: Får vi rammeverksstøtte for tilstand, men bruker kompetanse og driftskapasitet på en løsning som fortsatt krever domene- og personvernregler.
+Velger vi F:: Kan vi forenkle enkelte avhengigheter, men er avhengige av produsentene og trenger fortsatt en løsning for lokal oppfølgingsstatus og eventuelt etterhenting.
+
+[CAUTION]
+====
+*Velger vi ingenting*, står de dokumenterte manglene i kontroll- og slettedekningen uavklart. Om det foreligger ulovlig lagring og om omfanget vokser, må vurderes ut fra rettslig grunnlag og produksjonsdata; det kan ikke utledes fra antallet datakilder.
+====
+
+'''
+
+[[anbefaling]]
+== 15. Anbefaling
+
+=== 15.1 Først: avklar mulige avvik og rett bekreftede mangler
+
+Uavhengig av alternativ må vi:
+
+. Bekrefte formål, behandlingsgrunnlag, personavgrensning, nødvendige felt og lagringstider med den behandlingsansvarlige og juridisk støtte.
+. Fullføre kartleggingen av kontroll, lagring og sletting per datakilde, med særskilt oppmerksomhet på de konkrete hullene i kapittel 9.
+. Undersøke omfanget i produksjon og håndtere mulige personvernavvik gjennom gjeldende rutiner. Bekreftet ulovlig lagring må stanses og ryddes; nødvendige tiltak skal ikke vente på et langsiktig arkitekturvalg.
+. Sikre etterprøvbar slettedekning for nye og eksisterende tabeller, gjennom fremmednøkler, eksplisitte sletteløp og kontroller som avdekker manglende dekning. Feil og manglende identkoblinger må gi synlige avvik.
+
+Dette er ikke et valg mellom alternativer, men en forutsetning for at noen av dem skal virke.
+
+=== 15.2 Deretter: prøv ut B med tydelige vilkår
+
+Den foreløpige anbefalingen er å videreutvikle eksisterende oppstartsoppslag med prinsippene i B. Før bred innføring må vi:
+
+. Avklare kontrollregler for fagoppdateringer, etablering av oppfølging og sletting.
+. Velge en lovlig og driftsmessig forsvarlig håndtering av nye forsøk, eller utelate den og revurdere følgene.
+. Dokumentere hva hver kilde kan levere ved etterhenting, og hvordan mangler blir oppdaget.
+. Vise at versjonsregler og samordning med sletting hindrer overskriving av nyere tilstand og gjenoppretting av slettede data.
+. Måle datadekning, forsinkelse og ressursbruk mot et avtalt mål for representative kilder og volum før mønsteret blir utvidet.
+
+Interne avhengigheter, som periodekoblingen i arbeidssøkerregisteret, må inngå i utprøvingen. Dersom kildegrunnlaget eller kapasiteten ikke holder, må løsningen vurderes på nytt; vi kan ikke love at en periodisk jobb alene tetter hullene.
+
+=== 15.3 Ved dokumentert kapasitetsbehov: vurder C
+
+Dersom målinger viser at separat kjøring gir nødvendig kapasitet eller isolasjon, kan vi flytte etterhentingen til en egen tjeneste. Dette kan bygge videre på B, men krever en egen vurdering av kostnad, eierskap, felles flaskehalser og samtidige skriv. C løser ikke manglende historikk i kildene.
+
+=== 15.4 Juridisk avklaring av mellomlagring, inkludert D
+
+Vi ber om en samlet vurdering av personavgrensningen og håndtering av opplysninger underveis, inkludert nye forsøk i B, tilstandslager i E og det bredere mellomlageret i D. En positiv vurdering av D åpner for videre utredning, ikke en automatisk konklusjon om at løsningen er enklere eller bedre. En negativ vurdering av D avklarer heller ikke B og E.
+
+'''
+
+[[spoersmaal]]
+== 16. Spørsmål vi må ta stilling til
+
+Teamet kan foreslå tekniske tiltak og måle kapasitet, men må avklare personvern og avvikshåndtering med den behandlingsansvarlige, databehov med fagsiden og leveringsevne med kildeteamene.
+
+. *Hvor raskt skal mulige avvik avklares og bekreftede avvik rettes?* +
+  Avtal ansvar og frister for rettslig avklaring, kartlegging og nødvendige tiltak. En arkitekturprosess må ikke forsinke påkrevd avvikshåndtering.
+
+. *Hvilken datadekning og forsinkelse er akseptabel, og kan kildene støtte dette?* +
+  Definer nødvendige opplysninger og tidsfrister med fagsiden. Bekreft API-dekning, Kafka-lagring og slettesemantikk med kildeteamene før vi lover fullstendighet.
+
+. *Hvilke datamengder og hvilken kapasitet skal vi dimensjonere for de neste to årene?* +
+  Mål innkommende volum, etterslep, gjennomlesingstid og belastning på felles ressurser. Dette avgjør om B holder, om C hjelper, eller om flaskehalsen ligger i kilden eller databasen.
+
+. *Har vi kapasitet til å eie og drifte en tjeneste til?* +
+  En ny tjeneste krever eierskap, overvåking og beredskap, ikke bare utvikling.
+
+. *Hvilke juridiske avklaringer trengs for inngangsvilkåret, nye forsøk og mellomlagring, inkludert D?* +
+  Vurder personkrets, nødvendige felt, minne/kø/tilstandslager, lagringstid, sletting og ansvar. Avklaringer for B og E må ikke utsettes fordi D blir behandlet som et eget spor.
+
+'''
+
+[[drift]]
+== 17. Følger for driften
+
+Uansett valg må disse punktene på plass:
+
+Driftsprosedyre for omkjøring:: Dokumenter hvilke kilderevisjoner, konsumentgrupper og posisjoner kjøringen bruker, og hvordan den blir samordnet med løpende mottak. Oppfølgingsstrømmen må være ferdigbehandlet fram til et definert punkt i hver partisjon før avhengige fagstrømmer blir kjørt; det er ikke nok å starte konsumenten først. Historiske start- og slutthendelser må ikke ukritisk kjøres mot levende data slik at de utløser sidevirkninger eller etablerer gamle oppfølgingsforhold på nytt.
+
+Interne avhengigheter:: For arbeidssøkerdata skal perioden være på plass før opplysninger og profilering. Avtal ferdigpunkt, dokumenter oppnådd framdrift og håndter meldinger som fortsatt mangler en gyldig kobling. Dette er en varig forutsetning utviklere og driftspersonell må kjenne til.
+
+Tjenestenivå som er avtalt og målt:: Både for ferskhet ved løpende mottak og for etterhenting, med avklart datadekning, kildeforutsetninger og håndtering av brudd på fristen. Manglende og bekreftet fraværende data må kunne skilles.
+
+Sletting med etterprøvbar dekning:: Hold en oversikt over fagtabeller, mellomlager, køer, indeks, logger og relevante kopier. Dokumenter sletting og lagringstid, også ved gjenoppretting fra sikkerhetskopi. Kontroller må avdekke nye udekkede lager og mislykket sletting. Etterhenting må ikke kunne omgå slettingen.
+
+Begrenset ressursbruk og nye forsøk:: Definer tidsgrenser, køgrenser, omstartsatferd og påvirkning på ordinært mottak. Overlast og kildeutfall skal bli synlige, ikke føre til ubegrenset lagring eller stille tap.
+
+Målinger og varsling:: Som et minimum de fire punktene under.
+
+* Hvor mange meldinger vi forkaster fordi lokal status eller en nødvendig kobling mangler, skilt fra bekreftet avsluttet oppfølging
+* Hvor ofte nye forsøk blir brukt, og hvor ofte de ikke fører fram
+* Størrelse og alder på køen for tilbakefylling
+* Avvik mellom avtalt og faktisk datadekning, inkludert kildedata som ikke lenger kan hentes
+
+Målingene skal være aggregerte uten personidenter som merkelapper. De må suppleres med dokumenterte kontrollregler og slettedekning; tellinger alene beviser ikke etterlevelse.
+
+'''
+
+[[konklusjon]]
+== 18. Konklusjon
+
+Vi må avveie ferskhet, dokumentert datadekning og driftskostnad innenfor en rettslig ramme som også krever korrekte opplysninger. Den systemspesifikke personavgrensningen og vilkårene for håndtering underveis må bekreftes før et formelt arkitekturvalg.
+
+Koden viser ulike kontrollmønstre, både automatisk og manuell etterhenting, og konkrete hull i koblingen mellom lagring og sletting. Dette krever videre kartlegging og tiltak, men er ikke grunnlag for å tallfeste ulovlig produksjonslagring eller konkludere med at «halvparten» av kildene er dekket.
+
+Anbefalingen er å *avklare mulige avvik og rette bekreftede mangler*, og *prøve ut B* med dokumentert kildedekning, forsvarlige nye forsøk og vern mot eldre tilstand og gjenoppretting etter sletting. *C* er aktuelt dersom målinger underbygger behovet. *D og E* krever særskilt vurdering av lagringen, mens *F* kan forenkle interne avhengigheter uten å løse hele problemet. Ingen garanti om fullstendighet bør loves før forutsetningene i kapittel 11.1 er oppfylt.
+
+'''
+
+[[kjelder]]
+== 19. Kilder
+
+[[kjelder-a]]
+=== 19.A Rettslige kilder
+
+[cols="1,3,3", options="header"]
+|===
+| # | Kilde | Hva den underbygger
+
+| A1 | https://lovdata.no/dokument/NL/lov/2018-06-15-38/KAPITTEL_gdpr-2[GDPR art. 5 nr. 1 bokstav b–e] | Formålsbegrensning, dataminimering, korrekte opplysninger og lagringsbegrensning
+| A2 | https://lovdata.no/dokument/NL/lov/2018-06-15-38/KAPITTEL_gdpr-2[GDPR art. 6 nr. 1 bokstav e og nr. 3] | Oppgaver i allmennhetens interesse eller utøvelse av offentlig myndighet, med supplerende rettsgrunnlag
+| A3 | https://lovdata.no/dokument/NL/lov/2018-06-15-38/KAPITTEL_gdpr-2[GDPR art. 9] | Særlige kategorier, blant annet helseopplysninger
+| A4 | https://lovdata.no/dokument/NL/lov/2018-06-15-38[GDPR art. 4 nr. 12, art. 33 og art. 83 nr. 5] | Definisjon av sikkerhetsbrudd, meldeplikt og bøtenivå
+| A5 | https://lovdata.no/lov/2018-06-15-38/%C2%A71[Personopplysningsloven § 1] | Forordningen gjelder som norsk lov
+| A6 | https://lovdata.no/lov/2006-06-16-20/%C2%A74a[Nav-loven § 4 a] | Navs hjemmel til å behandle personopplysninger
+| A7 | https://lovdata.no/lov/2004-12-10-76/%C2%A710[Arbeidsmarkedsloven § 10] | Registrering som arbeidssøker; ikke alene generell behandlingshjemmel for Oversikten
+| A8 | https://www.datatilsynet.no/rettigheter-og-plikter/virksomhetenes-plikter/avvik/hva-er-et-brudd-pa-personopplysningssikkerheten/[Datatilsynet: Hva er et brudd på personopplysningssikkerheten?] og https://www.datatilsynet.no/rettigheter-og-plikter/virksomhetenes-plikter/avvik/hvilke-brudd-skal-meldes-til-datatilsynet/[hvilke brudd skal meldes?] | Skillet mellom personvernavvik og sikkerhetsbrudd, risikovurdering og dokumentasjon
+| A9 | https://www.datatilsynet.no/rettigheter-og-plikter/personvernprinsippene/[Datatilsynet: Personvernprinsippene] | Dataminimering, korrekte opplysninger, lagringsbegrensning og ansvar
+|===
+
+[[kjelder-b]]
+=== 19.B Kilder i kodebasen
+
+Kodegrunnlaget er `navikt/veilarbportefolje`, revisjon `14bae23c5eea845be5502b6318a5977c7c609c61`, gjennomgått 16. september 2026. Java- og Kotlin-stier under er relative til `src/main/java/no/nav/pto/veilarbportefolje/` dersom ikke annet er oppgitt. Linjenumre gjelder denne revisjonen.
+
+Lokale, ikke-innsjekkede arbeidssøker-mottak, tilhørende endringer i konfigurasjon og migrasjonen `V1_124` er holdt utenfor kodefakta og tellinger. Revisjonen er ikke i seg selv dokumentasjon på hva som kjører i produksjon; dette krever driftsdata og oversikt over funksjonsbrytere.
+
+[cols="1,3,3", options="header"]
+|===
+| # | Kilde | Hva den underbygger
+
+| B1 | `kafka/KafkaConfigCommon.java:88-141` (enum `Topic`), mottaksoppsett i samme fil | 28 definerte strømmer med mottaksoppsett; ikke antallet aktive mottak i produksjon
+| B2 | `aap/AapService.kt:43-107,149-158` | Oppfølgingskontroll i Kafka-metoden, innhenting av fagdata fra API og sletteinngang
+| B3 | `dialog/DialogService.java:20-25`, `dialog/DialogRepositoryV2.java:27-35`, `src/main/resources/db/postgres/V1_02__dialog.sql:2-10` | Dialoglagring uten eksplisitt oppfølgingsvilkår i den undersøkte tjeneste-/SQL-veien
+| B4 | `persononinfo/PdlIdentRepository.java:37-56`, `persononinfo/PdlBrukerdataKafkaService.java:55` | Ti kallsteder til `erBrukerUnderOppfolging` pluss én definisjon; PDL har også `harAktorIdUnderOppfolging`
+| B5 | `opensearch/OpensearchIndexer.java:146-152` | Filtrering skjer ved indeksering, med sletting av dokument
+| B6 | `util/UnderOppfolgingRegler.java:6-13`, `opensearch/OpensearchService.java:68,116,142` | Oppfølgingsflagg ved indeksering og oppfølgingsfilter ved søk
+| B7 | `oppfolging/OppfolgingAvsluttetService.java:56-96` | Sentral avslutningskjede; eksplisitte kall til domene- og indekssletting
+| B8 | `admin/AdminController.kt` | Eksisterende, manuelle etterhentingsfunksjoner
+| B9 | `src/main/resources/db/postgres/` i oppgitt revisjon | 120 migrasjonsfiler, 66 linjer med `CREATE TABLE`; ikke antallet eksisterende tabeller
+| B10 | `README.md:7-20` | Historisk omtale av Arena-databasekobling, flytting til `veilarbindexer` og KRR som «ikke fungerende»
+| B11 | Git-historikken fram til oppgitt revisjon; `6ee221968` og `957ad7178` | Første commit 12. desember 2016; siste Oracle-treff 30. mai 2022; Aiven-treff fra juni 2021
+| B12 | `kafka/KafkaConfigCommon.java`, `aktiviteter/v1/PortefoljeAktivitetKafkaConsumer.kt` | Felles Kafka-klient og eget bolkbasert aktivitetsmottak i innsjekket kode
+| B13 | `controller/EnhetController.java:40-154`, `controller/VeilederController.java:29-75` | Endepunktene veilederoversikten bruker (<<kontekst>>)
+| B14 | `opensearch/OpensearchConfig.java:16` (`BRUKERINDEKS_ALIAS`) | Søkeindeksen `brukerindeks`
+| B15 | `auth/AuthService.java:100-110` | Tilgangsstyring ved visning: adressesperre og egen ansatt
+| B16 | `aktiviteter/v1/PortefoljeAktivitetKafkaMeldingService.kt:12-28`, `aktiviteter/v1/PortefoljeAktivitetKafkaMeldingRepository.kt:27-160`, `src/main/resources/db/postgres/V1_108__create_table_kafka_aktivitet_melding.sql` | Personkoblet meldingslagring, historikk-/versjonsfilter og sletting per aktivitet
+| B17 | `arbeidssoeker/v2/ArbeidssoekerService.kt:55-186,261-270` | Oppfølgingskontroll, periodeoppslag, API-etterhenting ved periodemottak og sletting av periode
+| B18 | `arbeidssoeker/v2/SisteArbeidssoekerPeriodeRepository.kt:37-40`; `src/main/resources/db/postgres/V1_82__siste_arbeidssoeker_periode.sql:9-11`, `V1_81__opplysninger_om_arbeidssoeker.sql:15`, `V1_84__profilering.sql:4` i samme mappe | Videreført sletting via fremmednøkler fra periode til opplysninger og profilering, og fra opplysninger til jobbsituasjon
+| B19 | `oppfolging/OppfolgingStartetService.java:99-110` | Automatisk innhenting for flere fagområder ved oppfølgingsstart
+|===
+
+Tellinger og historikksøk kan reproduseres mot den faste revisjonen med:
+
+[source,bash]
+----
+git grep -n 'erBrukerUnderOppfolging' 14bae23c5 -- src/main/java
+git ls-tree -r --name-only 14bae23c5 -- src/main/resources/db/postgres | grep '\.sql$' | wc -l
+git grep -i 'create table' 14bae23c5 -- 'src/main/resources/db/postgres/*.sql' | wc -l
+git --no-pager log 14bae23c5 --reverse --format='%h %ad' --date=short | head -1
+git --no-pager log 14bae23c5 -1 --regexp-ignore-case --grep=oracle --format='%h %ad %s' --date=short
+git --no-pager log 14bae23c5 --reverse --regexp-ignore-case --grep=aiven --format='%h %ad %s' --date=short | head -3
+----
+
+Disse søkene dokumenterer ikke full kontroll- eller slettedekning. Det krever lesing av hele behandlingsløpet og de relevante databaseavgrensningene.
+
+[[kjelder-c]]
+=== 19.C Kilder som må hentes inn
+
+Disse er *ikke* verifisert i denne rapporten. Dokumentasjon utenfor kodebasen og videre kartlegging må på plass før rapporten blir brukt som grunnlag for en formell beslutning:
+
+[cols="1,3,3", options="header"]
+|===
+| # | Kilde | Hvorfor den trengs
+
+| C1 | Behandlingsprotokoll for veilarbportefolje (GDPR art. 30) | Den formelle definisjonen av formål og hvilke opplysninger som er omfattet
+| C2 | Personvernkonsekvensvurdering (DPIA) for løsningen | Dokumentert risikovurdering og avgrensninger
+| C3 | Juridisk vurdering og beslutning hos den behandlingsansvarlige | Avklarer personavgrensning, etablering/avslutning og behandling under nye forsøk og mellomlagring i B, D og E
+| C4 | Avtaler eller vilkår fra kildesystemene | Kan inneholde egne avgrensninger på bruk og lagringstid
+| C5 | Produksjonskartlegging mot avklart grunnlag, med driftsversjon og funksjonsbrytere | Avgjør hvilken kode som er aktiv, hvilke data som finnes, og omfanget av eventuelle avvik
+| C6 | Kildedekning og kapasitetsmålinger per fagområde | API-dekning, Kafka-lagring og loggkomprimering, nøkler, versjoner, slettemeldinger og gjennomlesingstid
+| C7 | Fullstendig oversikt over behandlings- og sletteløp | Alle innganger og lager, indirekte vern, samtidige skriv, feilhåndtering og egne ryddejobber
+|===
+
+[[kjelder-d]]
+=== 19.D Teknisk dokumentasjon
+
+[cols="1,3,3", options="header"]
+|===
+| # | Kilde | Hva den underbygger
+
+| D1 | https://kafka.apache.org/41/getting-started/introduction/[Apache Kafka: Introduksjon] | Rekkefølgegaranti per partisjon og skillet mellom strøm og partisjon
+| D2 | https://kafka.apache.org/41/configuration/topic-configs/[Apache Kafka: Konfigurasjon av hendelsesstrømmer] | `cleanup.policy`, lagringstid og `delete.retention.ms`; avgrensninger ved etterhenting og slettemarkører
+| D3 | https://kafka.apache.org/41/streams/architecture/[Apache Kafka Streams: Arkitektur] | Lokale tilstandslager, replikerte endringslogger og gjenoppretting
+|===
+
+Disse kildene er lest 16. september 2026 og beskriver generelle mekanismer. De dokumenterer ikke den faktiske Kafka-konfigurasjonen eller bibliotekversjonen i produksjon.
+
+'''
+
+[NOTE]
+.Forbehold
+====
+Rapporten bygger på den faste kilderevisjonen i <<kjelder-b>>, ikke på målinger i produksjon eller lokale endringer under arbeid. Kodefunn viser kontroll- og slettemekanismer og konkrete hull i dekningen, men dokumenterer ikke alene lovbrudd, produksjonsomfang eller historiske årsaker. Den rettslige avgrensningen må bekreftes mot C1–C4, omfanget kartlegges gjennom C5 og C7, og løfter om datadekning underbygges gjennom C6. B er en foreløpig retning under disse vilkårene, ikke en ferdig dokumentert garanti.
+====
