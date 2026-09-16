@@ -168,6 +168,47 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     }
 
     @Test
+    public void testOvergangsstonadMedPeriodetypeSærligTilsynskrevendeBarnKasterIkkeException() {
+        // Regresjonstest basert på en reell melding funnet i produksjon som trigget NPE-en:
+        // periodetype SÆRLIG_TILSYNSKREVENDE_BARN har ingen egen gren i
+        // AktivitetsTypeTilAktivitetsplikt (kun aktivitetstypen BARNET_SÆRLIG_TILSYNSKREVENDE er mappet,
+        // og bare under periodetype HOVEDPERIODE/NY_PERIODE_FOR_NYTT_BARN), så kombinasjonen faller
+        // igjennom til Optional.empty() -> aktivitsplikt = null, samme feilklasse som MIGRERING-testen over.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", LocalDate.of(2023, 3, 8)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2026, 7, 1), LocalDate.of(2027, 7, 31), Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN, Aktivitetstype.BARNET_SÆRLIG_TILSYNSKREVENDE));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        210294L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Særlig tilsynskrevende barn");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
+                }
+        );
+    }
+
+    @Test
     public void test_filtrering_enslige_forsorgere() {
         var bruker1 = new PortefoljebrukerOpensearchModell();
         bruker1.setFnr(randomFnr().toString());
