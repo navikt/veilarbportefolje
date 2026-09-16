@@ -18,5 +18,6 @@ public enum Brukerstatus {
     TILTAKSHENDELSER,
     UTGATTE_VARSEL,
     UDELT_SAMTALEREFERAT,
-    KANDIDAT_FOR_UTMELDING
+    KANDIDAT_FOR_UTMELDING,
+    MINE_FARGEKATEGORIER // Kun som checkboxvalg i frontend
 }

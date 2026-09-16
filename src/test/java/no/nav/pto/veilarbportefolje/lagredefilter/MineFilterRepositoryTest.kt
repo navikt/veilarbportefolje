@@ -3,20 +3,24 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Formidlingsgruppe
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
+import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
+import java.sql.PreparedStatement
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class MineFilterRepositoryTest(
@@ -48,6 +52,7 @@ class MineFilterRepositoryTest(
         assertThat(lagretFilter).isNotNull
         assertThat(lagretFilter.filterNavn).isEqualTo("Mitt filter")
         assertThat(lagretFilter.filterValg).isEqualTo(filtervalg)
+        assertNull(lagretFilter.infoOmSlettetFiltervalg)
     }
 
     @Test
@@ -74,14 +79,53 @@ class MineFilterRepositoryTest(
             NyttFilterRequest(filterNavn = "Filter 3", filterValg = filtervalg)
         )
 
-        val filterForVeileder1 = mineFilterRepository.hentFilterForVeileder(veileder1)
-        val filterForVeileder2 = mineFilterRepository.hentFilterForVeileder(veileder2)
+        val filterForVeileder1 = mineFilterRepository.hentFilterForVeileder(veileder1).filtre
+        val filterForVeileder2 = mineFilterRepository.hentFilterForVeileder(veileder2).filtre
 
         assertThat(filterForVeileder1).hasSize(2)
         assertThat(filterForVeileder1.map { it.filterNavn }).containsExactlyInAnyOrder("Filter 1", "Filter 2")
 
         assertThat(filterForVeileder2).hasSize(1)
         assertThat(filterForVeileder2.first().filterNavn).isEqualTo("Filter 3")
+    }
+
+    @Test
+    fun `hente filter for veileder skal hente gyldige rader for veileder og telle opp feil `() {
+        val veilederIdent = "Z123456"
+        val filtervalg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_ORDINAER)
+        )
+
+        mineFilterRepository.lagreNyttFilterForVeileder(
+            veilederIdent,
+            NyttFilterRequest(filterNavn = "Gyldig filter", filterValg = filtervalg)
+        )
+
+        val ugyldigAktiveFilterValg = PGobject().apply {
+            type = "jsonb"
+            value = """{"ytelseDagpenger":["HAR_DAGPENGER_ORDINAER","UGYLDIG_VERDI"]}"""
+        }
+
+        // Insert en rad med ugyldig enum-verdi direkte i databasen for å simulere en feiltilstand
+        jdbcTemplate.update(
+            "INSERT INTO ${LAGREDE_FILTER_MINE_FILTER.TABLE_NAME} " +
+                    "(${LAGREDE_FILTER_MINE_FILTER.VEILEDER_IDENT}, " +
+                    "${LAGREDE_FILTER_MINE_FILTER.FILTER_NAVN}, " +
+                    "${LAGREDE_FILTER_MINE_FILTER.AKTIVE_FILTER_VALG}, " +
+                    "${LAGREDE_FILTER_MINE_FILTER.SORT_ORDER}, " +
+                    "${LAGREDE_FILTER_MINE_FILTER.OPPRETTET}, " +
+                    "${LAGREDE_FILTER_MINE_FILTER.RAD_SIST_ENDRET}) " +
+                    "VALUES (?, ?, ?, 0, now(), now())",
+            veilederIdent,
+            "Ugyldig filter med gammel enumverdi",
+            ugyldigAktiveFilterValg
+        )
+
+        val hentetFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent)
+
+        assertThat(hentetFilter.filtre).hasSize(1)
+        assertThat(hentetFilter.filtre.first().filterNavn).isEqualTo("Gyldig filter")
+        assertThat(hentetFilter.antallFiltreSomFeilet).isEqualTo(1)
     }
 
     @Test
@@ -108,7 +152,7 @@ class MineFilterRepositoryTest(
         assertThat(oppdatert.filterId).isEqualTo(lagretFilter.filterId)
         assertThat(oppdatert.filterNavn).isEqualTo("Oppdatert navn")
 
-        val hentetEtterOppdatering = mineFilterRepository.hentFilterForVeileder(veilederIdent)
+        val hentetEtterOppdatering = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre
         assertThat(hentetEtterOppdatering).hasSize(1)
         assertThat(hentetEtterOppdatering.first().filterNavn).isEqualTo("Oppdatert navn")
         assertThat(hentetEtterOppdatering.first().filterValg).isEqualTo(oppdatertFilterValg)
@@ -134,7 +178,7 @@ class MineFilterRepositoryTest(
             )
         }.isInstanceOf(NoSuchElementException::class.java)
 
-        val uendret = mineFilterRepository.hentFilterForVeileder(veileder1).first()
+        val uendret = mineFilterRepository.hentFilterForVeileder(veileder1).filtre.first()
         assertThat(uendret.filterNavn).isEqualTo("Veileder1 filter")
     }
 
@@ -153,6 +197,46 @@ class MineFilterRepositoryTest(
     }
 
     @Test
+    fun `info om slettet filtervalg skal hentes ut riktig, og resettes ved update`() {
+        val veilederIdent = "Z123456"
+        val filterValg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_ORDINAER)
+        )
+        val lagretFilter = mineFilterRepository.lagreNyttFilterForVeileder(
+            veilederIdent,
+            NyttFilterRequest(filterNavn = "Original navn", filterValg)
+        )
+
+        // insert i kolonnen infoOmSlettetFiltervalg (dette gjøres normalt i gcp under migrering)
+        jdbcTemplate.update(
+            "UPDATE ${LAGREDE_FILTER_MINE_FILTER.TABLE_NAME} " +
+                    "SET ${LAGREDE_FILTER_MINE_FILTER.INFO_OM_SLETTET_FILTERVALG} = ? " +
+                    "WHERE ${LAGREDE_FILTER_MINE_FILTER.FILTER_ID} = ?",
+            { ps: PreparedStatement ->
+                ps.setArray(1, ps.connection.createArrayOf("text", arrayOf("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")))
+                ps.setInt(2, lagretFilter.filterId)
+            }
+        )
+
+        val hentetFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre.single()
+        assertThat(hentetFilter.infoOmSlettetFiltervalg).containsExactly("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")
+
+        // oppdatering skal resette infoOmSlettetFiltervalg til null
+        mineFilterRepository.oppdaterLagretFilterForVeileder(
+            veilederIdent,
+            OppdaterFilterRequest(
+                filterId = lagretFilter.filterId,
+                filterNavn = "Oppdatert navn",
+                filterValg = getFiltervalgDefaults().copy(formidlingsgruppe = listOf(Formidlingsgruppe.ARBS))
+            )
+        )
+
+        val filterEtterOppdatering = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre.single()
+        assertThat(filterEtterOppdatering.infoOmSlettetFiltervalg).isNull()
+    }
+
+
+    @Test
     fun `slette filter for veileder skal fjerne filteret`() {
         val veilederIdent = "Z123456"
         val lagretFilter = mineFilterRepository.lagreNyttFilterForVeileder(
@@ -163,7 +247,7 @@ class MineFilterRepositoryTest(
         val antallRaderSlettet = mineFilterRepository.slettFilterForVeileder(veilederIdent, lagretFilter.filterId)
         assertThat(antallRaderSlettet).isEqualTo(1)
 
-        assertThat(mineFilterRepository.hentFilterForVeileder(veilederIdent)).isEmpty()
+        assertThat(mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre).isEmpty()
     }
 
     @Test
@@ -183,7 +267,7 @@ class MineFilterRepositoryTest(
 
         val antallRaderSlettet = mineFilterRepository.slettFilterForVeileder(veileder2, lagretFilterVeileder1.filterId)
         assertThat(antallRaderSlettet).isEqualTo(0)
-        assertThat(mineFilterRepository.hentFilterForVeileder(veileder1)).hasSize(1)
+        assertThat(mineFilterRepository.hentFilterForVeileder(veileder1).filtre).hasSize(1)
     }
 
     @Test

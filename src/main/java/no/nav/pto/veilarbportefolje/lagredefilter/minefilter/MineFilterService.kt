@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.harGyldigFilterNavn
 import no.nav.pto.veilarbportefolje.lagredefilter.harUniktNavnOgFiltervalg
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.HentLagretFilterResponse
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
@@ -14,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class MineFilterService(private val mineFilterRepository: MineFilterRepository) {
 
-    fun hentFilterForVeileder(veilederIdent: String): List<LagretFilter> {
+    fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
         return mineFilterRepository.hentFilterForVeileder(veilederIdent)
     }
 

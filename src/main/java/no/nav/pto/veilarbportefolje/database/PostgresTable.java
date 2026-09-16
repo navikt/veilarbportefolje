@@ -570,6 +570,7 @@ public class PostgresTable {
         public static final String SORT_ORDER = "SORT_ORDER";
         public static final String OPPRETTET = "OPPRETTET";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+        public static final String INFO_OM_SLETTET_FILTERVALG = "INFO_OM_SLETTET_FILTERVALG";
     }
 
 }
