@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.getunleash.DefaultUnleash;
+import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -55,9 +55,6 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
         BarnUnder18AarService barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
 
-        DefaultUnleash mockUnleash = Mockito.mock(DefaultUnleash.class);
-        Mockito.when(mockUnleash.isEnabled(any())).thenReturn(true);
-
         pdlBrukerdataKafkaService = new PdlBrukerdataKafkaService(new PdlService(
                 pdlIdentRepository,
                 pdlPersonRepository,
@@ -65,7 +62,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 pdlPortefoljeClient
         )
                 , pdlIdentRepository,
-                new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2),
+            new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class)),
                 barnUnder18AarService,
                 Mockito.mock(OpensearchIndexer.class)
         );

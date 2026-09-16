@@ -49,8 +49,8 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value
-        TEST_VEILEDER_1 = randomVeilederId().value
+        TEST_VEILEDER_0 = randomVeilederId().value!!
+        TEST_VEILEDER_1 = randomVeilederId().value!!
 
         veilederePaEnhet = listOf(TEST_VEILEDER_0)
 
@@ -201,6 +201,88 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         )
 
         Assertions.assertThat(response.antall).isEqualTo(2)
+    }
+
+    @Test
+    fun skal_ikke_matche_uvedkommende_navn_ved_sok_paa_fornavn_og_etternavn() {
+        val treff = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().toString(),
+            fnr = randomFnr().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            fornavn = "Ola",
+            etternavn = "Nordmann",
+            fullt_navn = "Nordmann, Ola"
+        )
+
+        val kunFornavn = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().toString(),
+            fnr = randomFnr().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            fornavn = "Ola",
+            etternavn = "Olsen",
+            fullt_navn = "Olsen, Ola"
+        )
+
+        val kunEtternavn = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().toString(),
+            fnr = randomFnr().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            fornavn = "Kari",
+            etternavn = "Nordmann",
+            fullt_navn = "Nordmann, Kari"
+        )
+
+        val ingenTreff = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().toString(),
+            fnr = randomFnr().get(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            fornavn = "Per",
+            etternavn = "Abel",
+            fullt_navn = "Abel, Per"
+        )
+
+        val brukere = listOf(treff, kunFornavn, kunEtternavn, ingenTreff)
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+        val filtervalgFornavnEtternavn = getFiltervalgDefaults().copy(
+            navnEllerFnrQuery = "Ola Nordmann"
+        )
+        val responseFornavnEtternavn = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filtervalgFornavnEtternavn,
+            null,
+            null
+        )
+
+        Assertions.assertThat(responseFornavnEtternavn.antall).isEqualTo(1)
+        Assertions.assertThat(responseFornavnEtternavn.brukere.map { it.fnr })
+            .containsExactly(treff.fnr)
+
+        val filtervalgEtternavnFornavn = getFiltervalgDefaults().copy(
+            navnEllerFnrQuery = "Nordmann Ola"
+        )
+        val responseEtternavnFornavn = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filtervalgEtternavnFornavn,
+            null,
+            null
+        )
+
+        Assertions.assertThat(responseEtternavnFornavn.antall).isEqualTo(1)
+        Assertions.assertThat(responseEtternavnFornavn.brukere.map { it.fnr })
+            .containsExactly(treff.fnr)
     }
 
     @Test
@@ -1212,6 +1294,6 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
     }
 
     companion object {
-        private val LITE_PRIVILEGERT_VEILEDER: String = randomVeilederId().value
+        private val LITE_PRIVILEGERT_VEILEDER: String = randomVeilederId().value!!
     }
 }

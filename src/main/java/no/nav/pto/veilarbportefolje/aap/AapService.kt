@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
+import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
@@ -69,9 +69,9 @@ class AapService(
         oppfolgingsStartdato: LocalDate,
         meldingstype: YTELSE_MELDINGSTYPE
     ) {
-        val sisteAapPeriode = hentSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato)
+        val aapVedtak = hentVedtakMedSisteAapPeriodeFraApi(personIdent, oppfolgingsStartdato)
 
-        if (sisteAapPeriode == null)
+        if (aapVedtak == null)
             if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
                 secureLog.info(
                     "Ingen AAP-periode funnet i oppfølgingsperioden for bruker {}, " +
@@ -88,21 +88,28 @@ class AapService(
                 return
             }
 
-        val harAktivAap =
-            sisteAapPeriode.status == AapVedtakStatus.LØPENDE && sisteAapPeriode.periode.tilOgMedDato.isAfter(
-                LocalDate.now().minusDays(1)
-            )
+        val sisteAapVedtak = aapVedtak.vedtak[0]
+        val harAktivAap = sisteAapVedtak.periode.tilOgMedDato.isAfter(LocalDate.now().minusDays(1))
+        val aapDataTilLagring = AapEntity(
+            sakstatus = aapVedtak.sakstatus,
+            maksdato = aapVedtak.maksdato,
+            sisteVedtak = sisteAapVedtak
+        )
 
-        upsertAapForAktivIdentForBruker(personIdent, sisteAapPeriode)
+        upsertAapForAktivIdentForBruker(personIdent, aapDataTilLagring)
         opensearchIndexerPaDatafelt.oppdaterAapKelvin(
             aktorId,
             harAktivAap,
-            sisteAapPeriode.periode.tilOgMedDato,
-            sisteAapPeriode.rettighetsType
+            sisteAapVedtak.periode.tilOgMedDato,
+            sisteAapVedtak.rettighetsType,
+            aapVedtak.maksdato
         )
     }
 
-    fun upsertAapForAktivIdentForBruker(personIdent: String, sisteAapPeriode: AapVedtakResponseDto.Vedtak) {
+    fun upsertAapForAktivIdentForBruker(
+        personIdent: String,
+        sisteAapVedtak: AapEntity,
+    ) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         if (alleFnrIdenterForBruker.size > 1) {
             alleFnrIdenterForBruker.forEach { ident ->
@@ -110,21 +117,33 @@ class AapService(
             }
         }
 
-        aapRepository.upsertAap(personIdent, sisteAapPeriode)
+        aapRepository.upsertAap(personIdent, sisteAapVedtak)
     }
 
-    fun hentSisteAapPeriodeFraApi(personIdent: String, oppfolgingsStartdato: LocalDate): AapVedtakResponseDto.Vedtak? {
+    fun hentVedtakMedSisteAapPeriodeFraApi(
+        personIdent: String,
+        oppfolgingsStartdato: LocalDate
+    ): AapVedtakResponseDto? {
         //Fordi vi må sett en tom-dato i requesten så setter vi en dato langt frem i tid.
         val ettAarIFramtiden = LocalDate.now().plusYears(1).toString()
 
         val aapRespons = aapClient.hentAapVedtak(personIdent, oppfolgingsStartdato.toString(), ettAarIFramtiden)
-        val aapIOppfolgingsPeriode = aapRespons.vedtak
-            .filter { vedtak ->
+        val aapIOppfolgingsPeriode = aapRespons?.vedtak
+            ?.filter { vedtak ->
                 vedtak.periode.tilOgMedDato.isAfter(oppfolgingsStartdato.minusDays(1))
             }
 
-        val sistePeriode = aapIOppfolgingsPeriode.maxByOrNull { it.periode.fraOgMedDato }
-        return sistePeriode
+        val sistePeriode = aapIOppfolgingsPeriode?.maxByOrNull { it.periode.fraOgMedDato }
+
+        return if (sistePeriode != null) {
+            AapVedtakResponseDto(
+                sakstatus = aapRespons.sakstatus,
+                maksdato = aapRespons.maksdato,
+                vedtak = listOf(sistePeriode)
+            )
+        } else {
+            null
+        }
     }
 
     fun slettAapData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {

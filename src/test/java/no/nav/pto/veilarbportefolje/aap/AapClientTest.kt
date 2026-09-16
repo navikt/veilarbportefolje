@@ -1,28 +1,25 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
+@WireMockTest
 class AapClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentAapForBruker_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentAapForBruker_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = AapClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" }
         )
 
@@ -35,16 +32,16 @@ class AapClientTest {
                             "fraOgMedDato": "2025-04-22",
                             "tilOgMedDato": "2026-04-21"
                           },
-                          "rettighetsType": "${AapRettighetstype.BISTANDSBEHOV}",
-                          "kildesystem": "KELVIN",
-                          "opphorsAarsak": null
+                          "rettighetsType": "${AapRettighetstype.BISTANDSBEHOV}"
                         }
-                      ]
+                      ],
+                      "sakstatus": "FERDIGBEHANDLET",
+                      "maksdato": "2026-04-22"
                     }
                 """.trimIndent()
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/kelvin/maksimumUtenUtbetaling")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/kelvin/obo")).withRequestBody(
                 WireMock.equalToJson(
                     "{\"personidentifikator\":\"$fnr\", \"fraOgMedDato\":\"2024-01-01\", \"tilOgMedDato\":\"2026-12-31\"}"
                 )
@@ -62,14 +59,13 @@ class AapClientTest {
                         fraOgMedDato = LocalDate.parse("2025-04-22"),
                         tilOgMedDato = LocalDate.parse("2026-04-21")
                     ),
-                    rettighetsType = AapRettighetstype.BISTANDSBEHOV,
-                    kildesystem = "KELVIN",
-                    opphorsAarsak = null
+                    rettighetsType = AapRettighetstype.BISTANDSBEHOV
                 )
-            )
+            ),
+            sakstatus = "FERDIGBEHANDLET",
+            maksdato = LocalDate.parse("2026-04-22")
         )
 
         Assertions.assertThat(response).isEqualTo(forventet)
     }
-
 }

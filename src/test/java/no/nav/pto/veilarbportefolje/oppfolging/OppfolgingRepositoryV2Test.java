@@ -1,12 +1,12 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
@@ -18,7 +18,7 @@ public class OppfolgingRepositoryV2Test {
     private OppfolgingRepositoryV2 oppfolgingRepository;
     private final AktorId aktoerId = TestDataUtils.randomAktorId();
 
-    @Before
+    @BeforeEach
     public void setup() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
         db.execute("truncate oppfolging_data");
@@ -40,12 +40,11 @@ public class OppfolgingRepositoryV2Test {
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
-        BrukerOppdatertInformasjon brukerOppdatertInformasjon = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
+        OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).get();
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
 
         assertThat(aktorIds.isEmpty()).isFalse();
-        assertThat(aktorIds.get(0)).isEqualTo(aktoerId);
-        assertThat(VeilederId.of(brukerOppdatertInformasjon.getVeileder())).isEqualTo(veilederId);
+        assertThat(aktorIds.getFirst()).isEqualTo(aktoerId);
+        assertThat(VeilederId.of(oppfolgingData.getVeilederId())).isEqualTo(veilederId);
     }
-
 }

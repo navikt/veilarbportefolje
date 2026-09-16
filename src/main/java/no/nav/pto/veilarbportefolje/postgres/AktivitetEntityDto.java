@@ -32,6 +32,15 @@ public class AktivitetEntityDto {
     }
 
     @SneakyThrows
+    public static AktivitetEntityDto mapTiltaksAktivitetTilEntity(ResultSet rs) {
+        return new AktivitetEntityDto()
+                .setStart(rs.getTimestamp("FRA_DATO"))
+                .setUtlop(rs.getTimestamp("TIL_DATO"))
+                .setMuligTiltaksNavn(rs.getString("TILTAKSKODE"))
+                .setAktivitetsType(AktivitetsType.tiltak);
+    }
+
+    @SneakyThrows
     public static AktivitetEntityDto mapTiltakTilEntity(ResultSet rs) {
         return new AktivitetEntityDto()
                 .setStart(rs.getTimestamp("fradato"))

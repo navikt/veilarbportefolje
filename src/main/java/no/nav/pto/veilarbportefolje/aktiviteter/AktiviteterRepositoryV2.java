@@ -128,20 +128,22 @@ public class AktiviteterRepositoryV2 {
         params.addValue("ikkestatuser", aktivitetsplanenIkkeAktiveStatuser);
         params.addValue("veilederIdent", veilederIdent.getValue());
         params.addValue("enhet", enhet.get());
-        return namedDb.query("""
-                        SELECT op.fodselsnr, a.fradato, a.tildato, a.avtalt, bd.fornavn, bd.etternavn
-                         from oppfolgingsbruker_arena_v2 op
-                         left join bruker_data bd on bd.freg_ident = op.fodselsnr
-                        inner join aktive_identer ai on op.fodselsnr = ai.fnr
-                        inner join oppfolging_data od on od.aktoerid = ai.aktorid
-                        inner join aktiviteter a on a.aktoerid = ai.aktorid
-                        where op.nav_kontor = :enhet::varchar
-                        AND od.veilederid = :veilederIdent::varchar
-                        AND a.aktivitettype = 'mote'
-                        AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
-                        AND NOT (status = ANY (:ikkestatuser::varchar[]))
-                        ORDER BY a.fradato
-                        """,
+        String sql = """
+                SELECT op.fodselsnr, a.fradato, a.tildato, a.avtalt, bd.fornavn, bd.etternavn
+                FROM oppfolgingsbruker_arena_v2 op
+                LEFT JOIN bruker_data bd ON bd.freg_ident = op.fodselsnr
+                INNER JOIN aktive_identer ai ON op.fodselsnr = ai.fnr
+                INNER JOIN oppfolging_data od ON od.aktoerid = ai.aktorid
+                INNER JOIN aktiviteter a ON a.aktoerid = ai.aktorid
+                LEFT JOIN ao_kontor ON ao_kontor.ident = op.fodselsnr
+                WHERE ao_kontor.kontor_id = :enhet::varchar
+                AND od.veilederid = :veilederIdent::varchar
+                AND a.aktivitettype = 'mote'
+                AND date_trunc('day', tildato) >= date_trunc('day', current_timestamp)
+                AND NOT (status = ANY (:ikkestatuser::varchar[]))
+                ORDER BY a.fradato
+                """;
+        return namedDb.query(sql,
                 params, (ResultSet rs) -> {
                     while (rs.next()) {
                         result.add(mapTilMoteplan(rs));

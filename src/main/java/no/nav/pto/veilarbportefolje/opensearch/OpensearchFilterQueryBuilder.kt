@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
+import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
@@ -62,6 +63,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
@@ -70,6 +72,7 @@ import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.lucene.search.join.ScoreMode
 import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.opensearch.index.query.RangeQueryBuilder
@@ -397,7 +400,7 @@ class OpensearchFilterQueryBuilder {
 
             val combinedSubQuery = QueryBuilders.boolQuery()
 
-            filtervalg.ytelseDagpenger?.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
+            filtervalg.ytelseDagpenger.forEach(Consumer { ytelseDagpenger: YtelseDagpenger? ->
                 when (ytelseDagpenger) {
                     YtelseDagpenger.HAR_DAGPENGER_ORDINAER -> {
                         subQueryDagpenger.should(
@@ -480,6 +483,15 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(combinedSubQuery)
         }
 
+        if (filtervalg.harYtelseUngdomsprogramFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    UNGDOMSPROGRAM
+                )
+            )
+
+        }
+
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(QueryBuilders.matchQuery(KJONN, filtervalg.kjonn?.name))
         }
@@ -527,7 +539,7 @@ class OpensearchFilterQueryBuilder {
             if (StringUtils.isNumeric(query)) {
                 queryBuilder.must(QueryBuilders.termQuery(FNR, query))
             } else {
-                queryBuilder.must(QueryBuilders.termQuery(FULLT_NAVN, query))
+                queryBuilder.must(byggNavnesokQuery(query))
             }
         }
 
@@ -797,7 +809,6 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
                 .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
-
             Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
@@ -807,7 +818,8 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery(TILTAKSHENDELSE)
             Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
             Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}")
-
+            Brukerstatus.KANDIDAT_FOR_UTMELDING -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}")
+            Brukerstatus.MINE_FARGEKATEGORIER -> QueryBuilders.boolQuery()  // Denne håndteres kun i frontend, så vi trenger ikke å filtrere på noe her
         }
         return queryBuilder
     }
@@ -1000,6 +1012,11 @@ class OpensearchFilterQueryBuilder {
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.UDELTE_SAMTALEREFERAT.key,
                 "$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}"
+            ),
+            mustExistFilter(
+                filtrereVeilederOgEnhet,
+                StatustallAggregationKey.KANDIDAT_FOR_UTMELDING.key,
+                "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}"
             )
         )
 
@@ -1029,6 +1046,28 @@ class OpensearchFilterQueryBuilder {
 
     private fun byggSisteEndringFilter(sisteEndringKategori: String?, queryBuilder: BoolQueryBuilder) {
         queryBuilder.must(QueryBuilders.existsQuery("$SISTE_ENDRINGER.$sisteEndringKategori"))
+    }
+
+    private fun byggNavnesokQuery(query: String): QueryBuilder {
+        val navnetokens = query
+            .replace(",", " ")
+            .split("\\s+".toRegex())
+            .filter { it.isNotBlank() }
+
+        if (navnetokens.size <= 1) {
+            return QueryBuilders.matchQuery(FULLT_NAVN, query)
+                .operator(Operator.AND)
+        }
+
+        val navnQuery = QueryBuilders.boolQuery()
+        navnetokens.forEach { navn ->
+            navnQuery.must(
+                QueryBuilders.matchQuery(FULLT_NAVN, navn)
+                    .operator(Operator.AND)
+            )
+        }
+
+        return navnQuery
     }
 
     private fun byggMoteMedNavIdag(): RangeQueryBuilder {

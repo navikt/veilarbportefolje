@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetIkkeAktivStatuser;
+import no.nav.pto.veilarbportefolje.aktiviteter.domene.InaktivAktivitetStatus;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakInnhold;
 import no.nav.pto.veilarbportefolje.database.PostgresTable;
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto;
@@ -23,8 +24,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ArenaUtils.getLocalDateTimeOrNull;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.leggTilAktivitetPaResultat;
-import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.mapTiltakTilEntity;
+import static no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -42,6 +42,9 @@ public class TiltakRepositoryV3 {
     private final static String aktivitetsplanenIkkeAktiveStatuser = Arrays.stream(AktivitetIkkeAktivStatuser.values())
             .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
 
+    private static final String INAKTIV_AKTIVITET_STATUSER = Arrays.stream(InaktivAktivitetStatus.values())
+            .map(Enum::name).collect(Collectors.joining(",", "{", "}"));
+
     public void upsert(TiltakaktivitetEntity tiltakaktivitet, AktorId aktorId) {
         LocalDateTime fraDato = getLocalDateTimeOrNull(tiltakaktivitet.getFraDato(), false);
         LocalDateTime tilDato = getLocalDateTimeOrNull(tiltakaktivitet.getTilDato(), true);
@@ -56,7 +59,7 @@ public class TiltakRepositoryV3 {
                         (aktivitetid, aktoerid, tiltakskode, fradato, tildato, version, status) VALUES (?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (aktivitetid) DO UPDATE SET (aktoerid, tiltakskode, fradato, tildato, version, status)
                         = (excluded.aktoerid, excluded.tiltakskode, excluded.fradato, excluded.tildato, excluded.version, excluded.status)
-                        """,
+                   """,
                 tiltakaktivitet.getAktivitetId(), aktorId.get(), tiltakaktivitet.getTiltakskode(), fraDato, tilDato, tiltakaktivitet.getVersion(), tiltakaktivitet.getStatus()
         );
     }
@@ -94,16 +97,20 @@ public class TiltakRepositoryV3 {
 
     public EnhetTiltak hentTiltakPaEnhet(EnhetId enhetId) {
         final String hentTiltakPaEnhetSql = """
-                SELECT * FROM tiltakkodeverket WHERE
-                kode IN (SELECT DISTINCT tiltakskode FROM
-                (
-                    SELECT tiltakskode, aktoerid FROM brukertiltak
-                    UNION
-                    SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
-                ) BT
-                INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
-                INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
-                WHERE OP.nav_kontor = ?)
+                SELECT *
+                FROM tiltakkodeverket WHERE
+                kode IN (
+                    SELECT DISTINCT tiltakskode FROM
+                    (
+                        SELECT tiltakskode, aktoerid FROM brukertiltak
+                        UNION ALL
+                        SELECT tiltakskode, aktoerid FROM brukertiltak_v2 WHERE NOT (status = ANY (?::varchar[]))
+                    ) BT
+                    INNER JOIN aktive_identer ai on ai.aktorid = BT.aktoerid
+                    INNER JOIN oppfolgingsbruker_arena_v2 OP ON OP.fodselsnr = ai.fnr
+                    LEFT JOIN ao_kontor ON ao_kontor.ident = ai.fnr
+                    WHERE ao_kontor.kontor_id = ?
+                )
                 """;
         return new EnhetTiltak().setTiltak(
                 dbReadOnly.queryForList(hentTiltakPaEnhetSql, aktivitetsplanenIkkeAktiveStatuser, enhetId.get())
@@ -140,6 +147,37 @@ public class TiltakRepositoryV3 {
 
                         List<AktivitetEntityDto> list = result.get(aktoerId);
                         result.put(aktoerId, leggTilAktivitetPaResultat(aktivitet, list));
+                    }
+                    return result;
+                });
+    }
+
+    public void leggTilTiltaksAktivitet(String aktorIder, boolean avtalt, HashMap<AktorId, List<AktivitetEntityDto>> result) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("aktorIder", aktorIder);
+        params.addValue("avtalt", avtalt);
+        params.addValue("aktivitetstype", "TILTAK");
+        params.addValue("ikkestatuser", INAKTIV_AKTIVITET_STATUSER);
+
+        String sql = """
+        SELECT AKTOR_ID,
+               CAST(TIL_DATO AS TIMESTAMP) AS TIL_DATO,
+               CAST(FRA_DATO AS TIMESTAMP) AS FRA_DATO,
+               TILTAKSKODE FROM KAFKA_AKTIVITET_MELDING
+        WHERE AKTOR_ID = ANY (:aktorIder::varchar[])
+        AND AKTIVITET_TYPE = :aktivitetstype::varchar
+        AND AVTALT = :avtalt::boolean
+        AND NOT (AKTIVITET_STATUS = ANY (:ikkestatuser::varchar[]))
+        """;
+
+        namedDb.query(sql,
+                params,
+                (ResultSet rs) -> {
+                    while (rs.next()) {
+                        AktorId aktoerId = AktorId.of(rs.getString("AKTOR_ID"));
+                        AktivitetEntityDto aktivitet = mapTiltaksAktivitetTilEntity(rs);
+
+                        result.compute(aktoerId, (k, list) -> leggTilAktivitetPaResultat(aktivitet, list));
                     }
                     return result;
                 });

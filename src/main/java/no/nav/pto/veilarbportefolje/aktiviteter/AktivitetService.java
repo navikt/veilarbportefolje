@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
+import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -9,6 +10,7 @@ import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
+import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
 import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
@@ -35,6 +37,7 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
     private final TiltakService tiltakService;
+    private final DefaultUnleash defaultUnleash;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
@@ -64,8 +67,9 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
         boolean erTiltakskodeStottet = tiltakskodeTiltaksnavnMap.containsKey(aktivitetData.getTiltakskode());
         if (erTiltakskodeStottet) {
             boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData);
+            boolean brukTiltaksaktivitetFraAktivitetsplan = FeatureToggle.brukTiltaksaktivitetFraAktivitetsplan(defaultUnleash);
 
-            if (skalIndeksereBruker) {
+            if (skalIndeksereBruker && !brukTiltaksaktivitetFraAktivitetsplan) {
                 opensearchIndexer.indekser(aktorId);
             }
         } else {

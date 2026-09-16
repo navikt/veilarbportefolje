@@ -8,5 +8,4 @@ data class DagpengerForOpensearch(
     val rettighetstype: DagpengerRettighetstype? = null,
     val datoStans: LocalDate? = null,
     val antallResterendeDager: Int? = null,
-    val datoAntallDagerBleBeregnet: LocalDate? = null
 )

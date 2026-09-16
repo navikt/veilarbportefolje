@@ -17,8 +17,8 @@ import java.util.UUID.randomUUID
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class HendelseRepositoryTest(
-    @Autowired val hendelseRepository: HendelseRepository,
-    @Autowired val jdbcTemplate: JdbcTemplate
+    @param:Autowired val hendelseRepository: HendelseRepository,
+    @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
 
     @BeforeEach

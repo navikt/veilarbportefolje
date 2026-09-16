@@ -102,6 +102,8 @@ spec:
           namespace: tpts
         - application: dp-datadeling
           namespace: teamdagpenger
+        - application: ung-deltakelse-opplyser
+          namespace: k9saksbehandling
         - application: logging
           namespace: nais-system
       external:
@@ -165,3 +167,7 @@ spec:
       value: "http://dp-datadeling.teamdagpenger"
     - name: DAGPENGER_SCOPE
       value: "api://prod-gcp.teamdagpenger.dp-datadeling/.default"
+    - name: UNGDOMSPROGRAM_URL
+      value: "http://ung-deltakelse-opplyser.k9saksbehandling"
+    - name: UNGDOMSPROGRAM_SCOPE
+      value: "api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"

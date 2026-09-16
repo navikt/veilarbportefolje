@@ -11,6 +11,7 @@ data class YtelserForBruker(
     val tiltakspenger: Tiltakspenger?,
     val dagpenger: Dagpenger?,
     val ensligeForsorgereOvergangsstonad: EnsligForsorgerOvergangsstonad?,
+    val ungdomsprogram: Ungdomsprogram?
 )
 
 

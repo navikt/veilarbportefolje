@@ -6,4 +6,6 @@ data class AapVedtakPeriodeEntity(
     val status: AapVedtakStatus,
     val periodeFom: LocalDate,
     val periodeTom: LocalDate,
+    val maksdato: LocalDate?,
+    val sakstatus: String
 )

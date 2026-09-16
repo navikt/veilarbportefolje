@@ -7,15 +7,14 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtakEntity
 import org.jetbrains.annotations.TestOnly
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class TiltakspengerRespository(@Autowired private val db: JdbcTemplate) {
+class TiltakspengerRespository(private val db: JdbcTemplate) {
 
-    fun upsertAap(norskIdent: NorskIdent, tiltakspenger: TiltakspengerResponseDto) {
+    fun upsertTiltakspenger(norskIdent: NorskIdent, tiltakspenger: TiltakspengerResponseDto) {
         db.update(
             """
             INSERT INTO ${YTELSER_TILTAKSPENGER.TABLE_NAME} (

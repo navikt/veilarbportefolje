@@ -5,7 +5,8 @@ import no.nav.common.types.identer.AktorId
 
 enum class AdminDataType(val displayName: String) {
     PDL_DATA("Persondata (PDL)"),
-    ENSLIG_FORSORGER_DATA("Enslig forsørger")
+    ENSLIG_FORSORGER_DATA("Enslig forsørger"),
+    AAP_DATA("Aap data (kelvin)")
 }
 
 data class AdminDataTypeResponse(

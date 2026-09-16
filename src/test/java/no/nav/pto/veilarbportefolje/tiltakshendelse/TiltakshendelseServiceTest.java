@@ -10,14 +10,16 @@ import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakshendelse;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.domain.Tiltakstype;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,9 +33,9 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     private TiltakshendelseService service;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @MockBean
+    @MockitoBean
     private BrukerServiceV2 brukerServiceV2;
-    @MockBean
+    @MockitoBean
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
 
     @BeforeEach
@@ -42,7 +44,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void kanMottaTiltakshendelse() {
+    public void kanMottaTiltakshendelse() throws JSONException {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -67,11 +69,11 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         assert (tiltakshendelser.getFirst().id().equals(expected.id()));
 
         final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
-        assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(expected.id());
+        assertThat(Objects.requireNonNull(Objects.requireNonNull(brukerEtterKafkaMelding.getTiltakshendelse())).id()).isEqualTo(expected.id());
     }
 
     @Test
-    public void kanMottaOgInaktivereTiltakshendelse() {
+    public void kanMottaOgInaktivereTiltakshendelse() throws JSONException {
         UUID id = UUID.randomUUID();
         LocalDateTime opprettet = LocalDateTime.now();
         String tekst = "Forslag: endre varighet";
@@ -95,7 +97,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         assert (tiltakshendelser.size() == 1);
         assert (tiltakshendelser.getFirst().id().equals(expected.id()));
         final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
-        assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(expected.id());
+        assertThat(Objects.requireNonNull(brukerEtterKafkaMelding.getTiltakshendelse()).id()).isEqualTo(expected.id());
 
         KafkaTiltakshendelse slettKafkaData = new KafkaTiltakshendelse(id, false, opprettet, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         service.behandleKafkaMeldingLogikk(slettKafkaData);
@@ -107,7 +109,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void kanInaktivereTiltakshendelseOgOppdatereOpensearchMedEldsteTiltakshendelse() {
+    public void kanInaktivereTiltakshendelseOgOppdatereOpensearchMedEldsteTiltakshendelse() throws JSONException {
         UUID hendelseId1 = UUID.randomUUID();
         UUID hendelseId2 = UUID.randomUUID();
         LocalDateTime opprettetHendelse1 = LocalDateTime.now();
@@ -134,7 +136,7 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         assert (tiltakshendelser.size() == 2);
 
         final PortefoljebrukerOpensearchModell brukerEtterKafkaMelding = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
-        assertThat(brukerEtterKafkaMelding.getTiltakshendelse().id()).isEqualTo(hendelseId1);
+        assertThat(Objects.requireNonNull(brukerEtterKafkaMelding.getTiltakshendelse()).id()).isEqualTo(hendelseId1);
 
         KafkaTiltakshendelse slettKafkaData = new KafkaTiltakshendelse(hendelseId1, false, opprettetHendelse1, tekst, lenke, Tiltakstype.ARBFORB, fnr, Avsender.KOMET);
         service.behandleKafkaMeldingLogikk(slettKafkaData);
@@ -142,6 +144,6 @@ class TiltakshendelseServiceTest extends EndToEndTest {
         List<Tiltakshendelse> tiltakshendelserEtterSlett = repository.hentAlleTiltakshendelser();
         assert (tiltakshendelserEtterSlett.size() == 1);
         final PortefoljebrukerOpensearchModell brukerEtterSlettIOpensearch = opensearchTestClient.hentBrukerFraOpensearch(aktorId);
-        assertThat(brukerEtterSlettIOpensearch.getTiltakshendelse().id()).isEqualTo(hendelseId2);
+        assertThat(Objects.requireNonNull(brukerEtterSlettIOpensearch.getTiltakshendelse()).id()).isEqualTo(hendelseId2);
     }
 }

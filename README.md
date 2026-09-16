@@ -27,11 +27,9 @@ Endepunktene er dokumentert vha. Swagger/OpenAPI. Dokumentasjonen er tilgjengeli
 
 Kjør `mvn clean install`
 
-## Oppsett av Opensearch
+## Opensearch
 
-Opensearch er satt opp via "Aiven infrastructure as code"-repo (aiven-iac) administert av på NAIS:
-
-https://github.com/navikt/aiven-iac
+OpenSearch er definert i nais.yaml-filene og administreres i [Nais-konsollen](https://console.nav.cloud.nais.io/team/obo/opensearch).
 
 Mere info om:
 https://aiven.io/opensearch

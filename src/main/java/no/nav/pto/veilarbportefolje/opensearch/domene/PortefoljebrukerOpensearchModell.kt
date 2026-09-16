@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -34,35 +35,29 @@ data class PortefoljebrukerOpensearchModell(
     var bostedSistOppdatert: LocalDate? = null,
     var bydelsnummer: String? = null,
     var diskresjonskode: String? = null,
-    var er_doed: Boolean = false,
-    var etternavn: String? = null,
     var fnr: String? = null,
+    var er_doed: Boolean = false,
+    var fornavn: String? = null,
+    var etternavn: String? = null,
+    var fullt_navn: String? = null,
+    var kjonn: String? = null,
     var fodselsdag_i_mnd: Int? = null,
     var fodselsdato: String? = null,
     var foedeland: String? = null,
     var foedelandFulltNavn: String? = null,
-    var fornavn: String? = null,
-    var fullt_navn: String? = null,
-    var harFlereStatsborgerskap: Boolean = false,
-    var harUkjentBosted: Boolean = false,
     var hovedStatsborgerskap: Statsborgerskap? = null,
-    var kjonn: String? = null,
+    var harUkjentBosted: Boolean = false,
+    var utenlandskAdresse: String? = null,
     var kommunenummer: String? = null,
     var landgruppe: String? = null,
     var sikkerhetstiltak: String? = null,
-    var sikkerhetstiltak_beskrivelse: String? = null,
-    var sikkerhetstiltak_gyldig_fra: String? = null,
-    var sikkerhetstiltak_gyldig_til: String? = null,
     var talespraaktolk: String? = null,
     var tegnspraaktolk: String? = null,
     var tolkBehovSistOppdatert: LocalDate? = null,
-    var utenlandskAdresse: String? = null,
 
     // Oppfølging
     var enhet_id: String? = null,
     var gjeldendeVedtak14a: GjeldendeVedtak14a? = null,
-    var hovedmaalkode: String? = null,
-    var iserv_fra_dato: String? = null,
     var kvalifiseringsgruppekode: String? = null,
     var manuell_bruker: String? = null,
     var ny_for_veileder: Boolean = false,
@@ -118,6 +113,7 @@ data class PortefoljebrukerOpensearchModell(
     var aap_kelvin: Boolean = false,
     var aap_kelvin_rettighetstype: AapRettighetstype? = null,
     var aap_kelvin_tom_vedtaksdato: LocalDate? = null,
+    var aap_kelvin_maksdato: LocalDate? = null,
     var aapmaxtiduke: Int? = null,
     var aapordinerutlopsdato: LocalDate? = null,
     var aapunntakukerigjen: Int? = null,
@@ -131,6 +127,7 @@ data class PortefoljebrukerOpensearchModell(
     var utlopsdato: String? = null,
     var ytelse: String? = null,
     var dagpenger: DagpengerForOpensearch? = null,
+    var ungdomsprogram: UngdomsprogramForOpensearch? = null,
 
     // Dialog
     var venterpasvarfrabruker: String? = null,
@@ -151,6 +148,5 @@ data class PortefoljebrukerOpensearchModell(
     var formidlingsgruppekode: String? = null,
     var huskelapp: HuskelappForBruker? = null,
     var tiltakshendelse: Tiltakshendelse? = null,
-    var utgatt_varsel: Hendelse.HendelseInnhold? = null,
     var hendelser: Map<Kategori, Hendelse.HendelseInnhold>? = null
 )

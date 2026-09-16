@@ -12,7 +12,8 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         harBehovForArbeidsevneVurdering = false,
         harSikkerhetstiltak = false,
         diskresjonskodeFortrolig = null,
-        profileringResultat = null
+        profileringResultat = null,
+        kandidatForUtmelding = false
     ),
     fnr = null,
     aktoerid = null,
@@ -77,6 +78,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         tiltakspenger = null,
         dagpenger = null,
         ensligeForsorgereOvergangsstonad = null,
+        ungdomsprogram = null
     ),
     meldingerVenterPaSvar = MeldingerVenterPaSvar(
         datoMeldingVenterPaNav = null,

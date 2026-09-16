@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetService;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltakskodeMapping;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.EnhetTiltak;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
@@ -43,6 +45,7 @@ public class EnhetController {
     private final TiltakService tiltakService;
     private final PersonOpprinnelseService personOpprinnelseService;
     private final BostedService bostedService;
+    private final TiltaksaktivitetService tiltaksaktivitetService;
 
     private final Cache<String, List<Foedeland>> enhetFoedelandCache = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -112,6 +115,15 @@ public class EnhetController {
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         return tiltakService.hentEnhettiltak(EnhetId.of(enhet));
+    }
+
+    @GetMapping("/{enhet}/tiltakstyper")
+    @Operation(summary = "Hent tiltakstyper for enhet", description = "Henter alle tiltakstyper for enheten hvor minst én bruker er tilknyttet tiltaket.")
+    public TiltakskodeMapping hentTiltakstyperForEnhet(@PathVariable String enhet) {
+        ValideringsRegler.sjekkEnhet(enhet);
+        authService.innloggetVeilederHarTilgangTilEnhet(enhet);
+
+        return tiltaksaktivitetService.hentTiltakstyper(EnhetId.of(enhet));
     }
 
     @GetMapping("/{enhet}/foedeland")

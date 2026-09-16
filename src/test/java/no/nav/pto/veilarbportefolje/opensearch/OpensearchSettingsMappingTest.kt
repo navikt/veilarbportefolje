@@ -1,10 +1,9 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import kotlin.reflect.full.declaredMemberProperties
 
 class OpensearchSettingsMappingTest {

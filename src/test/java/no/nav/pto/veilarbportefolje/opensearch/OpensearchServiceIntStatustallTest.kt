@@ -45,10 +45,10 @@ class OpensearchServiceIntStatustallTest @Autowired constructor(
     @BeforeEach
     fun setup() {
         TEST_ENHET = randomNavKontor().value
-        TEST_VEILEDER_0 = randomVeilederId().value
-        TEST_VEILEDER_1 = randomVeilederId().value
-        TEST_VEILEDER_2 = randomVeilederId().value
-        TEST_VEILEDER_3 = randomVeilederId().value
+        TEST_VEILEDER_0 = randomVeilederId().value!!
+        TEST_VEILEDER_1 = randomVeilederId().value!!
+        TEST_VEILEDER_2 = randomVeilederId().value!!
+        TEST_VEILEDER_3 = randomVeilederId().value!!
 
         val veilederePaEnhet = listOf(TEST_VEILEDER_0, TEST_VEILEDER_1, TEST_VEILEDER_2, TEST_VEILEDER_3)
         Mockito.doReturn(veilederePaEnhet).`when`(veilarbVeilederClient)

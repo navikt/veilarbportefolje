@@ -1,7 +1,6 @@
 package no.nav.pto.veilarbportefolje.persononinfo.BarnUnder18AarTest;
 
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlPortefoljeClient;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
@@ -9,30 +8,30 @@ import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarSe
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 
-@SpringBootTest(classes = ApplicationConfigTest.class)
+@ExtendWith(MockitoExtension.class)
 public class BarnUnder18AarServiceTest {
 
-    @MockBean
+    @Mock
     private BarnUnder18AarRepository barnUnder18AarRepository;
+
+    @Mock
+    private PdlPortefoljeClient pdlPortefoljeClient;
 
     private BarnUnder18AarService barnUnder18AarService;
 
-    @Autowired
-    private PdlPortefoljeClient mockedPdlPortefoljeClient;
-
     @BeforeEach
     public void setUp() {
-        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, mockedPdlPortefoljeClient);
+        barnUnder18AarService = new BarnUnder18AarService(barnUnder18AarRepository, pdlPortefoljeClient);
     }
 
     @Test
@@ -60,11 +59,11 @@ public class BarnUnder18AarServiceTest {
 
         Map<Fnr, List<BarnUnder18AarData>> barnUnder18AarInfo = barnUnder18AarService.hentBarnUnder18Aar(foreldre);
 
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).size(), 3);
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(0), barnInfo.get(0));
+        Assertions.assertEquals(3, barnUnder18AarInfo.get(foreldre.getFirst()).size());
+        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.getFirst()).getFirst(), barnInfo.get(0));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(1), barnInfo.get(1));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(0)).get(2), barnInfo.get(2));
-        Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).size(), 2);
+        Assertions.assertEquals(2, barnUnder18AarInfo.get(foreldre.get(1)).size());
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).get(0), barnInfo.get(3));
         Assertions.assertEquals(barnUnder18AarInfo.get(foreldre.get(1)).get(1), barnInfo.get(4));
     }
@@ -81,7 +80,7 @@ public class BarnUnder18AarServiceTest {
                 .thenReturn(barn.subList(3, 5));
 
         List<Fnr> fnrBarnRespons = barnUnder18AarService.hentBarnFnrsForForeldre(foreldre);
-        Assertions.assertEquals(fnrBarnRespons.size(), 5);
+        Assertions.assertEquals(5, fnrBarnRespons.size());
         Assertions.assertEquals(fnrBarnRespons, barn);
     }
 
@@ -97,7 +96,7 @@ public class BarnUnder18AarServiceTest {
                 .thenReturn(barn.subList(2, 5));
 
         List<Fnr> fnrBarnRespons = barnUnder18AarService.hentBarnFnrsForForeldre(foreldre);
-        Assertions.assertEquals(fnrBarnRespons.size(), 6);
+        Assertions.assertEquals(6, fnrBarnRespons.size());
         Assertions.assertTrue(fnrBarnRespons.containsAll(barn));
     }
 

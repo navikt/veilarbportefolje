@@ -8,7 +8,9 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearch
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import org.opensearch.OpenSearchException;
+import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -59,12 +62,22 @@ public class OpensearchIndexer {
         brukerOpensearchModellList.stream()
                 .map(bruker -> {
                     IndexRequest indexRequest = new IndexRequest(indeksNavn).id(bruker.getAktoer_id());
-                    return indexRequest.source(toJson(bruker), XContentType.JSON);
+                        return indexRequest.source(toJson(bruker), XContentType.JSON);
                 })
                 .forEach(bulk::add);
 
         try {
-            restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
+            BulkResponse response = restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
+
+            int antallTotalt = response.getItems().length;
+            int antallFeilede = 0;
+            for (BulkItemResponse item : response.getItems()) {
+                if (item.isFailed()) antallFeilede++;
+            }
+            int antallSuksess = antallTotalt - antallFeilede;
+
+            log.info("OpenSearch bulk stats: total={}, succeeded={}, failed={}, tookMs={}", antallTotalt, antallSuksess, antallFeilede, response.getTook().getMillis());
+
             secureLog.info("Skrev {} brukere til indeks: {}", brukerOpensearchModellList.size(), aktoerIds);
         } catch (IOException e) {
             secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);
@@ -135,7 +148,7 @@ public class OpensearchIndexer {
             flettInnNodvendigData(List.of(brukerOpensearchModell));
             syncronIndekseringsRequest(brukerOpensearchModell);
         } else {
-            slettDokumenter(List.of(AktorId.of(brukerOpensearchModell.getAktoer_id())));
+            slettDokumenter(List.of(AktorId.of(Objects.requireNonNull(brukerOpensearchModell.getAktoer_id()))));
         }
     }
 

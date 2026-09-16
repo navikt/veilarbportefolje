@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.huskelapp
 
-import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
@@ -22,24 +21,26 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import tools.jackson.databind.ObjectMapper
 import java.time.LocalDate
 import java.util.*
 
 @WebMvcTest(controllers = [HuskelappController::class])
-@Import(
-    ApplicationConfigTest::class
-)
-open class HuskelappControllerTest {
+@Import(ApplicationConfigTest::class)
+class HuskelappControllerTest {
+
     @Autowired
     private lateinit var mockMvc: MockMvc
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
 
     @Autowired
     protected var testDataClient: TestDataClient? = null
@@ -76,7 +77,7 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(opprettRequest))
+                    .content(objectMapper.writeValueAsString(opprettRequest))
             )
             .andExpect(MockMvcResultMatchers.status().isCreated)
             .andReturn()
@@ -84,7 +85,7 @@ open class HuskelappControllerTest {
             .contentAsString
 
         val hentForBrukerRequest = HuskelappForBrukerRequest(fnr, enhetId)
-        val huskelappId = JsonUtils.fromJson(
+        val huskelappId = objectMapper.readValue(
             opprettetHuskelappId,
             HuskelappOpprettResponse::class.java
         )
@@ -102,14 +103,14 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/hent-huskelapp-for-bruker")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(hentForBrukerRequest))
+                    .content(objectMapper.writeValueAsString(hentForBrukerRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
             .andExpect(MockMvcResultMatchers.status().`is`(200))
             .andReturn().response.contentAsString
 
-        val hentetHuskelappBody = JsonUtils.fromJson(
+        val hentetHuskelappBody = objectMapper.readValue(
             hentHuskelappResult,
             HuskelappResponse::class.java
         )
@@ -149,9 +150,9 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(opprettRequest))
+                    .content(objectMapper.writeValueAsString(opprettRequest))
             ).andReturn().response.contentAsString
-        val huskelappIdBody = JsonUtils.fromJson(
+        val huskelappIdBody = objectMapper.readValue(
             opprettetHuskelappIdbody,
             HuskelappOpprettResponse::class.java
         )
@@ -160,14 +161,14 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/hent-huskelapp-for-bruker")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(hentForBrukerForRedigeringRequest))
+                    .content(objectMapper.writeValueAsString(hentForBrukerForRedigeringRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
             .andExpect(MockMvcResultMatchers.status().`is`(200))
             .andReturn().response.contentAsString
 
-        val hentetHuskelappBody = JsonUtils.fromJson(
+        val hentetHuskelappBody = objectMapper.readValue(
             hentHuskelappForRedigeringResult,
             HuskelappResponse::class.java
         )
@@ -186,7 +187,7 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.put("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(redigereRequest))
+                    .content(objectMapper.writeValueAsString(redigereRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             ).andExpect(MockMvcResultMatchers.status().`is`(204))
@@ -196,14 +197,14 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/hent-huskelapp-for-bruker")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(hentForBrukerEtterRedigeringRequest))
+                    .content(objectMapper.writeValueAsString(hentForBrukerEtterRedigeringRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
             .andExpect(MockMvcResultMatchers.status().`is`(200))
             .andReturn().response.contentAsString
 
-        val hentetHuskelappEtterRedigeringBody = JsonUtils.fromJson(
+        val hentetHuskelappEtterRedigeringBody = objectMapper.readValue(
             hentHuskelappEtterRedigeringResult,
             HuskelappResponse::class.java
         )
@@ -238,7 +239,7 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(opprettRequest))
+                    .content(objectMapper.writeValueAsString(opprettRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
@@ -272,13 +273,13 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(opprettRequest))
+                    .content(objectMapper.writeValueAsString(opprettRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
             .andExpect(MockMvcResultMatchers.status().`is`(201))
             .andReturn().response.contentAsString
-        val opprettetResponse = JsonUtils.fromJson(
+        val opprettetResponse = objectMapper.readValue(
             opprettetBody,
             HuskelappOpprettResponse::class.java
         )
@@ -288,7 +289,7 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.delete("/api/v1/huskelapp")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(slettRequest))
+                    .content(objectMapper.writeValueAsString(slettRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )
@@ -299,7 +300,7 @@ open class HuskelappControllerTest {
             .perform(
                 MockMvcRequestBuilders.post("/api/v1/hent-huskelapp-for-bruker")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(JsonUtils.toJson(hentForBrukerRequest))
+                    .content(objectMapper.writeValueAsString(hentForBrukerRequest))
                     .header("test_ident", "Z12345")
                     .header("test_ident_type", "INTERN")
             )

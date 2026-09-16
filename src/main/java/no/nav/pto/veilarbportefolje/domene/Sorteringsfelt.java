@@ -36,6 +36,7 @@ public enum Sorteringsfelt {
 
     AAP_KELVIN_TOM_VEDTAKSDATO("aap_kelvin_vedtak_tom_dato"),
     AAP_KELVIN_RETTIGHETSTYPE("aap_kelvin_rettighetstype"),
+    AAP_KELVIN_MAKSDATO("aap_kelvin_maksdato"),
 
     TILTAKSPENGER_VEDTAKSDATO_TOM("tiltakspenger_vedtaksdato_tom"),
     TILTAKSPENGER_RETTIGHET("tiltakspenger_rettighet"),
@@ -43,6 +44,11 @@ public enum Sorteringsfelt {
     DAGPENGER_STANS("dagpenger_stans"),
     DAGPENGER_ANTALL_RESTERENDE_DAGER("dagpenger_antall_resterende_dager"),
     DAGPENGER_RETTIGHETSTYPE("dagpenger_rettighetstype"),
+
+    UNGDOMSPROGRAM_STARTDATO("ungdomsprogram_startdato"),
+    UNGDOMSPROGRAM_SLUTTDATO("ungdomsprogram_sluttdato"),
+    UNGDSOMPROGRAM_MAKSDATO("ungdomsprogram_maksdato"),
+    UNGDSOMPROGRAM_RETTIGHET("ungdomsprogram_rettighet"),
 
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
@@ -88,7 +94,6 @@ public enum Sorteringsfelt {
 
     BARN_UNDER_18_AR("barn_under_18_aar"),
 
-    BRUKERS_SITUASJON_SIST_ENDRET("brukersSituasjonSistEndret"),
     UTDANNING_OG_SITUASJON_SIST_ENDRET("utdanningOgSituasjonSistEndret"),
 
     HUSKELAPP_KOMMENTAR("huskelapp_kommentar"),
@@ -101,7 +106,9 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_TEKST("tiltakshendelse_tekst"),
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet"),
 
-    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet");
+    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet"),
+    FILTERHENDELSE_DATO_FRIST("filterhendelse_dato_frist"),
+    FILTERHENDELSE_BESKRIVELSE_ENUM("filterhendelse_beskrivelse_enum");
 
     /**
      * Filterverdien som vert sendt mellom frontend og backend

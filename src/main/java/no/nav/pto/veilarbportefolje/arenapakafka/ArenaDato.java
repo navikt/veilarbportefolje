@@ -10,7 +10,7 @@ public class ArenaDato {
     private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String dato;
 
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ArenaDato(String dato) {
         this.dato = dato;
     }

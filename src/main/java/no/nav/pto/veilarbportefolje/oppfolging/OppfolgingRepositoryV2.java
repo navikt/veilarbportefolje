@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
@@ -35,7 +35,7 @@ public class OppfolgingRepositoryV2 {
     }
 
     public void settVeileder(AktorId aktorId, VeilederId veilederId) {
-        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", veilederId.getValue(), aktorId.get());
+        db.update("UPDATE oppfolging_data SET veilederid = ? WHERE aktoerid = ?", Optional.ofNullable(veilederId).map(VeilederId::getValue).orElse(null), aktorId.get());
     }
 
     public void settNyForVeileder(AktorId aktoerId, boolean nyForVeileder) {
@@ -58,7 +58,7 @@ public class OppfolgingRepositoryV2 {
         db.update("DELETE FROM oppfolging_data WHERE aktoerid = ?", aktoerId.get());
     }
 
-    public Optional<BrukerOppdatertInformasjon> hentOppfolgingData(AktorId aktoerId) {
+    public Optional<OppfolgingData> hentOppfolgingData(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("SELECT * FROM oppfolging_data WHERE aktoerid = ?", this::mapToBrukerOppdatertInformasjon, aktoerId.get())
         ));
@@ -83,18 +83,20 @@ public class OppfolgingRepositoryV2 {
     }
 
     @SneakyThrows
-    private BrukerOppdatertInformasjon mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
+    private OppfolgingData mapToBrukerOppdatertInformasjon(ResultSet rs, int i) {
         if (rs == null || rs.getString(AKTOERID) == null) {
             return null;
         }
-        return new BrukerOppdatertInformasjon()
-                .setAktoerid(rs.getString(AKTOERID))
-                .setNyForVeileder(rs.getBoolean(NY_FOR_VEILEDER))
-                .setOppfolging(rs.getBoolean(OPPFOLGING))
-                .setVeileder(rs.getString(VEILEDERID))
-                .setManuell(rs.getBoolean(MANUELL))
-                .setStartDato(rs.getTimestamp(STARTDATO))
-                .setTildeltTidspunkt(rs.getTimestamp(TILDELT_TIDSPUNKT));
+
+        return new OppfolgingData(
+                rs.getString(AKTOERID),
+                rs.getString(VEILEDERID),
+                rs.getBoolean(OPPFOLGING),
+                rs.getBoolean(NY_FOR_VEILEDER),
+                rs.getBoolean(MANUELL),
+                rs.getTimestamp(STARTDATO),
+                rs.getTimestamp(TILDELT_TIDSPUNKT)
+        );
     }
 
     public List<AktorId> hentAlleGyldigeBrukereUnderOppfolging() {
@@ -138,6 +140,15 @@ public class OppfolgingRepositoryV2 {
                     }
                     return result;
                 });
+    }
+
+
+    public List<AktorId> hentAlleBrukerUnderOppfolgingMedTildeltVeileder() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("SELECT aktoerid FROM oppfolging_data WHERE oppfolging AND veilederid IS NOT NULL AND tildelt_tidspunkt is NULL", AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
     }
 
     private static String listParam(List<String> identer) {

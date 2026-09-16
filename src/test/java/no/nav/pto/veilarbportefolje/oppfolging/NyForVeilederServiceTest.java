@@ -1,10 +1,11 @@
 package no.nav.pto.veilarbportefolje.oppfolging;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataUtils;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,7 +25,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() {
+    public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, true);
@@ -34,7 +35,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
         NyForVeilederDTO melding = new NyForVeilederDTO(aktoerId, false);
         nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
-        final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
+        final Optional<OppfolgingData> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
         assertThat(data.get().getNyForVeileder()).isFalse();
 
@@ -43,7 +44,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     }
 
     @Test
-    public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() {
+    public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
         oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
         oppfolgingRepository.settNyForVeileder(aktoerId, false);
@@ -54,7 +55,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
 
         nyForVeilederService.behandleKafkaMeldingLogikk(melding);
 
-        final Optional<BrukerOppdatertInformasjon> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
+        final Optional<OppfolgingData> data = oppfolgingRepository.hentOppfolgingData(aktoerId);
         assertThat(data).isPresent();
         //assertThat(data.get().getNyForVeileder()).isFalse();
 

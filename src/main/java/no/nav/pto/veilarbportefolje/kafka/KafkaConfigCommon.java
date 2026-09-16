@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.kafka;
 import io.getunleash.DefaultUnleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.arbeid.cv.avro.Melding;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -31,7 +30,6 @@ import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
-import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dialog.DialogService;
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto;
@@ -40,7 +38,6 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsst√
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRecordValue;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService;
 import no.nav.pto.veilarbportefolje.kafka.deserializers.AivenAvroDeserializer;
-import no.nav.pto.veilarbportefolje.kafka.deserializers.KotlinJsonDeserializer;
 import no.nav.pto.veilarbportefolje.kafka.unleash.KafkaAivenUnleash;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
 import no.nav.pto.veilarbportefolje.mal.MalService;
@@ -53,6 +50,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.NyForVeilederDTO;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.VeilederTilordnetDTO;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsperiodeEndret.dto.SisteOppfolgingsperiodeV3Dto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakKafkaDto;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
@@ -60,14 +58,14 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingStatusService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Utkast14aStatusendringService;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -79,7 +77,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
-import static no.nav.pto.veilarbportefolje.config.FeatureToggle.*;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
@@ -108,7 +106,7 @@ public class KafkaConfigCommon {
 
         CV_ENDRET_V2("teampam.cv-endret-ekstern-v2"),
 
-        OPPFOLGING_PERIODE("pto.siste-oppfolgingsperiode-v1"),
+        SISTE_OPPFOLGINGS_PERIODE_V3("poao.siste-oppfolgingsperiode-v3"),
 
         // Arbeidss√∏kerregisteret
         ARBEIDSSOKERPERIODER_TOPIC("paw.arbeidssokerperioder-v1"),
@@ -142,12 +140,14 @@ public class KafkaConfigCommon {
 
         YTELSER_TOPIC("obo.ytelser-v1");
 
-
-        @Getter
         final String topicName;
 
         Topic(String topicName) {
             this.topicName = topicName;
+        }
+
+        public String getTopicName() {
+            return this.topicName;
         }
     }
 
@@ -156,19 +156,35 @@ public class KafkaConfigCommon {
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    public KafkaConfigCommon(CVService cvService, CVServiceV2 cvServiceV2,
-                             SistLestService sistLestService, AktivitetService aktivitetService,
-                             Utkast14aStatusendringService utkast14aStatusendringService, Siste14aVedtakService siste14aVedtakService,
-                             DialogService dialogService, ManuellStatusService manuellStatusService,
-                             NyForVeilederService nyForVeilederService, VeilederTilordnetService veilederTilordnetService,
-                             MalService malService, OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2, TiltakService tiltakService,
-                             UtdanningsAktivitetService utdanningsAktivitetService, GruppeAktivitetService gruppeAktivitetService,
-                             YtelsesService ytelsesService, OppfolgingPeriodeService oppfolgingPeriodeService, SkjermingService skjermingService,
-                             JdbcTemplate jdbcTemplate, DefaultUnleash defaultUnleash, PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
-                             EnsligeForsorgereService ensligeForsorgereService, ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
-                             ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
-                             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService, TiltakshendelseService tiltakshendelseService,
-                             HendelseService hendelseService, YtelserKafkaService ytelserKafkaService
+    public KafkaConfigCommon(
+            AktivitetService aktivitetService,
+            ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
+            ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
+            ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService,
+            CVServiceV2 cvServiceV2,
+            DefaultUnleash defaultUnleash,
+            DialogService dialogService,
+            EnsligeForsorgereService ensligeForsorgereService,
+            GruppeAktivitetService gruppeAktivitetService,
+            HendelseService hendelseService,
+            JdbcTemplate jdbcTemplate,
+            MalService malService,
+            ManuellStatusService manuellStatusService,
+            NyForVeilederService nyForVeilederService,
+            OppfolgingPeriodeService oppfolgingPeriodeService,
+            OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2,
+            PdlBrukerdataKafkaService pdlBrukerdataKafkaService,
+            SistLestService sistLestService,
+            Siste14aVedtakService siste14aVedtakService,
+            SkjermedePersonerService skjermedePersonerService,
+            SkjermingStatusService skjermingStatusService,
+            TiltakService tiltakService,
+            TiltakshendelseService tiltakshendelseService,
+            UtdanningsAktivitetService utdanningsAktivitetService,
+            Utkast14aStatusendringService utkast14aStatusendringService,
+            VeilederTilordnetService veilederTilordnetService,
+            YtelserKafkaService ytelserKafkaService,
+            YtelsesService ytelsesService
     ) {
         KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
         MeterRegistry prometheusMeterRegistry = new MetricsReporter.ProtectedPrometheusMeterRegistry();
@@ -204,35 +220,35 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(TiltakDTO.class),
                                         tiltakService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, Periode>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.ARBEIDSSOKERPERIODER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
+                                        Deserializers.longDeserializer(),
                                         new AivenAvroDeserializer<Periode>().getDeserializer(),
-                                        arbeidssoekerPeriodeKafkaMeldingService::behandleKafkaRecord
+                                        arbeidssoekerPeriodeKafkaMeldingService::behandleKafkaRecordMedLongKey
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, OpplysningerOmArbeidssoeker>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, OpplysningerOmArbeidssoeker>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
+                                        Deserializers.longDeserializer(),
                                         new AivenAvroDeserializer<OpplysningerOmArbeidssoeker>().getDeserializer(),
-                                        arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService::behandleKafkaRecord
+                                        arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService::behandleKafkaRecordMedLongKey
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Profilering>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, Profilering>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
                                         Topic.ARBEIDSSOEKER_PROFILERING_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
+                                        Deserializers.longDeserializer(),
                                         new AivenAvroDeserializer<Profilering>().getDeserializer(),
-                                        arbeidssoekerProfileringKafkaMeldingService::behandleKafkaRecord
+                                        arbeidssoekerProfileringKafkaMeldingService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
                                 .withLogging()
@@ -300,16 +316,6 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(Kafka14aStatusendring.class),
                                         utkast14aStatusendringService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, Melding>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.CV_ENDRET_V2.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        new AivenAvroDeserializer<Melding>().getDeserializer(),
-                                        cvService::behandleKafkaRecord
-                                ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, VeilederTilordnetDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
@@ -350,15 +356,15 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(MalEndringKafkaDTO.class),
                                         malService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV1>()
+                        new KafkaConsumerClientBuilder.TopicConfig<Long, SisteOppfolgingsperiodeV3Dto>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.OPPFOLGING_PERIODE.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV1.class),
-                                        oppfolgingPeriodeService::behandleKafkaRecord
+                                        Topic.SISTE_OPPFOLGINGS_PERIODE_V3.topicName,
+                                        Deserializers.longDeserializer(),
+                                        Deserializers.jsonDeserializer(SisteOppfolgingsperiodeV3Dto.class),
+                                        oppfolgingPeriodeService::behandleKafkaRecordMedLongKey
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, String>()
                                 .withLogging()
@@ -368,7 +374,7 @@ public class KafkaConfigCommon {
                                         Topic.NOM_SKJERMING_STATUS.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.stringDeserializer(),
-                                        skjermingService::behandleSkjermingStatus
+                                        skjermingStatusService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, SkjermingDTO>()
                                 .withLogging()
@@ -378,7 +384,7 @@ public class KafkaConfigCommon {
                                         Topic.NOM_SKJERMEDE_PERSONER.topicName,
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(SkjermingDTO.class),
-                                        skjermingService::behandleSkjermedePersoner
+                                        skjermedePersonerService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, DialogdataDto>()
                                 .withLogging()
@@ -437,7 +443,7 @@ public class KafkaConfigCommon {
                                 .withConsumerConfig(
                                         Topic.YTELSER_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        new KotlinJsonDeserializer<>(YtelserKafkaDTO.class),
+                                        Deserializers.jsonDeserializer(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()
@@ -499,7 +505,7 @@ public class KafkaConfigCommon {
         consumerClientAivenCv = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenDefaultConsumerProperties(CV_CLIENT_ID_CONFIG))
                 .withTopicConfig(cvTopicConfig)
-                .withToggle(() -> defaultUnleash.isEnabled(STOPP_LESE_CV_TOPIC) || kafkaAivenUnleash.get())
+                .withToggle(kafkaAivenUnleash)
                 .build();
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();

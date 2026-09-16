@@ -1,29 +1,25 @@
 package no.nav.pto.veilarbportefolje.dagpenger
 
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPerioderResponseDto
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
+@WireMockTest
 class DagpengerClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
-
     @Test
-    fun hentDagpengerPerioder_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentDagpengerPerioder_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("12345678901")
         val client = DagpengerClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" }
         )
 
@@ -41,12 +37,12 @@ class DagpengerClientTest {
                     }
                 """.trimIndent()
 
-        WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/dagpenger/datadeling/v1/perioder")).withRequestBody(
-                WireMock.equalToJson(
+        givenThat(
+            post(urlEqualTo("/dagpenger/datadeling/v1/perioder")).withRequestBody(
+                equalToJson(
                     "{\"personIdent\":\"$fnr\", \"fraOgMedDato\":\"2024-01-01\", \"tilOgMedDato\":\"2026-12-31\"}"
                 )
-            ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
+            ).willReturn(aResponse().withStatus(200).withBody(responseBody))
         )
 
         val response = client.hentDagpengerPerioder(fnr.get(), "2024-01-01", "2026-12-31")
@@ -67,10 +63,10 @@ class DagpengerClientTest {
 
 
     @Test
-    fun hentDagpengerBeregninger_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentDagpengerBeregninger_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("12345678901")
         val client = DagpengerClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" }
         )
 
@@ -97,21 +93,22 @@ class DagpengerClientTest {
                     ]
                 """.trimIndent()
 
-        WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/dagpenger/datadeling/v1/beregninger")).withRequestBody(
-                WireMock.equalToJson(
+        givenThat(
+            post(urlEqualTo("/dagpenger/datadeling/v1/beregninger")).withRequestBody(
+                equalToJson(
                     "{\"personIdent\":\"$fnr\", \"fraOgMedDato\":\"2024-01-01\", \"tilOgMedDato\":\"2026-12-31\"}"
                 )
-            ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
+            ).willReturn(aResponse().withStatus(200).withBody(responseBody))
         )
 
         val response = client.hentDagpengerBeregninger(fnr.get(), "2024-01-01", "2026-12-31")
-        val forventet = listOf(DagpengerBeregningerResponseDto(
-            fraOgMed = LocalDate.of(2026, 1, 20),
-            sats = 686,
-            utbetaltBeløp = 457,
-            gjenståendeDager = 519
-        ),
+        val forventet = listOf(
+            DagpengerBeregningerResponseDto(
+                fraOgMed = LocalDate.of(2026, 1, 20),
+                sats = 686,
+                utbetaltBeløp = 457,
+                gjenståendeDager = 519
+            ),
             DagpengerBeregningerResponseDto(
                 fraOgMed = LocalDate.of(2026, 1, 21),
                 sats = 686,

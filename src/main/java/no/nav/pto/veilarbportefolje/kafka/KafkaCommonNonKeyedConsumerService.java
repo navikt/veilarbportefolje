@@ -12,5 +12,10 @@ public abstract class KafkaCommonNonKeyedConsumerService<T> extends KafkaCommonC
         behandleKafkaMeldingLogikk(kafkaRecord.value());
     }
 
+    public void behandleKafkaRecordMedLongKey(ConsumerRecord<Long, T> kafkaRecord) {
+        loggKafkaRecordInformasjon(kafkaRecord);
+        behandleKafkaMeldingLogikk(kafkaRecord.value());
+    }
+
     protected abstract void behandleKafkaMeldingLogikk(T kafkaRecordValue);
 }

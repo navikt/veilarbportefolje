@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.huskelapp.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.vavr.control.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -17,7 +16,6 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.*;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.util.ValideringsRegler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -153,8 +151,7 @@ public class HuskelappController {
     }
 
     private void validerOppfolgingOgBrukerOgEnhet(String fnr) {
-        Validation<String, Fnr> validateFnr = ValideringsRegler.validerFnr(fnr);
-        if (validateFnr.isInvalid()) {
+        if (!Fnr.isValid(fnr)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 

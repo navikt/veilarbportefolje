@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -138,6 +139,34 @@ class PortefoljebrukerFrontendModellMapperTest {
     }
 
     @Test
+    fun `etiketter for kandidatForUtmelding skal settes riktig`() {
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
+        val opensearchBruker = PortefoljebrukerOpensearchModell(
+            hendelser =
+                mapOf(
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
+                )
+        )
+
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketter = frontendBruker.etiketter
+
+        val frontendBrukerIkkeKandidat = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker.copy(hendelser = mapOf()),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val etiketterIkkeKandidat = frontendBrukerIkkeKandidat.etiketter
+
+        Assertions.assertEquals(true, etiketter.kandidatForUtmelding)
+        Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForUtmelding)
+    }
+
+    @Test
     fun `personaliadata og en til en variabler skal mappes riktig`() {
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             fnr = "12345678901",
@@ -167,6 +196,17 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(LocalDate.of(2024, 1, 1), frontendBruker.utdanningOgSituasjonSistEndret)
         Assertions.assertEquals(LocalDate.of(2024, 5, 1), frontendBruker.nesteSvarfristCvStillingFraNav)
 
+    }
+
+    @Test
+    fun `veilederId kan vere null i frontendmodell`() {
+        val frontendBruker = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(veileder_id = null),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+
+        Assertions.assertEquals(null, frontendBruker.veilederId)
     }
 
     @Test
@@ -265,11 +305,13 @@ class PortefoljebrukerFrontendModellMapperTest {
     fun `hendelser skal velge riktig hendelseskategori for mapping basert på filtervalg`() {
         val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
         val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
+        val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             hendelser =
                 mapOf(
                     Kategori.UTGATT_VARSEL to utgattVarselHendelse,
-                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse
+                    Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse,
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
                 )
         )
 
@@ -289,21 +331,37 @@ class PortefoljebrukerFrontendModellMapperTest {
                 )
             )
 
+        val frontendBrukerKandidatForUtmeldingFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = getFiltervalgDefaults().copy(
+                    ferdigfilterListe = listOf(Brukerstatus.KANDIDAT_FOR_UTMELDING)
+                )
+            )
+
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
+        val resultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
         Assertions.assertEquals(utgattVarselHendelse.lenke, resultUtgåttVarsel.lenke)
-        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato!!.dayOfMonth)
+        Assertions.assertEquals(utgattVarselHendelse.dato.dayOfMonth, resultUtgåttVarsel.dato.dayOfMonth)
 
         Assertions.assertNotNull(resultUdeltSamtalereferat)
         Assertions.assertEquals(udeltSamtalereferatHendelse.beskrivelse, resultUdeltSamtalereferat!!.beskrivelse)
         Assertions.assertEquals(udeltSamtalereferatHendelse.lenke, resultUdeltSamtalereferat.lenke)
         Assertions.assertEquals(
             udeltSamtalereferatHendelse.dato.dayOfMonth,
-            resultUdeltSamtalereferat.dato!!.dayOfMonth
+            resultUdeltSamtalereferat.dato.dayOfMonth
         )
+
+        Assertions.assertNotNull(resultKandidat)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, resultKandidat!!.beskrivelse)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, resultKandidat.lenke)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, resultKandidat.dato!!.dayOfMonth)
+        Assertions.assertEquals(kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth, resultKandidat.datoFrist?.dayOfMonth)
     }
 
     @Test
@@ -338,8 +396,10 @@ class PortefoljebrukerFrontendModellMapperTest {
             aapmaxtiduke = 10,
             aapunntakukerigjen = 5,
             aapordinerutlopsdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin = true,
             aap_kelvin_rettighetstype = AapRettighetstype.VURDERES_FOR_UFØRETRYGD,
             aap_kelvin_tom_vedtaksdato = LocalDate.of(2026, 1, 1),
+            aap_kelvin_maksdato = LocalDate.of(2026, 1, 1),
             tiltakspenger_rettighet = TILTAKSPENGER,
             tiltakspenger_vedtaksdato_tom = LocalDate.of(2026, 1, 1),
             enslige_forsorgere_overgangsstonad =
@@ -354,7 +414,12 @@ class PortefoljebrukerFrontendModellMapperTest {
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 156,
+            ),
+            ungdomsprogram = UngdomsprogramForOpensearch(
                 LocalDate.of(2026, 1, 1),
+                null,
+                LocalDate.of(2027, 1, 1),
+                false
             )
         )
 
@@ -377,12 +442,18 @@ class PortefoljebrukerFrontendModellMapperTest {
             ytelser.aap!!.rettighetstype
         )
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.vedtaksdatoTilOgMed)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.aap.maksdato)
         Assertions.assertEquals("Tiltakspenger", ytelser.tiltakspenger!!.rettighet)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.tiltakspenger.vedtaksdatoTilOgMed)
         Assertions.assertEquals("Utvidelse", ytelser.ensligeForsorgereOvergangsstonad!!.vedtaksPeriodetype)
         Assertions.assertEquals("Dagpenger under permittering", ytelser.dagpenger!!.rettighetstype)
         Assertions.assertEquals(null, ytelser.dagpenger.datoStans)
         Assertions.assertEquals("156 dager", ytelser.dagpenger.resterendeDager)
+        Assertions.assertNotNull(ytelser.ungdomsprogram)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.ungdomsprogram!!.startdato)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram.sluttdato)
+        Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
+        Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
     }
 
     @Test
@@ -411,6 +482,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.tiltakspenger?.vedtaksdatoTilOgMed)
         Assertions.assertEquals(null, ytelser.ensligeForsorgereOvergangsstonad?.vedtaksPeriodetype)
         Assertions.assertEquals(null, ytelser.dagpenger)
+        Assertions.assertEquals(null, ytelser.ungdomsprogram)
     }
 
     @Test

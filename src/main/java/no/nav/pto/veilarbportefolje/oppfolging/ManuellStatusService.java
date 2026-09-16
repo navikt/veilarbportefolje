@@ -6,7 +6,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.BrukerOppdatertInformasjon;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.ManuellStatusDTO;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +44,7 @@ public class ManuellStatusService extends KafkaCommonNonKeyedConsumerService<Man
 
     private boolean hentManuellStatus(AktorId aktoerId) {
         return oppfolgingRepositoryV2.hentOppfolgingData(aktoerId)
-                .map(BrukerOppdatertInformasjon::getManuell)
+                .map(OppfolgingData::getManuell)
                 .orElse(false);
     }
 }

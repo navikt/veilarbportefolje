@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchResponse
@@ -28,7 +28,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.opensearch.search.builder.SearchSourceBuilder
 import org.springframework.beans.factory.annotation.Autowired
-import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -72,16 +71,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
             foedelandFulltNavn = PortefoljebrukerOpensearchModell.FOEDELAND_FULLT_NAVN,
             fornavn = PortefoljebrukerOpensearchModell.FORNAVN,
             fullt_navn = PortefoljebrukerOpensearchModell.FULLT_NAVN,
-            harFlereStatsborgerskap = PortefoljebrukerOpensearchModell.HAR_FLERE_STATSBORGERSKAP,
             harUkjentBosted = PortefoljebrukerOpensearchModell.HAR_UKJENT_BOSTED,
             hovedStatsborgerskap = PortefoljebrukerOpensearchModell.HOVED_STATSBORGERSKAP,
             kjonn = PortefoljebrukerOpensearchModell.KJONN,
             kommunenummer = PortefoljebrukerOpensearchModell.KOMMUNENUMMER,
             landgruppe = PortefoljebrukerOpensearchModell.LANDGRUPPE,
             sikkerhetstiltak = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK,
-            sikkerhetstiltak_beskrivelse = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_BESKRIVELSE,
-            sikkerhetstiltak_gyldig_fra = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_GYLDIG_FRA,
-            sikkerhetstiltak_gyldig_til = PortefoljebrukerOpensearchModell.SIKKERHETSTILTAK_GYLDIG_TIL,
             talespraaktolk = PortefoljebrukerOpensearchModell.TALESPRAAK_TOLK,
             tegnspraaktolk = PortefoljebrukerOpensearchModell.TEGNSPRAAK_TOLK,
             tolkBehovSistOppdatert = PortefoljebrukerOpensearchModell.TOLKBEHOV_SIST_OPPDATERT,
@@ -90,8 +85,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             // Oppfølging
             enhet_id = PortefoljebrukerOpensearchModell.ENHET_ID,
             gjeldendeVedtak14a = PortefoljebrukerOpensearchModell.GJELDENDE_VEDTAK_14A,
-            hovedmaalkode = PortefoljebrukerOpensearchModell.HOVEDMAAL_KODE,
-            iserv_fra_dato = PortefoljebrukerOpensearchModell.ISERV_FRA_DATO,
             kvalifiseringsgruppekode = PortefoljebrukerOpensearchModell.KVALIFISERINGSGRUPPE_KODE,
             manuell_bruker = PortefoljebrukerOpensearchModell.MANUELL_BRUKER,
             ny_for_veileder = PortefoljebrukerOpensearchModell.NY_FOR_VEILEDER,
@@ -147,6 +140,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             aap_kelvin = PortefoljebrukerOpensearchModell.AAP_KELVIN,
             aap_kelvin_rettighetstype = PortefoljebrukerOpensearchModell.AAP_KELVIN_RETTIGHETSTYPE,
             aap_kelvin_tom_vedtaksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_TOM_VEDTAKSDATO,
+            aap_kelvin_maksdato = PortefoljebrukerOpensearchModell.AAP_KELVIN_MAKSDATO,
             aapmaxtiduke = PortefoljebrukerOpensearchModell.AAP_MAXTID_UKE,
             aapordinerutlopsdato = PortefoljebrukerOpensearchModell.AAP_ORDINER_UTLOPSDATO,
             aapunntakukerigjen = PortefoljebrukerOpensearchModell.AAP_UNNTAK_UKER_IGJEN,
@@ -160,6 +154,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utlopsdato = PortefoljebrukerOpensearchModell.UTLOPSDATO,
             ytelse = PortefoljebrukerOpensearchModell.YTELSE,
             dagpenger = PortefoljebrukerOpensearchModell.DAGPENGER,
+            ungdomsprogram = PortefoljebrukerOpensearchModell.UNGDOMSPROGRAM,
 
             // Dialog
             venterpasvarfrabruker = PortefoljebrukerOpensearchModell.VENTER_PA_SVAR_FRA_BRUKER,
@@ -180,7 +175,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             formidlingsgruppekode = PortefoljebrukerOpensearchModell.FORMIDLINGSGRUPPE_KODE,
             huskelapp = PortefoljebrukerOpensearchModell.HUSKELAPP,
             tiltakshendelse = PortefoljebrukerOpensearchModell.TILTAKSHENDELSE,
-            utgatt_varsel = PortefoljebrukerOpensearchModell.UTGATT_VARSEL,
         )
 
         object PortefoljebrukerOpensearchModell {
@@ -200,16 +194,12 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val FOEDELAND_FULLT_NAVN: String = "NORGE"
             val FORNAVN: String = "Ola"
             val FULLT_NAVN: String = "Ola Nordmann"
-            val HAR_FLERE_STATSBORGERSKAP: Boolean = false
             val HAR_UKJENT_BOSTED: Boolean = false
             val HOVED_STATSBORGERSKAP: Statsborgerskap = Statsborgerskap("NORGE", LocalDate.parse("1974-10-04"), null)
             val KJONN: String = "K"
             val KOMMUNENUMMER: String = "3324"
             val LANDGRUPPE: String = "3"
             val SIKKERHETSTILTAK: String = "TFUS"
-            val SIKKERHETSTILTAK_BESKRIVELSE: String = "Telefonisk utestengelse"
-            val SIKKERHETSTILTAK_GYLDIG_FRA: String = "2025-11-07"
-            val SIKKERHETSTILTAK_GYLDIG_TIL: String = "2025-12-07"
             val TALESPRAAK_TOLK: String = "NN"
             val TEGNSPRAAK_TOLK: String = "EN"
             val TOLKBEHOV_SIST_OPPDATERT: LocalDate = LocalDate.parse("2025-11-07")
@@ -222,8 +212,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 Hovedmal.BEHOLDE_ARBEID,
                 ZonedDateTime.parse("2025-11-07T12:00:00.000000+01:00")
             )
-            val HOVEDMAAL_KODE: String = "BEHOLDEA"
-            val ISERV_FRA_DATO: String = "2025-11-10T00:00:00.000000Z"
             val KVALIFISERINGSGRUPPE_KODE: String = "BFORM"
             val MANUELL_BRUKER: String = "MANUELL"
             val NY_FOR_VEILEDER: Boolean = true
@@ -365,6 +353,7 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val AAP_KELVIN: Boolean = true
             val AAP_KELVIN_RETTIGHETSTYPE: AapRettighetstype = AapRettighetstype.BISTANDSBEHOV
             val AAP_KELVIN_TOM_VEDTAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
+            val AAP_KELVIN_MAKSDATO: LocalDate = LocalDate.parse("2028-01-01")
             val AAP_MAXTID_UKE: Int = 50
             val AAP_ORDINER_UTLOPSDATO: LocalDate = LocalDate.parse("2025-12-17")
             val AAP_UNNTAK_UKER_IGJEN: Int = 10
@@ -385,8 +374,13 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val DAGPENGER: DagpengerForOpensearch = DagpengerForOpensearch(
                 harDagpenger = true,
                 rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
-                antallResterendeDager = null,
-                datoAntallDagerBleBeregnet = null
+                antallResterendeDager = null
+            )
+            val UNGDOMSPROGRAM: UngdomsprogramForOpensearch = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.parse("2025-02-10"),
+                tilOgMed = null,
+                maksdato = LocalDate.parse("2026-02-10"),
+                harForlengetPeriode = false
             )
 
             // Dialog
@@ -421,12 +415,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 "/arbeidsmarkedstiltak/deltakelse/deltaker/cffaf928-bdeb-4994-88b7-d3f3ae194470",
                 Tiltakstype.ARBFORB,
                 Fnr.of("11111111111")
-            )
-            val UTGATT_VARSEL: Hendelse.HendelseInnhold = Hendelse.HendelseInnhold(
-                beskrivelse = "Bruker har et utgått varsel",
-                dato = ZonedDateTime.parse("2025-07-01T13:37:00.000+02:00"),
-                lenke = URI.create("https://veilarbpersonflate.ansatt.dev.nav.no/aktivitetsplan").toURL(),
-                detaljer = null
             )
         }
     }

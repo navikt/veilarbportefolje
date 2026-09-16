@@ -7,6 +7,7 @@ import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.UnderOppfolgingRequest;
 import no.nav.pto.veilarbportefolje.oppfolging.dto.UnderOppfolgingV2Response;
 import okhttp3.OkHttpClient;
@@ -15,6 +16,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.springframework.http.HttpHeaders;
 
+import java.io.IOException;
 import java.util.function.Supplier;
 
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
@@ -51,6 +53,21 @@ public class OppfolgingClient {
             return RestUtils.getBodyStr(response)
                     .map((bodyStr) -> JsonUtils.fromJson(bodyStr, UnderOppfolgingV2Response.class))
                     .map(UnderOppfolgingV2Response::isErUnderOppfolging)
+                    .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
+        }
+    }
+
+
+    public Veilarbportefoljeinfo hentVeilarbData(AktorId aktoer) throws RuntimeException, IOException {
+        Request request = new Request.Builder()
+                .url(joinPaths(baseUrl, "/api/admin/hentVeilarbinfo/bruker?aktorId=" + aktoer))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            return RestUtils.getBodyStr(response)
+                    .map((bodyStr) -> JsonUtils.fromJson(bodyStr, Veilarbportefoljeinfo.class))
                     .orElseThrow(() -> new IllegalStateException("Unable to parse json"));
         }
     }

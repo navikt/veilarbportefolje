@@ -1,6 +1,8 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger.dto.input;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Vedtaksresultat;
 
 import java.util.List;
 

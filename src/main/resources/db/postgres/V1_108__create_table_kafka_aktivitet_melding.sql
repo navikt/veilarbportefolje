@@ -1,0 +1,27 @@
+CREATE TABLE KAFKA_AKTIVITET_MELDING
+(
+    AKTIVITET_ID                TEXT PRIMARY KEY,
+    AKTOR_ID                    TEXT NOT NULL,
+    AKTIVITET_TYPE              TEXT NOT NULL,
+    AKTIVITET_STATUS            TEXT NOT NULL,
+    ENDRINGS_TYPE               TEXT NOT NULL,
+    FRA_DATO                    TIMESTAMP,
+    TIL_DATO                    TIMESTAMP,
+    ENDRET_DATO                 TIMESTAMP,
+    TILTAKSKODE                 TEXT,
+    LAGT_INN_AV                 TEXT NOT NULL,
+    AVTALT                      BOOLEAN DEFAULT TRUE,
+    VERSION                     BIGINT NOT NULL,
+    HISTORISK                   BOOLEAN DEFAULT FALSE,
+    CV_KAN_DELES_STATUS         TEXT,
+    SVARFRIST_STILLING_FRA_NAV  TIMESTAMP,
+
+    -- Metadata
+    RECORD_OFFSET               INT NOT NULL,
+    RECORD_PARTITION            INT NOT NULL,
+    RECORD_KEY                  TEXT NOT NULL,
+    RAD_OPPRETTET               TIMESTAMP NOT NULL,
+    RAD_OPPDATERT               TIMESTAMP NOT NULL
+);
+
+CREATE INDEX AKTOR_AKTIVITET_INDEX ON KAFKA_AKTIVITET_MELDING(AKTOR_ID);

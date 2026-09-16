@@ -1,8 +1,8 @@
 package no.nav.pto.veilarbportefolje.postgres;
 
-import io.getunleash.DefaultUnleash;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
@@ -17,6 +17,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -26,9 +27,7 @@ import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class BrukerRepositoryV2Test {
     private BrukerRepositoryV2 brukerRepositoryV2;
@@ -41,14 +40,12 @@ public class BrukerRepositoryV2Test {
     @BeforeEach
     public void setUp() {
         JdbcTemplate db = SingletonPostgresContainer.init().createJdbcTemplate();
-        final DefaultUnleash defaultUnleash = mock(DefaultUnleash.class);
         final KodeverkService kodeverkService = mock(KodeverkService.class);
-        when(defaultUnleash.isEnabled(anyString())).thenReturn(true);
-        this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService, defaultUnleash);
+                this.brukerRepositoryV2 = new BrukerRepositoryV2(db, kodeverkService);
         this.pdlIdentRepository = new PdlIdentRepository(db);
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         this.pdlPersonRepository = new PdlPersonRepository(db, db);
-        this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
+                this.oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, new NamedParameterJdbcTemplate(db));
     }
 
     @Test
@@ -59,8 +56,7 @@ public class BrukerRepositoryV2Test {
         AktorId aktorId = randomAktorId();
         List<PDLIdent> identer = List.of(
                 new PDLIdent(fnr_1.get(), true, FOLKEREGISTERIDENT),
-                new PDLIdent(fnr_2.get(), true, FOLKEREGISTERIDENT),
-                new PDLIdent(fnr_ny.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_2.get(), false, FOLKEREGISTERIDENT),
                 new PDLIdent(aktorId.get(), false, AKTORID)
         );
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
@@ -69,20 +65,27 @@ public class BrukerRepositoryV2Test {
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_1.get(), null, null,
-                        "0000", null, null,
-                        null, ZonedDateTime.now().minusDays(1)));
+                        "9999", null, null,
+                        null, ZonedDateTime.now().minusDays(1)), new NavKontor("0000"), aktorId);
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_2.get(), null, null,
-                        "0000", null, null,
-                        null, ZonedDateTime.now()));
+                        "9999", null, null,
+                        null, ZonedDateTime.now()), new  NavKontor("0000"), aktorId);
         List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_pre_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
+
+        List<PDLIdent> oppdaterteIdenter = List.of(
+                new PDLIdent(fnr_1.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_2.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(fnr_ny.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID)
+        );
+        pdlIdentRepository.upsertIdenter(oppdaterteIdenter);
 
         oppfolgingsbrukerRepositoryV3.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr_ny.get(), null, null,
-                        "0001", null, null,
-                        null, ZonedDateTime.now()));
+                        "9999", null, null,
+                        null, ZonedDateTime.now()),  new NavKontor("0001"), aktorId);
         List<PortefoljebrukerOpensearchModell> oppfolgingsBrukers_post_nyFnrIArena = brukerRepositoryV2.hentPortefoljeBrukereTilOpensearchModell(List.of(aktorId));
-
 
         Assertions.assertThat(oppfolgingsBrukers_pre_nyFnrIArena.size()).isEqualTo(1);
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.size()).isEqualTo(1);
@@ -91,6 +94,4 @@ public class BrukerRepositoryV2Test {
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getFnr()).isEqualTo(fnr_ny.get());
         Assertions.assertThat(oppfolgingsBrukers_post_nyFnrIArena.get(0).getEnhet_id()).isEqualTo("0001");
     }
-
-
 }

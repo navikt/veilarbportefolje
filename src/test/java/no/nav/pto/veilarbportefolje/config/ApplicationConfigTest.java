@@ -15,6 +15,8 @@ import no.nav.pto.veilarbportefolje.aap.AapRepository;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.PortefoljeAktivitetKafkaMeldingRepository;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
@@ -25,7 +27,6 @@ import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.cv.CVRepositoryV2;
-import no.nav.pto.veilarbportefolje.cv.CVService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository;
@@ -43,14 +44,15 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository;
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkClient;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository;
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterService;
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.VeiledergrupperRepository;
+import no.nav.pto.veilarbportefolje.lagredefilter.veiledergrupper.VeiledergrupperService;
 import no.nav.pto.veilarbportefolje.mal.MalService;
 import no.nav.pto.veilarbportefolje.opensearch.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.OpensearchClientConfig;
 import no.nav.pto.veilarbportefolje.oppfolging.*;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerDTO;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2;
-import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.*;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjeldende14aVedtakService;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
@@ -73,12 +75,15 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramRepository;
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -112,7 +117,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
         Siste14aVedtakRepository.class,
@@ -134,7 +139,6 @@ import static org.mockito.Mockito.when;
         DialogService.class,
         DialogRepositoryV2.class,
         CVRepositoryV2.class,
-        CVService.class,
         CVServiceV2.class,
         ArbeidssokerRegistreringRepositoryV2.class,
         NyForVeilederService.class,
@@ -149,13 +153,15 @@ import static org.mockito.Mockito.when;
         GruppeAktivitetRepositoryV2.class,
         TiltakRepositoryV3.class,
         TiltakService.class,
+        TiltaksaktivitetRepository.class,
+        PortefoljeAktivitetKafkaMeldingRepository.class,
         PostgresOpensearchMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesRepositoryV2.class,
         YtelsesStatusRepositoryV2.class,
         OppfolgingPeriodeService.class,
-        SkjermingService.class,
+        SkjermedePersonerService.class,
         SkjermingRepository.class,
         PdlService.class,
         PdlIdentRepository.class,
@@ -188,7 +194,14 @@ import static org.mockito.Mockito.when;
         TiltakspengerRespository.class,
         TiltakspengerService.class,
         DagpengerRepository.class,
-        DagpengerService.class
+        DagpengerService.class,
+        UngdomsprogramService.class,
+        UngdomsprogramRepository.class,
+        OppfolgingsbrukerTestRepository.class,
+        VeiledergrupperService.class,
+        VeiledergrupperRepository.class,
+        MineFilterService.class,
+        MineFilterRepository.class
 })
 public class ApplicationConfigTest {
 
@@ -247,8 +260,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public RestHighLevelClient restHighLevelClient() {
-        return createClient(opensearchClientConfig());
+    public RestHighLevelClient restHighLevelClient(OpensearchClientConfig opensearchClientConfig) {
+        return createClient(opensearchClientConfig);
     }
 
     @Bean
@@ -386,6 +399,11 @@ public class ApplicationConfigTest {
     @Bean
     public DagpengerClient dagpengerClient() {
         return mock(DagpengerClient.class);
+    }
+
+    @Bean
+    public UngdomsprogramClient ungdomsprogramClient() {
+        return mock(UngdomsprogramClient.class);
     }
 
     @Bean

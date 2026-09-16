@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -27,13 +25,16 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
-import no.nav.pto.veilarbportefolje.util.*
+import no.nav.pto.veilarbportefolje.util.DateUtils
+import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getArbeidssoekerPeriodeFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getProfileringFraDb
+import no.nav.pto.veilarbportefolje.util.TestDataUtils
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.genererStartetOppfolgingsperiode
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
+import no.nav.pto.veilarbportefolje.util.TestUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import tools.jackson.core.type.TypeReference
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
@@ -77,6 +79,10 @@ class ArbeidssoekerServiceTest(
     @BeforeEach
     fun setup() {
         db.update("truncate TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
+        // Alle tester i denne klassen deler samme fnr. Uten truncate her kan en test som setter
+        // bruker under oppfølging (via bruker_identer/oppfolging_data) lekke inn i neste test.
+        db.update("truncate bruker_identer")
+        db.update("truncate oppfolging_data")
     }
 
     @Test
@@ -159,7 +165,7 @@ class ArbeidssoekerServiceTest(
     fun meldinger_om_periode_og_opplysninger_om_arbeidssoeker_skal_ignoreres_dersom_bruker_ikke_er_under_oppfolging() {
         val periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -283,7 +289,7 @@ class ArbeidssoekerServiceTest(
         val nyPeriodeId = UUID.randomUUID()
         val gammelOpplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -352,7 +358,7 @@ class ArbeidssoekerServiceTest(
         val nyPeriodeId = UUID.randomUUID()
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -410,7 +416,7 @@ class ArbeidssoekerServiceTest(
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val opplysningerOmArbeidssoekerIdVedOppfolgingStartet = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -474,7 +480,7 @@ class ArbeidssoekerServiceTest(
         // Arrange
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -523,7 +529,7 @@ class ArbeidssoekerServiceTest(
         val periodeIdVedOppfolgingStartet = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16")
         val periodeIdVedEndring = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab20a45")
         val nyOpplysningerOmArbeidssoekerId = UUID.randomUUID()
-        val fnr = Fnr.of("17858998980")
+        val fnr = Fnr.of("23916795505")
         val aktorId = randomAktorId()
 
         mockPdlIdenterRespons(aktorId, fnr)
@@ -613,20 +619,15 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentArbeidssoekerPerioderResponse(fnr: Fnr, periodeId: UUID? = null) {
         val file = TestUtil.readFileAsJsonString("/arbeidssoekerperioder.json", javaClass)
         val arbeidssoekerResponse: List<ArbeidssokerperiodeResponse> =
-            objectMapper.readValue(
-                file,
-                object : TypeReference<List<ArbeidssokerperiodeResponse>>() {
-                })
+            JsonUtils.fromJson(file, object : TypeReference<List<ArbeidssokerperiodeResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(
             arbeidssoekerResponse.map { it.copy(periodeId = periodeId ?: it.periodeId) }
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentOpplysningerOmArbeidssoekerResponse(
         fnr: Fnr,
         periodeId: UUID,
@@ -634,10 +635,7 @@ class ArbeidssoekerServiceTest(
     ) {
         val file = TestUtil.readFileAsJsonString("/opplysningerOmArbeidssoeker.json", javaClass)
         val opplysningerOmArbeidssoekerResponse: List<OpplysningerOmArbeidssoekerResponse> =
-            objectMapper.readValue(
-                file,
-                object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {
-                })
+            JsonUtils.fromJson(file, object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(
             opplysningerOmArbeidssoekerResponse.map {
                 it.copy(
@@ -648,13 +646,10 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    @Throws(JsonProcessingException::class)
     private fun mockHentProfileringResponse(fnr: Fnr, periodeId: UUID, opplysningerOmArbeidssoekerId: UUID? = null) {
         val file = TestUtil.readFileAsJsonString("/profilering.json", javaClass)
-        val profileringResponse: List<ProfileringResponse> = objectMapper.readValue(
-            file,
-            object : TypeReference<List<ProfileringResponse>>() {
-            })
+        val profileringResponse: List<ProfileringResponse> =
+            JsonUtils.fromJson(file, object : TypeReference<List<ProfileringResponse>>() {})
         `when`(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(
             profileringResponse.map {
                 it.copy(
@@ -666,7 +661,7 @@ class ArbeidssoekerServiceTest(
     }
 
     private fun mockHentAapResponse(fnr: Fnr) {
-        val aapResponse = AapVedtakResponseDto(vedtak = listOf())
+        val aapResponse = AapVedtakResponseDto(vedtak = listOf(), sakstatus = "FERDIGBEHANDLET", maksdato = null)
         `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
         `when`(aapClient.hentAapVedtak(anyString(), anyString(), anyString())).thenReturn(aapResponse)
     }

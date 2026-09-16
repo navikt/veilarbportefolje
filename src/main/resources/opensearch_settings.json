@@ -223,12 +223,6 @@
           }
         }
       },
-      "sikkerhetstiltak_gyldig_fra": {
-        "type": "keyword"
-      },
-      "sikkerhetstiltak_gyldig_til": {
-        "type": "keyword"
-      },
       "fargekategori": {
         "type": "keyword"
       },
@@ -276,6 +270,9 @@
           "beskrivelse": {
             "type": "keyword"
           },
+          "beskrivelseEnum": {
+            "type": "keyword"
+          },
           "dato": {
             "type": "date"
           }
@@ -285,6 +282,9 @@
         "type": "boolean"
       },
       "aap_kelvin_tom_vedtaksdato": {
+        "type": "date"
+      },
+      "aap_kelvin_maksdato": {
         "type": "date"
       },
       "aap_kelvin_rettighetstype": {
@@ -313,10 +313,23 @@
           "antallResterendeDager": {
             "type": "integer"
           },
-          "datoAntallDagerBleBeregnet": {
+          "datoStans": {
+            "type": "date"
+          }
+        }
+      },
+      "ungdomsprogram": {
+        "properties": {
+          "harForlengetPeriode": {
+            "type": "boolean"
+          },
+          "fraOgMed": {
             "type": "date"
           },
-          "datoStans": {
+          "tilOgMed": {
+            "type": "date"
+          },
+          "maksdato": {
             "type": "date"
           }
         }

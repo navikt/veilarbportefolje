@@ -1,8 +1,7 @@
 package no.nav.pto.veilarbportefolje.persononinfo.personopprinelse;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
@@ -49,13 +48,11 @@ public class Landgruppe {
 
     @SneakyThrows
     private List<String> getLandgruppeFromFile(Integer landGruppe) {
-        ObjectMapper mapper = new ObjectMapper();
         String json = Optional.ofNullable(getClass()
                         .getResourceAsStream("/landgruppe/landgruppe" + landGruppe + ".json"))
                 .map(this::readJsonFromFileStream)
                 .orElseThrow();
-        return mapper.readValue(json, new TypeReference<>() {
-        });
+        return JsonUtils.fromJsonArray(json, String.class);
     }
 
     @SneakyThrows

@@ -26,16 +26,18 @@
     ],
     "STI": [
     ],
-    "TST": {
-      "gyldigFra": "1900-01-01",
-      "gyldigTil": "2017-10-26",
-      "beskrivelser": {
-        "nb": {
-          "term": "Test",
-          "tekst": "Test"
+    "TST": [
+      {
+        "gyldigFra": "1900-01-01",
+        "gyldigTil": "2017-10-26",
+        "beskrivelser": {
+          "nb": {
+            "term": "Test",
+            "tekst": "Test"
+          }
         }
       }
-    },
+    ],
     "PT": [
       {
         "gyldigFra": "1900-01-01",

@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -14,7 +14,8 @@ import static java.time.Duration.ofSeconds;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DateUtilsTest {
     private final LocalDate fodselsdato = LocalDate.of(1980, 10, 10);
@@ -66,9 +67,9 @@ public class DateUtilsTest {
         assertThat(feilendeTimestamp).isNull();
     }
 
-    @Test(expected = ParseException.class)
-    public void ugyldig_dato_skal_kaste_exception() throws ParseException {
-        getISODateFormatter().parse("2019-20-20");
+    @Test
+    public void ugyldig_dato_skal_kaste_exception() {
+        assertThrows(ParseException.class, () -> getISODateFormatter().parse("2019-20-20"));
     }
 
     @Test
@@ -77,9 +78,9 @@ public class DateUtilsTest {
         assertThat(hipp_hurra).isNull();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void null_skal_kaste_exception() {
-        getTimestampFromSimpleISODate(null);
+        assertThrows(NullPointerException.class, () -> getTimestampFromSimpleISODate(null));
     }
 
     @Test
@@ -179,12 +180,38 @@ public class DateUtilsTest {
                 .minusDays(22);
 
         Assertions.assertFalse(DateUtils.erUnder18Aar(fodselsdatoFylt18Aar));
-        Assertions.assertTrue(DateUtils.erUnder18Aar(fodselsdatoFylt17Aar));
+        assertTrue(DateUtils.erUnder18Aar(fodselsdatoFylt17Aar));
 
     }
 
     @Test
     public void skalLageFodselsdatoStringPaaUTCFormat() {
         assertThat(DateUtils.lagFodselsdato(fodselsdato)).isEqualTo("1980-10-10T00:00:00Z");
+    }
+
+    @Test
+    public void toLocalDateTimeOrNull_isoInstantFormat() {
+        LocalDateTime result = DateUtils.toLocalDateTimeOrNull("2022-09-28T12:23:36Z");
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2022);
+        assertThat(result.getMonthValue()).isEqualTo(9);
+        assertThat(result.getDayOfMonth()).isEqualTo(28);
+    }
+
+    @Test
+    public void toLocalDateTimeOrNull_localDateTimeFormat() {
+        LocalDateTime result = DateUtils.toLocalDateTimeOrNull("2022-09-28T12:23:36");
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2022);
+        assertThat(result.getMonthValue()).isEqualTo(9);
+        assertThat(result.getDayOfMonth()).isEqualTo(28);
+        assertThat(result.getHour()).isEqualTo(12);
+        assertThat(result.getMinute()).isEqualTo(23);
+        assertThat(result.getSecond()).isEqualTo(36);
+    }
+
+    @Test
+    public void toLocalDateTimeOrNull_nullReturnsNull() {
+        assertThat(DateUtils.toLocalDateTimeOrNull((String) null)).isNull();
     }
 }
