@@ -248,6 +248,13 @@ class OpensearchIndexerPaDatafelt(
         aktorId: AktorId,
         ensligeForsorgerOvergangsstønadTiltakDto: EnsligeForsorgerOvergangsstønadTiltakDto
     ) {
+        // aktivitsplikt kan lovlig være null (f.eks. for periodetype MIGRERING, eller
+        // umappede periodetype/aktivitetstype-kombinasjoner, se AktivitetsTypeTilAktivitetsplikt).
+        // Må leses ut til en eksplisitt nullable Kotlin-variabel før den sendes til XContentBuilder.field(...),
+        // ellers setter Kotlin inn en implisitt ikke-null-sjekk på den overlastede Java-metoden og kaster NPE.
+        val aktivitetsplikt: Boolean? = ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt
+        val yngsteBarnsFødselsdato: LocalDate? = ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato
+
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .startObject(DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
@@ -257,7 +264,7 @@ class OpensearchIndexerPaDatafelt(
             )
             .field(
                 DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT,
-                ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt
+                aktivitetsplikt
             )
             .field(
                 DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
@@ -265,7 +272,7 @@ class OpensearchIndexerPaDatafelt(
             )
             .field(
                 DatafeltKeys.Ytelser.`ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO`,
-                ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato
+                yngsteBarnsFødselsdato
             )
             .endObject()
             .endObject()

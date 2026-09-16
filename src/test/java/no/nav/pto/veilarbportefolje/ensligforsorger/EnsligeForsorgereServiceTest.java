@@ -41,6 +41,7 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -123,6 +124,45 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
+                }
+        );
+    }
+
+    @Test
+    public void testOvergangsstonadMedUkjentAktivitetspliktKasterIkkeException() {
+        // Regresjonstest for NPE i OpensearchIndexerPaDatafelt.updateOvergangsstonad når
+        // AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(...) returnerer Optional.empty()
+        // (f.eks. for periodetype MIGRERING), som gjør at aktivitsplikt blir null.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", null));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(5), LocalDate.now().plusDays(30), Periodetype.MIGRERING, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        99887766L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Migrering fra Infotrygd");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
                 }
         );
     }
