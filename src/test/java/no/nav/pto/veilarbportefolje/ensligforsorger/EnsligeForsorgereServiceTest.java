@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,10 +47,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
-    private static NavKontor navKontor = NavKontor.of("1123");
-    private static VeilederId veilederId = VeilederId.of("1402");
-
-    private static Fnr hoved_fnr = Fnr.of("2449920301");
+    private final NavKontor navKontor = NavKontor.of("1123");
+    private final VeilederId veilederId = VeilederId.of("1402");
+    private final Fnr hoved_fnr = Fnr.of("2449920301");
 
     @Autowired
     private OpensearchService opensearchService;
@@ -99,8 +99,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     public void testAvsluttetOvergangsstonadForBrukerIndex() {
         setInitialState();
 
-        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, Month.MAY, 4)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.JULY, 4), LocalDate.of(2024, Month.APRIL, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,
@@ -176,8 +176,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         // igjennom til Optional.empty() -> aktivitsplikt = null, samme feilklasse som MIGRERING-testen over.
         setInitialState();
 
-        List<Barn> barn = List.of(new Barn("11032245678", LocalDate.of(2023, 3, 8)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2026, 7, 1), LocalDate.of(2027, 7, 31), Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN, Aktivitetstype.BARNET_SÆRLIG_TILSYNSKREVENDE));
+        List<Barn> barn = List.of(new Barn("11032245678", LocalDate.of(2023, Month.MARCH, 8)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2026, Month.JULY, 1), LocalDate.of(2027, Month.JULY, 31), Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN, Aktivitetstype.BARNET_SÆRLIG_TILSYNSKREVENDE));
 
         assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(

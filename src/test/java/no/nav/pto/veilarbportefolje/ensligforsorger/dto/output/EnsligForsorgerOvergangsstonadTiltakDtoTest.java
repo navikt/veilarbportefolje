@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class EnsligForsorgerOvergangsstonadTiltakDtoTest {
 
     @Test
-    public void testCastingToOpensearchDto() {
+    void testCastingToOpensearchDto() {
         EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgereTiltak = new EnsligeForsorgerOvergangsstønadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate());
         EnsligeForsorgereOvergangsstonad ensligeForsorgereOpensearchDto = ensligeForsorgereTiltak.toEnsligeForsorgereOpensearchDto();
 
