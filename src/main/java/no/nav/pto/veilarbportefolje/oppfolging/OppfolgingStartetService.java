@@ -55,7 +55,7 @@ public class OppfolgingStartetService {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
-            Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(fnr);
+            Optional<NavKontor> gammeltNavKontor = brukerServiceV2.hentNavKontor(aktorId);
             oppfolgingsbrukerRepositoryV3.upsertNavKontor(aktorId, fnr, navKontor);
             oppdaterEnhetVedKontorbytteHuskelappFargekategori(fnr, aktorId, gammeltNavKontor, navKontor);
             opensearchIndexer.indekser(aktorId);
