@@ -117,7 +117,7 @@ object DatafeltKeys {
             EnsligeForsorgereOvergangsstonad::harAktivitetsplikt.name
         val ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO = EnsligeForsorgereOvergangsstonad::utlopsDato.name
         val `ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO` =
-            EnsligeForsorgereOvergangsstonad::yngsteBarnsFodselsdato.name
+            EnsligeForsorgereOvergangsstonad::yngsteBarnsFødselsdato.name
         val RETTIGHETSGRUPPE_KODE = PortefoljebrukerOpensearchModell::rettighetsgruppekode.name
         val TILTAKSPENGER = PortefoljebrukerOpensearchModell::tiltakspenger.name
         val TILTAKSPENGER_VEDTAKSDATO_TOM = PortefoljebrukerOpensearchModell::tiltakspenger_vedtaksdato_tom.name

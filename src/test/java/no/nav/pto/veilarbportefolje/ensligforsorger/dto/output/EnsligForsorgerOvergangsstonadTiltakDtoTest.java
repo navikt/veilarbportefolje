@@ -10,12 +10,12 @@ public class EnsligForsorgerOvergangsstonadTiltakDtoTest {
 
     @Test
     public void testCastingToOpensearchDto() {
-        EnsligForsorgerOvergangsstonadTiltakDto ensligeForsorgereTiltak = new EnsligForsorgerOvergangsstonadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate());
+        EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgereTiltak = new EnsligeForsorgerOvergangsstønadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate());
         EnsligeForsorgereOvergangsstonad ensligeForsorgereOpensearchDto = ensligeForsorgereTiltak.toEnsligeForsorgereOpensearchDto();
 
         assertEquals(ensligeForsorgereOpensearchDto.vedtaksPeriodetype(), ensligeForsorgereTiltak.vedtaksPeriodetypeBeskrivelse);
-        assertEquals(ensligeForsorgereOpensearchDto.harAktivitetsplikt(), ensligeForsorgereTiltak.aktivitetsplikt);
-        assertEquals(ensligeForsorgereOpensearchDto.yngsteBarnsFodselsdato(), ensligeForsorgereTiltak.yngsteBarnsFodselsdato);
-        assertEquals(ensligeForsorgereOpensearchDto.utlopsDato(), ensligeForsorgereTiltak.utlopsDato);
+        assertEquals(ensligeForsorgereOpensearchDto.harAktivitetsplikt(), ensligeForsorgereTiltak.aktivitsplikt);
+        assertEquals(ensligeForsorgereOpensearchDto.yngsteBarnsFødselsdato(), ensligeForsorgereTiltak.yngsteBarnsFødselsdato);
+        assertEquals(ensligeForsorgereOpensearchDto.utlopsDato(), ensligeForsorgereTiltak.utløpsDato);
     }
 }

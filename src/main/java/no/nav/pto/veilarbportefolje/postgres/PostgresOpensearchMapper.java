@@ -8,7 +8,7 @@ import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligForsorgerOvergangsstonadTiltakDto;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
@@ -169,7 +169,7 @@ public class PostgresOpensearchMapper {
     }
 
     public void flettInnEnsligeForsorgereData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        Map<Fnr, EnsligForsorgerOvergangsstonadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap =
+        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap =
                 ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukerOpensearchModellList.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
         brukerOpensearchModellList.forEach(bruker -> {
             if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
