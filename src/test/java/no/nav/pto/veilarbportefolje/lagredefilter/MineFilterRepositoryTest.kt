@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.Formidlingsgruppe
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository
@@ -14,10 +15,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
+import java.sql.PreparedStatement
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class MineFilterRepositoryTest(
@@ -49,6 +52,7 @@ class MineFilterRepositoryTest(
         assertThat(lagretFilter).isNotNull
         assertThat(lagretFilter.filterNavn).isEqualTo("Mitt filter")
         assertThat(lagretFilter.filterValg).isEqualTo(filtervalg)
+        assertNull(lagretFilter.infoOmSlettetFiltervalg)
     }
 
     @Test
@@ -191,6 +195,46 @@ class MineFilterRepositoryTest(
             )
         }.isInstanceOf(NoSuchElementException::class.java)
     }
+
+    @Test
+    fun `info om slettet filtervalg skal hentes ut riktig, og resettes ved update`() {
+        val veilederIdent = "Z123456"
+        val filterValg = getFiltervalgDefaults().copy(
+            ytelseDagpenger = listOf(YtelseDagpenger.HAR_DAGPENGER_ORDINAER)
+        )
+        val lagretFilter = mineFilterRepository.lagreNyttFilterForVeileder(
+            veilederIdent,
+            NyttFilterRequest(filterNavn = "Original navn", filterValg)
+        )
+
+        // insert i kolonnen infoOmSlettetFiltervalg (dette gjøres normalt i gcp under migrering)
+        jdbcTemplate.update(
+            "UPDATE ${LAGREDE_FILTER_MINE_FILTER.TABLE_NAME} " +
+                    "SET ${LAGREDE_FILTER_MINE_FILTER.INFO_OM_SLETTET_FILTERVALG} = ? " +
+                    "WHERE ${LAGREDE_FILTER_MINE_FILTER.FILTER_ID} = ?",
+            { ps: PreparedStatement ->
+                ps.setArray(1, ps.connection.createArrayOf("text", arrayOf("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")))
+                ps.setInt(2, lagretFilter.filterId)
+            }
+        )
+
+        val hentetFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre.single()
+        assertThat(hentetFilter.infoOmSlettetFiltervalg).containsExactly("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")
+
+        // oppdatering skal resette infoOmSlettetFiltervalg til null
+        mineFilterRepository.oppdaterLagretFilterForVeileder(
+            veilederIdent,
+            OppdaterFilterRequest(
+                filterId = lagretFilter.filterId,
+                filterNavn = "Oppdatert navn",
+                filterValg = getFiltervalgDefaults().copy(formidlingsgruppe = listOf(Formidlingsgruppe.ARBS))
+            )
+        )
+
+        val filterEtterOppdatering = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre.single()
+        assertThat(filterEtterOppdatering.infoOmSlettetFiltervalg).isNull()
+    }
+
 
     @Test
     fun `slette filter for veileder skal fjerne filteret`() {

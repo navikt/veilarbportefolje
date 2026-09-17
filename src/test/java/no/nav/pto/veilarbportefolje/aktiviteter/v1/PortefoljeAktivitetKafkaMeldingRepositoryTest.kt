@@ -131,6 +131,25 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     }
 
     @Test
+    fun `skal ignorere feil tiltaksaktiviteter som ble publisert i 2023 og starter aktivitetId med ARENA`() {
+        val resultat = repository.behandleAktivitetsKafkaMeldinger(
+            listOf(
+                aktivitetEntity(aktivitetId = "aktivitet-1", version = 2, aktivitetType = "TILTAK", aktivitetStatus = "GJENNOMFORES", recordOffset = 20),
+                aktivitetEntity(aktivitetId = "ARENA-1", version = 3, aktivitetType = "TILTAK", aktivitetStatus = "PLANLAGT", recordOffset = 21)
+            )
+        )
+
+        val feilTiltaksaktivitet = hentRad("ARENA-1")
+        val noramlTiltaksaktivitet = hentRad("aktivitet-1")!!
+
+        assertThat(feilTiltaksaktivitet).isNull()
+        assertThat(noramlTiltaksaktivitet).isNotNull()
+        assertThat(resultat.prosesserte).isEqualTo(1)
+        assertThat(resultat.ignorert).isEqualTo(1)
+        assertThat(noramlTiltaksaktivitet["aktivitet_status"]).isEqualTo("GJENNOMFORES")
+    }
+
+    @Test
     fun `skal ignorere historisk melding med eldre version enn lagret aktivitet`() {
         repository.behandleAktivitetsKafkaMeldinger(
             listOf(aktivitetEntity(version = 3, aktivitetStatus = "FULLFORT", recordOffset = 20)),
