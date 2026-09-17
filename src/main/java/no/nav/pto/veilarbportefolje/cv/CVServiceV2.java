@@ -45,11 +45,11 @@ public class CVServiceV2 extends KafkaCommonNonKeyedConsumerService<Melding> {
                 secureLog.info("Slett CV eksisterer fra BRUKER_REGISTRERT_CV for bruker med aktoerid: {}", aktoerId.get());
                 cvRepositoryV2.slettCvRegistrert(fnr);
             }
+            opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, erMeldingstypeEndreEllerOpprett);
         } else {
-            secureLog.error("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet", aktoerId);
+            secureLog.info("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet. Forkaster cv-kakfamelding", aktoerId);
         }
 
-        opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, erMeldingstypeEndreEllerOpprett);
     }
 
     public void slettCvData(AktorId aktorId, Optional<Fnr> maybeFnr) {
