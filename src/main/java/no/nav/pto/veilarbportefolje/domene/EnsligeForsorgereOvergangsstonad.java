@@ -8,7 +8,7 @@ public record EnsligeForsorgereOvergangsstonad(
         String vedtaksPeriodetype,
         Boolean harAktivitetsplikt,
         LocalDate utlopsDato,
-        LocalDate yngsteBarnsFødselsdato) {
+        LocalDate yngsteBarnsFodselsdato) {
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public EnsligeForsorgereOvergangsstonad {

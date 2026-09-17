@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.domain.EnsligeForsorgerOverg
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype;
 import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Vedtaksresultat;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligForsorgerOvergangsstonadTiltakDto;
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
@@ -46,7 +46,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         oppdaterOvergangsstonadIOpenSearch(personIdent);
     }
 
-    public Optional<EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
+    public Optional<EnsligForsorgerOvergangsstonadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(String personIdent) {
         Optional<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltakOptional = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdent, true);
 
         if (ensligeForsorgerOvergangsstønadTiltakOptional.isPresent()) {
@@ -56,8 +56,8 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         return Optional.empty();
     }
 
-    public Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(List<Fnr> personIdents) {
-        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> result = new HashMap<>();
+    public Map<Fnr, EnsligForsorgerOvergangsstonadTiltakDto> hentEnsligeForsorgerOvergangsstønadTiltak(List<Fnr> personIdents) {
+        Map<Fnr, EnsligForsorgerOvergangsstonadTiltakDto> result = new HashMap<>();
         List<EnsligeForsorgerOvergangsstønadTiltak> ensligeForsorgerOvergangsstønadTiltaks = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(personIdents, true);
         ensligeForsorgerOvergangsstønadTiltaks.forEach(tiltak -> {
             result.putIfAbsent(tiltak.personIdent(), getEnsligeForsorgereDto(tiltak));
@@ -73,12 +73,12 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
     }
 
-    private EnsligeForsorgerOvergangsstønadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {
+    private EnsligForsorgerOvergangsstonadTiltakDto getEnsligeForsorgereDto(EnsligeForsorgerOvergangsstønadTiltak ensligeForsorgerOvergangsstønadTiltak) {
         Optional<LocalDate> yngsteBarn = ensligeForsorgereRepository.hentYngsteBarn(ensligeForsorgerOvergangsstønadTiltak.vedtakid());
 
         Optional<Boolean> harAktivitetsplikt = AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype(), ensligeForsorgerOvergangsstønadTiltak.aktivitetsType());
         String vedtakPeriodeBeskrivelse = mapPeriodetypeTilBeskrivelse(ensligeForsorgerOvergangsstønadTiltak.vedtaksPeriodetype());
-        return new EnsligeForsorgerOvergangsstønadTiltakDto(
+        return new EnsligForsorgerOvergangsstonadTiltakDto(
                 vedtakPeriodeBeskrivelse,
                 harAktivitetsplikt.orElse(null),
                 ensligeForsorgerOvergangsstønadTiltak.til_dato(),
@@ -103,7 +103,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     }
 
     private void oppdaterOvergangsstonadIOpenSearch(String personIdent) {
-        Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(personIdent);
+        Optional<EnsligForsorgerOvergangsstonadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = hentEnsligeForsorgerOvergangsstønadTiltak(personIdent);
         AktorId aktorId = aktorClient.hentAktorId(Fnr.of(personIdent));
 
         if (ensligeForsorgerOvergangsstønadTiltakDto.isPresent()) {

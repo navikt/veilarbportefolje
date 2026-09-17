@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.VeilederId
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligForsorgerOvergangsstonadTiltakDto
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
@@ -246,26 +246,26 @@ class OpensearchIndexerPaDatafelt(
 
     fun updateOvergangsstonad(
         aktorId: AktorId,
-        ensligeForsorgerOvergangsstønadTiltakDto: EnsligeForsorgerOvergangsstønadTiltakDto
+        ensligForsorgerOvergangsstonadTiltakDto: EnsligForsorgerOvergangsstonadTiltakDto
     ) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .startObject(DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD)
             .field(
                 DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE,
-                ensligeForsorgerOvergangsstønadTiltakDto.vedtaksPeriodetypeBeskrivelse
+                ensligForsorgerOvergangsstonadTiltakDto.vedtaksPeriodetypeBeskrivelse
             )
             .field(
                 DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_HAR_AKTIVITETSPLIKT,
-                ensligeForsorgerOvergangsstønadTiltakDto.aktivitsplikt
+                ensligForsorgerOvergangsstonadTiltakDto.aktivitetsplikt
             )
             .field(
                 DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO,
-                ensligeForsorgerOvergangsstønadTiltakDto.utløpsDato
+                ensligForsorgerOvergangsstonadTiltakDto.utlopsDato
             )
             .field(
                 DatafeltKeys.Ytelser.`ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO`,
-                ensligeForsorgerOvergangsstønadTiltakDto.yngsteBarnsFødselsdato
+                ensligForsorgerOvergangsstonadTiltakDto.yngsteBarnsFodselsdato
             )
             .endObject()
             .endObject()

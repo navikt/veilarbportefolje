@@ -142,7 +142,7 @@ object PortefoljebrukerFrontendModellMapper {
                         vedtaksPeriodetype = it.vedtaksPeriodetype,
                         harAktivitetsplikt = it.harAktivitetsplikt,
                         utlopsDato = it.utlopsDato,
-                        yngsteBarnsFodselsdato = it.yngsteBarnsFødselsdato
+                        yngsteBarnsFodselsdato = it.yngsteBarnsFodselsdato
                     )
                 },
                 ungdomsprogram = mapUngdomsprogram(opensearchBruker),
