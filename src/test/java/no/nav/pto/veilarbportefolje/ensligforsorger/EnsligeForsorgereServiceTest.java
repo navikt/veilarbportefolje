@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,14 +42,14 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
-    private static NavKontor navKontor = NavKontor.of("1123");
-    private static VeilederId veilederId = VeilederId.of("1402");
-
-    private static Fnr hoved_fnr = Fnr.of("2449920301");
+    private final NavKontor navKontor = NavKontor.of("1123");
+    private final VeilederId veilederId = VeilederId.of("1402");
+    private final Fnr hoved_fnr = Fnr.of("2449920301");
 
     @Autowired
     private OpensearchService opensearchService;
@@ -98,8 +99,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     public void testAvsluttetOvergangsstonadForBrukerIndex() {
         setInitialState();
 
-        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, Month.MAY, 4)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.JULY, 4), LocalDate.of(2024, Month.APRIL, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,
@@ -123,6 +124,86 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
+                }
+        );
+    }
+
+    @Test
+    public void testOvergangsstonadMedUkjentAktivitetspliktKasterIkkeException() {
+        // Regresjonstest for NPE i OpensearchIndexerPaDatafelt.updateOvergangsstonad når
+        // AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(...) returnerer Optional.empty()
+        // (f.eks. for periodetype MIGRERING), som gjør at aktivitsplikt blir null.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", null));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(5), LocalDate.now().plusDays(30), Periodetype.MIGRERING, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        99887766L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Migrering fra Infotrygd");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
+                }
+        );
+    }
+
+    @Test
+    public void testOvergangsstonadMedPeriodetypeSærligTilsynskrevendeBarnKasterIkkeException() {
+        // Regresjonstest basert på en reell melding funnet i produksjon som trigget NPE-en:
+        // periodetype SÆRLIG_TILSYNSKREVENDE_BARN har ingen egen gren i
+        // AktivitetsTypeTilAktivitetsplikt (kun aktivitetstypen BARNET_SÆRLIG_TILSYNSKREVENDE er mappet,
+        // og bare under periodetype HOVEDPERIODE/NY_PERIODE_FOR_NYTT_BARN), så kombinasjonen faller
+        // igjennom til Optional.empty() -> aktivitsplikt = null, samme feilklasse som MIGRERING-testen over.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", LocalDate.of(2023, Month.MARCH, 8)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2026, Month.JULY, 1), LocalDate.of(2027, Month.JULY, 31), Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN, Aktivitetstype.BARNET_SÆRLIG_TILSYNSKREVENDE));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        210294L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Særlig tilsynskrevende barn");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
                 }
         );
     }
@@ -229,7 +310,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(List.of(fnr));
         assertEquals(1, fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size());
         assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnr));
-        assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(fnr).utløpsDato(), LocalDate.now().plusMonths(1));
+        assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(fnr).utløpsDato, LocalDate.now().plusMonths(1));
     }
 
     @Test
@@ -278,12 +359,12 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
 
         Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
         assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
-        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato(), LocalDate.now().plusDays(20));
+        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato, LocalDate.now().plusDays(20));
 
         lagreRandomVedtakIdatabase(vedtakId, fnr, LocalDate.now().minusDays(3), LocalDate.now().plusDays(80));
         ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
         assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
-        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato(), LocalDate.now().plusDays(80));
+        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato, LocalDate.now().plusDays(80));
     }
 
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
