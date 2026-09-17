@@ -357,9 +357,9 @@ BEGIN;
 -- ==========================================
 -- CONFIGURATION
 -- ==========================================
-SET custom.target_key = 'formidlingsgruppe'; -- Nøkkelen verdien ligger under, f eks "ytelseDagpengerArena"
-SET custom.target_value = 'ISERV'; -- Verdien vi ønsker å fjerne/slette. F eks "HAR_DAGPENGER_MED_PERMITTERING"
-SET custom.deleted_filter_text = 'Verdi "Ikke servicebehov" i filter for formidlingsgruppe'; -- Navn på verdien og
+SET custom.target_key = 'key'; -- Nøkkelen verdien ligger under, f eks "ytelseDagpengerArena"
+SET custom.target_value = 'value'; -- Verdien vi ønsker å fjerne/slette. F eks "HAR_DAGPENGER_MED_PERMITTERING"
+SET custom.deleted_filter_text = 'Verdi "XXX" i filter for YYY'; -- Navn på verdien og
 filteret i frontend som ble slettet, vises rett til veiledere i frontend. F eks "Verdi "Dagpenger under permitering" i
 filter for Dagpenger (Arena)".
 -- ==========================================
