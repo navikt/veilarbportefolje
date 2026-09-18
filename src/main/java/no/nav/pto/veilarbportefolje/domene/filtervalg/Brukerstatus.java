@@ -3,7 +3,6 @@ package no.nav.pto.veilarbportefolje.domene.filtervalg;
 public enum Brukerstatus {
     TRENGER_OPPFOLGINGSVEDTAK,
     UFORDELTE_BRUKERE,
-    INAKTIVE_BRUKERE,
     VENTER_PA_SVAR_FRA_NAV,
     VENTER_PA_SVAR_FRA_BRUKER,
     UTLOPTE_AKTIVITETER,

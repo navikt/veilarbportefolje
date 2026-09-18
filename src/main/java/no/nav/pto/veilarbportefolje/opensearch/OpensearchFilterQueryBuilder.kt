@@ -802,7 +802,6 @@ class OpensearchFilterQueryBuilder {
         val queryBuilder = when (brukerStatus) {
             Brukerstatus.UFORDELTE_BRUKERE -> byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet)
             Brukerstatus.TRENGER_OPPFOLGINGSVEDTAK -> byggTrengerOppfolgingsvedtakFilter()
-            Brukerstatus.INAKTIVE_BRUKERE -> QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV")
             Brukerstatus.VENTER_PA_SVAR_FRA_NAV -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_NAV)
             Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_BRUKER)
             Brukerstatus.I_AVTALT_AKTIVITET -> QueryBuilders.existsQuery(AKTIVITETER)
@@ -937,7 +936,6 @@ class OpensearchFilterQueryBuilder {
             erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, AKTIVITETER),
             ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
-            inaktiveBrukere(filtrereVeilederOgEnhet),
             mustBeTrueFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key
@@ -1124,16 +1122,6 @@ class OpensearchFilterQueryBuilder {
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(QueryBuilders.termQuery(NY_FOR_VEILEDER, true))
-
-        )
-    }
-
-    private fun inaktiveBrukere(filtrereVeilederOgEnhet: BoolQueryBuilder): FiltersAggregator.KeyedFilter {
-        return FiltersAggregator.KeyedFilter(
-            StatustallAggregationKey.INAKTIVE_BRUKERE.key,
-            QueryBuilders.boolQuery()
-                .must(filtrereVeilederOgEnhet)
-                .must(QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV"))
 
         )
     }
