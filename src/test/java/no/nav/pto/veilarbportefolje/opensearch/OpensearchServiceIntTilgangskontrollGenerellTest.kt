@@ -639,7 +639,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         )
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isZero()
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1)
-        assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2)
+        assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(1)
         assertThat(statustall.nyeBrukereForVeileder).isEqualTo(1)
         assertThat(statustall.venterPaSvarFraNAV).isEqualTo(1)
         assertThat(statustall.utlopteAktiviteter).isEqualTo(1)
@@ -650,7 +650,7 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(statustall.fargekategoriD).isZero()
         assertThat(statustall.fargekategoriE).isZero()
         assertThat(statustall.fargekategoriF).isZero()
-        assertThat(statustall.fargekategoriIngenKategori).isEqualTo(1)
+        assertThat(statustall.fargekategoriIngenKategori).isZero()
         assertThat(statustall.tiltakshendelser).isZero()
     }
 
