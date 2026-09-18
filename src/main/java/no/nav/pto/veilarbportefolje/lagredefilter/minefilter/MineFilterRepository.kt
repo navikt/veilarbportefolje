@@ -1,0 +1,182 @@
+package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
+
+import no.nav.common.json.JsonUtils
+import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER.*
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.HentLagretFilterResponse
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
+import org.postgresql.util.PGobject
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Repository
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+
+@Repository
+class MineFilterRepository(private val db: JdbcTemplate) {
+
+    fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
+        val sql = """
+            SELECT *
+            FROM $TABLE_NAME
+            WHERE $VEILEDER_IDENT = ?
+            ORDER BY $SORT_ORDER
+        """.trimIndent()
+
+        var antallFiltreSomFeilet = 0
+
+        val filtre = db.query(sql, { rs, _ ->
+            try {
+                rs.toLagretFilter()
+            } catch (e: FiltervalgRekonstruksjonException) {
+                antallFiltreSomFeilet++
+                null
+            }
+        }, veilederIdent).filterNotNull()
+        return HentLagretFilterResponse(filtre, antallFiltreSomFeilet)
+    }
+
+    fun lagreNyttFilterForVeileder(
+        veilederIdent: String,
+        filterNavn: String,
+        aktiveFiltervalg: AktiveFiltervalg
+    ): LagretFilter {
+        val sql = """
+            INSERT INTO $TABLE_NAME (
+                $VEILEDER_IDENT,
+                $FILTER_NAVN,
+                $AKTIVE_FILTER_VALG,
+                $SORT_ORDER,
+                $INFO_OM_SLETTET_FILTERVALG,
+                $OPPRETTET,
+                $RAD_SIST_ENDRET
+            )
+            VALUES (?, ?, ?, 0, null, now(), now())
+            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER, $INFO_OM_SLETTET_FILTERVALG
+        """.trimIndent()
+
+        return db.query(
+            sql,
+            { ps: PreparedStatement ->
+                ps.setString(1, veilederIdent)
+                ps.setString(2, filterNavn)
+                ps.setObject(3, aktiveFiltervalg.toJsonb())
+            },
+            { rs, _ -> rs.toLagretFilter() }
+        ).first()
+    }
+
+    fun oppdaterLagretFilterForVeileder(
+        veilederIdent: String,
+        filterId: Int,
+        filterNavn: String,
+        aktiveFiltervalg: AktiveFiltervalg
+    ): LagretFilter {
+        val sql = """
+            UPDATE $TABLE_NAME
+            SET $FILTER_NAVN = ?,
+                $AKTIVE_FILTER_VALG = ?,
+                $INFO_OM_SLETTET_FILTERVALG = null,
+                $RAD_SIST_ENDRET = now()
+            WHERE $FILTER_ID = ? AND $VEILEDER_IDENT = ?
+            RETURNING $FILTER_ID, $FILTER_NAVN, $AKTIVE_FILTER_VALG, $SORT_ORDER, $INFO_OM_SLETTET_FILTERVALG
+        """.trimIndent()
+
+        return db.query(
+            sql,
+            { ps: PreparedStatement ->
+                ps.setString(1, filterNavn)
+                ps.setObject(2, aktiveFiltervalg.toJsonb())
+                ps.setInt(3, filterId)
+                ps.setString(4, veilederIdent)
+            },
+            { rs, _ -> rs.toLagretFilter() }
+        ).firstOrNull()
+            ?: throw NoSuchElementException(
+                "Fant ingen mine filter med filterId=$filterId for veileder=$veilederIdent"
+            )
+    }
+
+    fun slettFilterForVeileder(veilederIdent: String, filterId: Int): Int {
+        val sql = """
+            DELETE FROM $TABLE_NAME
+            WHERE $FILTER_ID = ? AND $VEILEDER_IDENT = ?
+        """.trimIndent()
+
+        return db.update(sql, filterId, veilederIdent)
+    }
+
+    fun lagreSortering(veilederIdent: String, sortOrderRequests: List<SortOrderRequest>): List<LagretFilter> {
+        val updateSql = """
+            UPDATE $TABLE_NAME
+            SET $SORT_ORDER = ?,
+            $RAD_SIST_ENDRET = now()
+            WHERE $FILTER_ID = ? AND $VEILEDER_IDENT = ?
+    """.trimIndent()
+
+        sortOrderRequests.forEach { req ->
+            db.update(updateSql, req.sortOrder, req.filterId, veilederIdent)
+        }
+
+        return hentFilterForVeileder(veilederIdent).filtre
+    }
+
+    fun eksistererFilterNavn(veilederIdent: String, filterNavn: String, ekskluderFilterId: Int? = null): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $VEILEDER_IDENT = ?
+                  AND $FILTER_NAVN = ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.queryForObject(
+            sql,
+            Boolean::class.java,
+            veilederIdent,
+            filterNavn,
+            ekskluderFilterId,
+            ekskluderFilterId
+        ) == true
+    }
+
+    fun eksistererFiltervalg(
+        veilederIdent: String,
+        aktiveFiltervalg: AktiveFiltervalg,
+        ekskluderFilterId: Int? = null
+    ): Boolean {
+        val sql = """
+            SELECT EXISTS(
+                SELECT 1 FROM $TABLE_NAME
+                WHERE $VEILEDER_IDENT = ?
+                  AND $AKTIVE_FILTER_VALG = ?
+                  AND (CAST(? AS INTEGER) IS NULL OR $FILTER_ID <> ?)
+            )
+        """.trimIndent()
+        return db.queryForObject(
+            sql,
+            Boolean::class.java,
+            veilederIdent,
+            aktiveFiltervalg.toJsonb(),
+            ekskluderFilterId,
+            ekskluderFilterId
+        ) == true
+    }
+
+    private fun ResultSet.toLagretFilter(): LagretFilter =
+        LagretFilter(
+            filterId = getInt(FILTER_ID),
+            filterNavn = getString(FILTER_NAVN),
+            filterValg = rekonstruerFiltervalgFraJson(getInt(FILTER_ID), getString(AKTIVE_FILTER_VALG)),
+            sortOrder = getInt(SORT_ORDER),
+            infoOmSlettetFiltervalg = getStringList(INFO_OM_SLETTET_FILTERVALG)
+        )
+
+    private fun AktiveFiltervalg.toJsonb(): PGobject =
+        PGobject().apply {
+            type = "jsonb"
+            value = JsonUtils.toJson(this@toJsonb)
+        }
+
+    private fun ResultSet.getStringList(column: String): List<String>? =
+        (getArray(column)?.array as? Array<*>)?.map { it as String }
+}

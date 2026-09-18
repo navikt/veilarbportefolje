@@ -58,7 +58,8 @@ class PortefoljeAktivitetKafkaMeldingRepository(
 
     fun behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
         val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
-        val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk }
+        //Aktiviteter som starter med ARENA, er feilaktiviteter og skal ikke lagres i DB-en. Derfor filtrerer vi dem bort her.
+        val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk || it.aktivitetId.startsWith("ARENA") }
 
         val antallTiltaksAktiviteterSlettet = batchDeleteById(inaktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
         val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(aktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
@@ -97,6 +98,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 $AVTALT,
                 $VERSION,
                 $HISTORISK,
+                $OPPFOLGINGSPERIODE_ID,
                 $CV_KAN_DELES_STATUS,
                 $SVARFRIST_STILLING_FRA_NAV,
                 $RECORD_OFFSET,
@@ -108,7 +110,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             VALUES (
                 :aktivitetId, :aktorId, :aktivitetType, :aktivitetStatus, :endringsType,
                 :fraDato, :tilDato, :endretDato, :tiltakskode, :lagtInnAv,
-                :avtalt, :version, :historisk, :cvKanDelesStatus, :svarfristStillingFraNav,
+                :avtalt, :version, :historisk, :oppfolgingsperiodeId, :cvKanDelesStatus, :svarfristStillingFraNav,
                 :recordOffset, :recordPartition, :recordKey,
                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )
@@ -125,6 +127,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 $AVTALT = excluded.$AVTALT,
                 $VERSION = excluded.$VERSION,
                 $HISTORISK = excluded.$HISTORISK,
+                $OPPFOLGINGSPERIODE_ID = excluded.$OPPFOLGINGSPERIODE_ID,
                 $CV_KAN_DELES_STATUS = excluded.$CV_KAN_DELES_STATUS,
                 $SVARFRIST_STILLING_FRA_NAV = excluded.$SVARFRIST_STILLING_FRA_NAV,
                 $RECORD_OFFSET = excluded.$RECORD_OFFSET,
@@ -164,12 +167,12 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             return
         }
         opensearchIndexer.indekserBolk(aktiviteter.map { AktorId.of(it.aktorId) })
-        secureLog.info("IndekserBolk: Indekserte {} aktivitetdmeldingne {}", aktiviteter.size)
+        secureLog.info("IndekserBolk: Indekserte {} aktivitetsmeldingne", aktiviteter.size)
     }
 
     private fun indekserAktivitet(aktorId: AktorId) {
         opensearchIndexer.indekser(aktorId)
-        secureLog.info("Indekserte en aktivitetdmelding med aktorId {}", aktorId)
+        secureLog.info("Indekserte en aktivitetsmelding med aktorId {}", aktorId)
     }
 
     private fun beholdSisteMeldingPerAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): List<KafkaAktivitetMeldingEntity> {
@@ -204,6 +207,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         .addValue("avtalt", avtalt)
         .addValue("version", version)
         .addValue("historisk", historisk)
+        .addValue("oppfolgingsperiodeId", oppfolgingsperiodeId)
         .addValue("cvKanDelesStatus", cvKanDelesStatus)
         .addValue("svarfristStillingFraNav", svarfristStillingFraNav)
         .addValue("recordOffset", recordOffset)

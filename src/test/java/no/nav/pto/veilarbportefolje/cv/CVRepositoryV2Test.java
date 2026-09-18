@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.cv;
 
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Optional;
@@ -17,7 +17,7 @@ public class CVRepositoryV2Test {
     private JdbcTemplate db;
     private CVRepositoryV2 cvRepositoryV2;
 
-    @Before
+    @BeforeEach
     public void setup() {
         db = SingletonPostgresContainer.init().createJdbcTemplate();
         cvRepositoryV2 = new CVRepositoryV2(db);

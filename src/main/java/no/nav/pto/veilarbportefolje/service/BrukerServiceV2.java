@@ -33,12 +33,12 @@ public class BrukerServiceV2 {
     }
 
     public Optional<NavKontor> hentNavKontor(AktorId aktoerId) {
-        Fnr fnr = pdlIdentRepository.hentFnrForAktivBruker(aktoerId);
-        return hentNavKontor(fnr);
+        return oppfolgingsbrukerRepositoryV3.hentNavKontor(aktoerId);
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
-        return oppfolgingsbrukerRepositoryV3.hentNavKontor(fnr);
+        AktorId aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr);
+        return oppfolgingsbrukerRepositoryV3.hentNavKontor(aktorId);
     }
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {

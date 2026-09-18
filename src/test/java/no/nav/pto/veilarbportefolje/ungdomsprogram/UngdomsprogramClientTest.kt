@@ -1,30 +1,23 @@
 package no.nav.pto.veilarbportefolje.ungdomsprogram
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
-import no.nav.common.types.identer.Fnr
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Deltakelse
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.UngdomsprogramResponseDto
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
+@WireMockTest
 class UngdomsprogramClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentAlleMedUngdomsprogram_gir_forventet_respons_naar_bruker_eksisterer() {
-        val fnr = Fnr.of("123")
-
+    fun hentAlleMedUngdomsprogram_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val client = UngdomsprogramClient(
-            "http://localhost:" + wireMockRule.port(),
-            { "TOKEN" }
-        )
+            "http://localhost:" + wireMockRuntimeInfo.httpPort
+        ) { "TOKEN" }
 
         val responseBody = """
             {
@@ -81,5 +74,4 @@ class UngdomsprogramClientTest {
 
         Assertions.assertThat(response).isEqualTo(forventet)
     }
-
 }

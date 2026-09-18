@@ -44,6 +44,8 @@ data class PortefoljeAktivitetKafkaMelding(
     val historisk: Boolean,
     @param:JsonProperty("tiltakskode")
     val tiltakskode: String? = null,
+    @param:JsonProperty("oppfolgingsperiodeId")
+    val oppfolgingsperiodeId: String? = null,
 ) {
     fun toEntity(metadata: KafkaMeldingMetadata): KafkaAktivitetMeldingEntity {
         return KafkaAktivitetMeldingEntity(
@@ -60,6 +62,7 @@ data class PortefoljeAktivitetKafkaMelding(
             avtalt = avtalt,
             version = version,
             historisk = historisk,
+            oppfolgingsperiodeId = oppfolgingsperiodeId,
             cvKanDelesStatus = stillingFraNavData?.cvKanDelesStatus,
             svarfristStillingFraNav = stillingFraNavData?.svarfrist,
             recordOffset = metadata.recordOffset,
@@ -92,6 +95,7 @@ data class KafkaAktivitetMeldingEntity(
     val avtalt: Boolean,
     val version: Long,
     val historisk: Boolean,
+    val oppfolgingsperiodeId: String?,
 
     // Stilling fra Nav-data frå nested Kafka-payload
     val cvKanDelesStatus: String?,

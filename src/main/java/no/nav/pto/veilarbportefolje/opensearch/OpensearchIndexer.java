@@ -8,7 +8,9 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearch
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
 import org.opensearch.OpenSearchException;
+import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
@@ -65,7 +67,17 @@ public class OpensearchIndexer {
                 .forEach(bulk::add);
 
         try {
-            restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
+            BulkResponse response = restHighLevelClient.bulk(bulk, RequestOptions.DEFAULT);
+
+            int antallTotalt = response.getItems().length;
+            int antallFeilede = 0;
+            for (BulkItemResponse item : response.getItems()) {
+                if (item.isFailed()) antallFeilede++;
+            }
+            int antallSuksess = antallTotalt - antallFeilede;
+
+            log.info("OpenSearch bulk stats: total={}, succeeded={}, failed={}, tookMs={}", antallTotalt, antallSuksess, antallFeilede, response.getTook().getMillis());
+
             secureLog.info("Skrev {} brukere til indeks: {}", brukerOpensearchModellList.size(), aktoerIds);
         } catch (IOException e) {
             secureLog.error(String.format("Klart ikke å skrive til indeks: %s", aktoerIds), e);

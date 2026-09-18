@@ -17,7 +17,6 @@ import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,21 +42,20 @@ import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EnsligeForsorgereServiceTest extends EndToEndTest {
-    private static NavKontor navKontor = NavKontor.of("1123");
-    private static VeilederId veilederId = VeilederId.of("1402");
-
-    private static Fnr hoved_fnr = Fnr.of("2449920301");
+    private final NavKontor navKontor = NavKontor.of("1123");
+    private final VeilederId veilederId = VeilederId.of("1402");
+    private final Fnr hoved_fnr = Fnr.of("2449920301");
 
     @Autowired
     private OpensearchService opensearchService;
 
     @Autowired
     private EnsligeForsorgereService ensligeForsorgereService;
-
-    @Autowired
-    private EnsligeForsorgereRepository ensligeForsorgereRepository;
 
     @Autowired
     private AktorClient aktorClient;
@@ -100,8 +99,8 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     public void testAvsluttetOvergangsstonadForBrukerIndex() {
         setInitialState();
 
-        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, 5, 4)));
-        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, 4, 4), LocalDate.of(2024, 4, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+        List<Barn> barn = List.of(new Barn("11032245678", null), new Barn(null, LocalDate.of(2023, Month.MAY, 4)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2023, Month.JULY, 4), LocalDate.of(2024, Month.APRIL, 4), Periodetype.NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
                 new VedtakOvergangsstønadArbeidsoppfølging(
                         54321L,
@@ -125,6 +124,86 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                             null);
 
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
+                }
+        );
+    }
+
+    @Test
+    public void testOvergangsstonadMedUkjentAktivitetspliktKasterIkkeException() {
+        // Regresjonstest for NPE i OpensearchIndexerPaDatafelt.updateOvergangsstonad når
+        // AktivitetsTypeTilAktivitetsplikt.harAktivitetsplikt(...) returnerer Optional.empty()
+        // (f.eks. for periodetype MIGRERING), som gjør at aktivitsplikt blir null.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", null));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.now().minusDays(5), LocalDate.now().plusDays(30), Periodetype.MIGRERING, Aktivitetstype.BARN_UNDER_ETT_ÅR));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        99887766L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Migrering fra Infotrygd");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
+                }
+        );
+    }
+
+    @Test
+    public void testOvergangsstonadMedPeriodetypeSærligTilsynskrevendeBarnKasterIkkeException() {
+        // Regresjonstest basert på en reell melding funnet i produksjon som trigget NPE-en:
+        // periodetype SÆRLIG_TILSYNSKREVENDE_BARN har ingen egen gren i
+        // AktivitetsTypeTilAktivitetsplikt (kun aktivitetstypen BARNET_SÆRLIG_TILSYNSKREVENDE er mappet,
+        // og bare under periodetype HOVEDPERIODE/NY_PERIODE_FOR_NYTT_BARN), så kombinasjonen faller
+        // igjennom til Optional.empty() -> aktivitsplikt = null, samme feilklasse som MIGRERING-testen over.
+        setInitialState();
+
+        List<Barn> barn = List.of(new Barn("11032245678", LocalDate.of(2023, Month.MARCH, 8)));
+        List<Periode> periodeType = List.of(new Periode(LocalDate.of(2026, Month.JULY, 1), LocalDate.of(2027, Month.JULY, 31), Periodetype.SÆRLIG_TILSYNSKREVENDE_BARN, Aktivitetstype.BARNET_SÆRLIG_TILSYNSKREVENDE));
+
+        assertDoesNotThrow(() -> ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        210294L,
+                        hoved_fnr.toString(),
+                        barn,
+                        Stønadstype.OVERGANGSSTØNAD,
+                        periodeType,
+                        Vedtaksresultat.INNVILGET
+                )
+        ));
+
+        Filtervalg filtervalg = getFiltervalgMedEnsligeforsorgereForJavaTester(List.of(OVERGANGSSTONAD));
+        verifiserAsynkront(2, TimeUnit.SECONDS, () -> {
+                    BrukereMedAntall responseBrukere = opensearchService.hentBrukere(
+                            navKontor.toString(),
+                            empty(),
+                            Sorteringsrekkefolge.STIGENDE,
+                            Sorteringsfelt.IKKE_SATT,
+                            filtervalg,
+                            null,
+                            null);
+
+                    assertThat(responseBrukere.getAntall()).isEqualTo(1);
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getVedtaksPeriodetype()).isEqualTo("Særlig tilsynskrevende barn");
+                    assertThat(responseBrukere.getBrukere().getFirst().getYtelser().getEnsligeForsorgereOvergangsstonad().getHarAktivitetsplikt()).isNull();
                 }
         );
     }
@@ -206,12 +285,12 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         lagreRandomVedtakIdatabase(vedtakIds.get(4), fnrList.get(4), LocalDate.now().minusDays(13), LocalDate.now().plusMonths(1));
 
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
-        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 5);
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(3)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
+        assertEquals(5, fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size());
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(3)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
     }
 
     @Test
@@ -229,9 +308,9 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         lagreRandomVedtakIdatabase(vedtakIds.get(2), fnr, LocalDate.now().plusDays(20), LocalDate.now().plusMonths(1));
 
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(List.of(fnr));
-        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 1);
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnr));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(fnr).utløpsDato().equals(LocalDate.now().plusMonths(1)));
+        assertEquals(1, fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size());
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnr));
+        assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(fnr).utløpsDato, LocalDate.now().plusMonths(1));
     }
 
     @Test
@@ -264,11 +343,11 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         lagreRandomVedtakIdatabase(vedtakIds.get(5), fnrList.get(5), LocalDate.now().plusMonths(7), LocalDate.now().plusMonths(10));
 
         Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnrList);
-        Assert.assertEquals(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size(), 4);
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
-        Assert.assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
+        assertEquals(4, fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.size());
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(0)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(1)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(2)));
+        assertTrue(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(fnrList.get(4)));
     }
 
     @Test
@@ -279,13 +358,13 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         lagreRandomVedtakIdatabase(vedtakId, fnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(20));
 
         Optional<EnsligeForsorgerOvergangsstønadTiltakDto> ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
-        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
-        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato().equals(LocalDate.now().plusDays(20)));
+        assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
+        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato, LocalDate.now().plusDays(20));
 
         lagreRandomVedtakIdatabase(vedtakId, fnr, LocalDate.now().minusDays(3), LocalDate.now().plusDays(80));
         ensligeForsorgerOvergangsstønadTiltakDto = ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(fnr.get());
-        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
-        Assert.assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato().equals(LocalDate.now().plusDays(80)));
+        assertTrue(ensligeForsorgerOvergangsstønadTiltakDto.isPresent());
+        assertEquals(ensligeForsorgerOvergangsstønadTiltakDto.get().utløpsDato, LocalDate.now().plusDays(80));
     }
 
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
@@ -354,9 +433,7 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         Mockito.when(ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr)).thenReturn(expected);
         Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> {
-            return rs.getString("vedtakid");
-        }, fnr.get());
+        String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> rs.getString("vedtakid"), fnr.get());
         assertThat(vedtakid).isNotNull();
         assertThat(vedtakid).isEqualTo("20532");
     }

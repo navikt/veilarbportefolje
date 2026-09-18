@@ -1,31 +1,29 @@
 package no.nav.pto.veilarbportefolje.ensligforsorger
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.json.JsonUtils.fromJson
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.ensligforsorger.client.EnsligForsorgerClientImpl
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.OvergangsstønadResponseDto
 import no.nav.pto.veilarbportefolje.util.TestUtil.readTestResourceFile
-import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import java.util.*
 
+@WireMockTest
 class EnsligForsorgerClientImplTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentEnsligForsorger_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentEnsligForsorger_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("12518904661")
         val ensligForsorgerJson = readTestResourceFile("ensligForsorgerApiData.json")
         val client = EnsligForsorgerClientImpl(
-            "http://localhost:" + wireMockRule.port()
+            "http://localhost:" + wireMockRuntimeInfo.httpPort
         ) { "TOKEN" }
-        println("ensligForsorgerJson: "+ensligForsorgerJson)
+
+        println("ensligForsorgerJson: $ensligForsorgerJson")
 
         val expected = fromJson(ensligForsorgerJson, OvergangsstønadResponseDto::class.java);
 
@@ -40,7 +38,7 @@ class EnsligForsorgerClientImplTest {
         )
         val response: Optional<OvergangsstønadResponseDto> = client.hentEnsligForsorgerOvergangsstonad(fnr);
 
-        Assertions.assertThat(response.get().data.personIdent[0]).isEqualTo(expected.data.personIdent[0])
-        Assertions.assertThat(response.get()).isEqualTo(expected)
+        assertThat(response.get().data.personIdent[0]).isEqualTo(expected.data.personIdent[0])
+        assertThat(response.get()).isEqualTo(expected)
     }
 }

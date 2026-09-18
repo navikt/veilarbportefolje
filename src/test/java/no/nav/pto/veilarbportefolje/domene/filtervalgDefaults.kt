@@ -44,7 +44,9 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ytelseTiltakspenger = emptyList(),
     ytelseTiltakspengerArena = emptyList(),
     ytelseDagpenger = emptyList(),
-    ytelseDagpengerArena = emptyList()
+    ytelseDagpengerArena = emptyList(),
+    ytelseUngdomsprogram = emptyList(),
+    visGeografiskBosted = emptyList()
 )
 
 @JvmOverloads

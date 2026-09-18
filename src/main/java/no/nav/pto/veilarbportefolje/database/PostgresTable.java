@@ -21,11 +21,13 @@ public class PostgresTable {
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR = "OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO";
-        public static final String OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR = "OPPFOLGINGSBRUKER_ARENA_V2_NAV_KONTOR";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE = "OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE = "OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE";
         public static final String OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO = "OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO";
+
+        // AO_KONTOR
+        public static final String AO_KONTOR_KONTOR_ID = "AO_KONTOR_KONTOR_ID";
 
         // NOM_SKJERMING
         public static final String NOM_SKJERMING_ER_SKJERMET = "NOM_SKJERMING_ER_SKJERMET";
@@ -129,6 +131,7 @@ public class PostgresTable {
     public static final class AKTIVE_IDENTER {
         private AKTIVE_IDENTER() {
         }
+
         public static final String TABLE_NAME = "AKTIVE_IDENTER";
         public static final String AKTORID = "AKTORID";
         public static final String FNR = "FNR";
@@ -166,10 +169,10 @@ public class PostgresTable {
 
         private AO_KONTOR() { /* no-op */ }
 
-        public static final String TABLE_NAME = "ao_kontor";
-        public static final String AKTORID = "aktorid";
-        public static final String IDENT = "ident";
-        public static final String KONTOR_ID = "kontor_id";
+        public static final String TABLE_NAME = "AO_KONTOR";
+        public static final String AKTORID = "AKTORID";
+        public static final String IDENT = "IDENT";
+        public static final String KONTOR_ID = "KONTOR_ID";
     }
 
     public static final class DIALOG {
@@ -387,6 +390,7 @@ public class PostgresTable {
         public static final String AVTALT = "AVTALT";
         public static final String VERSION = "VERSION";
         public static final String HISTORISK = "HISTORISK";
+        public static final String OPPFOLGINGSPERIODE_ID = "OPPFOLGINGSPERIODE_ID";
         public static final String CV_KAN_DELES_STATUS = "CV_KAN_DELES_STATUS";
         public static final String SVARFRIST_STILLING_FRA_NAV = "SVARFRIST_STILLING_FRA_NAV";
         public static final String RECORD_OFFSET = "RECORD_OFFSET";
@@ -480,7 +484,9 @@ public class PostgresTable {
         public static final String ID = "ID";
         public static final String PERSON_IDENT = "PERSON_IDENT";
         public static final String HENDELSE_NAVN = "HENDELSE_NAVN";
+        public static final String HENDELSE_NAVN_ENUM = "HENDELSE_NAVN_ENUM";
         public static final String HENDELSE_DATO = "HENDELSE_DATO";
+        public static final String HENDELSE_DATO_FRIST = "HENDELSE_DATO_FRIST";
         public static final String HENDELSE_LENKE = "HENDELSE_LENKE";
         public static final String HENDELSE_DETALJER = "HENDELSE_DETALJER";
         public static final String KATEGORI = "KATEGORI";
@@ -539,6 +545,32 @@ public class PostgresTable {
         public static final String HAR_FORLENGET_PERIODE = "HAR_FORLENGET_PERIODE";
         public static final String MAKSDATO = "MAKSDATO";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class LAGREDE_FILTER_VEILEDERGRUPPER {
+        private LAGREDE_FILTER_VEILEDERGRUPPER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "LAGREDE_FILTER_VEILEDERGRUPPER";
+        public static final String FILTER_ID = "FILTER_ID";
+        public static final String FILTER_NAVN = "FILTER_NAVN";
+        public static final String ENHET_ID = "ENHET_ID";
+        public static final String VEILEDER_IDENTER = "VEILEDER_IDENTER";
+        public static final String OPPRETTET = "OPPRETTET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class LAGREDE_FILTER_MINE_FILTER {
+        private LAGREDE_FILTER_MINE_FILTER() { /* no-op */ }
+
+        public static final String TABLE_NAME = "LAGREDE_FILTER_MINE_FILTER";
+        public static final String FILTER_ID = "FILTER_ID";
+        public static final String FILTER_NAVN = "FILTER_NAVN";
+        public static final String VEILEDER_IDENT = "VEILEDER_IDENT";
+        public static final String AKTIVE_FILTER_VALG = "AKTIVE_FILTER_VALG";
+        public static final String SORT_ORDER = "SORT_ORDER";
+        public static final String OPPRETTET = "OPPRETTET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+        public static final String INFO_OM_SLETTET_FILTERVALG = "INFO_OM_SLETTET_FILTERVALG";
     }
 
 }

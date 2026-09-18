@@ -27,7 +27,8 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
                 "svarfrist": "2022-08-18"
               },
               "avtalt": true,
-              "historisk": false
+              "historisk": false,
+              "oppfolgingsperiodeId": "342687"
             }
         """.trimIndent()
 
@@ -48,6 +49,7 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
         assertThat(resultat.stillingFraNavData?.svarfrist).isEqualTo("2022-08-18")
         assertThat(resultat.avtalt).isTrue()
         assertThat(resultat.historisk).isFalse()
+        assertThat(resultat.oppfolgingsperiodeId).isEqualTo("342687")
     }
 
     @Test
@@ -67,7 +69,8 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
               "avtalt": false,
               "historisk": false,
               "tiltakskode": "ARBFORB",
-              "ukjentFelt": "skal ignoreres"
+              "ukjentFelt": "skal ignoreres",
+              "oppfolgingsperiodeId": "342687"
             }
         """.trimIndent()
 
@@ -77,6 +80,7 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
         assertThat(resultat!!.aktivitetType).isEqualTo("TILTAK")
         assertThat(resultat.tiltakskode).isEqualTo("ARBFORB")
         assertThat(resultat.lagtInnAv).isEqualTo("SYSTEM")
+        assertThat(resultat.oppfolgingsperiodeId).isEqualTo("342687")
     }
 
     @Test
@@ -113,7 +117,8 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
               "aktivitetStatus": "GJENNOMFORES",
               "endringsType": "REDIGERT",
               "lagtInnAv": "SYSTEM",
-              "historisk": false
+              "historisk": false,
+              "oppfolgingsperiodeId": null
             }
         """.trimIndent()
 
@@ -134,7 +139,8 @@ class PortefoljeAktivitetKafkaMeldingContractTest {
               "endringsType": "REDIGERT",
               "lagtInnAv": "SYSTEM",
               "avtalt": null,
-              "historisk": false
+              "historisk": false,
+              "oppfolgingsperiodeId": "342687"
             }
         """.trimIndent()
 

@@ -1,28 +1,25 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.types.identer.Fnr
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
-import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
+@WireMockTest
 class AapClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentAapForBruker_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentAapForBruker_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = AapClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" }
         )
 
@@ -71,5 +68,4 @@ class AapClientTest {
 
         Assertions.assertThat(response).isEqualTo(forventet)
     }
-
 }

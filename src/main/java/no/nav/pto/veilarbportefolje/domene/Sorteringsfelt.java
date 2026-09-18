@@ -94,7 +94,6 @@ public enum Sorteringsfelt {
 
     BARN_UNDER_18_AR("barn_under_18_aar"),
 
-    BRUKERS_SITUASJON_SIST_ENDRET("brukersSituasjonSistEndret"),
     UTDANNING_OG_SITUASJON_SIST_ENDRET("utdanningOgSituasjonSistEndret"),
 
     HUSKELAPP_KOMMENTAR("huskelapp_kommentar"),
@@ -107,7 +106,9 @@ public enum Sorteringsfelt {
     TILTAKSHENDELSE_TEKST("tiltakshendelse_tekst"),
     TILTAKSHENDELSE_DATO_OPPRETTET("tiltakshendelse_dato_opprettet"),
 
-    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet");
+    FILTERHENDELSE_DATO("filterhendelse_dato_opprettet"),
+    FILTERHENDELSE_DATO_FRIST("filterhendelse_dato_frist"),
+    FILTERHENDELSE_BESKRIVELSE_ENUM("filterhendelse_beskrivelse_enum");
 
     /**
      * Filterverdien som vert sendt mellom frontend og backend

@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
+
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
@@ -9,6 +10,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class KafkaAktivtetServiceTest {
+
     @Test
     public void skal_deserialisere_kafka_payload() {
         String aktivitetKafkaMeldingMedVersion = "{" +

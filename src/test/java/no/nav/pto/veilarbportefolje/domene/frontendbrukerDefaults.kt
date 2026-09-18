@@ -12,7 +12,8 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         harBehovForArbeidsevneVurdering = false,
         harSikkerhetstiltak = false,
         diskresjonskodeFortrolig = null,
-        profileringResultat = null
+        profileringResultat = null,
+        kandidatForUtmelding = false
     ),
     fnr = null,
     aktoerid = null,

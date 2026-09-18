@@ -16,8 +16,8 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.util.*
 
 class HendelseServiceTest(
-    @Autowired private val hendelseService: HendelseService,
-    @Autowired private val jdbcTemplate: JdbcTemplate
+    @param:Autowired private val hendelseService: HendelseService,
+    @param:Autowired private val jdbcTemplate: JdbcTemplate
 ) : EndToEndTest() {
 
     @BeforeEach
@@ -34,8 +34,8 @@ class HendelseServiceTest(
         val aktorId = randomAktorId()
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
-        val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
-        val hendelseRecord =
+        val hendelseRecordValue = genererRandomHendelseRecordValueV1(personID = norskIdent, operasjon = Operasjon.START)
+        val hendelseRecord: ConsumerRecord<String, HendelseRecordValue> =
             ConsumerRecord(
                 KafkaConfigCommon.Topic.PORTEFOLJE_HENDELSESFILTER.topicName,
                 0,
@@ -61,7 +61,7 @@ class HendelseServiceTest(
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val opprinneligHendelseRecordValue =
-            genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
+            genererRandomHendelseRecordValueV1(personID = norskIdent, operasjon = Operasjon.START)
         val opprinneligHendelseRecord =
             genererRandomHendelseConsumerRecord(key = key, recordValue = opprinneligHendelseRecordValue)
         hendelseService.behandleKafkaRecord(opprinneligHendelseRecord)
@@ -89,7 +89,9 @@ class HendelseServiceTest(
                 kategori = it.kategori,
                 hendelse = Hendelse.HendelseInnhold(
                     beskrivelse = it.hendelse.beskrivelse,
+                    beskrivelseEnum = it.hendelse.beskrivelseEnum,
                     dato = it.hendelse.dato,
+                    datoFrist = it.hendelse.datoFrist,
                     lenke = it.hendelse.lenke,
                     detaljer = it.hendelse.detaljer,
                 ),
@@ -107,7 +109,7 @@ class HendelseServiceTest(
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
         val opprinneligHendelseRecordValue =
-            genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
+            genererRandomHendelseRecordValueV1(personID = norskIdent, operasjon = Operasjon.START)
         val opprinneligHendelseRecord =
             genererRandomHendelseConsumerRecord(key = key, recordValue = opprinneligHendelseRecordValue)
         hendelseService.behandleKafkaRecord(opprinneligHendelseRecord)
@@ -138,7 +140,7 @@ class HendelseServiceTest(
         val aktorId = randomAktorId()
         insertOppfolgingsInformasjon(aktorId, fnr)
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
-        val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
+        val hendelseRecordValue = genererRandomHendelseRecordValueV1(personID = norskIdent, operasjon = Operasjon.START)
         val hendelseRecord = genererRandomHendelseConsumerRecord(key = key, recordValue = hendelseRecordValue)
         hendelseService.behandleKafkaRecord(hendelseRecord)
         val lagretStartHendelse = hendelseService.hentHendelse(UUID.fromString(key))
@@ -165,7 +167,7 @@ class HendelseServiceTest(
         val fnr = Fnr.of(norskIdent.get())
         val aktorId = randomAktorId()
         val key = "96463d56-019e-4b30-ae9b-7365cf002a09"
-        val hendelseRecordValue = genererRandomHendelseRecordValue(personID = norskIdent, operasjon = Operasjon.START)
+        val hendelseRecordValue = genererRandomHendelseRecordValueV1(personID = norskIdent, operasjon = Operasjon.START)
         val hendelseRecord = genererRandomHendelseConsumerRecord(key = key, recordValue = hendelseRecordValue)
 
         // Verifiserer person er under oppfolging

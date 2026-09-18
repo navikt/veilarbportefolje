@@ -1,27 +1,24 @@
 package no.nav.pto.veilarbportefolje.tiltakspenger
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
+@WireMockTest
 class TiltakspengerClientTest {
 
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
-
     @Test
-    fun hentTiltakspengerForBruker_gir_forventet_respons_naar_bruker_eksisterer() {
+    fun hentTiltakspengerForBruker_gir_forventet_respons_naar_bruker_eksisterer(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = TiltakspengerClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" }
         )
 
@@ -63,5 +60,4 @@ class TiltakspengerClientTest {
 
         Assertions.assertThat(response).isEqualTo(forventet)
     }
-
 }

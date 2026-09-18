@@ -1,17 +1,10 @@
 package no.nav.pto.veilarbportefolje.util;
 
-import io.vavr.control.Validation;
-import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt;
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.vavr.control.Validation.invalid;
-import static io.vavr.control.Validation.valid;
 import static java.lang.String.format;
 
 public class ValideringsRegler {
@@ -44,24 +37,5 @@ public class ValideringsRegler {
         if (!matches) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, format("sjekk av %s feilet, %s", navn, data));
         }
-    }
-
-    public static Validation<String, Fnr> validerFnr(String fnr) {
-        if (fnr != null && fnr.matches("\\d{11}")) {
-            return valid(Fnr.ofValidFnr(fnr));
-        }
-        return invalid(format("%s er ikke et gyldig fnr", fnr));
-    }
-
-    public static Validation<List<Fnr>, List<Fnr>> validerFnrs(List<Fnr> fnrs) {
-        List<Fnr> validerteFnrs = new ArrayList<>();
-
-        fnrs.forEach((fnr) -> {
-            if (validerFnr(fnr.toString()).isValid()) {
-                validerteFnrs.add(fnr);
-            }
-        });
-
-        return validerteFnrs.size() == fnrs.size() ? valid(validerteFnrs) : invalid(fnrs);
     }
 }

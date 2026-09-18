@@ -290,25 +290,21 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             harDagpenger = true,
             rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
             antallResterendeDager = 100,
-            datoAntallDagerBleBeregnet = LocalDate.now()
         )
         val dagpengerPermittering = DagpengerForOpensearch(
             harDagpenger = true,
             rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
             antallResterendeDager = 120,
-            datoAntallDagerBleBeregnet = LocalDate.now()
         )
         val dagpengerPermitteringIkkeAktivYtelse = DagpengerForOpensearch(
             harDagpenger = false,
             rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
             antallResterendeDager = 0,
-            datoAntallDagerBleBeregnet = LocalDate.now()
         )
         val dagpengerFiske = DagpengerForOpensearch(
             harDagpenger = true,
             rettighetstype = DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI,
             antallResterendeDager = 140,
-            datoAntallDagerBleBeregnet = LocalDate.now()
         )
 
         val brukerMedDagpenger = PortefoljebrukerOpensearchModell(
@@ -917,7 +913,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 150,
-                null
             )
         )
 
@@ -931,7 +926,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 tidspunkt1,
                 1,
-                null
             )
         )
 
@@ -945,7 +939,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 tidspunkt2,
                 2,
-                null
             )
         )
 
@@ -959,12 +952,12 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 tidspunkt3,
                 3,
-                null
             )
         )
 
 
-        val liste = listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, ingenSluttdatoBruker, arenaDagpengerBruker)
+        val liste =
+            listOf(midtImellomBruker, senestTomBruker, tidligstTomBruker, ingenSluttdatoBruker, arenaDagpengerBruker)
         skrivBrukereTilTestindeks(liste)
 
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
@@ -1028,7 +1021,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 null,
                 null,
-                null
             )
         )
 
@@ -1042,7 +1034,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
                 tidspunkt1,
                 2,
-                null
             )
         )
 
@@ -1056,7 +1047,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_FISKEINDUSTRI,
                 tidspunkt2,
                 3,
-                null
             )
         )
 
@@ -1070,7 +1060,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
                 DagpengerRettighetstype.DAGPENGER_PERMITTERING_ORDINAER,
                 tidspunkt3,
                 4,
-                null
             )
         )
 

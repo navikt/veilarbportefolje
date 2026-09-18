@@ -1,26 +1,24 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.junit.WireMockRule
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import no.nav.common.rest.client.RestClient
 import no.nav.common.types.identer.Fnr
 import org.assertj.core.api.Assertions
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
 import java.util.*
 
+@WireMockTest
 class OppslagArbeidssoekerregisteretClientTest {
-    @JvmField
-    @Rule
-    val wireMockRule: WireMockRule = WireMockRule(0)
 
     @Test
-    fun hentArbeidssoekerperioder_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode() {
+    fun hentArbeidssoekerperioder_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("123")
 
         val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
@@ -72,11 +70,13 @@ class OppslagArbeidssoekerregisteretClientTest {
     }
 
     @Test
-    fun hentOpplysningerOmArbeidssoeker_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger() {
+    fun hentOpplysningerOmArbeidssoeker_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger(
+        wireMockRuntimeInfo: WireMockRuntimeInfo
+    ) {
         val fnr = Fnr.of("123")
 
         val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
@@ -124,7 +124,8 @@ class OppslagArbeidssoekerregisteretClientTest {
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
 
-        val response: List<OpplysningerOmArbeidssoekerResponse>? = client.hentOpplysningerOmArbeidssoeker(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
+        val response: List<OpplysningerOmArbeidssoekerResponse>? =
+            client.hentOpplysningerOmArbeidssoeker(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
 
         val forventet: List<OpplysningerOmArbeidssoekerResponse>? = listOf(
             OpplysningerOmArbeidssoekerResponse(
@@ -162,11 +163,13 @@ class OppslagArbeidssoekerregisteretClientTest {
     }
 
     @Test
-    fun hentProfilering_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger_og_har_profilering() {
+    fun hentProfilering_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger_og_har_profilering(
+        wireMockRuntimeInfo: WireMockRuntimeInfo
+    ) {
         val fnr = Fnr.of("123")
 
         val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRule.port(),
+            "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
             RestClient.baseClient(),
             "veilarbportefolje"
@@ -201,7 +204,8 @@ class OppslagArbeidssoekerregisteretClientTest {
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
 
-        val response: List<ProfileringResponse>? = client.hentProfilering(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
+        val response: List<ProfileringResponse>? =
+            client.hentProfilering(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
 
         val forventet: List<ProfileringResponse>? = listOf(
             ProfileringResponse(
