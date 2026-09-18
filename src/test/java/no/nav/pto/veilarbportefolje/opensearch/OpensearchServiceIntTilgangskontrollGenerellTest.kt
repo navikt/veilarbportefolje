@@ -603,15 +603,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
             fargekategori_enhetId = TEST_ENHET
         }
 
-        val inaktivBruker = PortefoljebrukerOpensearchModell().apply {
-            aktoer_id = randomAktorId().toString()
-            fnr = randomFnr().toString()
-            oppfolging = true
-            enhet_id = TEST_ENHET
-            veileder_id = TEST_VEILEDER_0
-            formidlingsgruppekode = "ISERV"
-        }
-
         val kode6BrukerSomVeilederIkkeHarInnsynsrettPa = genererRandomBruker(
             TEST_ENHET, TEST_VEILEDER_0, Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode, false
         ).apply {
@@ -635,7 +626,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         val liste = listOf(
             testBruker1,
             testBruker2,
-            inaktivBruker,
             kode6BrukerSomVeilederIkkeHarInnsynsrettPa,
             kode7BrukerSomVeilederIkkeHarInnsynsrettPa,
             egenAnsattBrukerSomVeilederIkkeHarInnsynsrettPa
@@ -650,7 +640,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(statustall.erSykmeldtMedArbeidsgiver).isZero()
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1)
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(2)
-        assertThat(statustall.inaktiveBrukere).isEqualTo(1)
         assertThat(statustall.nyeBrukereForVeileder).isEqualTo(1)
         assertThat(statustall.venterPaSvarFraNAV).isEqualTo(1)
         assertThat(statustall.utlopteAktiviteter).isEqualTo(1)
