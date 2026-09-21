@@ -1,28 +1,38 @@
 package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
+import io.getunleash.DefaultUnleash
+import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.lagredefilter.harGyldigFilterNavn
 import no.nav.pto.veilarbportefolje.lagredefilter.harUniktNavnOgFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.HentLagretFilterResponse
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.SortOrderRequest
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.*
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 
 @Service
-class MineFilterService(private val mineFilterRepository: MineFilterRepository) {
+class MineFilterService(
+    private val mineFilterRepository: MineFilterRepository,
+    private val defaultUnleash: DefaultUnleash
+) {
 
     fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
-        return mineFilterRepository.hentFilterForVeileder(veilederIdent)
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
+        val lagraFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent)
+        return lagraFilter.copy(stoppLagringAvFilterVedMigrering = stoppLagringAvFilter)
     }
 
     fun lagreNyttFilterForVeileder(
         veilederIdent: String,
         nyttFilterRequest: NyttFilterRequest
     ): LagretFilter {
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
+        if (stoppLagringAvFilter) {
+            throw ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Lagring av filter er midlertidig utilgjengelig"
+            )
+        }
         val aktiveFiltervalg = ekstraherAktiveFiltervalg(nyttFilterRequest.filterValg)
         validerFilterNavnEllerKast(nyttFilterRequest.filterNavn)
         validerFiltervalgEllerKast(nyttFilterRequest.filterValg)
@@ -38,6 +48,13 @@ class MineFilterService(private val mineFilterRepository: MineFilterRepository) 
         veilederIdent: String,
         oppdaterFilterRequest: OppdaterFilterRequest
     ): LagretFilter {
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
+        if (stoppLagringAvFilter) {
+            throw ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Lagring av filter er midlertidig utilgjengelig"
+            )
+        }
         val aktiveFiltervalg = ekstraherAktiveFiltervalg(oppdaterFilterRequest.filterValg)
         validerFilterNavnEllerKast(oppdaterFilterRequest.filterNavn)
         validerFiltervalgEllerKast(oppdaterFilterRequest.filterValg)
