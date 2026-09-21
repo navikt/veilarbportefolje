@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
@@ -37,13 +38,14 @@ public class HuskelappServiceTest {
     private final JdbcTemplate jdbcTemplate;
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2;
     private final PdlIdentRepository pdlIdentRepository;
+    private final BrukerServiceV2 brukerServiceV2;
 
     public HuskelappServiceTest() {
         jdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate();
         this.pdlIdentRepository = new PdlIdentRepository(jdbcTemplate);
         OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate));
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(jdbcTemplate);
-        BrukerServiceV2 brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class));
+        this.brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class));
         huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate));
     }
 
@@ -108,6 +110,21 @@ public class HuskelappServiceTest {
 
         Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);
         assertThat(result1.isPresent()).isTrue();
+    }
+
+    @Test
+    public void testHentNavKontorForHistoriskFnrKasterIkkeNullPointerException() {
+        // Regresjonstest for NPE i BrukerServiceV2.hentNavKontor(Fnr): et fnr uten aktiv
+        // fnr<->aktørId-mapping i PDL (f.eks. et historisk fødselsnummer) skal gi
+        // Optional.empty(), ikke kaste NullPointerException. Kaller vi bevisst ikke
+        // insertOppfolgingsInformasjon(...) for dette fnr-et, slik at verken bruker_identer
+        // eller ao_kontor har noen rad for det - akkurat situasjonen som trigget NPE-en i
+        // produksjon (se HuskelappController.hentErBrukerUfordelt).
+        Fnr historiskFnr = randomFnr();
+
+        Optional<NavKontor> navKontor = brukerServiceV2.hentNavKontor(historiskFnr);
+
+        assertThat(navKontor).isEmpty();
     }
 
     private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
