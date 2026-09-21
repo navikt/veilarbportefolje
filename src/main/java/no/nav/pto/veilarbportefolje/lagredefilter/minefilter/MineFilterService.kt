@@ -16,9 +16,8 @@ class MineFilterService(
     private val defaultUnleash: DefaultUnleash
 ) {
 
-    val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
-
     fun hentFilterForVeileder(veilederIdent: String): HentLagretFilterResponse {
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
         val lagraFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent)
         return lagraFilter.copy(stoppLagringAvFilterVedMigrering = stoppLagringAvFilter)
     }
@@ -27,6 +26,7 @@ class MineFilterService(
         veilederIdent: String,
         nyttFilterRequest: NyttFilterRequest
     ): LagretFilter {
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
         if (stoppLagringAvFilter) {
             throw ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
@@ -48,6 +48,7 @@ class MineFilterService(
         veilederIdent: String,
         oppdaterFilterRequest: OppdaterFilterRequest
     ): LagretFilter {
+        val stoppLagringAvFilter = FeatureToggle.stoppLagringAvMineFilter(defaultUnleash)
         if (stoppLagringAvFilter) {
             throw ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
