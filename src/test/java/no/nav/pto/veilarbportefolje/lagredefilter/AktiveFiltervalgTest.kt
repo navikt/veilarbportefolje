@@ -4,17 +4,12 @@ import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.AktiveFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.ekstraherAktiveFiltervalg
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraAktive
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.FiltervalgRekonstruksjonException
-import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.rekonstruerFiltervalgFraJson
-import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.assertj.core.api.Assertions.catchThrowable
 
 class AktiveFiltervalgTest {
 
