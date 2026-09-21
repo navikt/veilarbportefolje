@@ -6,16 +6,16 @@ import org.junit.jupiter.api.Test;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomLocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EnsligeForsorgerOvergangsstønadTiltakDtoTest {
+public class EnsligForsorgerOvergangsstonadTiltakDtoTest {
 
     @Test
-    public void testCastingToOpensearchDto() {
+    void testCastingToOpensearchDto() {
         EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgereTiltak = new EnsligeForsorgerOvergangsstønadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate());
         EnsligeForsorgereOvergangsstonad ensligeForsorgereOpensearchDto = ensligeForsorgereTiltak.toEnsligeForsorgereOpensearchDto();
 
-        assertEquals(ensligeForsorgereOpensearchDto.vedtaksPeriodetype(), ensligeForsorgereTiltak.vedtaksPeriodetypeBeskrivelse());
-        assertEquals(ensligeForsorgereOpensearchDto.harAktivitetsplikt(), ensligeForsorgereTiltak.aktivitsplikt());
-        assertEquals(ensligeForsorgereOpensearchDto.yngsteBarnsFødselsdato(), ensligeForsorgereTiltak.yngsteBarnsFødselsdato());
-        assertEquals(ensligeForsorgereOpensearchDto.utlopsDato(), ensligeForsorgereTiltak.utløpsDato());
+        assertEquals(ensligeForsorgereOpensearchDto.vedtaksPeriodetype(), ensligeForsorgereTiltak.vedtaksPeriodetypeBeskrivelse);
+        assertEquals(ensligeForsorgereOpensearchDto.harAktivitetsplikt(), ensligeForsorgereTiltak.aktivitsplikt);
+        assertEquals(ensligeForsorgereOpensearchDto.yngsteBarnsFødselsdato(), ensligeForsorgereTiltak.yngsteBarnsFødselsdato);
+        assertEquals(ensligeForsorgereOpensearchDto.utlopsDato(), ensligeForsorgereTiltak.utløpsDato);
     }
 }

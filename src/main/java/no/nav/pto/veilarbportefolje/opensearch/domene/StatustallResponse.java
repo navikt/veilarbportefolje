@@ -23,7 +23,6 @@ public class StatustallResponse {
                 Bucket ufordelteBrukere;
                 Bucket trengerOppfolgingsvedtak;
                 Bucket nyeBrukereForVeileder;
-                Bucket inaktiveBrukere;
                 Bucket venterPaSvarFraNAV;
                 Bucket venterPaSvarFraBruker;
                 Bucket iavtaltAktivitet;
@@ -67,7 +66,6 @@ public class StatustallResponse {
         UFORDELTE_BRUKERE("ufordelteBrukere"),
         TRENGER_OPPFOLGINGSVEDTAK("trengerOppfolgingsvedtak"),
         NYE_BRUKERE_FOR_VEILEDER("nyeBrukereForVeileder"),
-        INAKTIVE_BRUKERE("inaktiveBrukere"),
         VENTER_PA_SVAR_FRA_NAV("venterPaSvarFraNAV"),
         VENTER_PA_SVAR_FRA_BRUKER("venterPaSvarFraBruker"),
         I_AVTALT_AKTIVITET("iavtaltAktivitet"),
