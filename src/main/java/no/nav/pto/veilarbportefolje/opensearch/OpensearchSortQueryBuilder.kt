@@ -58,7 +58,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLI
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_UTLOPSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_VEDTAKSPERIODETYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_RETTIGHET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_VEDTAKSDATO_TOM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED
@@ -381,12 +380,12 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TILTAKSPENGER_RETTIGHET -> {
-                searchSourceBuilder.sort("$TILTAKSPENGER_RETTIGHET", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("TILTAKSPENGER_RETTIGHET", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.DAGPENGER_RETTIGHETSTYPE -> {
-                searchSourceBuilder.sort("${DAGPENGER}.${DAGPENGER_RETTIGHETSTYPE}", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
