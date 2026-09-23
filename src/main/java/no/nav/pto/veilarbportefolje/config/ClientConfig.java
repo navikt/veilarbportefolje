@@ -7,6 +7,7 @@ import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
 import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
@@ -32,8 +33,9 @@ public class ClientConfig {
     static final String APPLICATION_NAME = "veilarbportefolje";
 
     @Bean
-    public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties) {
-        return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties);
+    // MeterRegistry injiseres for å registrere Prometheus-metrikker på poao-tilgang-utfall
+    public PoaoTilgangWrapper poaoTilgangWrapper(AuthContextHolder authContextHolder, AzureAdMachineToMachineTokenClient tokenClient, EnvironmentProperties environmentProperties, MeterRegistry meterRegistry) {
+        return new PoaoTilgangWrapper(authContextHolder, tokenClient, environmentProperties, meterRegistry);
     }
 
     @Bean
