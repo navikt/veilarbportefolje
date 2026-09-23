@@ -381,12 +381,12 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TILTAKSPENGER_RETTIGHET -> {
-                searchSourceBuilder.sort("$TILTAKSPENGER_RETTIGHET.keyword", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$TILTAKSPENGER_RETTIGHET", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.DAGPENGER_RETTIGHETSTYPE -> {
-                searchSourceBuilder.sort("$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("${DAGPENGER}.${DAGPENGER_RETTIGHETSTYPE}", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -480,7 +480,7 @@ class OpensearchSortQueryBuilder {
 
     fun sorterKandidatForUtmeldingHendelseBeskrivelseEnum(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
         searchSourceBuilder.sort(
-            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}.keyword",
+            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}",
             order
         )
     }
