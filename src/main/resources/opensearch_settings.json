@@ -265,7 +265,7 @@
           }
         }
       },
-      "hendelse": {
+      "hendelser": {
         "properties": {
           "beskrivelse": {
             "type": "keyword"
