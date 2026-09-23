@@ -85,7 +85,7 @@ public class AuthService {
 
 
     public List<PortefoljebrukerFrontendModell> sensurerBrukere(List<PortefoljebrukerFrontendModell> brukere) {
-        // Memoisering (plan.md punkt 1): harVeilederTilgangTilKode6()/Kode7()/EgenAnsatt()
+        // Memoisering: harVeilederTilgangTilKode6()/Kode7()/EgenAnsatt()
         // avhenger kun av innlogget veileder, ikke av hvilken bruker som sjekkes - så vi
         // beregner dem lat (maks én gang hver, kun hvis faktisk brukt) her, i stedet for at
         // fjernKonfidensiellInfoDersomIkkeTilgang kaller poaoTilgangWrapper på nytt per bruker.
@@ -157,7 +157,7 @@ public class AuthService {
         return aadM2MTokenClient.createMachineToMachineToken(tokenScope);
     }
 
-    // NB: ingen kjente kallere igjen etter memoiserings-refaktoren (plan.md punkt 1) - all
+    // NB: ingen kjente kallere igjen etter memoiserings-refaktoren - all
     // produksjonskode bruker nå 3-parameters-varianten under. Vurder å fjerne denne, eller la
     // den delegere til 3-parameters-varianten for å unngå duplisert logikk.
     public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn) {

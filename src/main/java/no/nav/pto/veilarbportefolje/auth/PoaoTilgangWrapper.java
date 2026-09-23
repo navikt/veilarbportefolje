@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 
 @Slf4j
 public class PoaoTilgangWrapper {
-    // Endringer i denne PR-en (se plan.md): (1) retryOnConnectionFailure(false) i
+    // Endringer i denne PR-en (1) retryOnConnectionFailure(false) i
     // constructoren under, (2) evaluer()-metoden nederst som legger Prometheus-metrikk
     // rundt alle policy-kallene. Begge er observability/robusthet - ingen endring i
     // avgjørelseslogikken selv.
@@ -64,8 +64,7 @@ public class PoaoTilgangWrapper {
                                 // Uten denne blir OkHttps standardverdi (true) brukt, som lar et
                                 // enkeltkall som feiler mot én backend-tilkobling bli automatisk
                                 // forsøkt på nytt mot en annen tilkobling - og dermed stable opp
-                                // flere fulle callTimeout-forsøk (bekreftet mistenkt årsak til de
-                                // sjeldne 5000ms+-tilfellene i produksjonslogg, se plan.md punkt 0).
+                                // flere fulle callTimeout-forsøk.
                                 // Med false blir den konfigurerte 1-sekunds callTimeout en reell,
                                 // forutsigbar øvre grense per kall.
                                 .retryOnConnectionFailure(false)
@@ -119,7 +118,7 @@ public class PoaoTilgangWrapper {
     /**
      * Kjører et poao-tilgang-kall og registrerer utfallet (suksess/permit/deny/feil) som
      * Prometheus-metrikk, tagget med policy-type. Endrer ikke selve avgjørelsen eller
-     * exception-typen som kastes videre - kun observability (grønn sone, plan.md punkt 4).
+     * exception-typen som kastes videre - kun observability.
      * <p>
      * {@code NetworkApiException} er (litt overraskende) en sjekket exception i
      * poao-tilgang-klienten, men kastes i praksis "usjekket" gjennom Kotlin-koden i

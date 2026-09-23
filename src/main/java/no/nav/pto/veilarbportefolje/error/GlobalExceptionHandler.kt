@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 /**
  * Fanger opp poao-tilgang-feil og alle andre ikke-håndterte exceptions som ellers ville
- * gitt "uncaught exception" i logg og en generisk 500 (se plan.md, punkt 3, for full
- * bakgrunn/logganalyse).
+ * gitt "uncaught exception" i logg og en generisk 500.
  *
  * To harde krav all mapping her overholder:
  * - **Fail-closed:** [PoaoTilgangUnavailableException] og [NetworkApiException] gir 503 -
@@ -43,7 +42,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(NetworkApiException::class)
     fun handlePoaoTilgangNetworkFeil(e: NetworkApiException): ResponseEntity<ErrorResponse> {
         // Samme fail-closed 503-mapping som over. Dekker tilfeller der en fremtidig
-        // fail-fast/cooldown-guard (utsatt til egen PR, se plan.md punkt 2) ikke kortslutter
+        // fail-fast/cooldown-guard (NB! utsatt) ikke kortslutter
         // kallet, men selve nettverkskallet mot poao-tilgang likevel feiler/timer ut.
         val korrelasjonsId = MDC.get(MDC_CALL_ID)
         log.warn("NetworkApiException", e)

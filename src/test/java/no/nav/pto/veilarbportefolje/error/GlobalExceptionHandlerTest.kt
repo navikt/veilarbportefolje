@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus
 
 /**
  * Verifiserer mappingen fra exception til HTTP-status/body i [GlobalExceptionHandler]
- * (plan.md punkt 3): fail-closed 503 for poao-tilgang-feil, 500-sikkerhetsnett for øvrige
+ * 503 for poao-tilgang-feil, 500-sikkerhetsnett for øvrige
  * exceptions.
  *
  * NB: Testen "skalIkkeLekkeFnrIResponsEllerLogg" er det viktigste kravet her - den skal
@@ -53,8 +53,6 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.body)
         val bodyAsString = response.body.toString()
         assertFalse(bodyAsString.contains(fnr), "Responsen skal ALDRI inneholde fnr")
-        // TODO: når implementert, verifiser i tillegg (f.eks. med en logg-appender-fixture
-        // eller Logback ListAppender) at heller ikke selve WARN-logglinjen inneholder fnr.
     }
 
     @Test
