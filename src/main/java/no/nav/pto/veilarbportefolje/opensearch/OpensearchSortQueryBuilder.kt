@@ -26,7 +26,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJON_SIST_ENDRET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_FATTET_DATO
@@ -382,12 +381,12 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.TILTAKSPENGER_RETTIGHET -> {
-                searchSourceBuilder.sort(TILTAKSPENGER_RETTIGHET, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$TILTAKSPENGER_RETTIGHET.keyword", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
             Sorteringsfelt.DAGPENGER_RETTIGHETSTYPE -> {
-                searchSourceBuilder.sort("$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort("$DAGPENGER.$DAGPENGER_RETTIGHETSTYPE.keyword", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
