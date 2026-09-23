@@ -479,7 +479,7 @@ class OpensearchSortQueryBuilder {
 
     fun sorterKandidatForUtmeldingHendelseBeskrivelseEnum(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
         searchSourceBuilder.sort(
-            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}",
+            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}.keyword",
             order
         )
     }
