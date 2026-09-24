@@ -26,7 +26,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJON_SIST_ENDRET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_FATTET_DATO
@@ -481,7 +480,7 @@ class OpensearchSortQueryBuilder {
 
     fun sorterKandidatForUtmeldingHendelseBeskrivelseEnum(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
         searchSourceBuilder.sort(
-            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}.keyword",
+            "$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.${HENDELSER_BESKRIVELSE_ENUM}",
             order
         )
     }

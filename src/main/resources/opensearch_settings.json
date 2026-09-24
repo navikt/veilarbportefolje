@@ -265,16 +265,49 @@
           }
         }
       },
-      "hendelse": {
+      "hendelser": {
         "properties": {
-          "beskrivelse": {
-            "type": "keyword"
+          "UTGATT_VARSEL": {
+            "properties": {
+              "beskrivelse": {
+                "type": "keyword"
+              },
+              "dato": {
+                "type": "date"
+              },
+              "datoFrist": {
+                "type": "date"
+              }
+            }
           },
-          "beskrivelseEnum": {
-            "type": "keyword"
+          "UDELT_SAMTALEREFERAT": {
+            "properties": {
+              "beskrivelse": {
+                "type": "keyword"
+              },
+              "dato": {
+                "type": "date"
+              },
+              "datoFrist": {
+                "type": "date"
+              }
+            }
           },
-          "dato": {
-            "type": "date"
+          "KANDIDAT_FOR_UTMELDING": {
+            "properties": {
+              "beskrivelse": {
+                "type": "keyword"
+              },
+              "beskrivelseEnum": {
+                "type": "keyword"
+              },
+              "dato": {
+                "type": "date"
+              },
+              "datoFrist": {
+                "type": "date"
+              }
+            }
           }
         }
       },
