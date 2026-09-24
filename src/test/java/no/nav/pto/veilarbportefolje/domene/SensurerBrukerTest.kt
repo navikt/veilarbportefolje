@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.domene
 
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
-import no.nav.poao_tilgang.client.Decision.Deny
-import no.nav.poao_tilgang.client.Decision.Permit
 import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
@@ -12,7 +10,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 
 class SensurerBrukerTest {
@@ -30,31 +27,35 @@ class SensurerBrukerTest {
         )
     }
 
+    // Merk: fjernKonfidensiellInfoDersomIkkeTilgang tar nå de tre tilgangsavgjørelsene
+    // (kode6/kode7/egenAnsatt) som parametre i stedet for å slå dem opp selv via
+    // poaoTilgangWrapper (se plan.md punkt 1 - memoisering). Testene sender derfor
+    // avgjørelsen direkte som true/false (Permit/Deny) i stedet for å mocke
+    // poaoTilgangWrapper - metoden under test kaller den ikke lenger. De to andre
+    // booleanene er irrelevante der bare én av de tre sjekkene faktisk kan slå inn for
+    // en gitt bruker, men sendes med for å holde signaturen komplett og lesbar.
+
     @Test
     fun skalIkkeSeKode6Bruker() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(), {false}, {true}, {true})
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
     fun skalIkkeSeKode7Bruker() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), {true}, {false}, {true})
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
     fun skalIkkeSeEgenAnsatt() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), {true}, {true}, {false})
         sjekkAtKonfidensiellDataErVasket(filtrerteBrukere)
     }
 
     @Test
     fun skalSeKode6Bruker() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode6Bruker(), {true}, {true}, {true})
         assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
         assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKode6")
         assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvKode6")
@@ -62,8 +63,7 @@ class SensurerBrukerTest {
 
     @Test
     fun skalSeKode7Bruker() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Permit)
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(kode7Bruker(), {true}, {true}, {true})
         assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
         assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKode7")
         assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvKode7")
@@ -71,8 +71,7 @@ class SensurerBrukerTest {
 
     @Test
     fun skalSeEgenAnsatt() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilEgenAnsatt()).thenReturn(Permit)
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(egenAnsatt(), {true}, {true}, {true})
         assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
         assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnKodeEgenAnsatt")
         assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvEgenAnsatt")
@@ -80,7 +79,7 @@ class SensurerBrukerTest {
 
     @Test
     fun skalSeIkkeKonfidensiellBruker() {
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(ikkeKonfidensiellBruker(), {true}, {true}, {true})
         assertThat(filtrerteBrukere.fnr).isEqualTo("11111111111")
         assertThat(filtrerteBrukere.fornavn).isEqualTo("fornavnIkkeKonfidensiellBruker")
         assertThat(filtrerteBrukere.etternavn).isEqualTo("etternanvIkkeKonfidensiellBruker")
@@ -88,23 +87,19 @@ class SensurerBrukerTest {
 
     @Test
     fun skalIkkeSeKode6Barn() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6Barn(), {false}, {true}, {true})
         sjekkAtBarnMedKode6ErFjernet(filtrerteBrukere)
     }
 
     @Test
     fun skalIkkeSeKode7Barn() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode7Barn(), {true}, {false}, {true})
         sjekkAtBarnMedKode7ErFjernet(filtrerteBrukere)
     }
 
     @Test
     fun skalFjerneKode7BarnMenIkkeKode6() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode7()).thenReturn(Deny("", ""))
-        val filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn())
+        val filtrertBruker = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode6og7Barn(), {true}, {false}, {true})
         sjekkAtBarnMedKode7ErFjernet(filtrertBruker)
         sjekkAtBarnMedKode6IkkeErFjernet(filtrertBruker)
         assertThat(filtrertBruker.barnUnder18AarData).hasSize(2)
@@ -112,15 +107,15 @@ class SensurerBrukerTest {
 
     @Test
     fun skalIkkeSeKode19Barn() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Deny("", ""))
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn())
+        // Kode "19" = STRENGT_FORTROLIG_UTLAND, som behandles likt som kode6 i
+        // harVeilederTilgangTilBarn - se Adressebeskyttelse.java.
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), {false}, {true}, {true})
         sjekkAtBarnMedKode19ErFjernet(filtrerteBrukere)
     }
 
     @Test
     fun skalSeKode19Barn() {
-        `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Permit)
-        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn())
+        val filtrerteBrukere = authService.fjernKonfidensiellInfoDersomIkkeTilgang(brukerMedKode19Barn(), {true}, {true}, {true})
         sjekkAtBarnMedKode19ErIkkeFjernet(filtrerteBrukere)
     }
 
@@ -131,8 +126,8 @@ class SensurerBrukerTest {
         assertThat(bruker.fornavn).isEqualTo("")
         assertThat(bruker.skjermetTil).isNull()
         assertThat(bruker.foedeland).isNull()
-        assertThat(bruker.tolkebehov?.talespraaktolk).isEqualTo("")
-        assertThat(bruker.tolkebehov?.tegnspraaktolk).isEqualTo("")
+        assertThat(bruker.tolkebehov.talespraaktolk).isEqualTo("")
+        assertThat(bruker.tolkebehov.tegnspraaktolk).isEqualTo("")
         assertThat(bruker.hovedStatsborgerskap).isNull()
         assertThat(bruker.geografiskBosted.bostedBydel).isNull()
         assertThat(bruker.geografiskBosted.bostedKommune).isNull()
