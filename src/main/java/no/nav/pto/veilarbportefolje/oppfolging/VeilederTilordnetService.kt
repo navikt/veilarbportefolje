@@ -63,7 +63,7 @@ class VeilederTilordnetService(
             return
         }
         val erUnderOppfolgingIVeilarboppfolging = oppfolgingClient.hentUnderOppfolging(aktorId)
-        check(!erUnderOppfolgingIVeilarboppfolging) { "Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarboppfolging" }
+        check(!erUnderOppfolgingIVeilarboppfolging) { "Fikk 'veileder melding' på bruker som enda ikke er under oppfølging i veilarbportefolje" }
     }
 
     private fun hentVeileder(aktoerId: AktorId?): VeilederId? {
