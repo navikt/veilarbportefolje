@@ -103,7 +103,7 @@ public class AuthService {
         if (bruker.getBarnUnder18AarData() != null) {
             bruker.setBarnUnder18AarData(
                     bruker.getBarnUnder18AarData().stream().filter(
-                            barn -> harVeilederTilgangTilBarn(barn, harVeilederTilgangTilKode6.getAsBoolean(), harVeilederTilgangTilKode7.getAsBoolean())
+                            barn -> harVeilederTilgangTilBarn(barn, harVeilederTilgangTilKode6, harVeilederTilgangTilKode7)
                     ).toList()
             );
         }
@@ -171,13 +171,13 @@ public class AuthService {
         return true;
     }
 
-    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, boolean harVeilederTilgangTilKode6, boolean harVeilederTilgangTilKode7) {
+    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn, BooleanSupplier harVeilederTilgangTilKode6, BooleanSupplier harVeilederTilgangTilKode7) {
         if (barn.getDiskresjonskode() != null && (barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode) ||
                 barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode))) {
-            return harVeilederTilgangTilKode6;
+            return harVeilederTilgangTilKode6.getAsBoolean();
         }
         if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
-            return harVeilederTilgangTilKode7;
+            return harVeilederTilgangTilKode7.getAsBoolean();
         }
         return true;
     }

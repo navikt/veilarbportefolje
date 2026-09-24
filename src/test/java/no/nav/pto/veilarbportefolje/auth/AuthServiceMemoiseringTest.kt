@@ -6,6 +6,7 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
+import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 
@@ -56,6 +58,20 @@ class AuthServiceMemoiseringTest {
             filtervalg = getFiltervalgDefaults()
         )
 
+    private fun ikkeKonfidensiellBrukerMedUskjermedeBarn() =
+        PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(
+                diskresjonskode = null,
+                egen_ansatt = false,
+                barn_under_18_aar = listOf(
+                    BarnUnder18AarData(alder = 10, diskresjonskode = null),
+                    BarnUnder18AarData(alder = 15, diskresjonskode = null)
+                )
+            ),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+
     @Test
     fun `skal kun kalle poao-tilgang for kode6-sjekk en gang uansett listestorrelse`() {
         `when`(poaoTilgangWrapper.harVeilederTilgangTilKode6()).thenReturn(Decision.Deny("", ""))
@@ -91,6 +107,20 @@ class AuthServiceMemoiseringTest {
         authService.sensurerBrukere(femtenEgenAnsatteBrukere)
 
         verify(poaoTilgangWrapper, times(1)).harVeilederTilgangTilEgenAnsatt()
+    }
+
+    @Test
+    fun `skal ikke kalle poao-tilgang i det hele tatt for bruker med barn under 18 aar naar ingen er skjermet`() {
+        // Kjernepoenget med den lat-memoiserte suppliet: harVeilederTilgangTilBarn(barn, ...)
+        // sjekker barn.diskresjonskode != null FØR den kaller supplierens getAsBoolean(), så
+        // uskjermede barn skal aldri utløse et poao-tilgang-kall - verken for barnet selv
+        // eller (via memoiseringen) for noen andre brukere i samme sensurerBrukere()-kall.
+        val brukerMedUskjermedeBarn = ikkeKonfidensiellBrukerMedUskjermedeBarn()
+
+        val sensurert = authService.sensurerBrukere(listOf(brukerMedUskjermedeBarn))
+
+        verifyNoInteractions(poaoTilgangWrapper)
+        org.junit.jupiter.api.Assertions.assertEquals(2, sensurert[0].barnUnder18AarData?.size)
     }
 
     @Test
