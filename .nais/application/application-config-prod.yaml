@@ -171,3 +171,7 @@ spec:
       value: "http://ung-deltakelse-opplyser.k9saksbehandling"
     - name: UNGDOMSPROGRAM_SCOPE
       value: "api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"
+    - name: UFORETRYGD_URL
+      value: "XXX"
+    - name: UFORETRYGD_SCOPE
+      value: "XXX"
