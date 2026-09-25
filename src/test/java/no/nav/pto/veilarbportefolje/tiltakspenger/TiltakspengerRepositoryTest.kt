@@ -15,8 +15,8 @@ import java.time.LocalDate
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class TiltakspengerRepositoryTest(
-    @Autowired val tiltakspengerRepository: TiltakspengerRespository,
-    @Autowired val jdbcTemplate: JdbcTemplate
+    @param:Autowired val tiltakspengerRepository: TiltakspengerRespository,
+    @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
 
     @BeforeEach
