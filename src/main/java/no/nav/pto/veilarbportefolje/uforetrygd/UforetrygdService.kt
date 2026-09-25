@@ -59,6 +59,8 @@ class UforetrygdService(
     }
 
 
+    // TODO: hentOgLagreUføretrydgForBrukerVedOppfolgingStart - etter at endepunkt og meldinger fra uføre er på plass.
+
     fun lagreUforetrygdForBruker(
         personIdent: String
     ) {
