@@ -18,7 +18,7 @@ enum class YTELSE_KILDESYSTEM {
     KELVIN,
     TPSAK,
     DPSAK,
-    XXX
+    PESYS
 }
 
 enum class YTELSE_TYPE {
