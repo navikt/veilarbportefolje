@@ -803,6 +803,7 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
                 .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
+
             Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
@@ -831,16 +832,13 @@ class OpensearchFilterQueryBuilder {
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     fun byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet: List<String?>): BoolQueryBuilder {
-        val boolQuery = QueryBuilders.boolQuery()
-        veiledereMedTilgangTilEnhet.forEach(Consumer { id: String? ->
-            boolQuery.mustNot(
-                QueryBuilders.matchQuery(
-                    VEILEDER_ID,
-                    id
-                )
-            )
-        })
-        return boolQuery
+        val relevanteVeiledere = veiledereMedTilgangTilEnhet.filterNotNull()
+        if (relevanteVeiledere.isEmpty()) {
+            return QueryBuilders.boolQuery()
+        }
+
+        return QueryBuilders.boolQuery()
+            .mustNot(QueryBuilders.termsQuery(VEILEDER_ID, relevanteVeiledere))
     }
 
     fun <T> byggManuellFilter(
