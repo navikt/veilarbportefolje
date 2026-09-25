@@ -33,8 +33,8 @@ class UforetrygdService(
     private val logger = org.slf4j.LoggerFactory.getLogger(UforetrygdService::class.java)
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
-        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.XXX) {
-            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet XXX. Ignorerer melding.")
+        if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.PESYS) {
+            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet PESYS. Ignorerer melding.")
             return
         }
 

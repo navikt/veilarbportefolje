@@ -2,7 +2,10 @@ package no.nav.pto.veilarbportefolje.uforetrygd
 
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_UFORETRYGD
+import no.nav.pto.veilarbportefolje.uforetrygd.domene.UforetrygdEntity
 import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
+import org.jetbrains.annotations.TestOnly
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -32,6 +35,22 @@ class UforetrygdRepository(private val db: JdbcTemplate) {
             uføretrygd.uføregrad,
             uføretrygd.virkningsdato
         )
+    }
+
+
+    @TestOnly
+    fun hentUforetrygd(norskIdent: NorskIdent): UforetrygdEntity? {
+        val sql = "SELECT * FROM ${YTELSER_UFORETRYGD.TABLE_NAME} WHERE ${YTELSER_UFORETRYGD.NORSK_IDENT} = ?"
+        return try {
+            db.queryForObject(sql, { rs, _ ->
+                UforetrygdEntity(
+                    uføregrad = rs.getInt(YTELSER_UFORETRYGD.UFOREGRAD),
+                    virkningsdato = rs.getDate(YTELSER_UFORETRYGD.VIRKNINGSDATO).toLocalDate(),
+                )
+            }, norskIdent)
+        } catch (ex: EmptyResultDataAccessException) {
+            null
+        }
     }
 
 
