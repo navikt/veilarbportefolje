@@ -42,4 +42,6 @@ public class EnvironmentProperties {
     private String dagpengerScope;
     private String ungdomsprogramUrl;
     private String ungdomsprogramScope;
+    private String uforetrygdUrl;
+    private String uforetrygdScope;
 }

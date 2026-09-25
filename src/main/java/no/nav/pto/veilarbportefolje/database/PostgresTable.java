@@ -547,6 +547,16 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class YTELSER_UFORETRYGD {
+        private YTELSER_UFORETRYGD() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_UFORETRYGD";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String VIRKNINGSDATO = "VIRKNINGSDATO";
+        public static final String UFOREGRAD = "UFOREGRAD";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
     public static final class LAGREDE_FILTER_VEILEDERGRUPPER {
         private LAGREDE_FILTER_VEILEDERGRUPPER() { /* no-op */ }
 

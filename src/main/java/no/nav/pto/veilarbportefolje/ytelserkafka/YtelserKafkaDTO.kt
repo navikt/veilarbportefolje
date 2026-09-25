@@ -8,20 +8,22 @@ data class YtelserKafkaDTO(
     val kildesystem: YTELSE_KILDESYSTEM
 )
 
-
 enum class YTELSE_MELDINGSTYPE {
     OPPRETT,
-    OPPDATER
+    OPPDATER,
+    SLETT
 }
 
 enum class YTELSE_KILDESYSTEM {
     KELVIN,
     TPSAK,
-    DPSAK
+    DPSAK,
+    PESYS
 }
 
 enum class YTELSE_TYPE {
     AAP,
     TILTAKSPENGER,
-    DAGPENGER
+    DAGPENGER,
+    UFORETRYGD
 }

@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import org.springframework.stereotype.Service
 
 
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Service
 class YtelserKafkaService(
     private val aapService: AapService,
     private val tiltakspengerService: TiltakspengerService,
-    private val dagpengerService: DagpengerService
+    private val dagpengerService: DagpengerService,
+    private val uforetrygdService: UforetrygdService
 ) : KafkaCommonNonKeyedConsumerService<YtelserKafkaDTO>() {
 
     override fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
@@ -25,6 +27,7 @@ class YtelserKafkaService(
             YTELSE_TYPE.AAP -> aapService.behandleKafkaMeldingLogikk(kafkaMelding)
             YTELSE_TYPE.TILTAKSPENGER -> tiltakspengerService.behandleKafkaMeldingLogikk(kafkaMelding)
             YTELSE_TYPE.DAGPENGER -> dagpengerService.behandleKafkaMeldingLogikk(kafkaMelding)
+            YTELSE_TYPE.UFORETRYGD -> uforetrygdService.behandleKafkaMeldingLogikk(kafkaMelding)
         }
     }
 
