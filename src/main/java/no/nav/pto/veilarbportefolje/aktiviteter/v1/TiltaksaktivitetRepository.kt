@@ -61,6 +61,21 @@ class TiltaksaktivitetRepository(
 
         return TiltakskodeMapping(tiltak = tiltak.toMutableMap())
     }
+
+    fun lagreTiltakskodenavn(tiltakskode: String, tiltaksnavn: String) {
+        //language=postgresql
+        val sql = """
+            INSERT INTO tiltakkodeverket (kode, verdi)
+            VALUES (:tiltakskode, :tiltaksnavn)
+            ON CONFLICT (kode) DO UPDATE SET verdi = EXCLUDED.verdi
+        """.trimIndent()
+
+        val params = MapSqlParameterSource()
+            .addValue("tiltakskode", tiltakskode)
+            .addValue("tiltaksnavn", tiltaksnavn)
+
+        jdbc.update(sql, params)
+    }
 }
 
 data class  TiltakskodeMapping (
