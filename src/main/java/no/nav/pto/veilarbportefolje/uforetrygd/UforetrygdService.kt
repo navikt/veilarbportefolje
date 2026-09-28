@@ -58,6 +58,14 @@ class UforetrygdService(
         lagreUforetrygdForBruker(kafkaMelding.personId)
     }
 
+    fun hentOgLagreUføretrygdVedAdminjobb(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId)
+        if (personIdent == null) {
+            secureLog.warn("Batchjobb for uføretrygd - kunne ikke hente fødselsnummer for aktørId $aktorId")
+            return
+        }
+        lagreUforetrygdForBruker(personIdent.toString())
+    }
 
     // TODO: hentOgLagreUføretrydgForBrukerVedOppfolgingStart - etter at endepunkt og meldinger fra uføre er på plass.
 
@@ -67,8 +75,9 @@ class UforetrygdService(
         val uføretrygd = uforetrygdClient.hentUforetrygd(personIdent)
 
         if (uføretrygd == null) {
+            // bør vi slette eksisterende i databasen her?
             secureLog.info(
-                "Ingen uføretrygd funnet for bruker {}, ignorerer uføretrygd-ytelse melding.",
+                "Ingen uføretrygd funnet for bruker med fnr {}, ignorerer uføretrygd-ytelse melding.",
                 personIdent
             )
             return

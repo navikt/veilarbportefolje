@@ -23,6 +23,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -49,7 +50,8 @@ class AdminController(
     private val pdlIdentRepository: PdlIdentRepository,
     private val ensligForsorgerService: EnsligeForsorgereService,
     private val aapService: AapService,
-    private val oppfolgingClient: OppfolgingClient
+    private val oppfolgingClient: OppfolgingClient,
+    private val uforetrygdService: UforetrygdService
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -268,6 +270,49 @@ class AdminController(
 
         }
         return "Innlastning av tilordningsdato for veileder har startet"
+    }
+
+
+    @PostMapping("/lastInnUforetrygd")
+    @Operation(
+        summary = "Oppdater uføretrygd for alle brukere",
+        description = "Går gjennom alle brukere og henter ut om de har uføretrygd fra api."
+    )
+    fun lastInnUforetrygd(
+        @RequestParam(required = false) limit: Int? = null
+    ): String {
+        sjekkTilgangTilAdmin()
+        return JobRunner.runAsync("Admin_uforetrygd_innlasting") {
+            val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging()
+            val brukereUnderOppfolging =
+                if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
+            log.info("Uforetrygd-innlasting: prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
+            val antall = AtomicInteger(0)
+            val antallFeilet = AtomicInteger(0)
+
+            for (aktorId in brukereUnderOppfolging) {
+                val nr = antall.getAndIncrement()
+                if (nr % 100 == 0) {
+                    log.info(
+                        "Uforetrygd-innlasting: {}% ferdig",
+                        (nr.toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
+                    )
+                }
+                try {
+                    secureLog.info("Uforetrygd-innlasting: starter prosessering for nr $nr med aktorId $aktorId")
+                    uforetrygdService.hentOgLagreUføretrygdVedAdminjobb(aktorId)
+                    Thread.sleep(50) // throttle: ~20 req/s
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    log.warn("Uforetrygd-innlasting: avbrutt etter $nr brukere, ${antallFeilet.get()} feilet")
+                    return@runAsync
+                } catch (e: Exception) {
+                    antallFeilet.incrementAndGet()
+                    secureLog.error("Uforetrygd-innlasting: feilet for bruker $aktorId", e)
+                }
+            }
+            log.info("Uforetrygd-innlasting: ferdig. ${antall.get()} brukere prosessert, ${antallFeilet.get()} feilet")
+        }
     }
 
     // DATA FETCHING JOBBER - FOR EN ENKELTBRUKER
