@@ -134,7 +134,7 @@ data class Filtervalg(
         ytelseUngdomsprogram.isNotEmpty()
 
     fun harYtelseUforetrygdFilter(): Boolean =
-        ytelseUforetrygd?.isNotEmpty() == true
+        !ytelseUforetrygd.isNullOrEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null

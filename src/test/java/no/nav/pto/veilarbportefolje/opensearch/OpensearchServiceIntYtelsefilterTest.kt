@@ -1421,6 +1421,101 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
     }
 
+    @Test
+    fun skal_sortere_brukere_pa_uforetrygd_uforegrad_og_virkningsdato() {
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = Uforetrygd(
+                LocalDate.now().minusMonths(1),
+                50
+            )
+        )
+
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = Uforetrygd(
+                LocalDate.now().minusMonths(2),
+                70
+            )
+        )
+
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = null
+        )
+
+
+        val liste = listOf(bruker1, bruker2, nullBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = emptyList(),
+            ytelseUforetrygd = listOf(YtelseUforetrygd.HAR_UFORETRYGD)
+        )
+
+        val virkningsdatoStigende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.UFORETRYGD_VIRKNINGSDATO,
+            filtervalg,
+            null,
+            null
+        )
+        val virkningsdatoSynkende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.UFORETRYGD_VIRKNINGSDATO,
+            filtervalg,
+            null,
+            null
+        )
+
+        val uforegradStigende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.UFORETRYGD_UFOREGRAD,
+            filtervalg,
+            null,
+            null
+        )
+        val uforegradSynkende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.UFORETRYGD_UFOREGRAD,
+            filtervalg,
+            null,
+            null
+        )
+
+
+        Assertions.assertThat(virkningsdatoStigende.brukere.size).isEqualTo(2)
+        Assertions.assertThat(virkningsdatoStigende.brukere[0].fnr).isEqualTo(bruker2.fnr)
+
+        Assertions.assertThat(virkningsdatoSynkende.brukere[0].fnr).isEqualTo(bruker1.fnr)
+        Assertions.assertThat(virkningsdatoSynkende.brukere[1].fnr).isEqualTo(bruker2.fnr)
+
+        Assertions.assertThat(uforegradStigende.brukere.size).isEqualTo(2)
+        Assertions.assertThat(uforegradStigende.brukere[0].fnr).isEqualTo(bruker1.fnr)
+
+        Assertions.assertThat(uforegradSynkende.brukere[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(uforegradSynkende.brukere[1].fnr).isEqualTo(bruker1.fnr)
+    }
+
 
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))

@@ -50,6 +50,9 @@ public enum Sorteringsfelt {
     UNGDSOMPROGRAM_MAKSDATO("ungdomsprogram_maksdato"),
     UNGDSOMPROGRAM_RETTIGHET("ungdomsprogram_rettighet"),
 
+    UFORETRYGD_VIRKNINGSDATO("uforetrygd_virkningsdato"),
+    UFORETRYGD_UFOREGRAD("uforetrygd_uforegrad"),
+
     VENTER_PA_SVAR_FRA_NAV("venterpasvarfranav"),
     VENTER_PA_SVAR_FRA_BRUKER("venterpasvarfrabruker"),
 
