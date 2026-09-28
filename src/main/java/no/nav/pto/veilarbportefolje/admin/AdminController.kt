@@ -300,7 +300,7 @@ class AdminController(
                 }
                 try {
                     secureLog.info("Uforetrygd-innlasting: starter prosessering for nr $nr med aktorId $aktorId")
-                    uforetrygdService.hentOgLagreUføretrygdVedAdminjobb(aktorId)
+                    uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
                     Thread.sleep(50) // throttle: ~20 req/s
                 } catch (e: InterruptedException) {
                     Thread.currentThread().interrupt()

@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
@@ -28,7 +29,8 @@ class UforetrygdService(
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
     val uforetrygdRepository: UforetrygdRepository,
-    val uforetrygdClient: UforetrygdClient
+    val uforetrygdClient: UforetrygdClient,
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(UforetrygdService::class.java)
 
@@ -55,35 +57,42 @@ class UforetrygdService(
             return
         }
 
-        lagreUforetrygdForBruker(kafkaMelding.personId)
+        lagreUforetrygdForBruker(kafkaMelding.personId, aktorId)
     }
 
-    fun hentOgLagreUføretrygdVedAdminjobb(aktorId: AktorId) {
+    fun hentOgLagreUforetrygdVedAdminjobb(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId)
         if (personIdent == null) {
             secureLog.warn("Batchjobb for uføretrygd - kunne ikke hente fødselsnummer for aktørId $aktorId")
             return
         }
-        lagreUforetrygdForBruker(personIdent.toString())
+        lagreUforetrygdForBruker(personIdent.toString(), aktorId)
     }
 
     // TODO: hentOgLagreUføretrydgForBrukerVedOppfolgingStart - etter at endepunkt og meldinger fra uføre er på plass.
 
     fun lagreUforetrygdForBruker(
-        personIdent: String
+        personIdent: String,
+        aktorId: AktorId
     ) {
         val uføretrygd = uforetrygdClient.hentUforetrygd(personIdent)
 
         if (uføretrygd == null) {
-            // bør vi slette eksisterende i databasen her?
             secureLog.info(
-                "Ingen uføretrygd funnet for bruker med fnr {}, ignorerer uføretrygd-ytelse melding.",
+                "Ingen uføretrygd funnet for bruker med fnr {}, sletter evt eksisterende i databasen og opensearch.",
                 personIdent
             )
+            slettUforetrygdData(aktorId, Optional.of(Fnr.of(personIdent)))
+            opensearchIndexerPaDatafelt.slettUforetrygd(aktorId)
             return
         }
 
         upsertUforetrygdForAktivIdentForBruker(personIdent, uføretrygd)
+        opensearchIndexerPaDatafelt.oppdaterUforetrygd(
+            aktorId,
+            uføretrygd.virkningsdato,
+            uføretrygd.uføregrad
+        )
     }
 
     fun upsertUforetrygdForAktivIdentForBruker(
