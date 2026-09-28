@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.VeilederId
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -31,7 +32,9 @@ class UforetrygdServiceTest(
     @param:Autowired private val uforetrygdRepository: UforetrygdRepository,
     @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
-) : EndToEndTest() {
+    @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
+
+    ) : EndToEndTest() {
 
     private lateinit var uforetrygdService: UforetrygdService
     private val uforetrygdClient: UforetrygdClient = mock()
@@ -54,7 +57,8 @@ class UforetrygdServiceTest(
             pdlIdentRepository = pdlIdentRepository,
             aktorClient = aktorClient,
             uforetrygdRepository = uforetrygdRepository,
-            uforetrygdClient = uforetrygdClient
+            uforetrygdClient = uforetrygdClient,
+            opensearchIndexerPaDatafelt = opensearchIndexerPaDatafelt
         )
     }
 

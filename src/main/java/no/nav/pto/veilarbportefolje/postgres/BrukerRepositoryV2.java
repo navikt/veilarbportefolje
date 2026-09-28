@@ -10,7 +10,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch;
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch;
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
@@ -361,7 +361,7 @@ public class BrukerRepositoryV2 {
             return;
         }
 
-        brukerOpensearchModell.setUforetrygd(new UforetrygdForOpensearch(virkningsdato, uforegrad));
+        brukerOpensearchModell.setUforetrygd(new Uforetrygd(virkningsdato, uforegrad));
     }
 
 
