@@ -47,7 +47,7 @@ data class Filtervalg(
     val ytelseDagpenger: List<YtelseDagpenger>,
     val ytelseDagpengerArena: List<YtelseDagpengerArena>,
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
-    val ytelseUforetrygd: List<YtelseUforetrygd>? = null, // nullable til frontenden er på plass
+    val ytelseUforetrygd: List<YtelseUforetrygd>? = emptyList(), // emptyList til frontenden er på plass
     val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
