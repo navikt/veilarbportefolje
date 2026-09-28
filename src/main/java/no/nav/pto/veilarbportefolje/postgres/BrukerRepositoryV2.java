@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch;
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
@@ -133,7 +134,9 @@ public class BrukerRepositoryV2 {
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM,
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM,
                        YTELSER_UNGDOMSPROGRAM.MAKSDATO                          as YTELSER_UNGDOMSPROGRAM_MAKSDATO,
-                       YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE             as YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE                        
+                       YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE             as YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE,
+                       YTELSER_UFORETRYGD.VIRKNINGSDATO                         as YTELSER_UFORETRYGD_VIRKNINGSDATO,   
+                       YTELSER_UFORETRYGD.UFOREGRAD                             as YTELSER_UFORETRYGD_UFOREGRAD
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -152,6 +155,7 @@ public class BrukerRepositoryV2 {
                          left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
+                         left join YTELSER_UFORETRYGD                           on YTELSER_UFORETRYGD.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                 """;
@@ -250,6 +254,7 @@ public class BrukerRepositoryV2 {
         setTiltakspenger(brukerOpensearchModell, rs);
         setDagpenger(brukerOpensearchModell, rs);
         setUngdomsprogram(brukerOpensearchModell, rs);
+        setUforetrygd(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
@@ -345,6 +350,20 @@ public class BrukerRepositoryV2 {
 
         brukerOpensearchModell.setUngdomsprogram(ungdomsprogram);
     }
+
+    @SneakyThrows
+    private void setUforetrygd(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
+        Integer uforegrad = rs.getObject(YTELSER_UFORETRYGD_UFOREGRAD, Integer.class);
+        LocalDate virkningsdato = rs.getDate(YTELSER_UFORETRYGD_VIRKNINGSDATO) != null ? rs.getDate(YTELSER_UFORETRYGD_VIRKNINGSDATO).toLocalDate() : null;
+
+        if (uforegrad == null || virkningsdato == null) {
+            brukerOpensearchModell.setUforetrygd(null);
+            return;
+        }
+
+        brukerOpensearchModell.setUforetrygd(new UforetrygdForOpensearch(virkningsdato, uforegrad));
+    }
+
 
     @SneakyThrows
     private void setHuskelapp(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
