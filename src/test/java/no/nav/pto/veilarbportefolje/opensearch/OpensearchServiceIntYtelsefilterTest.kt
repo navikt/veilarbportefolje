@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
@@ -518,6 +519,52 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUngdomsprogram.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .doesNotContain(brukerUtenUngdomsprogram.fnr)
+    }
+
+
+    @Test
+    fun skal_hente_ut_brukere_som_har_uforetrygd() {
+        val brukerMedUforetrygd = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            uforetrygd = Uforetrygd(virkningsdato = LocalDate.now().minusMonths(1), uforegrad = 60)
+        )
+
+        val brukerUtenUforetrygd = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            uforetrygd = null,
+        )
+
+        val liste = listOf(brukerMedUforetrygd, brukerUtenUforetrygd)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filterValg = getFiltervalgDefaults().copy(
+            ytelseUforetrygd = listOf(YtelseUforetrygd.HAR_UFORETRYGD)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.of(TEST_VEILEDER_0),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filterValg,
+            null,
+            null
+        )
+
+        Assertions.assertThat(response.antall).isEqualTo(1)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUforetrygd.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
+            .doesNotContain(brukerUtenUforetrygd.fnr)
     }
 
     @Test
