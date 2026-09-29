@@ -78,7 +78,8 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         tiltakspenger = null,
         dagpenger = null,
         ensligeForsorgereOvergangsstonad = null,
-        ungdomsprogram = null
+        ungdomsprogram = null,
+        uforetrygd = null
     ),
     meldingerVenterPaSvar = MeldingerVenterPaSvar(
         datoMeldingVenterPaNav = null,

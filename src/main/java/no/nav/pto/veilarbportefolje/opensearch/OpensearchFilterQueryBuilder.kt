@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITETER
@@ -62,6 +63,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
@@ -482,6 +484,15 @@ class OpensearchFilterQueryBuilder {
             queryBuilder.must(
                 QueryBuilders.existsQuery(
                     UNGDOMSPROGRAM
+                )
+            )
+
+        }
+
+        if (filtervalg.harYtelseUforetrygdFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    UFORETRYGD
                 )
             )
 

@@ -47,6 +47,7 @@ data class Filtervalg(
     val ytelseDagpenger: List<YtelseDagpenger>,
     val ytelseDagpengerArena: List<YtelseDagpengerArena>,
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
+    val ytelseUforetrygd: List<YtelseUforetrygd>? = emptyList(), // emptyList til frontenden er på plass
     val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
@@ -90,6 +91,7 @@ data class Filtervalg(
                 harYtelseDagpengerFilter() ||
                 harYtelseDagpengerArenaFilter() ||
                 harYtelseUngdomsprogramFilter() ||
+                harYtelseUforetrygdFilter() ||
                 harVisGeografiskBosted()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
@@ -130,6 +132,9 @@ data class Filtervalg(
 
     fun harYtelseUngdomsprogramFilter(): Boolean =
         ytelseUngdomsprogram.isNotEmpty()
+
+    fun harYtelseUforetrygdFilter(): Boolean =
+        !ytelseUforetrygd.isNullOrEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null

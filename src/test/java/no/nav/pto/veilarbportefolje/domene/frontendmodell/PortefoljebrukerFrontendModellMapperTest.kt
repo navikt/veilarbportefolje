@@ -361,7 +361,10 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(kandidatForUtmeldingHendelse.beskrivelse, resultKandidat!!.beskrivelse)
         Assertions.assertEquals(kandidatForUtmeldingHendelse.lenke, resultKandidat.lenke)
         Assertions.assertEquals(kandidatForUtmeldingHendelse.dato.dayOfMonth, resultKandidat.dato!!.dayOfMonth)
-        Assertions.assertEquals(kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth, resultKandidat.datoFrist?.dayOfMonth)
+        Assertions.assertEquals(
+            kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth,
+            resultKandidat.datoFrist?.dayOfMonth
+        )
     }
 
     @Test
@@ -420,6 +423,10 @@ class PortefoljebrukerFrontendModellMapperTest {
                 null,
                 LocalDate.of(2027, 1, 1),
                 false
+            ),
+            uforetrygd = Uforetrygd(
+                LocalDate.of(2026, 1, 1),
+                50
             )
         )
 
@@ -454,6 +461,8 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(null, ytelser.ungdomsprogram.sluttdato)
         Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
         Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
+        Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.uforetrygd!!.virkningsdato)
+        Assertions.assertEquals(50, ytelser.uforetrygd.uforegrad)
     }
 
     @Test

@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -134,7 +135,9 @@ object DatafeltKeys {
         val UNGDOMSPROGRAM_TIL_OG_MED = UngdomsprogramForOpensearch::tilOgMed.name
         val UNGDOMSPROGRAM_MAKSDATO = UngdomsprogramForOpensearch::maksdato.name
         val UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE = UngdomsprogramForOpensearch::harForlengetPeriode.name
-
+        val UFORETRYGD = PortefoljebrukerOpensearchModell::uforetrygd.name
+        val UFORETRYGD_VIRKNINGSDATO = Uforetrygd::virkningsdato.name
+        val UFORETRYGD_UFOREGRAD = Uforetrygd::uforegrad.name
     }
 
     object Dialog {

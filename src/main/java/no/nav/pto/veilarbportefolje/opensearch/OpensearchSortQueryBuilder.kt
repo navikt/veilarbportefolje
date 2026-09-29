@@ -60,6 +60,9 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLI
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD_YNGSTE_BARNS_FØDSELSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_RETTIGHET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER_VEDTAKSDATO_TOM
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD_UFOREGRAD
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD_VIRKNINGSDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_FRA_OG_MED
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE
@@ -367,6 +370,16 @@ class OpensearchSortQueryBuilder {
                     "$UNGDOMSPROGRAM.$UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE",
                     sorteringsrekkefolgeOpenSearch
                 )
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UFORETRYGD_VIRKNINGSDATO -> {
+                sorterUforetrygdVirkningsdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.UFORETRYGD_UFOREGRAD -> {
+                searchSourceBuilder.sort("$UFORETRYGD.$UFORETRYGD_UFOREGRAD", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -781,6 +794,22 @@ class OpensearchSortQueryBuilder {
                     
                     """.trimIndent()
 
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterUforetrygdVirkningsdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO') && !doc['$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO'].empty) {
+                        return doc['$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
 
         val script = Script(expression)
         val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)

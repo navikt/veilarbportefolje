@@ -46,6 +46,7 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ytelseDagpenger = emptyList(),
     ytelseDagpengerArena = emptyList(),
     ytelseUngdomsprogram = emptyList(),
+    ytelseUforetrygd = emptyList(),
     visGeografiskBosted = emptyList()
 )
 
