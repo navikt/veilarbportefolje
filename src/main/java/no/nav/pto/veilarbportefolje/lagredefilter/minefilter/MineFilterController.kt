@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent
+import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.HentLagretFilterResponse
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.LagretFilter
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.NyttFilterRequest
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.domene.OppdaterFilterRequest
@@ -31,7 +32,7 @@ class MineFilterController(
         summary = "Henter alle filter for en veileder",
     )
     @GetMapping
-    fun hentFilterForVeileder(): List<LagretFilter> {
+    fun hentFilterForVeileder(): HentLagretFilterResponse {
         val veilederIdent = getInnloggetVeilederIdent()
         val lagredeFilterForVeileder = mineFilterService.hentFilterForVeileder(veilederIdent.toString())
         return lagredeFilterForVeileder

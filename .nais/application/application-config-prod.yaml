@@ -106,6 +106,8 @@ spec:
           namespace: k9saksbehandling
         - application: logging
           namespace: nais-system
+        - application: pensjon-pen
+          namespace: pensjondeployer
       external:
         - host: obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
@@ -171,3 +173,7 @@ spec:
       value: "http://ung-deltakelse-opplyser.k9saksbehandling"
     - name: UNGDOMSPROGRAM_SCOPE
       value: "api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"
+    - name: UFORETRYGD_URL
+      value: "http://pensjon-pen.pensjondeployer"
+    - name: UFORETRYGD_SCOPE
+      value: "api://prod-fss.pensjondeployer.pensjon-pen/.default"

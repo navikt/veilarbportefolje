@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.config;
 
-import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
@@ -9,15 +8,17 @@ import no.nav.common.client.pdl.PdlClient;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
-import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
+import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
 import org.springframework.context.annotation.Bean;
@@ -94,6 +95,17 @@ public class ClientConfig {
         return new UngdomsprogramClient(
                 environmentProperties.getUngdomsprogramUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getUngdomsprogramScope())
+        );
+    }
+
+    @Bean
+    public UforetrygdClient uforetrygdClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new UforetrygdClient(
+                environmentProperties.getUforetrygdUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getUforetrygdScope())
         );
     }
 

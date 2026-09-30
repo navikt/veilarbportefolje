@@ -146,6 +146,7 @@ object PortefoljebrukerFrontendModellMapper {
                     )
                 },
                 ungdomsprogram = mapUngdomsprogram(opensearchBruker),
+                uforetrygd = opensearchBruker.uforetrygd,
             ),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,

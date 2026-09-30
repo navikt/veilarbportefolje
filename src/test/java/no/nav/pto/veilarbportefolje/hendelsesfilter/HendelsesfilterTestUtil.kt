@@ -11,22 +11,6 @@ import java.time.ZonedDateTime
 import java.util.*
 import kotlin.random.Random
 
-// For å kunne kalle funksjonen fra Java uten å måtte sende inn argument
-fun genererRandomHendelse(): Hendelse {
-    return genererRandomHendelse(
-        UUID.randomUUID(),
-        randomNorskIdent(),
-        randomAvsender(),
-        randomKategori(),
-        randomBeskrivelse(),
-        randomBeskrivelseEnum(),
-        randomZonedDate(),
-        randomDatoFrist(),
-        randomUrl(),
-        randomDetaljer(),
-    )
-}
-
 // For å kunne kalle funksjonen fra Java og bare sende inn kategori
 fun genererRandomHendelse(kategori: Kategori): Hendelse {
     return genererRandomHendelse(
@@ -87,7 +71,7 @@ fun genererRandomHendelse(
     )
 }
 
-fun genererRandomHendelseRecordValue(
+fun genererRandomHendelseRecordValueV1(
     personID: NorskIdent = randomNorskIdent(),
     avsender: String = randomAvsender(),
     kategori: Kategori = randomKategori(),
@@ -98,13 +82,13 @@ fun genererRandomHendelseRecordValue(
     hendelseDatoFrist: ZonedDateTime? = randomDatoFrist(),
     hendelseLenke: URL = randomUrl(),
     hendelseDetaljer: String? = randomDetaljer(),
-): HendelseRecordValue {
-    return HendelseRecordValue(
+): HendelseRecordValueV1 {
+    return HendelseRecordValueV1(
         personID = personID,
         avsender = avsender,
         kategori = kategori,
         operasjon = operasjon,
-        hendelse = HendelseRecordValue.HendelseInnhold(
+        hendelse = HendelseRecordValueV1.HendelseInnhold(
             beskrivelse = hendelseBeskrivelse,
             beskrivelseEnum = hendelseBeskrivelseEnum,
             dato = hendelseDato,
@@ -115,9 +99,43 @@ fun genererRandomHendelseRecordValue(
     )
 }
 
+fun genererRandomHendelseRecordValueV2(
+    personID: NorskIdent = randomNorskIdent(),
+    avsender: String = randomAvsender(),
+    kategori: Kategori = randomKategori(),
+    operasjon: Operasjon = randomOperasjon(),
+    hendelseBeskrivelse: String = randomBeskrivelse(),
+    hendelseBeskrivelseEnum: String? = randomBeskrivelseEnum(),
+    hendelseDato: ZonedDateTime = randomZonedDate(),
+    hendelseDatoFrist: ZonedDateTime? = randomDatoFrist(),
+    hendelseLenke: URL = randomUrl(),
+    hendelseDetaljer: String? = randomDetaljer(),
+): HendelseRecordValueV2 {
+    val hendelse = if (operasjon == Operasjon.STOPP) {
+        null
+    } else {
+        HendelseRecordValueV2.HendelseInnhold(
+            beskrivelse = hendelseBeskrivelse,
+            beskrivelseEnum = hendelseBeskrivelseEnum,
+            tidspunkt = hendelseDato,
+            tidspunktFrist = hendelseDatoFrist,
+            lenke = hendelseLenke,
+            detaljer = hendelseDetaljer,
+        )
+    }
+
+    return HendelseRecordValueV2(
+        personID = personID,
+        avsender = avsender,
+        kategori = kategori,
+        operasjon = operasjon,
+        hendelse = hendelse,
+    )
+}
+
 fun genererRandomHendelseConsumerRecord(
     key: String = UUID.randomUUID().toString(),
-    recordValue: HendelseRecordValue = genererRandomHendelseRecordValue(),
+    recordValue: HendelseRecordValue = genererRandomHendelseRecordValueV1(),
     partition: Int = Random.nextInt(until = 5),
     offset: Long = Random.nextLong(until = 10_000),
 ): ConsumerRecord<String, HendelseRecordValue> {

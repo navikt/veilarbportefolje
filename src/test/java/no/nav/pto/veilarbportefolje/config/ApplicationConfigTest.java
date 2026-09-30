@@ -74,13 +74,16 @@ import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramRepository;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
@@ -197,6 +200,8 @@ import static org.mockito.Mockito.when;
         DagpengerService.class,
         UngdomsprogramService.class,
         UngdomsprogramRepository.class,
+        UforetrygdService.class,
+        UforetrygdRepository.class,
         OppfolgingsbrukerTestRepository.class,
         VeiledergrupperService.class,
         VeiledergrupperRepository.class,
@@ -404,6 +409,11 @@ public class ApplicationConfigTest {
     @Bean
     public UngdomsprogramClient ungdomsprogramClient() {
         return mock(UngdomsprogramClient.class);
+    }
+
+    @Bean
+    public UforetrygdClient uforetrygdClient() {
+        return mock(UforetrygdClient.class);
     }
 
     @Bean

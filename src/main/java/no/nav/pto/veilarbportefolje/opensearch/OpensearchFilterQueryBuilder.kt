@@ -4,9 +4,9 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
-import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITETER
@@ -63,6 +63,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
@@ -71,11 +72,7 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.lucene.search.join.ScoreMode
-import org.opensearch.index.query.BoolQueryBuilder
-import org.opensearch.index.query.Operator
-import org.opensearch.index.query.QueryBuilder
-import org.opensearch.index.query.QueryBuilders
-import org.opensearch.index.query.RangeQueryBuilder
+import org.opensearch.index.query.*
 import org.opensearch.search.aggregations.AggregationBuilders
 import org.opensearch.search.aggregations.BucketOrder
 import org.opensearch.search.aggregations.bucket.filter.FiltersAggregator
@@ -492,12 +489,21 @@ class OpensearchFilterQueryBuilder {
 
         }
 
+        if (filtervalg.harYtelseUforetrygdFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    UFORETRYGD
+                )
+            )
+
+        }
+
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(QueryBuilders.matchQuery(KJONN, filtervalg.kjonn?.name))
         }
 
         if (filtervalg.harCvFilter()) {
-            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_DELT_CV) {
+            if (filtervalg.cvJobbprofil == CVjobbprofil.HAR_CV_HOS_NAV) {
                 queryBuilder.must(QueryBuilders.matchQuery(CV_EKSISTERE, true))
             } else {
                 val orQuery = QueryBuilders.boolQuery()
@@ -802,13 +808,13 @@ class OpensearchFilterQueryBuilder {
         val queryBuilder = when (brukerStatus) {
             Brukerstatus.UFORDELTE_BRUKERE -> byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet)
             Brukerstatus.TRENGER_OPPFOLGINGSVEDTAK -> byggTrengerOppfolgingsvedtakFilter()
-            Brukerstatus.INAKTIVE_BRUKERE -> QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV")
             Brukerstatus.VENTER_PA_SVAR_FRA_NAV -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_NAV)
             Brukerstatus.VENTER_PA_SVAR_FRA_BRUKER -> QueryBuilders.existsQuery(VENTER_PA_SVAR_FRA_BRUKER)
             Brukerstatus.I_AVTALT_AKTIVITET -> QueryBuilders.existsQuery(AKTIVITETER)
             Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
                 .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
+
             Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
@@ -819,6 +825,7 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
             Brukerstatus.UDELT_SAMTALEREFERAT -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UDELT_SAMTALEREFERAT.name}")
             Brukerstatus.KANDIDAT_FOR_UTMELDING -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}")
+            Brukerstatus.MINE_FARGEKATEGORIER -> QueryBuilders.boolQuery()  // Denne håndteres kun i frontend, så vi trenger ikke å filtrere på noe her
         }
         return queryBuilder
     }
@@ -836,16 +843,13 @@ class OpensearchFilterQueryBuilder {
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     fun byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet: List<String?>): BoolQueryBuilder {
-        val boolQuery = QueryBuilders.boolQuery()
-        veiledereMedTilgangTilEnhet.forEach(Consumer { id: String? ->
-            boolQuery.mustNot(
-                QueryBuilders.matchQuery(
-                    VEILEDER_ID,
-                    id
-                )
-            )
-        })
-        return boolQuery
+        val relevanteVeiledere = veiledereMedTilgangTilEnhet.filterNotNull()
+        if (relevanteVeiledere.isEmpty()) {
+            return QueryBuilders.boolQuery()
+        }
+
+        return QueryBuilders.boolQuery()
+            .mustNot(QueryBuilders.termsQuery(VEILEDER_ID, relevanteVeiledere))
     }
 
     fun <T> byggManuellFilter(
@@ -936,7 +940,6 @@ class OpensearchFilterQueryBuilder {
             erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, AKTIVITETER),
             ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
-            inaktiveBrukere(filtrereVeilederOgEnhet),
             mustBeTrueFilter(
                 filtrereVeilederOgEnhet,
                 StatustallAggregationKey.NYE_BRUKERE_FOR_VEILEDER.key
@@ -1123,16 +1126,6 @@ class OpensearchFilterQueryBuilder {
             QueryBuilders.boolQuery()
                 .must(filtrereVeilederOgEnhet)
                 .must(QueryBuilders.termQuery(NY_FOR_VEILEDER, true))
-
-        )
-    }
-
-    private fun inaktiveBrukere(filtrereVeilederOgEnhet: BoolQueryBuilder): FiltersAggregator.KeyedFilter {
-        return FiltersAggregator.KeyedFilter(
-            StatustallAggregationKey.INAKTIVE_BRUKERE.key,
-            QueryBuilders.boolQuery()
-                .must(filtrereVeilederOgEnhet)
-                .must(QueryBuilders.matchQuery(FORMIDLINGSGRUPPE_KODE, "ISERV"))
 
         )
     }

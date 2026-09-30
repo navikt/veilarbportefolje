@@ -117,7 +117,7 @@ class HendelseIntegrationTest(
         // When
         val hendelseIdUtgåttVarsel = UUID.randomUUID().toString()
         val hendelseRecordValueUtgattVarsel =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -131,7 +131,7 @@ class HendelseIntegrationTest(
 
         val hendelseIdUdeltSamtalereferat = UUID.randomUUID().toString()
         val hendelseRecordValueUdeltSamtalereferat =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UDELT_SAMTALEREFERAT
@@ -182,7 +182,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -215,6 +215,54 @@ class HendelseIntegrationTest(
     }
 
     @Test
+    fun `skal oppdatere hendelse når produsent går frå V1 START til V2 OPPDATER`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val brukerFnr = randomFnr()
+        val brukerNorskIdent = NorskIdent.of(brukerFnr.get())
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, brukerFnr, brukerOppfolgingsEnhet.value, null)
+        opensearchIndexer.indekser(brukerAktorId)
+        val hendelseId = UUID.randomUUID().toString()
+
+        val startMeldingV1 = genererRandomHendelseRecordValueV1(
+            operasjon = Operasjon.START,
+            personID = brukerNorskIdent,
+            kategori = Kategori.UTGATT_VARSEL
+        )
+        hendelseService.behandleKafkaRecord(
+            genererRandomHendelseConsumerRecord(recordValue = startMeldingV1, key = hendelseId)
+        )
+
+        // When
+        val oppdaterMeldingV2 = genererRandomHendelseRecordValueV2(
+            personID = startMeldingV1.personID,
+            avsender = startMeldingV1.avsender,
+            kategori = startMeldingV1.kategori,
+            operasjon = Operasjon.OPPDATER,
+            hendelseBeskrivelse = "Oppdatert frå V2",
+            hendelseBeskrivelseEnum = startMeldingV1.hendelse.beskrivelseEnum,
+            hendelseDato = startMeldingV1.hendelse.dato.plusDays(1),
+            hendelseDatoFrist = startMeldingV1.hendelse.datoFrist?.plusDays(1),
+            hendelseLenke = startMeldingV1.hendelse.lenke,
+            hendelseDetaljer = "Detaljar frå V2"
+        )
+        hendelseService.behandleKafkaRecord(
+            genererRandomHendelseConsumerRecord(recordValue = oppdaterMeldingV2, key = hendelseId)
+        )
+
+        // Then
+        val forventaHendelse = toHendelse(oppdaterMeldingV2, hendelseId)
+        assertThat(hendelseRepository.get(UUID.fromString(hendelseId))).isEqualTo(forventaHendelse)
+
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+        assertThat(brukerFraRespons.hendelse).isNotNull
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(forventaHendelse.hendelse.beskrivelse)
+        assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventaHendelse.hendelse.lenke)
+    }
+
+    @Test
     fun `skal kun fjerne data om hendelser med riktig kategori på bruker i OpenSearch når vi får STOPP-melding`() {
         // Given
         val brukerAktorId = randomAktorId()
@@ -225,7 +273,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val hendelseId = UUID.randomUUID().toString()
         val hendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -236,7 +284,7 @@ class HendelseIntegrationTest(
 
         val hendelseIdUdeltSamtalereferat = UUID.randomUUID().toString()
         val hendelseRecordValueUdeltSamtalereferat =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UDELT_SAMTALEREFERAT
@@ -287,7 +335,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -299,7 +347,7 @@ class HendelseIntegrationTest(
         // When
         val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
         val eldreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
@@ -332,7 +380,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -342,7 +390,7 @@ class HendelseIntegrationTest(
         hendelseService.behandleKafkaRecord(yngreHendelseConsumerRecord)
         val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
         val eldreHendelseRecordValueStart =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
@@ -383,7 +431,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL
@@ -395,7 +443,7 @@ class HendelseIntegrationTest(
         // When
         val eldreHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
         val eldreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
@@ -429,7 +477,7 @@ class HendelseIntegrationTest(
         opensearchIndexer.indekser(brukerAktorId)
         val yngreHendelseId = "1d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val yngreHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UTGATT_VARSEL,
@@ -441,7 +489,7 @@ class HendelseIntegrationTest(
 
         val eldsteAvAlleKategorierHendelseId = "7d5cb509-1fa3-4b92-a552-f91c00c3aba7"
         val eldsteAvAlleKategorierHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 kategori = Kategori.UDELT_SAMTALEREFERAT,
@@ -457,7 +505,7 @@ class HendelseIntegrationTest(
         // When
         val eldsteUtgattVarselHendelseId = "56d9b9d1-0920-4a2f-bd62-0953d563ce2a"
         val eldsteUtgattVarselHendelseRecordValue =
-            genererRandomHendelseRecordValue(
+            genererRandomHendelseRecordValueV1(
                 operasjon = Operasjon.START,
                 personID = brukerNorskIdent,
                 hendelseDato = yngreHendelseRecordValue.hendelse.dato.minusDays(10),
