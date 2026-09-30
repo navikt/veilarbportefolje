@@ -146,6 +146,7 @@ fun rekonstruerFiltervalgFraAktive(aktive: AktiveFiltervalg): Filtervalg =
         ytelseDagpenger = aktive.ytelseDagpenger,
         ytelseDagpengerArena = aktive.ytelseDagpengerArena,
         ytelseUngdomsprogram = aktive.ytelseUngdomsprogram,
+        ytelseUforetrygd = aktive.ytelseUforetrygd,
         visGeografiskBosted = aktive.visGeografiskBosted
     )
 
