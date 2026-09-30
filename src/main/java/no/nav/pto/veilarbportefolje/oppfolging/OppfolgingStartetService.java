@@ -22,6 +22,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -50,6 +52,7 @@ public class OppfolgingStartetService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
+    private final PlatformTransactionManager transactionManager;
 
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
@@ -90,22 +93,18 @@ public class OppfolgingStartetService {
         }
     }
 
-    // TODO: Dersom en eller flere av disse operasjonene feiler og kaster exception vil
-    //  kafka-meldingen bli lagret og retryet. Dette kan resultere i at vi mellomlagrer data
-    //  vi ikke skal. Mulig vi burde wrappe dette i en try-catch slik at vi kan rydde opp
-    //  i catch-en.
-    //  Dette vil også muligens bidra til å gjøre usikkerheten rundt hvordan vi håndterer
-    //  scenarier der AktorID/Fnr blir historisk før startOppfolging fullfører.
     public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
-        pdlService.hentOgLagrePdlData(aktorId);
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
-        siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
-        oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId, navKontor);
-        arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
-        ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
-        tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
-        dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            pdlService.hentOgLagrePdlData(aktorId);
+            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+            siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
+            oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId, navKontor);
+            arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
+            ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
+            aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
+            tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
+            dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
+        });
 
         opensearchIndexer.indekser(aktorId);
 
