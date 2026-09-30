@@ -54,7 +54,7 @@ data class AktiveFiltervalg(
     val ytelseDagpenger: List<YtelseDagpenger> = emptyList(),
     val ytelseDagpengerArena: List<YtelseDagpengerArena> = emptyList(),
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram> = emptyList(),
-    val ytelseUforetrygd: List<YtelseUforetrygd>? = emptyList(),
+    val ytelseUforetrygd: List<YtelseUforetrygd> = emptyList(),
     val visGeografiskBosted: List<String> = emptyList()
 )
 
