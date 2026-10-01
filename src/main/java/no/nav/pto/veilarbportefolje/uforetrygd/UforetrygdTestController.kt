@@ -27,7 +27,7 @@ class UforetrygdTestController(
     @PostMapping("/uforetrygd/client")
     fun hentUforetrygdFraClient(@RequestBody request: UforetrygdRequest): UforetrygdResponseDto? {
         sjekkErDev()
-        return uforetrygdClient.hentUforetrygd(request.pid)
+        return uforetrygdClient.hentUforetrygd(request.fnr)
     }
 
     private fun sjekkErDev() {
