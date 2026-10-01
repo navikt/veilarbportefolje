@@ -113,10 +113,12 @@ spec:
           namespace: nais-system
         - application: pensjon-pen-q2
           namespace: pensjon-q2
+          cluster: dev-fss
       external:
         - host: obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
+        - host: pensjon-pen-q2.dev-fss-pub.nais.io
   resources:
     limits:
       cpu: "4"
@@ -180,6 +182,6 @@ spec:
     - name: UNGDOMSPROGRAM_SCOPE
       value: "api://dev-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"
     - name: UFORETRYGD_URL
-      value: "http://pensjon-pen-q2.pensjon-q2"
+      value: "http://pensjon-pen-q2.dev-fss-pub.nais.io"
     - name: UFORETRYGD_SCOPE
       value: "api://dev-fss.pensjon-q2.pensjon-pen-q2/.default"
