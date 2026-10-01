@@ -248,6 +248,32 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     }
 
     @Test
+    void nar_oppfolging_start_feiler_skal_alle_databaseendringer_rulles_tilbake_og_retry_kjore_hele_oppstarten() {
+        mockPdlIdenterRespons(aktorId, fnr);
+        mockPdlPersonRespons(fnr);
+        mockPdlPersonBarnRespons(fnr);
+        mockSiste14aVedtakResponse(fnr);
+        mockHentAapResponse(fnr);
+        mockHentTiltakspengerResponse(fnr);
+        mockHentDagpengerResponse(fnr);
+        when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.empty());
+        var melding = genererStartetOppfolgingsperiode(aktorId);
+
+        assertThrows(RuntimeException.class, () -> oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding));
+
+        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId)).isEmpty();
+        assertThat(pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer()).isEmpty();
+        assertThat(pdlPersonRepository.hentPerson(fnr)).isNull();
+        assertThat(siste14aVedtakRepository.hentSiste14aVedtak(new IdenterForBruker(List.of(aktorId.get(), fnr.get())))).isEmpty();
+
+        mockHentOppfolgingsbrukerResponse(fnr);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(melding);
+
+        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId).orElseThrow().getOppfolging()).isTrue();
+        assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr)).isPresent();
+    }
+
+    @Test
     void nar_oppfolging_startes_skal_oppfolgingsbrukerdata_hentes_og_oppdateres_naar_vi_har_oppfolgingsbruker_data_fra_foer() {
         insertOppfolgingsbrukerEntity(ZonedDateTime.parse("2024-04-04T00:00:00+02:00").minusDays(2));
 
