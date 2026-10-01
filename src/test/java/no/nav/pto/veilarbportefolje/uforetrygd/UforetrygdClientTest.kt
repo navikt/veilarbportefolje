@@ -23,15 +23,16 @@ class UforetrygdClientTest {
 
         val responseBody = """
                       {
-                        "virkningsdato": "2024-10-02",
-                        "uføregrad": 50
+                      "lopendeUforetrygd": true,
+                      "uforegrad": 50,
+                      "forsteVirkningstidspunkt": "2024-10-02"
                       }
                 """.trimIndent()
 
         WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/xxx/yyy")).withRequestBody(
+            WireMock.post(WireMock.urlEqualTo("/api/uforetrygd/ekstern/modia/vedtak")).withRequestBody(
                 WireMock.equalToJson(
-                    "{\"fnr\":\"$fnr\"}"
+                    "{\"pid\":\"$fnr\"}"
                 )
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
@@ -39,8 +40,9 @@ class UforetrygdClientTest {
         val response = client.hentUforetrygd(fnr.get())
 
         val forventet = UforetrygdResponseDto(
-            virkningsdato = LocalDate.of(2024, 10, 2),
-            uføregrad = 50
+            lopendeUforetrygd = true,
+            forsteVirkningstidspunkt = LocalDate.of(2024, 10, 2),
+            uforegrad = 50
         )
 
         Assertions.assertThat(response).isEqualTo(forventet)
