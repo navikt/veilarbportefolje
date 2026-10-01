@@ -32,7 +32,7 @@ class UforetrygdClientTest {
         WireMock.givenThat(
             WireMock.post(WireMock.urlEqualTo("/api/uforetrygd/ekstern/modia/vedtak")).withRequestBody(
                 WireMock.equalToJson(
-                    "{\"pid\":\"$fnr\"}"
+                    "{\"fnr\":\"$fnr\"}"
                 )
             ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
