@@ -332,7 +332,6 @@ public class KafkaConfigCommon {
                                         veilederTilordnetService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, ManuellStatusDTO>()
-                                .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(

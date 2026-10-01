@@ -37,8 +37,9 @@ public class BrukerServiceV2 {
     }
 
     public Optional<NavKontor> hentNavKontor(Fnr fnr) {
-        AktorId aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr);
-        return oppfolgingsbrukerRepositoryV3.hentNavKontor(aktorId);
+        // hentAktorId(fnr) er null-trygg (i motsetning til å kalle pdlIdentRepository direkte) og har i
+        // tillegg fallback til aktorClient hvis fnr er historisk/ikke har en aktiv PDL-mapping ennå.
+        return hentAktorId(fnr).flatMap(this::hentNavKontor);
     }
 
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {

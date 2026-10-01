@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
@@ -518,6 +519,52 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUngdomsprogram.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .doesNotContain(brukerUtenUngdomsprogram.fnr)
+    }
+
+
+    @Test
+    fun skal_hente_ut_brukere_som_har_uforetrygd() {
+        val brukerMedUforetrygd = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            uforetrygd = Uforetrygd(virkningsdato = LocalDate.now().minusMonths(1), uforegrad = 60)
+        )
+
+        val brukerUtenUforetrygd = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+            uforetrygd = null,
+        )
+
+        val liste = listOf(brukerMedUforetrygd, brukerUtenUforetrygd)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filterValg = getFiltervalgDefaults().copy(
+            ytelseUforetrygd = listOf(YtelseUforetrygd.HAR_UFORETRYGD)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.of(TEST_VEILEDER_0),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filterValg,
+            null,
+            null
+        )
+
+        Assertions.assertThat(response.antall).isEqualTo(1)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUforetrygd.fnr)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
+            .doesNotContain(brukerUtenUforetrygd.fnr)
     }
 
     @Test
@@ -1372,6 +1419,101 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
 
         Assertions.assertThat(brukereSynkende[0].fnr).isEqualTo(senestTomBruker.fnr)
         Assertions.assertThat(brukereSynkende[2].fnr).isEqualTo(tidligstTomBruker.fnr)
+    }
+
+    @Test
+    fun skal_sortere_brukere_pa_uforetrygd_uforegrad_og_virkningsdato() {
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = Uforetrygd(
+                LocalDate.now().minusMonths(1),
+                50
+            )
+        )
+
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = Uforetrygd(
+                LocalDate.now().minusMonths(2),
+                70
+            )
+        )
+
+        val nullBruker = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = randomAktorId().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            uforetrygd = null
+        )
+
+
+        val liste = listOf(bruker1, bruker2, nullBruker)
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filtervalg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = emptyList(),
+            ytelseUforetrygd = listOf(YtelseUforetrygd.HAR_UFORETRYGD)
+        )
+
+        val virkningsdatoStigende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.UFORETRYGD_VIRKNINGSDATO,
+            filtervalg,
+            null,
+            null
+        )
+        val virkningsdatoSynkende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.UFORETRYGD_VIRKNINGSDATO,
+            filtervalg,
+            null,
+            null
+        )
+
+        val uforegradStigende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.UFORETRYGD_UFOREGRAD,
+            filtervalg,
+            null,
+            null
+        )
+        val uforegradSynkende = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.SYNKENDE,
+            Sorteringsfelt.UFORETRYGD_UFOREGRAD,
+            filtervalg,
+            null,
+            null
+        )
+
+
+        Assertions.assertThat(virkningsdatoStigende.brukere.size).isEqualTo(2)
+        Assertions.assertThat(virkningsdatoStigende.brukere[0].fnr).isEqualTo(bruker2.fnr)
+
+        Assertions.assertThat(virkningsdatoSynkende.brukere[0].fnr).isEqualTo(bruker1.fnr)
+        Assertions.assertThat(virkningsdatoSynkende.brukere[1].fnr).isEqualTo(bruker2.fnr)
+
+        Assertions.assertThat(uforegradStigende.brukere.size).isEqualTo(2)
+        Assertions.assertThat(uforegradStigende.brukere[0].fnr).isEqualTo(bruker1.fnr)
+
+        Assertions.assertThat(uforegradSynkende.brukere[0].fnr).isEqualTo(bruker2.fnr)
+        Assertions.assertThat(uforegradSynkende.brukere[1].fnr).isEqualTo(bruker1.fnr)
     }
 
 

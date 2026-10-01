@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITETER
@@ -62,6 +63,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.YTELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregationKey
@@ -487,6 +489,15 @@ class OpensearchFilterQueryBuilder {
 
         }
 
+        if (filtervalg.harYtelseUforetrygdFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    UFORETRYGD
+                )
+            )
+
+        }
+
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(QueryBuilders.matchQuery(KJONN, filtervalg.kjonn?.name))
         }
@@ -803,6 +814,7 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.I_AKTIVITET -> QueryBuilders.existsQuery(ALLE_AKTIVITETER)
             Brukerstatus.IKKE_I_AVTALT_AKTIVITET -> QueryBuilders.boolQuery()
                 .mustNot(QueryBuilders.existsQuery(AKTIVITETER))
+
             Brukerstatus.UTLOPTE_AKTIVITETER -> QueryBuilders.existsQuery(NYESTE_UTLOPTE_AKTIVITET)
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
@@ -831,16 +843,13 @@ class OpensearchFilterQueryBuilder {
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
     fun byggUfordeltBrukereQuery(veiledereMedTilgangTilEnhet: List<String?>): BoolQueryBuilder {
-        val boolQuery = QueryBuilders.boolQuery()
-        veiledereMedTilgangTilEnhet.forEach(Consumer { id: String? ->
-            boolQuery.mustNot(
-                QueryBuilders.matchQuery(
-                    VEILEDER_ID,
-                    id
-                )
-            )
-        })
-        return boolQuery
+        val relevanteVeiledere = veiledereMedTilgangTilEnhet.filterNotNull()
+        if (relevanteVeiledere.isEmpty()) {
+            return QueryBuilders.boolQuery()
+        }
+
+        return QueryBuilders.boolQuery()
+            .mustNot(QueryBuilders.termsQuery(VEILEDER_ID, relevanteVeiledere))
     }
 
     fun <T> byggManuellFilter(

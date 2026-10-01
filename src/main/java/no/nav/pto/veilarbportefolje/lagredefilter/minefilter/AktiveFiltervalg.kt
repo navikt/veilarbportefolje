@@ -54,6 +54,7 @@ data class AktiveFiltervalg(
     val ytelseDagpenger: List<YtelseDagpenger> = emptyList(),
     val ytelseDagpengerArena: List<YtelseDagpengerArena> = emptyList(),
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram> = emptyList(),
+    val ytelseUforetrygd: List<YtelseUforetrygd> = emptyList(),
     val visGeografiskBosted: List<String> = emptyList()
 )
 
@@ -99,6 +100,7 @@ fun ekstraherAktiveFiltervalg(filtervalg: Filtervalg): AktiveFiltervalg =
         ytelseDagpenger = filtervalg.ytelseDagpenger,
         ytelseDagpengerArena = filtervalg.ytelseDagpengerArena,
         ytelseUngdomsprogram = filtervalg.ytelseUngdomsprogram,
+        ytelseUforetrygd = filtervalg.ytelseUforetrygd,
         visGeografiskBosted = filtervalg.visGeografiskBosted
     )
 
@@ -144,6 +146,7 @@ fun rekonstruerFiltervalgFraAktive(aktive: AktiveFiltervalg): Filtervalg =
         ytelseDagpenger = aktive.ytelseDagpenger,
         ytelseDagpengerArena = aktive.ytelseDagpengerArena,
         ytelseUngdomsprogram = aktive.ytelseUngdomsprogram,
+        ytelseUforetrygd = aktive.ytelseUforetrygd,
         visGeografiskBosted = aktive.visGeografiskBosted
     )
 

@@ -116,7 +116,6 @@ public class PostgresTable {
         // YTELSER DAGPENGER
         public static final String YTELSER_DAGPENGER_NYESTE_PERIODE_TOM = "YTELSER_DAGPENGER_NYESTE_PERIODE_TOM";
         public static final String YTELSER_DAGPENGER_RETTIGHETSTYPE = "YTELSER_DAGPENGER_RETTIGHETSTYPE";
-        public static final String YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET = "YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET";
         public static final String YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER = "YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER";
 
         // YTELSER UNGDOMSPROGRAM
@@ -124,6 +123,10 @@ public class PostgresTable {
         public static final String YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM = "YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM";
         public static final String YTELSER_UNGDOMSPROGRAM_MAKSDATO = "YTELSER_UNGDOMSPROGRAM_MAKSDATO";
         public static final String YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE = "YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE";
+
+        // YTELSER UFORETRYGD
+        public static final String YTELSER_UFORETRYGD_VIRKNINGSDATO = "YTELSER_UFORETRYGD_VIRKNINGSDATO";
+        public static final String YTELSER_UFORETRYGD_UFOREGRAD = "YTELSER_UFORETRYGD_UFOREGRAD";
 
     }
 
@@ -544,6 +547,16 @@ public class PostgresTable {
         public static final String NYESTE_PERIODE_TOM = "NYESTE_PERIODE_TOM";
         public static final String HAR_FORLENGET_PERIODE = "HAR_FORLENGET_PERIODE";
         public static final String MAKSDATO = "MAKSDATO";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
+    public static final class YTELSER_UFORETRYGD {
+        private YTELSER_UFORETRYGD() { /* no-op */ }
+
+        public static final String TABLE_NAME = "YTELSER_UFORETRYGD";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String VIRKNINGSDATO = "VIRKNINGSDATO";
+        public static final String UFOREGRAD = "UFOREGRAD";
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
