@@ -113,7 +113,7 @@ spec:
         - host: obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
-        - host: pensjon-pen-q2.prod-fss-pub.nais.io
+        - host: pensjon-pen.prod-fss-pub.nais.io
   resources:
     limits:
       memory: 10Gi
@@ -176,6 +176,6 @@ spec:
     - name: UNGDOMSPROGRAM_SCOPE
       value: "api://prod-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"
     - name: UFORETRYGD_URL
-      value: "http://pensjon-pen.prod-fss-pub.nais.io"
+      value: "https://pensjon-pen.prod-fss-pub.nais.io"
     - name: UFORETRYGD_SCOPE
       value: "api://prod-fss.pensjondeployer.pensjon-pen/.default"

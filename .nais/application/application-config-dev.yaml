@@ -182,6 +182,6 @@ spec:
     - name: UNGDOMSPROGRAM_SCOPE
       value: "api://dev-gcp.k9saksbehandling.ung-deltakelse-opplyser/.default"
     - name: UFORETRYGD_URL
-      value: "http://pensjon-pen-q2.dev-fss-pub.nais.io"
+      value: "https://pensjon-pen-q2.dev-fss-pub.nais.io"
     - name: UFORETRYGD_SCOPE
       value: "api://dev-fss.pensjon-q2.pensjon-pen-q2/.default"
