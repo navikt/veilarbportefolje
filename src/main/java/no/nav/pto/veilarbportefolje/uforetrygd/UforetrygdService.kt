@@ -42,7 +42,7 @@ class UforetrygdService(
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
 
-        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.SLETT) {
+        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.STOPP) {
             slettUforetrygdData(aktorId, Optional.of(Fnr.of(kafkaMelding.personId)))
             return
         }

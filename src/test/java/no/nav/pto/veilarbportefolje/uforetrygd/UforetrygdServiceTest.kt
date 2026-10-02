@@ -207,7 +207,7 @@ val mockedYtelseKafkaMeldingOpprett = YtelserKafkaDTO(
 
 val mockedYtelseKafkaMeldingSlett = YtelserKafkaDTO(
     personId = "10108000000",
-    meldingstype = YTELSE_MELDINGSTYPE.SLETT,
+    meldingstype = YTELSE_MELDINGSTYPE.STOPP,
     ytelsestype = YTELSE_TYPE.UFORETRYGD,
     kildesystem = YTELSE_KILDESYSTEM.PESYS
 )

@@ -11,7 +11,7 @@ data class YtelserKafkaDTO(
 enum class YTELSE_MELDINGSTYPE {
     OPPRETT,
     OPPDATER,
-    SLETT
+    STOPP
 }
 
 enum class YTELSE_KILDESYSTEM {
