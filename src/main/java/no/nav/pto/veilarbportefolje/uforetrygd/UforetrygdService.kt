@@ -77,7 +77,7 @@ class UforetrygdService(
     ) {
         val uføretrygd = uforetrygdClient.hentUforetrygd(personIdent)
 
-        if (uføretrygd == null) {
+        if (uføretrygd == null || !uføretrygd.lopendeUforetrygd) {
             secureLog.info(
                 "Ingen uføretrygd funnet for bruker med fnr {}, sletter evt eksisterende i databasen og opensearch.",
                 personIdent
@@ -87,12 +87,19 @@ class UforetrygdService(
             return
         }
 
-        upsertUforetrygdForAktivIdentForBruker(personIdent, uføretrygd)
-        opensearchIndexerPaDatafelt.oppdaterUforetrygd(
-            aktorId,
-            uføretrygd.virkningsdato,
-            uføretrygd.uføregrad
-        )
+        // disse verdiene skal alltid være satt hvis lopendeUforetrygd er true, men vi sjekker likevel for å unngå uventede nullpointer exceptions.
+        if (uføretrygd.forsteVirkningstidspunkt != null && uføretrygd.uforegrad != null) {
+            upsertUforetrygdForAktivIdentForBruker(personIdent, uføretrygd)
+            opensearchIndexerPaDatafelt.oppdaterUforetrygd(
+                aktorId,
+                uføretrygd.forsteVirkningstidspunkt,
+                uføretrygd.uforegrad
+            )
+        } else {
+            secureLog.error(
+                "Uføretrygd for bruker med fnr $personIdent har ikke forventede verdier, kan ikke lagre. Uføretrygd: $uføretrygd",
+            )
+        }
     }
 
     fun upsertUforetrygdForAktivIdentForBruker(

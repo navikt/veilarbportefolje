@@ -32,8 +32,8 @@ class UforetrygdRepository(private val db: JdbcTemplate) {
                 excluded.${YTELSER_UFORETRYGD.RAD_SIST_ENDRET}
             ) """,
             norskIdent,
-            uføretrygd.uføregrad,
-            uføretrygd.virkningsdato
+            uføretrygd.uforegrad,
+            uføretrygd.forsteVirkningstidspunkt
         )
     }
 
