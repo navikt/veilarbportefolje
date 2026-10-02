@@ -339,7 +339,6 @@ class AdminController(
                         }
                     }
 
-                    uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
                     Thread.sleep(20)
                 } catch (e: InterruptedException) {
                     Thread.currentThread().interrupt()
