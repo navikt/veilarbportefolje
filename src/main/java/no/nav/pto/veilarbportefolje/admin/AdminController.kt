@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.job.JobRunner
-import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
@@ -170,36 +169,6 @@ class AdminController(
     }
 
     // DATA FETCHING JOBBER - BATCH
-    @PostMapping("/pdl/lastInnDataFraPdl")
-    @Operation(
-        summary = "Last inn PDL-data",
-        description = "Henter og lagrer data fra PDL (identer, personalia og foreldreansvar) for alle brukere i løsningen."
-    )
-    fun lastInnPDLBrukerData(): String {
-        sjekkTilgangTilAdmin()
-
-        val antall = AtomicInteger(0)
-        val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging()
-
-        brukereUnderOppfolging.forEach { bruker ->
-            if (antall.getAndAdd(1) % 100 == 0) {
-                log.info(
-                    "pdl brukerdata: innlasting {}% ferdig",
-                    (antall.get().toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
-                )
-            }
-            try {
-                pdlService.hentOgLagrePdlData(bruker)
-            } catch (e: Exception) {
-                secureLog.info("pdl brukerdata: feil under innlasting av pdl-data for bruker: {}", bruker, e)
-            }
-        }
-
-        log.info("pdl brukerdata: ferdig med innlasting")
-        return "ferdig"
-    }
-
-
     @PostMapping("/lastInnTildelingsdatoForBrukere")
     @Operation(
         summary = "Oppdater tilordningsdato for alle brukere",
@@ -251,65 +220,29 @@ class AdminController(
         return "Innlastning av tilordningsdato for veileder har startet"
     }
 
-
-    @PostMapping("/lastInnUforetrygd")
-    @Operation(
-        summary = "Oppdater uføretrygd for alle brukere",
-        description = "Går gjennom alle brukere og henter ut om de har uføretrygd fra api."
-    )
-    fun lastInnUforetrygd(
-        @RequestParam(required = false) limit: Int? = null
-    ): String {
-        sjekkTilgangTilAdmin()
-        return JobRunner.runAsync("Admin_uforetrygd_innlasting") {
-            val alleBrukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging()
-            val brukereUnderOppfolging =
-                if (limit != null) alleBrukereUnderOppfolging.take(limit) else alleBrukereUnderOppfolging
-            log.info("Uforetrygd-innlasting: prosesserer ${brukereUnderOppfolging.size} av ${alleBrukereUnderOppfolging.size} brukere")
-            val antall = AtomicInteger(0)
-            val antallFeilet = AtomicInteger(0)
-
-            for (aktorId in brukereUnderOppfolging) {
-                val nr = antall.getAndIncrement()
-                if (nr % 100 == 0) {
-                    log.info(
-                        "Uforetrygd-innlasting: {}% ferdig",
-                        (nr.toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
-                    )
-                }
-                try {
-                    secureLog.info("Uforetrygd-innlasting: starter prosessering for nr $nr med aktorId $aktorId")
-                    uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
-                    Thread.sleep(50) // throttle: ~20 req/s
-                } catch (e: InterruptedException) {
-                    Thread.currentThread().interrupt()
-                    log.warn("Uforetrygd-innlasting: avbrutt etter $nr brukere, ${antallFeilet.get()} feilet")
-                    return@runAsync
-                } catch (e: Exception) {
-                    antallFeilet.incrementAndGet()
-                    secureLog.error("Uforetrygd-innlasting: feilet for bruker $aktorId", e)
-                }
-            }
-            log.info("Uforetrygd-innlasting: ferdig. ${antall.get()} brukere prosessert, ${antallFeilet.get()} feilet")
-        }
-    }
-
     @PostMapping("/lastInnDataIBatchjobb")
     @Operation(
-        summary = "Oppdater patchdata for alle brukere fra mars 2026",
-        description = "Går gjennom alle brukere og henter ut om de har patchdata fra api."
+        summary = "Oppdater data for brukere for angitt datakilde og tidsrom",
+        description = "Går gjennom alle brukere under oppfølging og henter inn data fra angitt datakilde. " +
+                "Man kan definere tidsrom for oppfølging startet dato, der default er å hente alle. " +
+                "Sett startFra for å hoppe over et gitt antall brukere (f eks om en jobb feila halvveis), default er 0."
     )
     fun lastInnData(
-        @RequestParam(required = true) datakilde: String
+        @RequestBody(required = true) request: AdminBatchjobbRequest
     ): String {
         sjekkTilgangTilAdmin()
+        val (datakilde, startFra, oppfolgingStartetEtter, oppfolgingStarterFor) = request
         return JobRunner.runAsync("Admin_patchdata_innlasting_$datakilde") {
-            val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026()
-            log.info("Batchjobb-innlasting $datakilde: prosesserer ${brukereUnderOppfolging.size} brukere")
-            val antall = AtomicInteger(0)
+            val brukereUnderOppfolging =
+                oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolgingIStartdatoIntervall(
+                    oppfolgingStartetEtter,
+                    oppfolgingStarterFor
+                )
+            log.info("Batchjobb-innlasting $datakilde: prosesserer ${brukereUnderOppfolging.size} brukere (startdato fra $oppfolgingStartetEtter til $oppfolgingStarterFor), starter fra nr $startFra")
+            val antall = AtomicInteger(startFra)
             val antallFeilet = AtomicInteger(0)
 
-            for (aktorId in brukereUnderOppfolging) {
+            for (aktorId in brukereUnderOppfolging.drop(startFra)) {
                 if (stoppKjoerendeBatchjobber(defaultUnleash)) {
                     log.warn("Batchjobb-innlasting $datakilde: stoppet av kill switch etter ${antall.get()} brukere, ${antallFeilet.get()} feilet")
                     return@runAsync
@@ -327,28 +260,32 @@ class AdminController(
                 try {
                     secureLog.info("Batchjobb-innlasting $datakilde: starter prosessering for nr $nr med aktorId $aktorId")
                     when (datakilde) {
-                        "dagpenger" -> {
+                        AdminDataType.DAGPENGER_DATA -> {
                             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId)
                         }
 
-                        "ensligforsorger" -> {
+                        AdminDataType.ENSLIG_FORSORGER_DATA -> {
                             ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
                         }
 
-                        "aap" -> {
+                        AdminDataType.AAP_DATA -> {
                             aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId)
                         }
 
-                        "tiltakspenger" -> {
+                        AdminDataType.TILTAKSPENGER_DATA -> {
                             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId)
                         }
 
-                        "arbeidssoeker" -> {
+                        AdminDataType.ARBEIDSSOKER_DATA -> {
                             arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId)
                         }
 
-                        else -> {
-                            throw IllegalArgumentException("Ugyldig datakilde: $datakilde")
+                        AdminDataType.UFORETRYGD_DATA -> {
+                            uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
+                        }
+
+                        AdminDataType.PDL_DATA -> {
+                            pdlService.hentOgLagrePdlData(aktorId)
                         }
                     }
 
@@ -397,9 +334,40 @@ class AdminController(
         request.valg.forEach { type ->
             try {
                 when (type) {
-                    AdminDataType.PDL_DATA -> hentPdlData(request.aktorId)
-                    AdminDataType.ENSLIG_FORSORGER_DATA -> hentOvergangsstønadData(request.aktorId)
-                    AdminDataType.AAP_DATA -> hentAapData(request.aktorId)
+                    AdminDataType.DAGPENGER_DATA -> {
+                        secureLog.info("Starter datahenting for dagpenger for aktorId {}", request.aktorId)
+                        dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(request.aktorId)
+                    }
+
+                    AdminDataType.ENSLIG_FORSORGER_DATA -> {
+                        secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", request.aktorId)
+                        ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(request.aktorId)
+                    }
+
+                    AdminDataType.AAP_DATA -> {
+                        secureLog.info("Starter datahenting for AAP for aktorId {}", request.aktorId)
+                        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(request.aktorId)
+                    }
+
+                    AdminDataType.TILTAKSPENGER_DATA -> {
+                        secureLog.info("Starter datahenting for tiltakspenger for aktorId {}", request.aktorId)
+                        tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(request.aktorId)
+                    }
+
+                    AdminDataType.ARBEIDSSOKER_DATA -> {
+                        secureLog.info("Starter datahenting for arbeidssøker for aktorId {}", request.aktorId)
+                        arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(request.aktorId)
+                    }
+
+                    AdminDataType.UFORETRYGD_DATA -> {
+                        secureLog.info("Starter datahenting for uføretrygd for aktorId {}", request.aktorId)
+                        uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(request.aktorId)
+                    }
+
+                    AdminDataType.PDL_DATA -> {
+                        secureLog.info("Starter datahenting for PDL for aktorId {}", request.aktorId)
+                        pdlService.hentOgLagrePdlData(request.aktorId)
+                    }
                 }
             } catch (e: Exception) {
                 secureLog.error("Feil ved henting av ${type.name} for aktorId ${request.aktorId}", e)
@@ -412,21 +380,6 @@ class AdminController(
         } else {
             ResponseEntity.internalServerError().body("Feil ved: ${feiledeValg.joinToString(", ")}")
         }
-    }
-
-    private fun hentOvergangsstønadData(aktorId: AktorId) {
-        secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", aktorId)
-        ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
-    }
-
-    private fun hentPdlData(aktorId: AktorId) {
-        secureLog.info("Starter datahenting for PDL for aktorId {}", aktorId)
-        pdlService.hentOgLagrePdlData(aktorId)
-    }
-
-    private fun hentAapData(aktorId: AktorId) {
-        secureLog.info("Starter datahenting for AAP for aktorId {}", aktorId)
-        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId)
     }
 
     private fun sjekkTilgangTilAdmin() {
