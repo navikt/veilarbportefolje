@@ -225,7 +225,8 @@ class AdminController(
         summary = "Oppdater data for brukere for angitt datakilde og tidsrom",
         description = "Går gjennom alle brukere under oppfølging og henter inn data fra angitt datakilde. " +
                 "Man kan definere tidsrom for oppfølging startet dato, der default er å hente alle. " +
-                "Sett startFra for å hoppe over et gitt antall brukere (f eks om en jobb feila halvveis), default er 0."
+                "Sett startFra for å hoppe over et gitt antall brukere (f eks om en jobb feila halvveis), default er 0." +
+                "For å drepe en påstartet jobb, gå til unleash og toggle på veilarbportefolje.stopp_kjoerende_batchjobber."
     )
     fun lastInnData(
         @RequestBody(required = true) request: AdminBatchjobbRequest
