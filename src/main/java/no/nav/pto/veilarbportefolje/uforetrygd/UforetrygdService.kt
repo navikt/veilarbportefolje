@@ -36,13 +36,13 @@ class UforetrygdService(
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.PESYS) {
-            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet PESYS. Ignorerer melding.")
+            logger.warn("Mottok ytelse-melding for uføretrygd med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet PESYS. Ignorerer melding.")
             return
         }
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
 
-        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.SLETT) {
+        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.STOPP) {
             slettUforetrygdData(aktorId, Optional.of(Fnr.of(kafkaMelding.personId)))
             return
         }
@@ -69,7 +69,10 @@ class UforetrygdService(
         lagreUforetrygdForBruker(personIdent.toString(), aktorId)
     }
 
-    // TODO: hentOgLagreUføretrydgForBrukerVedOppfolgingStart - etter at endepunkt og meldinger fra uføre er på plass.
+    fun hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        lagreUforetrygdForBruker(personIdent, aktorId)
+    }
 
     fun lagreUforetrygdForBruker(
         personIdent: String,
