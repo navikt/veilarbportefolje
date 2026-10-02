@@ -198,7 +198,7 @@ class AdminController(
     fun hentEnsligForsorgerBruker(): ResponseEntity<String> {
         sjekkTilgangTilAdmin()
 
-        val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolging()
+        val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026()
         val antall = AtomicInteger(0)
 
         log.info("Startet: Innlasting av Ensligforsørger brukerdata")

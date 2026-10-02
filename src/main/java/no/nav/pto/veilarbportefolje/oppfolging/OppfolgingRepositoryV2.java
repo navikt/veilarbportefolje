@@ -120,6 +120,20 @@ public class OppfolgingRepositoryV2 {
         return alleIder;
     }
 
+    public List<AktorId> hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026() {
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList("""
+                select aktoerid from oppfolging_data od
+                 left join bruker_identer bi on bi.ident = od.aktoerid
+                 where oppfolging and startdato >= '2026-03-01'
+                 and not historisk
+                """, AktorId.class);
+        db.setFetchSize(-1);
+
+        return alleIder;
+    }
+
+
     public Optional<VeilederId> hentVeilederForBruker(AktorId aktoerId) {
         return Optional.ofNullable(
                 queryForObjectOrNull(
