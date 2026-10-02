@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14a
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -47,6 +48,7 @@ public class OppfolgingStartetService {
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
     private final DagpengerService dagpengerService;
+    private final UforetrygdService uforetrygdService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final BrukerServiceV2 brukerServiceV2;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -104,6 +106,7 @@ public class OppfolgingStartetService {
             aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
+            uforetrygdService.hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId);
         });
 
         opensearchIndexer.indekser(aktorId);
