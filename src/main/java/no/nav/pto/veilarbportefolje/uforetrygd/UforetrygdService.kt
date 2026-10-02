@@ -86,7 +86,6 @@ class UforetrygdService(
                 personIdent
             )
             slettUforetrygdData(aktorId, Optional.of(Fnr.of(personIdent)))
-            opensearchIndexerPaDatafelt.slettUforetrygd(aktorId)
             return
         }
 
@@ -129,6 +128,7 @@ class UforetrygdService(
 
         try {
             slettUforetrygdForAlleIdenterForBruker(maybeFnr.get().toString())
+            opensearchIndexerPaDatafelt.slettUforetrygd(aktorId)
         } catch (e: Exception) {
             secureLog.error("Feil ved sletting av uføretrygd data for bruker med fnr: ${maybeFnr.get()}", e)
             return
