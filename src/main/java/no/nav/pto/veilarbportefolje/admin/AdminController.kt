@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.admin;
 
+import io.getunleash.DefaultUnleash
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import lombok.RequiredArgsConstructor
@@ -15,6 +16,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.config.FeatureToggle.stoppKjoerendeBatchjobber
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
@@ -32,7 +34,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 @Slf4j
@@ -58,7 +60,8 @@ class AdminController(
     private val uforetrygdService: UforetrygdService,
     private val dagpengerService: DagpengerService,
     private val tiltakspengerService: TiltakspengerService,
-    private val arbeidssoekerService: ArbeidssoekerService
+    private val arbeidssoekerService: ArbeidssoekerService,
+    private val defaultUnleash: DefaultUnleash
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -307,6 +310,11 @@ class AdminController(
             val antallFeilet = AtomicInteger(0)
 
             for (aktorId in brukereUnderOppfolging) {
+                if (stoppKjoerendeBatchjobber(defaultUnleash)) {
+                    log.warn("Batchjobb-innlasting $datakilde: stoppet av kill switch etter ${antall.get()} brukere, ${antallFeilet.get()} feilet")
+                    return@runAsync
+                }
+
                 val nr = antall.getAndIncrement()
                 if (nr % 100 == 0) {
                     log.info(
@@ -322,18 +330,23 @@ class AdminController(
                         "dagpenger" -> {
                             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId)
                         }
+
                         "ensligforsorger" -> {
                             ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
                         }
+
                         "aap" -> {
                             aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId)
                         }
+
                         "tiltakspenger" -> {
                             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId)
                         }
+
                         "arbeidssoeker" -> {
                             arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId)
                         }
+
                         else -> {
                             throw IllegalArgumentException("Ugyldig datakilde: $datakilde")
                         }
