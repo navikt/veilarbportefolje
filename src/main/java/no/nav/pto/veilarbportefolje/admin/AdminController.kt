@@ -32,6 +32,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 @Slf4j
@@ -309,8 +310,10 @@ class AdminController(
                 val nr = antall.getAndIncrement()
                 if (nr % 100 == 0) {
                     log.info(
-                        "Batchjobb-innlasting $datakilde: {}% ferdig",
-                        (nr.toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
+                        "Batchjobb-innlasting $datakilde: {}% ferdig ({}/{})",
+                        "%.2f".format(Locale.ROOT, nr * 100.0 / brukereUnderOppfolging.size),
+                        nr,
+                        brukereUnderOppfolging.size
                     )
                 }
                 try {
