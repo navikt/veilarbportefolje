@@ -64,7 +64,7 @@ class TiltaksaktivitetRepositoryTest (
     }
 
     @Test
-    fun `Tiltakstype returneres når tiltakskode eksisterer i tiltakskodeverket-tabellen`() {
+    fun `Tiltakstype returneres når tiltakskode finnes i tiltakskodeverket-tabellen`() {
         val enhetId = EnhetId("1234")
 
         val tiltakskodeMapping = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
@@ -75,6 +75,23 @@ class TiltaksaktivitetRepositoryTest (
 
         assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK2")).isTrue
         assertThat(tiltakskodeMapping.tiltak.containsValue("Tiltak 2")).isTrue
+    }
+
+
+    @Test
+    fun `Tiltakstype lagres når den finnes ikke i tiltakskodeverket-tabellen`() {
+        val enhetId = EnhetId("1234")
+
+        val tiltakskodeMapping = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
+
+        assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK3")).isFalse
+        assertThat(tiltakskodeMapping.tiltak.containsValue("Tiltak 3")).isFalse
+
+        tiltaksaktivitetRepository.lagreTiltakskodenavn(tiltakskode = "TILTAK3", tiltaksnavn = "Tiltak 3")
+        val tiltakskodeMappingEtterNyKodeLagret = tiltaksaktivitetRepository.hentTiltakstyperForEnhet(enhetId)
+
+        assertThat(tiltakskodeMappingEtterNyKodeLagret.tiltak.containsKey("TILTAK3")).isTrue
+        assertThat(tiltakskodeMappingEtterNyKodeLagret.tiltak.containsValue("Tiltak 3")).isTrue
     }
 
     @Test
