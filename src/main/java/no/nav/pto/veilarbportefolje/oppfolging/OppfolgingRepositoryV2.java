@@ -121,7 +121,7 @@ public class OppfolgingRepositoryV2 {
         return alleIder;
     }
 
-    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolgingIStartdatoIntervall(LocalDate oppfolgingStartetEtter, LocalDate oppfolgingStarterFor) {
+    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolgingIStartdatoIntervall(LocalDate oppfolgingStartetFra, LocalDate oppfolgingStarterTil) {
         StringBuilder sql = new StringBuilder("""
                 select aktoerid from oppfolging_data od
                  left join bruker_identer bi on bi.ident = od.aktoerid
@@ -129,13 +129,13 @@ public class OppfolgingRepositoryV2 {
                  and not historisk
                 """);
         List<Object> params = new ArrayList<>();
-        if (oppfolgingStartetEtter != null) {
+        if (oppfolgingStartetFra != null) {
             sql.append(" and od.startdato >= ?");
-            params.add(oppfolgingStartetEtter);
+            params.add(oppfolgingStartetFra);
         }
-        if (oppfolgingStarterFor != null) {
+        if (oppfolgingStarterTil != null) {
             sql.append(" and od.startdato < ?");
-            params.add(oppfolgingStarterFor);
+            params.add(oppfolgingStarterTil.plusDays(1));
         }
         sql.append(" order by od.startdato, od.aktoerid");
 

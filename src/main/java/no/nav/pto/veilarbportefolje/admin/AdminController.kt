@@ -225,21 +225,21 @@ class AdminController(
         summary = "Oppdater data for brukere for angitt datakilde og tidsrom",
         description = "Går gjennom alle brukere under oppfølging og henter inn data fra angitt datakilde. " +
                 "Man kan definere tidsrom for oppfølging startet dato, der default er å hente alle. " +
-                "Sett startFra for å hoppe over et gitt antall brukere (f eks om en jobb feila halvveis), default er 0." +
+                "Sett startFra for å hoppe over et gitt antall brukere (f eks om en jobb feila halvveis), default er 0. " +
                 "For å drepe en påstartet jobb, gå til unleash og toggle på veilarbportefolje.stopp_kjoerende_batchjobber."
     )
     fun lastInnData(
         @RequestBody(required = true) request: AdminBatchjobbRequest
     ): String {
         sjekkTilgangTilAdmin()
-        val (datakilde, startFra, oppfolgingStartetEtter, oppfolgingStarterFor) = request
+        val (datakilde, startFra, oppfolgingStartetFra, oppfolgingStarterTil) = request
         return JobRunner.runAsync("Admin_patchdata_innlasting_$datakilde") {
             val brukereUnderOppfolging =
                 oppfolgingRepositoryV2.hentAlleGyldigeBrukereUnderOppfolgingIStartdatoIntervall(
-                    oppfolgingStartetEtter,
-                    oppfolgingStarterFor
+                    oppfolgingStartetFra,
+                    oppfolgingStarterTil
                 )
-            log.info("Batchjobb-innlasting $datakilde: prosesserer ${brukereUnderOppfolging.size} brukere (startdato fra $oppfolgingStartetEtter til $oppfolgingStarterFor), starter fra nr $startFra")
+            log.info("Batchjobb-innlasting $datakilde: prosesserer ${brukereUnderOppfolging.size} brukere (startdato fra $oppfolgingStartetFra til $oppfolgingStarterTil), starter fra nr $startFra")
             val antall = AtomicInteger(startFra)
             val antallFeilet = AtomicInteger(0)
 
