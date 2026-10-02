@@ -11,9 +11,11 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
 import no.nav.pto.veilarbportefolje.client.AktorClient
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
@@ -23,6 +25,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -51,7 +54,10 @@ class AdminController(
     private val ensligForsorgerService: EnsligeForsorgereService,
     private val aapService: AapService,
     private val oppfolgingClient: OppfolgingClient,
-    private val uforetrygdService: UforetrygdService
+    private val uforetrygdService: UforetrygdService,
+    private val dagpengerService: DagpengerService,
+    private val tiltakspengerService: TiltakspengerService,
+    private val arbeidssoekerService: ArbeidssoekerService
 ) {
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
@@ -190,37 +196,6 @@ class AdminController(
     }
 
 
-    @PostMapping("/hentEnsligForsorgerDataBatch")
-    @Operation(
-        summary = "Henter data om enslig forsorger for alle brukere",
-        description = "Sjekker om bruker er enslig forsørger og henter data for alle brukere"
-    )
-    fun hentEnsligForsorgerBruker(): ResponseEntity<String> {
-        sjekkTilgangTilAdmin()
-
-        val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026()
-        val antall = AtomicInteger(0)
-
-        log.info("Startet: Innlasting av Ensligforsørger brukerdata")
-
-        brukereUnderOppfolging.forEach { aktorId ->
-            if (antall.getAndAdd(1) % 100 == 0) {
-                log.info(
-                    "Ensligforsørger brukerdata: innlasting {}% ferdig",
-                    (antall.get().toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
-                )
-            }
-            try {
-                ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
-            } catch (e: Exception) {
-                secureLog.error("Feil under innlasting av ensligforsørger-data for aktorId $aktorId")
-            }
-        }
-
-        log.info("Ferdig: Innlasting av ensligforsørger brukerdata")
-        return ResponseEntity.ok("Innlasting av EnsligForsørger-data fullført")
-    }
-
     @PostMapping("/lastInnTildelingsdatoForBrukere")
     @Operation(
         summary = "Oppdater tilordningsdato for alle brukere",
@@ -314,6 +289,68 @@ class AdminController(
             log.info("Uforetrygd-innlasting: ferdig. ${antall.get()} brukere prosessert, ${antallFeilet.get()} feilet")
         }
     }
+
+    @PostMapping("/lastInnDataIBatchjobb")
+    @Operation(
+        summary = "Oppdater patchdata for alle brukere fra mars 2026",
+        description = "Går gjennom alle brukere og henter ut om de har patchdata fra api."
+    )
+    fun lastInnData(
+        @RequestParam(required = true) datakilde: String
+    ): String {
+        sjekkTilgangTilAdmin()
+        return JobRunner.runAsync("Admin_patchdata_innlasting_$datakilde") {
+            val brukereUnderOppfolging = oppfolgingRepositoryV2.hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026()
+            log.info("Batchjobb-innlasting $datakilde: prosesserer ${brukereUnderOppfolging.size} brukere")
+            val antall = AtomicInteger(0)
+            val antallFeilet = AtomicInteger(0)
+
+            for (aktorId in brukereUnderOppfolging) {
+                val nr = antall.getAndIncrement()
+                if (nr % 100 == 0) {
+                    log.info(
+                        "Batchjobb-innlasting $datakilde: {}% ferdig",
+                        (nr.toDouble() / brukereUnderOppfolging.size.toDouble()) * 100.0
+                    )
+                }
+                try {
+                    secureLog.info("Batchjobb-innlasting $datakilde: starter prosessering for nr $nr med aktorId $aktorId")
+                    when (datakilde) {
+                        "dagpenger" -> {
+                            dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId)
+                        }
+                        "ensligforsorger" -> {
+                            ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(aktorId)
+                        }
+                        "aap" -> {
+                            aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId)
+                        }
+                        "tiltakspenger" -> {
+                            tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId)
+                        }
+                        "arbeidssoeker" -> {
+                            arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId)
+                        }
+                        else -> {
+                            throw IllegalArgumentException("Ugyldig datakilde: $datakilde")
+                        }
+                    }
+
+                    uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
+                    Thread.sleep(20)
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    log.warn("Batchjobb-innlasting $datakilde: avbrutt etter $nr brukere, ${antallFeilet.get()} feilet")
+                    return@runAsync
+                } catch (e: Exception) {
+                    antallFeilet.incrementAndGet()
+                    secureLog.error("Batchjobb-innlasting $datakilde: feilet for bruker $aktorId", e)
+                }
+            }
+            log.info("Batchjobb-innlasting $datakilde: ferdig. ${antall.get()} brukere prosessert, ${antallFeilet.get()} feilet")
+        }
+    }
+
 
     // DATA FETCHING JOBBER - FOR EN ENKELTBRUKER
     @GetMapping("hentData/hentDataForBruker/muligeValg")
