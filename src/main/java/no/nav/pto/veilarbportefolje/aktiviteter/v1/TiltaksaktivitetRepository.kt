@@ -3,11 +3,9 @@ package no.nav.pto.veilarbportefolje.aktiviteter.v1
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.EnhetId
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.AKTORID
-import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.FNR
-import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.IDENT
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.KONTOR_ID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
+import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.KODE
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
 import org.slf4j.LoggerFactory
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TILTAKSKODE as TILTAKSKODE
@@ -15,10 +13,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
-import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.TABLE_NAME as AKTIVE_IDENTER_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.TABLE_NAME as AO_KONTOR_TABLE
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME as ARENA_OPPFOLGINGSBRUKER_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME as KAFKA_AKTIVITET_MELDING_TABLE
+import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.TABLE_NAME as TILTAKKODEVERK_TABLE
 
 @Slf4j
 @Repository
@@ -33,16 +30,17 @@ class TiltaksaktivitetRepository(
     ): TiltakskodeMapping {
         //language=postgresql
         val sql = """
-                SELECT *
-                FROM tiltakkodeverket WHERE
-                kode IN (
-                     SELECT DISTINCT aktiviteter.$TILTAKSKODE FROM $KAFKA_AKTIVITET_MELDING_TABLE aktiviteter
-                     INNER JOIN $AKTIVE_IDENTER_TABLE ai on ai.$AKTORID = aktiviteter.$AKTOR_ID
-                     INNER JOIN $ARENA_OPPFOLGINGSBRUKER_TABLE OP ON OP.$FODSELSNR = ai.$FNR
-                     INNER JOIN $AO_KONTOR_TABLE ao_kontor ON ao_kontor.$IDENT = ai.$FNR
-                     WHERE ao_kontor.$KONTOR_ID = :enhetId
-                     AND NOT aktiviteter.$AKTIVITET_STATUS = ANY (string_to_array(:inaktivAktivitetStatus, ',')::text[])
-                     AND aktiviteter.$AVTALT = true
+                SELECT tk.*
+                FROM $TILTAKKODEVERK_TABLE tk 
+                WHERE EXISTS (
+                     SELECT 1 
+                     FROM $KAFKA_AKTIVITET_MELDING_TABLE aktiviteter
+                     JOIN $AO_KONTOR_TABLE ao_kontor 
+                       ON ao_kontor.$AKTORID = aktiviteter.$AKTOR_ID
+                     WHERE aktiviteter.$TILTAKSKODE = tk.$KODE
+                       AND ao_kontor.$KONTOR_ID = :enhetId
+                       AND aktiviteter.$AKTIVITET_STATUS <> ALL(string_to_array(:inaktivAktivitetStatus, ',')::text[])
+                       AND aktiviteter.$AVTALT = true
                 )
             """.trimIndent()
 
