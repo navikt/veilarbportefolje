@@ -4,14 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
+import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -120,14 +121,26 @@ public class OppfolgingRepositoryV2 {
         return alleIder;
     }
 
-    public List<AktorId> hentAlleGyldigeeBrukereUnderOppfolgingFraMars2026() {
-        db.setFetchSize(10_000);
-        List<AktorId> alleIder = db.queryForList("""
+    public List<AktorId> hentAlleGyldigeBrukereUnderOppfolgingIStartdatoIntervall(LocalDate oppfolgingStartetFra, LocalDate oppfolgingStarterTil) {
+        StringBuilder sql = new StringBuilder("""
                 select aktoerid from oppfolging_data od
                  left join bruker_identer bi on bi.ident = od.aktoerid
-                 where oppfolging and startdato >= '2026-03-01'
+                 where oppfolging
                  and not historisk
-                """, AktorId.class);
+                """);
+        List<Object> params = new ArrayList<>();
+        if (oppfolgingStartetFra != null) {
+            sql.append(" and od.startdato >= ?");
+            params.add(oppfolgingStartetFra);
+        }
+        if (oppfolgingStarterTil != null) {
+            sql.append(" and od.startdato < ?");
+            params.add(oppfolgingStarterTil.plusDays(1));
+        }
+        sql.append(" order by od.startdato, od.aktoerid");
+
+        db.setFetchSize(10_000);
+        List<AktorId> alleIder = db.queryForList(sql.toString(), AktorId.class, params.toArray());
         db.setFetchSize(-1);
 
         return alleIder;
