@@ -6,9 +6,9 @@ import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -530,7 +530,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             oppfolging = true,
             enhet_id = TEST_ENHET,
             veileder_id = TEST_VEILEDER_0,
-            uforetrygd = Uforetrygd(virkningsdato = LocalDate.now().minusMonths(1), uforegrad = 60)
+            uforetrygd = UforetrygdForOpensearch(virkningsdato = LocalDate.now().minusMonths(1), uforegrad = 60)
         )
 
         val brukerUtenUforetrygd = PortefoljebrukerOpensearchModell(
@@ -1428,7 +1428,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             aktoer_id = randomAktorId().toString(),
             oppfolging = true,
             enhet_id = TEST_ENHET,
-            uforetrygd = Uforetrygd(
+            uforetrygd = UforetrygdForOpensearch(
                 LocalDate.now().minusMonths(1),
                 50
             )
@@ -1439,7 +1439,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
             aktoer_id = randomAktorId().toString(),
             oppfolging = true,
             enhet_id = TEST_ENHET,
-            uforetrygd = Uforetrygd(
+            uforetrygd = UforetrygdForOpensearch(
                 LocalDate.now().minusMonths(2),
                 70
             )
