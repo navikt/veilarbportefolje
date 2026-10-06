@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -424,7 +425,7 @@ class PortefoljebrukerFrontendModellMapperTest {
                 LocalDate.of(2027, 1, 1),
                 false
             ),
-            uforetrygd = Uforetrygd(
+            uforetrygd = UforetrygdForOpensearch(
                 LocalDate.of(2026, 1, 1),
                 50
             )
@@ -462,7 +463,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(LocalDate.of(2027, 1, 1), ytelser.ungdomsprogram.maksdato)
         Assertions.assertEquals("Ordinær", ytelser.ungdomsprogram.rettighet)
         Assertions.assertEquals(LocalDate.of(2026, 1, 1), ytelser.uforetrygd!!.virkningsdato)
-        Assertions.assertEquals(50, ytelser.uforetrygd.uforegrad)
+        Assertions.assertEquals("50%", ytelser.uforetrygd.uforegrad)
     }
 
     @Test

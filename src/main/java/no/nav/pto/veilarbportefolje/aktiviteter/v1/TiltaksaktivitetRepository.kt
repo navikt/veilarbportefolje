@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.IDENT
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.KONTOR_ID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
+import org.slf4j.LoggerFactory
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TILTAKSKODE as TILTAKSKODE
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -24,6 +26,8 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDI
 class TiltaksaktivitetRepository(
     private val jdbc: NamedParameterJdbcTemplate
 ) {
+    private val log = LoggerFactory.getLogger(OppfolgingPeriodeService::class.java)
+
     fun hentTiltakstyperForEnhet(
         enhetId: EnhetId,
     ): TiltakskodeMapping {
@@ -60,6 +64,22 @@ class TiltaksaktivitetRepository(
         }.filterNotNull().toMap()
 
         return TiltakskodeMapping(tiltak = tiltak.toMutableMap())
+    }
+
+    fun lagreTiltakskodenavn(tiltakskode: String, tiltaksnavn: String) {
+        //language=postgresql
+        val sql = """
+            INSERT INTO tiltakkodeverket (kode, verdi)
+            VALUES (:tiltakskode, :tiltaksnavn)
+            ON CONFLICT (kode) DO UPDATE SET verdi = EXCLUDED.verdi
+        """.trimIndent()
+
+        val params = MapSqlParameterSource()
+            .addValue("tiltakskode", tiltakskode)
+            .addValue("tiltaksnavn", tiltaksnavn)
+
+        jdbc.update(sql, params)
+        log.info("Lagret eller oppdatert tiltakskode: $tiltakskode with name: $tiltaksnavn")
     }
 }
 

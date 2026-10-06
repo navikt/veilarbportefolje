@@ -6,7 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -129,7 +129,7 @@ data class PortefoljebrukerOpensearchModell(
     var ytelse: String? = null,
     var dagpenger: DagpengerForOpensearch? = null,
     var ungdomsprogram: UngdomsprogramForOpensearch? = null,
-    var uforetrygd: Uforetrygd? = null,
+    var uforetrygd: UforetrygdForOpensearch? = null,
 
     // Dialog
     var venterpasvarfrabruker: String? = null,

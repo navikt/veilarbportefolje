@@ -19,7 +19,7 @@ class UforetrygdClient(private val baseUrl: String, private val machineToMachine
         val requestBody = UforetrygdRequest(personnr)
 
         val request = Request.Builder()
-            .url(UrlUtils.joinPaths(baseUrl, "/xxx/yyy"))
+            .url(UrlUtils.joinPaths(baseUrl, "/api/uforetrygd/ekstern/modia/vedtak"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())
             .post(RestUtils.toJsonRequestBody(requestBody))
             .build()

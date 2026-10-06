@@ -4,5 +4,5 @@ import java.time.LocalDate
 
 data class Uforetrygd(
     val virkningsdato: LocalDate,
-    val uforegrad: Int
+    val uforegrad: String
 )

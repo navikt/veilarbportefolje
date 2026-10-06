@@ -146,7 +146,7 @@ object PortefoljebrukerFrontendModellMapper {
                     )
                 },
                 ungdomsprogram = mapUngdomsprogram(opensearchBruker),
-                uforetrygd = opensearchBruker.uforetrygd,
+                uforetrygd = mapUforetrygd(opensearchBruker)
             ),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
@@ -199,6 +199,15 @@ object PortefoljebrukerFrontendModellMapper {
             sluttdato = ungdomsprogram.tilOgMed,
             maksdato = ungdomsprogram.maksdato,
             rettighet = if (ungdomsprogram.harForlengetPeriode) "Unntak" else "Ordinær"
+        )
+    }
+
+    fun mapUforetrygd(opensearchModell: PortefoljebrukerOpensearchModell): Uforetrygd? {
+        val uforetrygd = opensearchModell.uforetrygd ?: return null
+
+        return Uforetrygd(
+            virkningsdato = uforetrygd.virkningsdato,
+            uforegrad = uforetrygd.uforegrad.toString() + '%'
         )
     }
 

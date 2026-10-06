@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,9 @@ public class PdlIdentRepositoryTest {
 
     @MockitoBean
     private UngdomsprogramService ungdomsprogramService;
+
+    @MockitoBean
+    private UforetrygdService uforetrygdService;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {
