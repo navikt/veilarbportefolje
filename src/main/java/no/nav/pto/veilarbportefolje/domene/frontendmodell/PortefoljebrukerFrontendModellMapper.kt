@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
-import no.nav.pto.veilarbportefolje.util.OppfolgingUtils.vurderingsBehov
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -26,15 +25,9 @@ object PortefoljebrukerFrontendModellMapper {
         ufordelt: Boolean,
         filtervalg: Filtervalg
     ): PortefoljebrukerFrontendModell {
-
-        val kvalifiseringsgruppekode = opensearchBruker.kvalifiseringsgruppekode
         val profileringResultat = opensearchBruker.profilering_resultat
         val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
             opensearchBruker.kvalifiseringsgruppekode else null
-        val vurderingsBehov = if (opensearchBruker.trenger_vurdering)
-            vurderingsBehov(kvalifiseringsgruppekode, profileringResultat)
-        else null
-        val harBehovForArbeidsevneVurdering = vurderingsBehov == VurderingsBehov.ARBEIDSEVNE_VURDERING
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
@@ -60,7 +53,6 @@ object PortefoljebrukerFrontendModellMapper {
                 trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
                 nyForVeileder = opensearchBruker.ny_for_veileder,
                 nyForEnhet = ufordelt,
-                harBehovForArbeidsevneVurdering = harBehovForArbeidsevneVurdering,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
                 diskresjonskodeFortrolig = diskresjonskodeFortrolig,
                 profileringResultat = profileringResultat,

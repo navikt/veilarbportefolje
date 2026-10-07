@@ -112,33 +112,6 @@ class PortefoljebrukerFrontendModellMapperTest {
 
     }
 
-
-    @Test
-    fun `etiketter for harBehovForArbeidsevneVurdering skal settes riktig`() {
-        val opensearchBruker = PortefoljebrukerOpensearchModell(
-            trenger_vurdering = true,
-            kvalifiseringsgruppekode = "BKART",
-            profilering_resultat = null,
-        )
-
-        val frontendBrukerMedBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = getFiltervalgDefaults()
-        )
-        val etiketterMedBehov = frontendBrukerMedBehov.etiketter
-
-        val frontendBrukerUtenBehov = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker.copy(profilering_resultat = Profileringsresultat.ANTATT_GODE_MULIGHETER),
-            ufordelt = true,
-            filtervalg = getFiltervalgDefaults()
-        )
-        val etiketterUtenBehov = frontendBrukerUtenBehov.etiketter
-
-        Assertions.assertEquals(true, etiketterMedBehov.harBehovForArbeidsevneVurdering)
-        Assertions.assertEquals(false, etiketterUtenBehov.harBehovForArbeidsevneVurdering)
-    }
-
     @Test
     fun `etiketter for kandidatForUtmelding skal settes riktig`() {
         val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse

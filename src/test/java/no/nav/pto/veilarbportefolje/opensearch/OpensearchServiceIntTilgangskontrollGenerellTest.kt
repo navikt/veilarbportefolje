@@ -410,36 +410,132 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.antall).isEqualTo(12)
 
         assertThat(brukereSomVeilederMedKode6TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode6Bruker3, true, getFiltervalgDefaults())
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode6Bruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode6Bruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode6Bruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode6Bruker3,
+                true,
+                getFiltervalgDefaults()
+            )
         )
         assertThat(brukereSomVeilederMedKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker3, true, getFiltervalgDefaults())
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker3,
+                true,
+                getFiltervalgDefaults()
+            )
         )
         assertThat(brukereSomVeilederMedEgenAnsattTilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker3, true, getFiltervalgDefaults())
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker3,
+                true,
+                getFiltervalgDefaults()
+            )
         )
         assertThat(brukereSomVeilederMedEgenAnsattOgKode7TilgangHarInnsynsrettPa.brukere).containsExactlyInAnyOrder(
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(kode7Bruker3, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattBruker3, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker0, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker1, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker2, true, getFiltervalgDefaults()),
-            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(egenAnsattOgKode7Bruker3, true, getFiltervalgDefaults())
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                kode7Bruker3,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattBruker3,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattOgKode7Bruker0,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattOgKode7Bruker1,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattOgKode7Bruker2,
+                true,
+                getFiltervalgDefaults()
+            ),
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                egenAnsattOgKode7Bruker3,
+                true,
+                getFiltervalgDefaults()
+            )
         )
     }
 
@@ -595,7 +691,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
             kvalifiseringsgruppekode = "BATT"
             aktiviteter = setOf("egen")
             ny_for_veileder = true
-            trenger_vurdering = true
             venterpasvarfranav = "2018-05-09T22:00:00Z"
             nyesteutlopteaktivitet = "2018-05-09T22:00:00Z"
             huskelapp = null

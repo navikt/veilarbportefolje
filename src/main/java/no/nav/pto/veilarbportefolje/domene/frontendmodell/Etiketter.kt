@@ -8,7 +8,6 @@ data class Etiketter(
     val trengerOppfolgingsvedtak: Boolean,
     val nyForVeileder: Boolean,
     val nyForEnhet: Boolean,
-    val harBehovForArbeidsevneVurdering: Boolean,
     val harSikkerhetstiltak: Boolean,
     var diskresjonskodeFortrolig: String?,
     val profileringResultat: Profileringsresultat?,
