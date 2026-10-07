@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -456,58 +455,6 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         Assertions.assertThat(brukere1.size).isEqualTo(2)
         Assertions.assertThat(brukere1[1].fnr).isEqualTo(tidligstfristBruker.fnr)
         Assertions.assertThat(brukere1[0].fnr).isEqualTo(senestFristBruker.fnr)
-    }
-
-    @Test
-    fun skal_hente_brukere_som_trenger_vurdering_og_er_ny_for_enhet() {
-        Mockito.`when`(veilarbVeilederClient.hentVeilederePaaEnhet(ArgumentMatchers.any())).thenReturn(
-            listOf(
-                TEST_VEILEDER_0
-            )
-        )
-        val nyForEnhet = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().get(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = LITE_PRIVILEGERT_VEILEDER,
-            trenger_vurdering = true,
-        )
-
-        val ikkeNyForEnhet = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().get(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
-            trenger_vurdering = true,
-        )
-
-
-        val liste = listOf(nyForEnhet, ikkeNyForEnhet)
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val ferdigFiltere = listOf(
-            Brukerstatus.UFORDELTE_BRUKERE
-        )
-
-        val response = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.empty(),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            getFiltervalgDefaults().copy(
-                ferdigfilterListe = ferdigFiltere
-            ),
-            null,
-            null
-        )
-
-        Assertions.assertThat(response.antall).isEqualTo(1)
-        Assertions.assertThat(userExistsInResponse(nyForEnhet, response)).isTrue()
-        Assertions.assertThat(userExistsInResponse(ikkeNyForEnhet, response)).isFalse()
     }
 
     @Test

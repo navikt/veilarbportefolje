@@ -9,7 +9,6 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         trengerOppfolgingsvedtak = false,
         nyForVeileder = false,
         nyForEnhet = false,
-        harBehovForArbeidsevneVurdering = false,
         harSikkerhetstiltak = false,
         diskresjonskodeFortrolig = null,
         profileringResultat = null,
