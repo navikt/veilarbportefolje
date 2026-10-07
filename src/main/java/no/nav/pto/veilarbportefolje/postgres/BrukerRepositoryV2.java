@@ -405,7 +405,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE));
         brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
         brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
-        brukerOpensearchModell.setTrenger_vurdering(OppfolgingUtils.trengerVurdering(formidlingsgruppekode, kvalifiseringsgruppekode));
         brukerOpensearchModell.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));
 
         return brukerOpensearchModell;

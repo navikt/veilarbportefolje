@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CacheConfig {
     public static final String KODEVERK_BETYDNING_CACHE_NAME = "kodeverk_betydning_cache";
+    public static final String ENHETS_TILTAKTYPER_CACHE_NAME = "enhets_tiltaktyper_cache";
 
     @Bean
     public Cache kodeverkBetydningCache() {
@@ -21,4 +22,13 @@ public class CacheConfig {
                 .maximumSize(3)
                 .build());
     }
+
+    @Bean
+    public Cache enhetsTiltaktyperCache() {
+        return new CaffeineCache(ENHETS_TILTAKTYPER_CACHE_NAME, Caffeine.newBuilder()
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .maximumSize(1000)
+                .build());
+    }
+
 }
