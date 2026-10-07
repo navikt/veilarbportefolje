@@ -91,7 +91,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             oppfolging = PortefoljebrukerOpensearchModell.OPPFOLGING,
             oppfolging_startdato = PortefoljebrukerOpensearchModell.OPPFOLGING_STARTDATO,
             tildelt_tidspunkt = PortefoljebrukerOpensearchModell.TILDELT_TIDSPUNKT,
-            trenger_vurdering = PortefoljebrukerOpensearchModell.TRENGER_VURDERING,
             utkast_14a_ansvarlig_veileder = PortefoljebrukerOpensearchModell.UTKAST_14_A_ANSVARLIG_VEILEDER,
             utkast_14a_status = PortefoljebrukerOpensearchModell.UTKAST_14_A_STATUS,
             utkast_14a_status_endret = PortefoljebrukerOpensearchModell.UTKAST_14_A_STATUS_ENDRET,
