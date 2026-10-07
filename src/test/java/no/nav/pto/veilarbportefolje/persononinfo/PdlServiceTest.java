@@ -1,11 +1,13 @@
 package no.nav.pto.veilarbportefolje.persononinfo;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import lombok.SneakyThrows;
 import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlPersonResponse;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
@@ -17,6 +19,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.postgresql.util.PSQLException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -27,8 +31,8 @@ import static no.nav.pto.veilarbportefolje.persononinfo.PdlService.hentAktivFnr;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PdlServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -40,6 +44,7 @@ public class PdlServiceTest {
 
     private BarnUnder18AarService barnUnder18AarService;
     private PdlService pdlService;
+    private Fnr fnrForOpprydding;
 
     private WireMockServer server = new WireMockServer();
     public PdlServiceTest() {
@@ -91,8 +96,14 @@ public class PdlServiceTest {
     }
 
     @AfterEach
-    public void stopServer(){
+    public void ryddOpp() {
+        try {
+            if (fnrForOpprydding != null) {
+                pdlPersonRepository.slettLagretBrukerData(List.of(fnrForOpprydding));
+            }
+        } finally {
         server.stop();
+        }
     }
 
     @Test
@@ -134,6 +145,58 @@ public class PdlServiceTest {
         Integer barnAlder2 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull("2020-04-01"));
         Integer barnAlder3 = DateUtils.alderFraFodselsdato(DateUtils.toLocalDateOrNull("2012-03-02"));
         assertTrue(barnFraRepository.stream().map(BarnUnder18AarData::getAlder).toList().containsAll(List.of(barnAlder1, barnAlder2, barnAlder3)));
+    }
+    @Test
+    @SneakyThrows
+    public void sjekk_at_falsk_identitet_er_null() {
+        fnrForOpprydding = Fnr.of("12020356789");
+
+        PdlPersonResponse respons = mapper.readerFor(PdlPersonResponse.class)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(pdlPersonResponsFraFil);
+        var person = PDLPerson.genererFraApiRespons(respons.getData().getHentPerson());
+        pdlPersonRepository.upsertPerson(fnrForOpprydding, person);
+        var falskIdentitet = db.queryForObject("select falsk_identitet from bruker_data where freg_ident = ?", Boolean.class, fnrForOpprydding.get());
+        assertThat(falskIdentitet).isNull();
+    }
+    @Test
+    @SneakyThrows
+    public void sjekk_at_manuelt_satt_falsk_identitet_bevares() {
+        fnrForOpprydding = Fnr.of("13020398765");
+        PdlPersonResponse respons = mapper.readerFor(PdlPersonResponse.class)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(pdlPersonResponsFraFil);
+        var person = PDLPerson.genererFraApiRespons(respons.getData().getHentPerson());
+        pdlPersonRepository.upsertPerson(fnrForOpprydding, person);
+        db.update("update bruker_data set falsk_identitet = true where freg_ident = ?", fnrForOpprydding.get());
+        pdlPersonRepository.upsertPerson(fnrForOpprydding, person);
+        person.setEtternavn("Endret testnavn");
+        pdlPersonRepository.upsertPerson(fnrForOpprydding, person);
+        var falskIdentitet = db.queryForObject("select falsk_identitet from bruker_data where freg_ident = ?", Boolean.class, fnrForOpprydding.get());
+        assertThat(pdlPersonRepository.hentPerson(fnrForOpprydding).getEtternavn()).isEqualTo("Endret testnavn");
+        assertThat(falskIdentitet).isTrue();
+    }
+    @Test
+    @SneakyThrows
+    public void sjekk_at_manuelt_satt_falsk_identitet_false_avvises_og_null_beholdes() {
+        fnrForOpprydding = Fnr.of("14020398765");
+        PdlPersonResponse respons = mapper.readerFor(PdlPersonResponse.class)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(pdlPersonResponsFraFil);
+        var person = PDLPerson.genererFraApiRespons(respons.getData().getHentPerson());
+        pdlPersonRepository.upsertPerson(fnrForOpprydding, person);
+        assertThatThrownBy(() ->
+          db.update("update bruker_data set falsk_identitet = false where freg_ident = ?", fnrForOpprydding.get()))
+                  .isInstanceOf(DataIntegrityViolationException.class)
+                  .rootCause()
+                  .isInstanceOfSatisfying(PSQLException.class, feil -> {
+                      assertThat(feil.getSQLState()).isEqualTo("23514");
+                      assertThat(feil.getServerErrorMessage()).isNotNull();
+                      assertThat(feil.getServerErrorMessage().getConstraint()).isEqualTo("chk_falsk_identitet");
+                  })
+          ;
+        var falskIdentitet = db.queryForObject("select falsk_identitet from bruker_data where freg_ident = ?", Boolean.class, fnrForOpprydding.get());
+        assertThat(falskIdentitet).isNull();
     }
 }
 
