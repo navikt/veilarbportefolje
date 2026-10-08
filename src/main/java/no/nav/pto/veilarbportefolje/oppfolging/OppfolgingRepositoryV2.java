@@ -27,11 +27,11 @@ import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 public class OppfolgingRepositoryV2 {
     private final JdbcTemplate db;
 
-    public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato) {
+    public int settUnderOppfolging(AktorId aktoerId, ZonedDateTime startDato, UUID oppfolgingsperiodeId) {
         return db.update("""
-                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO) VALUES (?,?,?)
-                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO
-                """, aktoerId.get(), true, toTimestamp(startDato)
+                INSERT INTO oppfolging_data (AKTOERID, OPPFOLGING, STARTDATO, OPPFOLGINGSPERIODE_ID) VALUES (?,?,?,?)
+                ON CONFLICT (AKTOERID) DO UPDATE SET OPPFOLGING = EXCLUDED.OPPFOLGING, STARTDATO = EXCLUDED.STARTDATO, OPPFOLGINGSPERIODE_ID = EXCLUDED.OPPFOLGINGSPERIODE_ID
+                """, aktoerId.get(), true, toTimestamp(startDato), oppfolgingsperiodeId
         );
     }
 

@@ -33,7 +33,8 @@ class OppfolgingPeriodeService(
                        Fnr.of(sisteOppfolgingsperiode.ident),
                        AktorId.of(sisteOppfolgingsperiode.aktorId),
                        sisteOppfolgingsperiode.startTidspunkt,
-                       NavKontor(sisteOppfolgingsperiode.kontor.kontorId)
+                       NavKontor(sisteOppfolgingsperiode.kontor.kontorId),
+                       sisteOppfolgingsperiode.oppfolgingsperiodeUuid
                    )
                } catch (e: PdlHentBrukerDataException) {
                    if (EnvironmentUtils.isDevelopment().orElse(false)) {

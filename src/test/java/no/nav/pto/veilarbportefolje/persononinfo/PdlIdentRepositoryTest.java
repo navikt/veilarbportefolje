@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
@@ -175,7 +176,7 @@ public class PdlIdentRepositoryTest {
         );
 
         pdlIdentRepository.upsertIdenter(brukersIdenter);
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
 
         assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
         assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));
@@ -189,6 +190,7 @@ public class PdlIdentRepositoryTest {
         Fnr historiskFnr = randomFnr();
         AktorId aktorId = randomAktorId();
         AktorId historiskAktorId = randomAktorId();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
 
         List<PDLIdent> brukersIdenter = List.of(
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT),
@@ -205,7 +207,7 @@ public class PdlIdentRepositoryTest {
 
         pdlIdentRepository.upsertIdenter(brukersIdenter);
         pdlIdentRepository.upsertIdenter(annenBrukersIdenter);
-        oppfolgingRepositoryV2.settUnderOppfolging(annenBrukersAktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(annenBrukersAktorId, ZonedDateTime.now(), oppfolgingsperiodeId);
 
         assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(fnr.get()));
         assertFalse(pdlIdentRepository.erBrukerUnderOppfolging(historiskFnr.get()));

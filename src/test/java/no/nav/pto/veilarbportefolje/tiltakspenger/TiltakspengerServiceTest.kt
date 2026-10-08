@@ -84,7 +84,7 @@ class TiltakspengerServiceTest(
     @Test
     fun `skal starte henting og lagring av tiltakspenger ved mottatt kafkamelding`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(tiltakspengerClient.hentTiltakspenger(anyString(), anyString(), any())).thenReturn(listOf(mockedVedtak))
@@ -100,7 +100,7 @@ class TiltakspengerServiceTest(
     @Test
     fun `skal ikke behandle kafkamelding når person ikke har tiltakspenger`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -127,7 +127,7 @@ class TiltakspengerServiceTest(
     fun `hentTiltakspengerForOppfolgingPeriode filtrerer vedtak utenfor oppfolging`() {
         // Given
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato, UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -162,7 +162,7 @@ class TiltakspengerServiceTest(
             PDLIdent(norskIdentHistorisk.get(), true, Gruppe.FOLKEREGISTERIDENT)
         )
 
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -219,7 +219,7 @@ class TiltakspengerServiceTest(
 
     private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)

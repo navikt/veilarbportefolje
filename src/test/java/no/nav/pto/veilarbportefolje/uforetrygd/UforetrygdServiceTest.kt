@@ -79,7 +79,7 @@ class UforetrygdServiceTest(
     @Test
     fun `skal starte henting og lagring av uføretrygd ved mottatt kafkamelding`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(uforetrygdClient.hentUforetrygd(anyString())).thenReturn(mockedUforetrygdResponseDto)
@@ -95,7 +95,7 @@ class UforetrygdServiceTest(
     @Test
     fun `skal ikke behandle kafkamelding når person ikke har uføretrygd`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
@@ -131,7 +131,7 @@ class UforetrygdServiceTest(
 
     @Test
     fun `skal slette uføretrygd når mottatt kafkamelding om sletting`() {
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -184,7 +184,7 @@ class UforetrygdServiceTest(
 
     private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)

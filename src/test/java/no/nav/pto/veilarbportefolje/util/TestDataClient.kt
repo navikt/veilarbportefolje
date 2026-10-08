@@ -95,8 +95,8 @@ class TestDataClient(
         lagreBrukerUnderOppfolging(aktoerId, fnr, navKontor, veilederId, ZonedDateTime.now(), null)
     }
 
-    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, startDato: ZonedDateTime) {
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), randomVeilederId(), startDato, null)
+    fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, startDato: ZonedDateTime, oppfolgingsperiodeId: UUID) {
+        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), randomVeilederId(), startDato, null, oppfolgingsperiodeId)
     }
 
     private fun lagreBrukerUnderOppfolging(
@@ -105,7 +105,8 @@ class TestDataClient(
         navKontor: NavKontor,
         veilederId: VeilederId?,
         startDato: ZonedDateTime,
-        diskresjonKode: String?
+        diskresjonKode: String?,
+        oppfolgingsperiodeId: UUID? = null,
     ) {
         pdlIdentRepository.upsertIdenter(
             listOf(
@@ -117,7 +118,7 @@ class TestDataClient(
             fnr,
             PDLPerson().setFoedsel(LocalDate.now()).setKjonn(Kjonn.K).setDiskresjonskode(diskresjonKode)
         )
-        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato, oppfolgingsperiodeId)
         if (veilederId != null) oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
         upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
