@@ -70,6 +70,7 @@ import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -83,6 +84,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
+@DependsOn("avroConfig")
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
