@@ -36,13 +36,13 @@ class UforetrygdService(
 
     fun behandleKafkaMeldingLogikk(kafkaMelding: YtelserKafkaDTO) {
         if (kafkaMelding.kildesystem != YTELSE_KILDESYSTEM.PESYS) {
-            logger.warn("Mottok ytelse-melding for Tiltakspenger med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet PESYS. Ignorerer melding.")
+            logger.warn("Mottok ytelse-melding for uføretrygd med uventet kildesystem : ${kafkaMelding.kildesystem}, forventet PESYS. Ignorerer melding.")
             return
         }
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
 
-        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.SLETT) {
+        if (kafkaMelding.meldingstype == YTELSE_MELDINGSTYPE.STOPP) {
             slettUforetrygdData(aktorId, Optional.of(Fnr.of(kafkaMelding.personId)))
             return
         }
@@ -69,7 +69,10 @@ class UforetrygdService(
         lagreUforetrygdForBruker(personIdent.toString(), aktorId)
     }
 
-    // TODO: hentOgLagreUføretrydgForBrukerVedOppfolgingStart - etter at endepunkt og meldinger fra uføre er på plass.
+    fun hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId).get()
+        lagreUforetrygdForBruker(personIdent, aktorId)
+    }
 
     fun lagreUforetrygdForBruker(
         personIdent: String,
@@ -77,22 +80,28 @@ class UforetrygdService(
     ) {
         val uføretrygd = uforetrygdClient.hentUforetrygd(personIdent)
 
-        if (uføretrygd == null) {
+        if (uføretrygd == null || !uføretrygd.lopendeUforetrygd) {
             secureLog.info(
                 "Ingen uføretrygd funnet for bruker med fnr {}, sletter evt eksisterende i databasen og opensearch.",
                 personIdent
             )
             slettUforetrygdData(aktorId, Optional.of(Fnr.of(personIdent)))
-            opensearchIndexerPaDatafelt.slettUforetrygd(aktorId)
             return
         }
 
-        upsertUforetrygdForAktivIdentForBruker(personIdent, uføretrygd)
-        opensearchIndexerPaDatafelt.oppdaterUforetrygd(
-            aktorId,
-            uføretrygd.virkningsdato,
-            uføretrygd.uføregrad
-        )
+        // disse verdiene skal alltid være satt hvis lopendeUforetrygd er true, men vi sjekker likevel for å unngå uventede nullpointer exceptions.
+        if (uføretrygd.forsteVirkningstidspunkt != null && uføretrygd.uforegrad != null) {
+            upsertUforetrygdForAktivIdentForBruker(personIdent, uføretrygd)
+            opensearchIndexerPaDatafelt.oppdaterUforetrygd(
+                aktorId,
+                uføretrygd.forsteVirkningstidspunkt,
+                uføretrygd.uforegrad
+            )
+        } else {
+            secureLog.error(
+                "Uføretrygd for bruker med fnr $personIdent har ikke forventede verdier, kan ikke lagre. Uføretrygd: $uføretrygd",
+            )
+        }
     }
 
     fun upsertUforetrygdForAktivIdentForBruker(
@@ -119,6 +128,7 @@ class UforetrygdService(
 
         try {
             slettUforetrygdForAlleIdenterForBruker(maybeFnr.get().toString())
+            opensearchIndexerPaDatafelt.slettUforetrygd(aktorId)
         } catch (e: Exception) {
             secureLog.error("Feil ved sletting av uføretrygd data for bruker med fnr: ${maybeFnr.get()}", e)
             return

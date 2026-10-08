@@ -18,6 +18,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering;
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
+import no.nav.pto.veilarbportefolje.aktiviteter.dto.TiltakskodeverkDTO;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
@@ -57,8 +59,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlBrukerdataKafkaService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestKafkaMelding;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
-import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingStatusService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
@@ -68,6 +70,7 @@ import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO;
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaService;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -81,6 +84,7 @@ import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
 @Configuration
+@DependsOn("avroConfig")
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
@@ -136,6 +140,8 @@ public class KafkaConfigCommon {
 
         TILTAKSHENDELSE("obo.tiltakshendelse-v1"),
 
+        TILTAKSNAVN_TOPIC("team-mulighetsrommet.siste-tiltakstyper-v3"),
+
         PORTEFOLJE_HENDELSESFILTER("obo.portefolje-hendelsesfilter-v1"),
 
         YTELSER_TOPIC("obo.ytelser-v1");
@@ -180,6 +186,7 @@ public class KafkaConfigCommon {
             SkjermingStatusService skjermingStatusService,
             TiltakService tiltakService,
             TiltakshendelseService tiltakshendelseService,
+            TiltaksaktivitetService tiltaksaktivitetService,
             UtdanningsAktivitetService utdanningsAktivitetService,
             Utkast14aStatusendringService utkast14aStatusendringService,
             VeilederTilordnetService veilederTilordnetService,
@@ -434,6 +441,16 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(KafkaTiltakshendelse.class),
                                         tiltakshendelseService::behandleKafkaRecord
+                                ),
+                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakskodeverkDTO>()
+                                .withLogging()
+                                .withMetrics(prometheusMeterRegistry)
+                                .withStoreOnFailure(consumerRepository)
+                                .withConsumerConfig(
+                                        Topic.TILTAKSNAVN_TOPIC.topicName,
+                                        Deserializers.stringDeserializer(),
+                                        Deserializers.jsonDeserializer(TiltakskodeverkDTO.class),
+                                        tiltaksaktivitetService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelserKafkaDTO>()
                                 .withLogging()

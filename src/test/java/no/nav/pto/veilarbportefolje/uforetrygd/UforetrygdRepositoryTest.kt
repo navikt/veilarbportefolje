@@ -42,8 +42,8 @@ class UforetrygdRepositoryTest(
         val vedtak_nr1 = uforetrygdResponseDto
 
         val vedtak_nr2 = vedtak_nr1.copy(
-            uføregrad = 60,
-            virkningsdato = LocalDate.of(2025, 2, 1)
+            uforegrad = 60,
+            forsteVirkningstidspunkt = LocalDate.of(2025, 2, 1)
         )
 
         uforetrygdRepository.upsertUforetrygd(ident, vedtak_nr1)
@@ -77,8 +77,9 @@ class UforetrygdRepositoryTest(
     }
 
     val uforetrygdResponseDto = UforetrygdResponseDto(
-        uføregrad = 50,
-        virkningsdato = LocalDate.of(2024, 1, 1)
+        lopendeUforetrygd = true,
+        uforegrad = 50,
+        forsteVirkningstidspunkt = LocalDate.of(2024, 1, 1)
     )
 
 

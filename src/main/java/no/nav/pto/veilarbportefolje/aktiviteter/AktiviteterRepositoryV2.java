@@ -135,7 +135,7 @@ public class AktiviteterRepositoryV2 {
                 INNER JOIN aktive_identer ai ON op.fodselsnr = ai.fnr
                 INNER JOIN oppfolging_data od ON od.aktoerid = ai.aktorid
                 INNER JOIN aktiviteter a ON a.aktoerid = ai.aktorid
-                LEFT JOIN ao_kontor ON ao_kontor.ident = op.fodselsnr
+                LEFT JOIN ao_kontor ON ao_kontor.aktorid = ai.aktorid
                 WHERE ao_kontor.kontor_id = :enhet::varchar
                 AND od.veilederid = :veilederIdent::varchar
                 AND a.aktivitettype = 'mote'

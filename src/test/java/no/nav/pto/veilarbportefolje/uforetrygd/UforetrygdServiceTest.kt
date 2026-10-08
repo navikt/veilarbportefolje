@@ -97,16 +97,26 @@ class UforetrygdServiceTest(
         // Given
         oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
         pdlIdentRepository.upsertIdenter(identerBruker)
-
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+
+        // 1. null-respson fra api
         `when`(uforetrygdClient.hentUforetrygd(anyString())).thenReturn(null)
-
-        // When
         uforetrygdService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMeldingOpprett)
-        val lagretMelding = uforetrygdRepository.hentUforetrygd(norskIdent.get())
+        val lagretMeldingNull = uforetrygdRepository.hentUforetrygd(norskIdent.get())
+        assertThat(lagretMeldingNull).isNull()
 
-        // Then
-        assertThat(lagretMelding).isNull()
+        // 2. ikke løpende ytelse fra api
+        `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
+        `when`(uforetrygdClient.hentUforetrygd(anyString())).thenReturn(
+            mockedUforetrygdResponseDto.copy(
+                lopendeUforetrygd = false
+            )
+        )
+
+        uforetrygdService.behandleKafkaMeldingLogikk(mockedYtelseKafkaMeldingOpprett)
+        val lagretMeldingIkkeLøpendeYtelse = uforetrygdRepository.hentUforetrygd(norskIdent.get())
+
+        assertThat(lagretMeldingIkkeLøpendeYtelse).isNull()
     }
 
     @Test
@@ -197,12 +207,13 @@ val mockedYtelseKafkaMeldingOpprett = YtelserKafkaDTO(
 
 val mockedYtelseKafkaMeldingSlett = YtelserKafkaDTO(
     personId = "10108000000",
-    meldingstype = YTELSE_MELDINGSTYPE.SLETT,
+    meldingstype = YTELSE_MELDINGSTYPE.STOPP,
     ytelsestype = YTELSE_TYPE.UFORETRYGD,
     kildesystem = YTELSE_KILDESYSTEM.PESYS
 )
 
 val mockedUforetrygdResponseDto = UforetrygdResponseDto(
-    uføregrad = 50,
-    virkningsdato = java.time.LocalDate.of(2024, 1, 1)
+    lopendeUforetrygd = true,
+    uforegrad = 50,
+    forsteVirkningstidspunkt = java.time.LocalDate.of(2024, 1, 1)
 )
