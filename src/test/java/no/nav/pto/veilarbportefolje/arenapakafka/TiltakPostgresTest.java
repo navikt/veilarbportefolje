@@ -123,19 +123,22 @@ public class TiltakPostgresTest {
         String tiltaksType = "T123";
         String tiltaksNavn = "test";
         ZonedDateTime idagTid = ZonedDateTime.now();
-        ZonedDateTime igarTid = ZonedDateTime.now().minusDays(1);
+        ZonedDateTime igarTid = idagTid.minusDays(1);
+
+        String idagDateString = idagTid.toString().substring(0, 10);
+        String igarDateString = igarTid.toString().substring(0, 10);
 
         TiltakInnhold idag = new TiltakInnhold()
                 .setFnr(fnr.get())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
-                .setAktivitetperiodeTil(new ArenaDato(idagTid.toString().substring(0, 10)))
+                .setAktivitetperiodeTil(new ArenaDato(idagDateString))
                 .setAktivitetid("TA-123");
         TiltakInnhold igar = new TiltakInnhold()
                 .setFnr(fnr.get())
                 .setTiltaksnavn(tiltaksNavn)
                 .setTiltakstype(tiltaksType)
-                .setAktivitetperiodeTil(new ArenaDato(igarTid.toString().substring(0, 10)))
+                .setAktivitetperiodeTil(new ArenaDato(igarDateString))
                 .setAktivitetid("TA-321");
 
         tiltakRepositoryV3.upsert(idag, aktorId);
@@ -151,8 +154,8 @@ public class TiltakPostgresTest {
         assertThat(postgresAktivitet.getAktivitetStart()).isNull();
         assertThat(postgresAktivitet.getNesteAktivitetStart()).isNull();
 
-        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet().substring(0, 10)).isEqualTo(toIsoUTC(igarTid).substring(0, 10));
-        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato().substring(0, 10)).isEqualTo(toIsoUTC(idagTid).substring(0, 10));
+        assertThat(postgresAktivitet.getNyesteUtlopteAktivitet().substring(0, 10)).isEqualTo(igarDateString);
+        assertThat(postgresAktivitet.getAktivitetTiltakUtlopsdato().substring(0, 10)).isEqualTo(idagDateString);
     }
 
     @Test

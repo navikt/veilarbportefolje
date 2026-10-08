@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -56,7 +57,7 @@ public class OppfolgingStartetService {
     private final FargekategoriService fargekategoriService;
     private final PlatformTransactionManager transactionManager;
 
-    public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
+    public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor, UUID oppfolgingsperiodeUuid) {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
         if (oppfolgingsbruker.isPresent() && oppfolgingsbruker.get().getOppfolging()) {
             secureLog.info("Endrer kontor for bruker med aktør-ID: " + aktorId);
@@ -67,7 +68,7 @@ public class OppfolgingStartetService {
         } else {
             secureLog.info("Starter oppfølging for bruker med aktør-ID: " + aktorId);
             // upsertNavKontor, altså oppdatering av den nye ao_kontor-tabellen kalles dypere ned
-            startOppfolging(aktorId, oppfolgingStartetDate, navKontor);
+            startOppfolging(aktorId, oppfolgingStartetDate, navKontor, oppfolgingsperiodeUuid);
         }
     }
 
@@ -95,10 +96,10 @@ public class OppfolgingStartetService {
         }
     }
 
-    public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor) {
+    public void startOppfolging(AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor, UUID oppfolgingsperiodeId) {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             pdlService.hentOgLagrePdlData(aktorId);
-            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate);
+            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate, oppfolgingsperiodeId);
             siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
             oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId, navKontor);
             arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);

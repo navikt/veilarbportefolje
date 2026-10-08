@@ -64,11 +64,12 @@ public class HuskelappServiceTest {
         Fnr fnr2 = randomFnr();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
         EnhetId enhetId = EnhetId.of("0110");
         VeilederId veilederId1 = VeilederId.of("1111");
 
-        insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId);
-        insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId1, enhetId);
+        insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId, oppfolgingsperiodeId);
+        insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId1, enhetId, oppfolgingsperiodeId);
 
         HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1,
                 LocalDate.of(2026, 1, 1), ("Huskelapp nr.1 sin kommentar"));
@@ -96,12 +97,13 @@ public class HuskelappServiceTest {
         Fnr fnr2 = randomFnr();
         AktorId aktorId1 = randomAktorId();
         AktorId aktorId2 = randomAktorId();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
         EnhetId enhetId = EnhetId.of("0110");
         VeilederId veilederId1 = VeilederId.of("1111");
         VeilederId veilederId2 = VeilederId.of("2222");
 
-        insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId);
-        insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId2, enhetId);
+        insertOppfolgingsInformasjon(fnr1, aktorId1, veilederId1, enhetId, oppfolgingsperiodeId);
+        insertOppfolgingsInformasjon(fnr2, aktorId2, veilederId2, enhetId, oppfolgingsperiodeId);
 
         HuskelappOpprettRequest huskelapp1 = new HuskelappOpprettRequest(fnr1, LocalDate.of(2024, 2, 10), "Husk nr 1");
         UUID huskelappUUID = huskelappService.opprettHuskelapp(huskelapp1, veilederId1);
@@ -127,14 +129,14 @@ public class HuskelappServiceTest {
         assertThat(navKontor).isEmpty();
     }
 
-    private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor) {
+    private void insertOppfolgingsInformasjon(Fnr fnr, AktorId aktorId, VeilederId veilederId, EnhetId navKontor, UUID oppfolgingsperiodeId) {
         pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
                 new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId);
         jdbcTemplate.update("INSERT INTO oppfolgingsbruker_arena_v2 (fodselsnr, nav_kontor) values (?,?)", fnr.get(), navKontor.get());
         jdbcTemplate.update("INSERT INTO ao_kontor (ident, kontor_id, aktorid) VALUES (?,?,?)", fnr.get(), navKontor.get(), aktorId.get());
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId);
         oppfolgingRepositoryV2.settVeileder(aktorId, veilederId);
     }
 }

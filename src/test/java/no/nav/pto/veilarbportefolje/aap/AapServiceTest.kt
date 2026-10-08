@@ -80,12 +80,13 @@ class AapServiceTest(
     )
     val navKontor = NavKontor.of("1123")
     val veilederId = VeilederId.of("Z12345")
+    val oppfolgingsperiodeId: UUID = UUID.randomUUID()
 
 
     @Test
     fun `skal starte henting og lagring av aap ved mottatt kafkamelding`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -102,7 +103,7 @@ class AapServiceTest(
     @Test
     fun `skal ikke behandle kafkamelding når person ikke har aap og er av meldingstype opprett`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -125,7 +126,7 @@ class AapServiceTest(
     @Test
     fun `skal behandle kafkamelding og slette data når person ikke har aap men meldingstype er oppdater`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -166,7 +167,7 @@ class AapServiceTest(
     @Test
     fun `hentAapVedtakForOppfolgingPeriode filtrerer vedtak utenfor oppfolging`() {
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato, oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
@@ -284,7 +285,7 @@ class AapServiceTest(
             PDLIdent(norskIdentHistorisk.get(), true, Gruppe.FOLKEREGISTERIDENT)
         )
 
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -315,7 +316,7 @@ class AapServiceTest(
             PDLIdent(norskIdent.get(), false, Gruppe.FOLKEREGISTERIDENT),
         )
 
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         pdlIdentRepository.upsertIdenter(identerBruker)
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
@@ -355,7 +356,7 @@ class AapServiceTest(
 
     private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), oppfolgingsperiodeId)
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
