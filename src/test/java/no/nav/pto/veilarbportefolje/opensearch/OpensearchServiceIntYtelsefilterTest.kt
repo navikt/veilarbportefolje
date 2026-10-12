@@ -636,7 +636,7 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
         val filterValg = getFiltervalgDefaults().copy(
-            ingenYtelser = listOf(IngenYtelser.INGEN_YTELSER)
+            ingenYtelser = listOf(IngenYtelser.HAR_INGEN_YTELSER)
         )
 
         val response = opensearchService.hentBrukere(
