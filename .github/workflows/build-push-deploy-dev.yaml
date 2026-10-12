@@ -2,8 +2,6 @@ name: Bygg og deploy til dev-gcp
 on:
   workflow_dispatch:
 env:
-  IMAGE_TAG: ${{ github.sha }}
-  IMAGE: ghcr.io/${{ github.repository }}/veilarbportefolje
   PRINT_PAYLOAD: true
 permissions:
   packages: write
