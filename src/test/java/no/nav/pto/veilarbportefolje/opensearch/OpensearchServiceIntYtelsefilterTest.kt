@@ -4,6 +4,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
+import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
@@ -565,6 +566,91 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedUforetrygd.fnr)
         Assertions.assertThat(response.brukere).extracting<String> { it.fnr }
             .doesNotContain(brukerUtenUforetrygd.fnr)
+    }
+
+    @Test
+    fun skal_hente_ut_brukere_som_ikke_har_noen_ytelser() {
+        fun lagBruker() = PortefoljebrukerOpensearchModell(
+            aktoer_id = randomAktorId().get(),
+            fnr = randomFnr().toString(),
+            oppfolging = true,
+            enhet_id = TEST_ENHET,
+            veileder_id = TEST_VEILEDER_0,
+        )
+
+        val brukerUtenYtelser = lagBruker().copy(
+            aap_kelvin = false,
+            tiltakspenger = false,
+            dagpenger = DagpengerForOpensearch(
+                harDagpenger = false,
+                rettighetstype = null,
+                antallResterendeDager = null
+            ),
+            ungdomsprogram = null,
+            uforetrygd = null,
+            enslige_forsorgere_overgangsstonad = null,
+            ytelse = null
+        )
+        val brukerMedArenaYtelse = lagBruker().copy(ytelse = YtelseMapping.AAP_MAXTID.name)
+        val brukerMedAapKelvin = lagBruker().copy(aap_kelvin = true)
+        val brukerMedTiltakspenger = lagBruker().copy(tiltakspenger = true)
+        val brukerMedDagpenger = lagBruker().copy(
+            dagpenger = DagpengerForOpensearch(
+                harDagpenger = true,
+                rettighetstype = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
+                antallResterendeDager = 100
+            )
+        )
+        val brukerMedUngdomsprogram = lagBruker().copy(
+            ungdomsprogram = UngdomsprogramForOpensearch(
+                fraOgMed = LocalDate.now().minusMonths(1),
+                tilOgMed = null,
+                maksdato = LocalDate.now().plusMonths(12),
+                harForlengetPeriode = false
+            )
+        )
+        val brukerMedUforetrygd = lagBruker().copy(
+            uforetrygd = UforetrygdForOpensearch(virkningsdato = LocalDate.now().minusMonths(1), uforegrad = 60)
+        )
+        val brukerMedOvergangsstonad = lagBruker().copy(
+            enslige_forsorgere_overgangsstonad = EnsligeForsorgereOvergangsstonad(
+                "Hovedperiode",
+                true,
+                LocalDate.now().plusMonths(4),
+                LocalDate.now().minusMonths(2)
+            )
+        )
+
+        val liste = listOf(
+            brukerUtenYtelser,
+            brukerMedArenaYtelse,
+            brukerMedAapKelvin,
+            brukerMedTiltakspenger,
+            brukerMedDagpenger,
+            brukerMedUngdomsprogram,
+            brukerMedUforetrygd,
+            brukerMedOvergangsstonad
+        )
+        skrivBrukereTilTestindeks(liste)
+
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
+
+        val filterValg = getFiltervalgDefaults().copy(
+            ingenYtelser = listOf(IngenYtelser.INGEN_YTELSER)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.of(TEST_VEILEDER_0),
+            Sorteringsrekkefolge.IKKE_SATT,
+            Sorteringsfelt.IKKE_SATT,
+            filterValg,
+            null,
+            null
+        )
+
+        Assertions.assertThat(response.antall).isEqualTo(1)
+        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.containsExactly(brukerUtenYtelser.fnr)
     }
 
     @Test
