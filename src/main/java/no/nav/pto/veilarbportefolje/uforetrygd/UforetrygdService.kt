@@ -135,6 +135,10 @@ class UforetrygdService(
         }
     }
 
+    fun oppdaterNorskIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        uforetrygdRepository.oppdaterNorskIdent(gammeltFnr.get(), nyttFnr.get())
+    }
+
     fun slettUforetrygdForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->

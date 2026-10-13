@@ -162,6 +162,10 @@ class AapService(
         }
     }
 
+    fun oppdaterNorskIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        aapRepository.oppdaterNorskIdent(gammeltFnr.get(), nyttFnr.get())
+    }
+
     fun slettAapForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->

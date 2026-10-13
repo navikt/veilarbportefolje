@@ -104,4 +104,29 @@ class DagpengerRepositoryTest(
     )
 
 
+
+    @Test
+    fun `oppdaterNorskIdent skal flytte rad fra gammel til ny ident`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        dagpengerRepository.upsertDagpengerPerioder(gammelIdent, dagpengerPeriodeDto, dagpengerBeregningDto)
+
+        dagpengerRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(dagpengerRepository.hentDagpenger(gammelIdent)).isNull()
+        assertThat(dagpengerRepository.hentDagpenger(nyIdent)!!.tom).isEqualTo(LocalDate.of(2026, 12, 31))
+    }
+
+    @Test
+    fun `oppdaterNorskIdent skal beholde rad på ny ident og slette gammel når begge finnes`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        dagpengerRepository.upsertDagpengerPerioder(gammelIdent, dagpengerPeriodeDto, dagpengerBeregningDto)
+        dagpengerRepository.upsertDagpengerPerioder(nyIdent, dagpengerPeriodeDto.copy(tilOgMedDato = LocalDate.of(2027, 6, 1)), dagpengerBeregningDto)
+
+        dagpengerRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(dagpengerRepository.hentDagpenger(gammelIdent)).isNull()
+        assertThat(dagpengerRepository.hentDagpenger(nyIdent)!!.tom).isEqualTo(LocalDate.of(2027, 6, 1))
+    }
 }

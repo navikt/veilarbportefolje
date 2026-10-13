@@ -113,6 +113,10 @@ class UngdomsprogramService(
         }
     }
 
+    fun oppdaterNorskIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        ungdomsprogramRepository.oppdaterNorskIdent(gammeltFnr.get(), nyttFnr.get())
+    }
+
     fun slettUngdomsprogramForAlleIdenterForBruker(personIdent: String) {
         //redundancy for bruker som ikke finnes i pdlIdentRepository, men som fortsatt har data i ungdomsprogramdatabasen
         ungdomsprogramRepository.slettUngdomsprogramForBruker(personIdent)

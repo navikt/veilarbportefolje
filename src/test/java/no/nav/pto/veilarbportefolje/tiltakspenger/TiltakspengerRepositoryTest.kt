@@ -88,4 +88,29 @@ class TiltakspengerRepositoryTest(
     )
 
 
+
+    @Test
+    fun `oppdaterNorskIdent skal flytte rad fra gammel til ny ident`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        tiltakspengerRepository.upsertTiltakspenger(gammelIdent, tiltakspengerResponseDto)
+
+        tiltakspengerRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(tiltakspengerRepository.hentTiltakspenger(gammelIdent)).isNull()
+        assertThat(tiltakspengerRepository.hentTiltakspenger(nyIdent)!!.sakId).isEqualTo("SAK-1")
+    }
+
+    @Test
+    fun `oppdaterNorskIdent skal beholde rad på ny ident og slette gammel når begge finnes`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        tiltakspengerRepository.upsertTiltakspenger(gammelIdent, tiltakspengerResponseDto)
+        tiltakspengerRepository.upsertTiltakspenger(nyIdent, tiltakspengerResponseDto.copy(sakId = "SAK-NY"))
+
+        tiltakspengerRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(tiltakspengerRepository.hentTiltakspenger(gammelIdent)).isNull()
+        assertThat(tiltakspengerRepository.hentTiltakspenger(nyIdent)!!.sakId).isEqualTo("SAK-NY")
+    }
 }

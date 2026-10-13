@@ -125,6 +125,10 @@ class TiltakspengerService(
         }
     }
 
+    fun oppdaterNorskIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        tiltakspengerRespository.oppdaterNorskIdent(gammeltFnr.get(), nyttFnr.get())
+    }
+
     fun slettTiltakspengerForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->

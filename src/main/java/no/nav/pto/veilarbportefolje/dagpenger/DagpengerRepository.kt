@@ -76,6 +76,18 @@ class DagpengerRepository(@param:Autowired private val db: JdbcTemplate) {
         }
     }
 
+    fun oppdaterNorskIdent(gammelNorskIdent: NorskIdent, nyNorskIdent: NorskIdent) {
+        db.update(
+            """
+            UPDATE ${YTELSER_DAGPENGER.TABLE_NAME} SET ${YTELSER_DAGPENGER.NORSK_IDENT} = ?
+            WHERE ${YTELSER_DAGPENGER.NORSK_IDENT} = ?
+            AND NOT EXISTS (SELECT 1 FROM ${YTELSER_DAGPENGER.TABLE_NAME} WHERE ${YTELSER_DAGPENGER.NORSK_IDENT} = ?)
+            """,
+            nyNorskIdent, gammelNorskIdent, nyNorskIdent
+        )
+        slettDagpengerForBruker(gammelNorskIdent)
+    }
+
     fun slettDagpengerForBruker(norskIdent: NorskIdent) {
         db.update(
             "DELETE FROM ${YTELSER_DAGPENGER.TABLE_NAME} WHERE ${YTELSER_DAGPENGER.NORSK_IDENT} = ?",

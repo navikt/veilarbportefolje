@@ -79,6 +79,18 @@ class AapRepository(private val db: JdbcTemplate) {
         }
     }
 
+    fun oppdaterNorskIdent(gammelNorskIdent: NorskIdent, nyNorskIdent: NorskIdent) {
+        db.update(
+            """
+            UPDATE ${YTELSER_AAP.TABLE_NAME} SET ${YTELSER_AAP.NORSK_IDENT} = ?
+            WHERE ${YTELSER_AAP.NORSK_IDENT} = ?
+            AND NOT EXISTS (SELECT 1 FROM ${YTELSER_AAP.TABLE_NAME} WHERE ${YTELSER_AAP.NORSK_IDENT} = ?)
+            """,
+            nyNorskIdent, gammelNorskIdent, nyNorskIdent
+        )
+        slettAapForBruker(gammelNorskIdent)
+    }
+
     fun slettAapForBruker(norskIdent: NorskIdent) {
         db.update("DELETE FROM ${YTELSER_AAP.TABLE_NAME} WHERE ${YTELSER_AAP.NORSK_IDENT} = ?", norskIdent)
     }

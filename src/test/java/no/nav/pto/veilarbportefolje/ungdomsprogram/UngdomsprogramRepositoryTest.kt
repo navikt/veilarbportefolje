@@ -83,4 +83,29 @@ class UngdomsprogramRepositoryTest(
         periodeMaksDato = LocalDate.of(2025, 12, 31)
     )
 
+
+    @Test
+    fun `oppdaterNorskIdent skal flytte rad fra gammel til ny ident`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        ungdomsprogramRepository.upsertUngdomsprogram(gammelIdent, ungdomsprogramPeriodeDto)
+
+        ungdomsprogramRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(ungdomsprogramRepository.hentUngdomsprogram(gammelIdent)).isNull()
+        assertThat(ungdomsprogramRepository.hentUngdomsprogram(nyIdent)!!.tilOgMed).isEqualTo(LocalDate.of(2024, 12, 31))
+    }
+
+    @Test
+    fun `oppdaterNorskIdent skal beholde rad på ny ident og slette gammel når begge finnes`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        ungdomsprogramRepository.upsertUngdomsprogram(gammelIdent, ungdomsprogramPeriodeDto)
+        ungdomsprogramRepository.upsertUngdomsprogram(nyIdent, ungdomsprogramPeriodeDto.copy(tilOgMed = LocalDate.of(2026, 12, 31)))
+
+        ungdomsprogramRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(ungdomsprogramRepository.hentUngdomsprogram(gammelIdent)).isNull()
+        assertThat(ungdomsprogramRepository.hentUngdomsprogram(nyIdent)!!.tilOgMed).isEqualTo(LocalDate.of(2026, 12, 31))
+    }
 }

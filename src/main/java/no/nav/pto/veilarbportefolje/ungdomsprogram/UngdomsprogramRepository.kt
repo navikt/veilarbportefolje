@@ -65,6 +65,18 @@ class UngdomsprogramRepository(private val db: JdbcTemplate) {
         }
     }
 
+    fun oppdaterNorskIdent(gammelNorskIdent: NorskIdent, nyNorskIdent: NorskIdent) {
+        db.update(
+            """
+            UPDATE ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME} SET ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?
+            WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?
+            AND NOT EXISTS (SELECT 1 FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME} WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?)
+            """,
+            nyNorskIdent, gammelNorskIdent, nyNorskIdent
+        )
+        slettUngdomsprogramForBruker(gammelNorskIdent)
+    }
+
     fun slettUngdomsprogramForBruker(norskIdent: NorskIdent) {
         db.update(
             "DELETE FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME} WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?",

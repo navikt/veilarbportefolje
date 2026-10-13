@@ -64,6 +64,18 @@ class TiltakspengerRespository(private val db: JdbcTemplate) {
         }
     }
 
+    fun oppdaterNorskIdent(gammelNorskIdent: NorskIdent, nyNorskIdent: NorskIdent) {
+        db.update(
+            """
+            UPDATE ${YTELSER_TILTAKSPENGER.TABLE_NAME} SET ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?
+            WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?
+            AND NOT EXISTS (SELECT 1 FROM ${YTELSER_TILTAKSPENGER.TABLE_NAME} WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?)
+            """,
+            nyNorskIdent, gammelNorskIdent, nyNorskIdent
+        )
+        slettTiltakspengerForBruker(gammelNorskIdent)
+    }
+
     fun slettTiltakspengerForBruker(norskIdent: NorskIdent) {
         db.update(
             "DELETE FROM ${YTELSER_TILTAKSPENGER.TABLE_NAME} WHERE ${YTELSER_TILTAKSPENGER.NORSK_IDENT} = ?",

@@ -54,6 +54,18 @@ class UforetrygdRepository(private val db: JdbcTemplate) {
     }
 
 
+    fun oppdaterNorskIdent(gammelNorskIdent: NorskIdent, nyNorskIdent: NorskIdent) {
+        db.update(
+            """
+            UPDATE ${YTELSER_UFORETRYGD.TABLE_NAME} SET ${YTELSER_UFORETRYGD.NORSK_IDENT} = ?
+            WHERE ${YTELSER_UFORETRYGD.NORSK_IDENT} = ?
+            AND NOT EXISTS (SELECT 1 FROM ${YTELSER_UFORETRYGD.TABLE_NAME} WHERE ${YTELSER_UFORETRYGD.NORSK_IDENT} = ?)
+            """,
+            nyNorskIdent, gammelNorskIdent, nyNorskIdent
+        )
+        slettUforetrygdForBruker(gammelNorskIdent)
+    }
+
     fun slettUforetrygdForBruker(norskIdent: NorskIdent) {
         db.update(
             "DELETE FROM ${YTELSER_UFORETRYGD.TABLE_NAME} WHERE ${YTELSER_UFORETRYGD.NORSK_IDENT} = ?",

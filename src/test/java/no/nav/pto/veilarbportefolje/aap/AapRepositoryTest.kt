@@ -102,4 +102,29 @@ class AapRepositoryTest(
         rettighetsType = AapRettighetstype.ARBEIDSSØKER
     )
 
+
+    @Test
+    fun `oppdaterNorskIdent skal flytte rad fra gammel til ny ident`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        aapRepository.upsertAap(gammelIdent, AapEntity("FERDIGBEHANDLET", LocalDate.of(2028, 12, 31), aapVedtakDto))
+
+        aapRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(aapRepository.hentAap(gammelIdent)).isNull()
+        assertThat(aapRepository.hentAap(nyIdent)!!.maksdato).isEqualTo(LocalDate.of(2028, 12, 31))
+    }
+
+    @Test
+    fun `oppdaterNorskIdent skal beholde rad på ny ident og slette gammel når begge finnes`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        aapRepository.upsertAap(gammelIdent, AapEntity("FERDIGBEHANDLET", LocalDate.of(2028, 12, 31), aapVedtakDto))
+        aapRepository.upsertAap(nyIdent, AapEntity("FERDIGBEHANDLET", LocalDate.of(2029, 6, 30), aapVedtakDto))
+
+        aapRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(aapRepository.hentAap(gammelIdent)).isNull()
+        assertThat(aapRepository.hentAap(nyIdent)!!.maksdato).isEqualTo(LocalDate.of(2029, 6, 30))
+    }
 }

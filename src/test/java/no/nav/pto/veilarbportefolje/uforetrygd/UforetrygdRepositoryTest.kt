@@ -83,4 +83,29 @@ class UforetrygdRepositoryTest(
     )
 
 
+
+    @Test
+    fun `oppdaterNorskIdent skal flytte rad fra gammel til ny ident`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        uforetrygdRepository.upsertUforetrygd(gammelIdent, uforetrygdResponseDto)
+
+        uforetrygdRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(uforetrygdRepository.hentUforetrygd(gammelIdent)).isNull()
+        assertThat(uforetrygdRepository.hentUforetrygd(nyIdent)!!.uføregrad).isEqualTo(50)
+    }
+
+    @Test
+    fun `oppdaterNorskIdent skal beholde rad på ny ident og slette gammel når begge finnes`() {
+        val gammelIdent = "11111111111"
+        val nyIdent = "22222222222"
+        uforetrygdRepository.upsertUforetrygd(gammelIdent, uforetrygdResponseDto)
+        uforetrygdRepository.upsertUforetrygd(nyIdent, uforetrygdResponseDto.copy(uforegrad = 60))
+
+        uforetrygdRepository.oppdaterNorskIdent(gammelIdent, nyIdent)
+
+        assertThat(uforetrygdRepository.hentUforetrygd(gammelIdent)).isNull()
+        assertThat(uforetrygdRepository.hentUforetrygd(nyIdent)!!.uføregrad).isEqualTo(60)
+    }
 }

@@ -154,6 +154,10 @@ class DagpengerService(
         }
     }
 
+    fun oppdaterNorskIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        dagpengerRespository.oppdaterNorskIdent(gammeltFnr.get(), nyttFnr.get())
+    }
+
     fun slettDagpengerForAlleIdenterForBruker(personIdent: String) {
         val alleFnrIdenterForBruker = pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer
         alleFnrIdenterForBruker.forEach { ident ->
