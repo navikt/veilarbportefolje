@@ -83,6 +83,10 @@ class SkjermedePersonerService(
             )
         }
     }
+
+    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        skjermingRepository.oppdaterFnr(gammeltFnr, nyttFnr)
+    }
 }
 
 @Service

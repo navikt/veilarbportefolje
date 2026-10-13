@@ -70,6 +70,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
             log.info("Det oppsto en PDL endring for barn");
             Fnr aktivtFnr = hentAktivFnr(pdlIdenter);
             barnUnder18AarService.handterBarnIdentEndring(aktivtFnr, inaktiveFnr);
+            identEndringService.handterNyttFnrForBarn(aktivtFnr, inaktiveFnr);
 
             handterBarnEndring(pdlDokument.getHentPerson(), pdlIdenter);
 

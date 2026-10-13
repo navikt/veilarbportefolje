@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
@@ -142,6 +143,43 @@ public class OppfolginsbrukerRepositoryV3Test {
         assertThat(hentIdentPaaNavKontor(aktorId)).isEqualTo(nyttFnr.get());
         assertThat(oppfolgingsbrukerRepository.hentNavKontor(aktorId).get().getValue()).isEqualTo("1001");
         assertThat(oppfolgingsbrukerRepository.hentNavKontor(annenAktorId).isPresent()).isFalse();
+    }
+
+    @Test
+    public void oppdaterFnr_skal_flytte_oppfolgingsbruker_til_nytt_fnr() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        lagreOppfolgingsbruker(gammeltFnr, "1001", now());
+
+        oppfolgingsbrukerRepository.oppdaterFnr(gammeltFnr, nyttFnr);
+
+        assertThat(hentNavKontorPaaOppfolgingsbruker(gammeltFnr)).isEqualTo(List.of());
+        assertThat(hentNavKontorPaaOppfolgingsbruker(nyttFnr)).isEqualTo(List.of("1001"));
+    }
+
+    @Test
+    public void oppdaterFnr_skal_beholde_rad_paa_nytt_fnr_ved_konflikt() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        lagreOppfolgingsbruker(gammeltFnr, "1001", now());
+        lagreOppfolgingsbruker(nyttFnr, "1002", now().minusDays(1));
+
+        oppfolgingsbrukerRepository.oppdaterFnr(gammeltFnr, nyttFnr);
+
+        assertThat(hentNavKontorPaaOppfolgingsbruker(gammeltFnr)).isEqualTo(List.of());
+        assertThat(hentNavKontorPaaOppfolgingsbruker(nyttFnr)).isEqualTo(List.of("1002"));
+    }
+
+    private void lagreOppfolgingsbruker(Fnr fnr, String navKontor, ZonedDateTime endretDato) {
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(fnr.get(), "TEST", null, navKontor, "ORG", "OP", "TES", endretDato),
+                null,
+                aktorId
+        );
+    }
+
+    private List<String> hentNavKontorPaaOppfolgingsbruker(Fnr fnr) {
+        return db.queryForList("SELECT nav_kontor FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?", String.class, fnr.get());
     }
 
     private String hentIdentPaaNavKontor(AktorId aktorId) {

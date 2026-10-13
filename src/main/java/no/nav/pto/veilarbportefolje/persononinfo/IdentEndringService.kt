@@ -6,10 +6,12 @@ import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService
 import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2
+import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
@@ -31,6 +33,8 @@ class IdentEndringService(
     private val tiltakshendelseService: TiltakshendelseService,
     private val cvService: CVServiceV2,
     private val oppfolgingsbrukerService: OppfolgingsbrukerServiceV2,
+    private val skjermedePersonerService: SkjermedePersonerService,
+    private val ensligeForsorgereService: EnsligeForsorgereService,
 ) {
 
     fun handterNyttFnr(aktorId: AktorId, gammeltFnr: Fnr, nyttFnr: Fnr) {
@@ -46,6 +50,13 @@ class IdentEndringService(
         tiltakshendelseService.oppdaterFnr(gammeltFnr, nyttFnr)
         cvService.oppdaterFnr(gammeltFnr, nyttFnr)
         oppfolgingsbrukerService.oppdaterIdentPaaNavKontor(aktorId, gammeltFnr, nyttFnr)
+        oppfolgingsbrukerService.oppdaterFnr(gammeltFnr, nyttFnr)
+        skjermedePersonerService.oppdaterFnr(gammeltFnr, nyttFnr)
+        ensligeForsorgereService.oppdaterPersonIdent(gammeltFnr, nyttFnr)
+    }
+
+    fun handterNyttFnrForBarn(aktivtFnr: Fnr, inaktiveFnr: List<Fnr>) {
+        ensligeForsorgereService.oppdaterBarnFnr(aktivtFnr, inaktiveFnr)
     }
 
     private fun oppdaterYtelser(gammeltFnr: Fnr, nyttFnr: Fnr) {

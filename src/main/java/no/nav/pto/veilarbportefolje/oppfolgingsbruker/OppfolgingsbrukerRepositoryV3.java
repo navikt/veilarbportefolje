@@ -58,6 +58,15 @@ public class OppfolgingsbrukerRepositoryV3 {
     }
 
 
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        db.update("""
+                    UPDATE oppfolgingsbruker_arena_v2 SET fodselsnr = ?
+                    WHERE fodselsnr = ?
+                    AND NOT EXISTS (SELECT 1 FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ?)
+                """, nyttFnr.get(), gammeltFnr.get(), nyttFnr.get());
+        slettOppfolgingsbruker(gammeltFnr);
+    }
+
     private Optional<ZonedDateTime> getEndretDatoForUpdate(Fnr fnr) {
         String sql = "SELECT endret_dato FROM oppfolgingsbruker_arena_v2 WHERE fodselsnr = ? for update";
         return Optional.ofNullable(

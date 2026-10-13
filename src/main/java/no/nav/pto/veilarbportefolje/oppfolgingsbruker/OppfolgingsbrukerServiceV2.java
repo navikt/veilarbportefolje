@@ -31,9 +31,6 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
     private final VeilarbarenaClient veilarbarenaClient;
     private final PdlIdentRepository pdlIdentRepository;
 
-    public void oppdaterIdentPaaNavKontor(AktorId aktivAktorId, Fnr gammeltFnr, Fnr nyttFnr) {
-        oppfolgingsbrukerRepositoryV3.oppdaterIdentPaaNavKontor(aktivAktorId, gammeltFnr, nyttFnr);
-    }
 
     @Override
     public void behandleKafkaMeldingLogikk(EndringPaaOppfoelgingsBrukerV2 kafkaMelding) {
@@ -116,6 +113,14 @@ public class OppfolgingsbrukerServiceV2 extends KafkaCommonNonKeyedConsumerServi
             );
             throw new RuntimeException("Kunne ikke slette oppfolgingsbruker");
         }
+    }
+
+    public void oppdaterIdentPaaNavKontor(AktorId aktivAktorId, Fnr gammeltFnr, Fnr nyttFnr) {
+        oppfolgingsbrukerRepositoryV3.oppdaterIdentPaaNavKontor(aktivAktorId, gammeltFnr, nyttFnr);
+    }
+
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        oppfolgingsbrukerRepositoryV3.oppdaterFnr(gammeltFnr, nyttFnr);
     }
 }
 

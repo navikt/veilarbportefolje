@@ -43,6 +43,18 @@ class SkjermingRepository(private val db: JdbcTemplate) {
         )
     }
 
+    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        db.update(
+            """
+                UPDATE NOM_SKJERMING SET FODSELSNR = ?
+                WHERE FODSELSNR = ?
+                AND NOT EXISTS (SELECT 1 FROM NOM_SKJERMING WHERE FODSELSNR = ?)
+                """.trimIndent(),
+            nyttFnr.get(), gammeltFnr.get(), nyttFnr.get()
+        )
+        deleteSkjermingData(gammeltFnr)
+    }
+
     @TestOnly
     fun hentSkjermingData(fnr: Fnr): Optional<SkjermingData> {
         return Optional.ofNullable(

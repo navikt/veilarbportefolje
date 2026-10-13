@@ -56,6 +56,30 @@ class SkjermingRepositoryTest {
     }
 
     @Test
+    fun `oppdaterFnr skal flytte skjerming til nytt fnr`() {
+        val gammeltFnr = Fnr.of("11111111111")
+        val nyttFnr = Fnr.of("22222222222")
+        skjermingRepository.settSkjerming(gammeltFnr, true)
+
+        skjermingRepository.oppdaterFnr(gammeltFnr, nyttFnr)
+
+        assertEquals(setOf(nyttFnr), skjermingRepository.hentSkjermetPersoner(listOf(gammeltFnr, nyttFnr)))
+    }
+
+    @Test
+    fun `oppdaterFnr skal beholde skjerming paa nytt fnr ved konflikt`() {
+        val gammeltFnr = Fnr.of("11111111111")
+        val nyttFnr = Fnr.of("22222222222")
+        skjermingRepository.settSkjerming(gammeltFnr, true)
+        skjermingRepository.settSkjerming(nyttFnr, false)
+
+        skjermingRepository.oppdaterFnr(gammeltFnr, nyttFnr)
+
+        assertTrue(skjermingRepository.hentSkjermetPersoner(listOf(gammeltFnr, nyttFnr)).isEmpty())
+        assertTrue(skjermingRepository.hentSkjermingData(nyttFnr).isPresent)
+    }
+
+    @Test
     fun testDeleteOfSkjermingData() {
         val fnr = Fnr.of("fnr123")
         skjermingRepository.settSkjerming(fnr, true)

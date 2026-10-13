@@ -139,6 +139,43 @@ public class EnsligeForsorgereRepositoryTest {
         ensligeForsorgereRepository.lagreOvergangsstonad(melding);
     }
 
+    @Test
+    public void oppdaterPersonIdent_skal_flytte_vedtak_til_nytt_fnr() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        lagreRandomVedtakIdatabase(1L, gammeltFnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(10));
+
+        ensligeForsorgereRepository.oppdaterPersonIdent(gammeltFnr, nyttFnr);
+
+        assertTrue(ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(gammeltFnr.get(), true).isEmpty());
+        assertEquals(1L, ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(nyttFnr.get(), true).get().vedtakid().longValue());
+    }
+
+    @Test
+    public void oppdaterPersonIdent_skal_slette_vedtak_paa_gammelt_fnr_naar_nytt_fnr_har_vedtak() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        lagreRandomVedtakIdatabase(1L, gammeltFnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(10));
+        lagreRandomVedtakIdatabase(2L, nyttFnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(10));
+
+        ensligeForsorgereRepository.oppdaterPersonIdent(gammeltFnr, nyttFnr);
+
+        assertEquals(0, postgres.queryForObject("SELECT count(*) FROM enslige_forsorgere WHERE vedtakid = 1", Integer.class));
+        assertEquals(0, postgres.queryForObject("SELECT count(*) FROM enslige_forsorgere_barn WHERE vedtakid = 1", Integer.class));
+        assertEquals(2L, ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(nyttFnr.get(), true).get().vedtakid().longValue());
+    }
+
+    @Test
+    public void oppdaterBarnFnr_skal_oppdatere_fnr_paa_barn() {
+        lagreInitiellVedtakIdatabase();
+        Fnr nyttBarnFnr = Fnr.of("01012412345");
+
+        ensligeForsorgereRepository.oppdaterBarnFnr(nyttBarnFnr, List.of(Fnr.of("11032245678")));
+
+        assertEquals(List.of(nyttBarnFnr.get()), postgres.queryForList("SELECT fnr FROM enslige_forsorgere_barn WHERE vedtakid = 12345 AND fnr IS NOT NULL", String.class));
+        assertEquals(LocalDate.of(2024, Month.JANUARY, 1), ensligeForsorgereRepository.hentYngsteBarn(12345L).get());
+    }
+
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
         List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, BARN_UNDER_ETT_ÅR));

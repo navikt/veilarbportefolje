@@ -95,6 +95,14 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         return false;
     }
 
+    public void oppdaterPersonIdent(Fnr gammeltFnr, Fnr nyttFnr) {
+        ensligeForsorgereRepository.oppdaterPersonIdent(gammeltFnr, nyttFnr);
+    }
+
+    public void oppdaterBarnFnr(Fnr aktivtFnr, List<Fnr> inaktiveFnr) {
+        ensligeForsorgereRepository.oppdaterBarnFnr(aktivtFnr, inaktiveFnr);
+    }
+
     private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
         int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(personIdent);
         if (fjernTidligereVedtak > 0) {

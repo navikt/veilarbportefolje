@@ -118,6 +118,27 @@ public class EnsligeForsorgereRepository {
         db.update(sql, vedtakId, fnr, terminDato);
     }
 
+    public void oppdaterPersonIdent(Fnr gammeltFnr, Fnr nyttFnr) {
+        Boolean nyttFnrHarVedtak = db.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM enslige_forsorgere WHERE personIdent = ?)",
+                Boolean.class, nyttFnr.get());
+
+        if (Boolean.TRUE.equals(nyttFnrHarVedtak)) {
+            db.queryForList("SELECT vedtakId FROM enslige_forsorgere WHERE personIdent = ?", Long.class, gammeltFnr.get())
+                    .forEach(this::fjernVedtakForBruker);
+        } else {
+            db.update("UPDATE enslige_forsorgere SET personIdent = ? WHERE personIdent = ?", nyttFnr.get(), gammeltFnr.get());
+        }
+    }
+
+    public void oppdaterBarnFnr(Fnr aktivtFnr, List<Fnr> inaktiveFnr) {
+        if (inaktiveFnr.isEmpty()) {
+            return;
+        }
+        String inaktiveFnrStr = inaktiveFnr.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
+        db.update("UPDATE enslige_forsorgere_barn SET fnr = ? WHERE fnr = ANY (?::varchar[])", aktivtFnr.get(), inaktiveFnrStr);
+    }
+
     public int fjernTidligereOvergangsstønadVedtak(String fnr) {
         AtomicReference<Integer> affectedRows = new AtomicReference<>(0);
         List<Long> vedtakForBruker = hentOvergangsstønadVedtakForBruker(fnr);
