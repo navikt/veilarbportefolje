@@ -295,4 +295,25 @@ class HendelseRepositoryTest(
         // Then
         assertThat(resultatAvSletting).isInstanceOf(IngenHendelseMedIdException::class.java)
     }
+
+    @Test
+    fun `skal oppdatere personident på alle hendelser for gammel ident`() {
+        // Given
+        val gammelIdent = randomNorskIdent()
+        val nyIdent = randomNorskIdent()
+        val annenIdent = randomNorskIdent()
+        val hendelse1 = genererRandomHendelse(personIdent = gammelIdent, kategori = Kategori.UTGATT_VARSEL)
+        val hendelse2 = genererRandomHendelse(personIdent = gammelIdent, kategori = Kategori.UDELT_SAMTALEREFERAT)
+        val hendelseAnnenPerson = genererRandomHendelse(personIdent = annenIdent)
+        listOf(hendelse1, hendelse2, hendelseAnnenPerson).forEach { hendelseRepository.insert(it) }
+
+        // When
+        val antallOppdaterte = hendelseRepository.oppdaterPersonIdent(gammelIdent, nyIdent)
+
+        // Then
+        assertThat(antallOppdaterte).isEqualTo(2)
+        assertThat(hendelseRepository.get(hendelse1.id).personIdent).isEqualTo(nyIdent)
+        assertThat(hendelseRepository.get(hendelse2.id).personIdent).isEqualTo(nyIdent)
+        assertThat(hendelseRepository.get(hendelseAnnenPerson.id).personIdent).isEqualTo(annenIdent)
+    }
 }

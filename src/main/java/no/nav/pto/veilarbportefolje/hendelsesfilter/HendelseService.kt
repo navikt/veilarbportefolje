@@ -62,6 +62,11 @@ class HendelseService(
         }
     }
 
+    fun oppdaterPersonIdent(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        val antallOppdaterte = hendelseRepository.oppdaterPersonIdent(NorskIdent.of(gammeltFnr.get()), NorskIdent.of(nyttFnr.get()))
+        logger.info("Oppdaterte personident på $antallOppdaterte hendelser etter identendring.")
+    }
+
     @TestOnly
     fun hentHendelse(id: UUID): Hendelse? {
         return try {

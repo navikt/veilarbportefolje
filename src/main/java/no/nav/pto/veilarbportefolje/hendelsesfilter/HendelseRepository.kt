@@ -173,6 +173,11 @@ class HendelseRepository(
         }
     }
 
+    fun oppdaterPersonIdent(gammelPersonIdent: NorskIdent, nyPersonIdent: NorskIdent): Int {
+        val sql = "UPDATE ${HENDELSE.TABLE_NAME} SET ${HENDELSE.PERSON_IDENT} = ? WHERE ${HENDELSE.PERSON_IDENT} = ?"
+        return jdbcTemplate.update(sql, nyPersonIdent.get(), gammelPersonIdent.get())
+    }
+
 }
 
 private fun toHendelse(resultSet: ResultSet, affectedRows: Int): Hendelse {

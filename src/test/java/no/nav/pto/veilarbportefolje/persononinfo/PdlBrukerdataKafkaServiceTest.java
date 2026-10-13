@@ -21,6 +21,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,7 +36,6 @@ import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.F
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -53,6 +53,8 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
     private static IdentEndringService identEndringService;
 
+    private static OpensearchIndexer opensearchIndexer;
+
     public PdlBrukerdataKafkaServiceTest() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
@@ -65,6 +67,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
         OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
         oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
         identEndringService = Mockito.mock(IdentEndringService.class);
+        opensearchIndexer = Mockito.mock(OpensearchIndexer.class);
 
         db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_data_barn CASCADE");
@@ -84,14 +87,14 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 , pdlIdentRepository,
             new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class)),
                 barnUnder18AarService,
-                Mockito.mock(OpensearchIndexer.class),
+                opensearchIndexer,
                 identEndringService
         );
     }
 
     @BeforeEach
     public void resetMocks() {
-        Mockito.reset(identEndringService);
+        Mockito.reset(identEndringService, opensearchIndexer);
     }
 
     @AfterAll
@@ -128,7 +131,9 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 new PDLIdent(nyttFnr.get(), false, FOLKEREGISTERIDENT)
         )));
 
-        verify(identEndringService).handterNyttFnr(aktorId, gammeltFnr, nyttFnr);
+        InOrder inOrder = Mockito.inOrder(identEndringService, opensearchIndexer);
+        inOrder.verify(identEndringService).handterNyttFnr(aktorId, gammeltFnr, nyttFnr);
+        inOrder.verify(opensearchIndexer).indekser(aktorId);
     }
 
     @Test
