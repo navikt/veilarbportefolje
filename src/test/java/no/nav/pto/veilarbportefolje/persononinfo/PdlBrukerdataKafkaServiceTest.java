@@ -29,6 +29,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
@@ -119,7 +120,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
         AktorId aktorId = randomAktorId();
         Fnr gammeltFnr = randomFnr();
         Fnr nyttFnr = randomFnr();
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
         pdlIdentRepository.upsertIdenter(List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
                 new PDLIdent(gammeltFnr.get(), false, FOLKEREGISTERIDENT)
@@ -144,7 +145,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 new PDLIdent(aktorId.get(), false, AKTORID),
                 new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
         );
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
         pdlIdentRepository.upsertIdenter(identer);
 
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(lagPdlDokument(identer));
@@ -155,7 +156,7 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
     @Test
     public void ingenLagredeIdenter_skalIkkeTriggeIdentEndring() {
         AktorId aktorId = randomAktorId();
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
 
         pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(lagPdlDokument(List.of(
                 new PDLIdent(aktorId.get(), false, AKTORID),
