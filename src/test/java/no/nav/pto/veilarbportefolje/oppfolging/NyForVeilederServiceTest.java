@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +28,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     @Test
     public void skal_sette_ny_for_veileder_til_false_om_veileder_har_vært_inne_i_aktivitetsplan_til_bruker() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
-        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now(), UUID.randomUUID());
         oppfolgingRepository.settNyForVeileder(aktoerId, true);
 
         opensearchTestClient.createUserInOpensearch(aktoerId);
@@ -46,7 +47,7 @@ public class NyForVeilederServiceTest extends EndToEndTest {
     @Test
     public void skal_ignorere_meldinger_hvor_ny_for_veileder_er_satt_til_true_siden_dette_gjøres_ved_tilordning() throws JSONException {
         final AktorId aktoerId = TestDataUtils.randomAktorId();
-        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now(), UUID.randomUUID());
         oppfolgingRepository.settNyForVeileder(aktoerId, false);
 
         opensearchTestClient.createUserInOpensearch(aktoerId);

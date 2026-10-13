@@ -79,7 +79,7 @@ class UngdomsprogramServiceTest(
     @Test
     fun `skal starte henting og lagring av ungdomsprogram ved chron-job`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriode)
@@ -95,7 +95,7 @@ class UngdomsprogramServiceTest(
     @Test
     fun `hentUngdomsprogramForAlleBrukere skal ikke lagre personer som ikke er under oppfølging`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriode)
@@ -117,7 +117,7 @@ class UngdomsprogramServiceTest(
     @Test
     fun `hentUngdomsprogramForAlleBrukere skal ikke lagre personer som ikke har ytelsen i oppfølgingsperioden`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2),UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(ungdomsprogramClient.hentAlleMedUngdomsprogram()).thenReturn(mockedPeriodeFortid)
@@ -133,7 +133,7 @@ class UngdomsprogramServiceTest(
     @Test
     fun `hentUngdomsprogramForAlleBrukere skal slette bruker som ikke lenger finnes i API-responsen`() {
         // Given: bruker er lagret i DB fra en tidligere kjøring
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
 
@@ -201,7 +201,7 @@ class UngdomsprogramServiceTest(
         val navKontor = NavKontor.of("1123")
         val veilederId = VeilederId.of("Z12345")
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24), UUID.randomUUID())
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -276,7 +276,7 @@ class UngdomsprogramServiceTest(
         val navKontor = NavKontor.of("1123")
         val veilederId = VeilederId.of("Z12345")
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24), UUID.randomUUID())
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)

@@ -29,6 +29,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
@@ -123,7 +124,8 @@ public class BarnUnder18AarMisterForeldreansvarTest {
         List<PDLIdent> pdlIdenter = pdlDokForelder.getHentIdenter().getIdenter();
         List<AktorId> aktorIder = hentAktorider(pdlIdenter);
         Fnr fnrForelder = hentAktivFnr(pdlIdenter);
-        aktorIder.forEach(aktorId -> oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now()));
+        UUID oppfolgingsperiodeUuid = UUID.randomUUID();
+        aktorIder.forEach(aktorId -> oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeUuid));
 
         pdlIdentRepository.upsertIdenter(pdlDokForelder.getHentIdenter().getIdenter());
 
