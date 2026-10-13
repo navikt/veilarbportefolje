@@ -212,4 +212,24 @@ class TiltakshendelseRepositoryTest {
 
         assertDoesNotThrow(() ->repository.hentEldsteTiltakshendelse(fnr));
     }
+
+    @Test
+    void oppdaterFnrSkalFlytteAlleTiltakshendelserTilNyttFnr() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        Fnr annetFnr = Fnr.of("33333333333");
+        LocalDateTime opprettet = LocalDateTime.now();
+        repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(new KafkaTiltakshendelse(UUID.randomUUID(), true, opprettet, "tekst", "lenke", Tiltakstype.ARBFORB, gammeltFnr, Avsender.KOMET));
+        repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(new KafkaTiltakshendelse(UUID.randomUUID(), true, opprettet.plusDays(1), "tekst", "lenke", Tiltakstype.ARBFORB, gammeltFnr, Avsender.KOMET));
+        repository.tryLagreTiltakshendelseOgSjekkOmDenErEldst(new KafkaTiltakshendelse(UUID.randomUUID(), true, opprettet, "tekst", "lenke", Tiltakstype.ARBFORB, annetFnr, Avsender.KOMET));
+
+        repository.oppdaterFnr(gammeltFnr, nyttFnr);
+
+        List<Tiltakshendelse> tiltakshendelser = repository.hentAlleTiltakshendelser();
+        assertEquals(2, tiltakshendelser.stream().filter(t -> t.fnr().equals(nyttFnr)).count());
+        assertEquals(0, tiltakshendelser.stream().filter(t -> t.fnr().equals(gammeltFnr)).count());
+        assertEquals(1, tiltakshendelser.stream().filter(t -> t.fnr().equals(annetFnr)).count());
+        assertNull(repository.hentEldsteTiltakshendelse(gammeltFnr));
+        assertNotNull(repository.hentEldsteTiltakshendelse(nyttFnr));
+    }
 }

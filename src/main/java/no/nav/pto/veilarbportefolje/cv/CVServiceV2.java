@@ -52,6 +52,10 @@ public class CVServiceV2 extends KafkaCommonNonKeyedConsumerService<Melding> {
 
     }
 
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        cvRepositoryV2.oppdaterFnr(gammeltFnr, nyttFnr);
+    }
+
     public void slettCvData(AktorId aktorId, Optional<Fnr> maybeFnr) {
         if (maybeFnr.isEmpty()) {
             secureLog.warn("Kunne ikke slette CV-data for bruker med Aktør-ID {}. Årsak: fødselsnummer-parameter var tom.", aktorId.get());

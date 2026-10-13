@@ -31,4 +31,14 @@ public class CVRepositoryV2 {
         secureLog.info("Sletter informasjon om at CV finnes for bruker med fnr {}", fnr);
         db.update(String.format("DELETE FROM %s WHERE %s = ?", PostgresTable.BRUKER_REGISTRERT_CV.TABLE_NAME, FNR), fnr.get());
     }
+
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        db.update(String.format("""
+                        UPDATE %1$s SET %2$s = ?
+                        WHERE %2$s = ?
+                        AND NOT EXISTS (SELECT 1 FROM %1$s WHERE %2$s = ?)
+                        """, PostgresTable.BRUKER_REGISTRERT_CV.TABLE_NAME, FNR),
+                nyttFnr.get(), gammeltFnr.get(), nyttFnr.get());
+        slettCvRegistrert(gammeltFnr);
+    }
 }

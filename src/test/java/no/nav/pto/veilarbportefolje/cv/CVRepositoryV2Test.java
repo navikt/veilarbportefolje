@@ -51,4 +51,36 @@ public class CVRepositoryV2Test {
                 queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getBoolean(CV_EKSISTERER), fnr.get()))
         ).orElse(false);
     }
+
+    @Test
+    public void oppdaterFnr_skal_flytte_cv_til_nytt_fnr() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        cvRepositoryV2.slettCvRegistrert(nyttFnr);
+        cvRepositoryV2.upsertCvRegistrert(gammeltFnr, null, true);
+
+        cvRepositoryV2.oppdaterFnr(gammeltFnr, nyttFnr);
+
+        assertThat(cvRadFinnes(gammeltFnr)).isFalse();
+        assertThat(cvEksisterer(nyttFnr)).isTrue();
+    }
+
+    @Test
+    public void oppdaterFnr_skal_beholde_cv_paa_nytt_fnr_og_slette_gammel_naar_begge_finnes() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        cvRepositoryV2.upsertCvRegistrert(gammeltFnr, null, true);
+        cvRepositoryV2.upsertCvRegistrert(nyttFnr, null, false);
+
+        cvRepositoryV2.oppdaterFnr(gammeltFnr, nyttFnr);
+
+        assertThat(cvRadFinnes(gammeltFnr)).isFalse();
+        assertThat(cvRadFinnes(nyttFnr)).isTrue();
+        assertThat(cvEksisterer(nyttFnr)).isFalse();
+    }
+
+    private boolean cvRadFinnes(Fnr fnr) {
+        String sql = String.format("SELECT count(*) FROM %s WHERE %s = ?", TABLE_NAME, FNR);
+        return db.queryForObject(sql, Integer.class, fnr.get()) > 0;
+    }
 }

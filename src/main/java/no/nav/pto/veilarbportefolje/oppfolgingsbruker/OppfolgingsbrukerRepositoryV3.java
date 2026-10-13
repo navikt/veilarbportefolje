@@ -76,6 +76,23 @@ public class OppfolgingsbrukerRepositoryV3 {
                 """, params);
     }
 
+    public void oppdaterIdentPaaNavKontor(AktorId aktivAktorId, Fnr gammeltFnr, Fnr nyttFnr) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktorId", aktivAktorId.get())
+                .addValue("gammeltFnr", gammeltFnr.get())
+                .addValue("nyttFnr", nyttFnr.get());
+        dbNamed.update("""
+                    DELETE FROM ao_kontor
+                    WHERE ident IN (:gammeltFnr, :nyttFnr) AND aktorid <> :aktorId
+                    AND EXISTS (SELECT 1 FROM ao_kontor WHERE aktorid = :aktorId)
+                """, params);
+        dbNamed.update("""
+                    UPDATE ao_kontor SET ident = :nyttFnr, updated_at = CURRENT_TIMESTAMP
+                    WHERE ident = :gammeltFnr
+                    AND NOT EXISTS (SELECT 1 FROM ao_kontor WHERE ident = :nyttFnr)
+                """, params);
+    }
+
     public void slettNavKontor(AktorId aktorId) {
         var params = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());

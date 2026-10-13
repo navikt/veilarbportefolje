@@ -48,6 +48,7 @@ public class OppfolginsbrukerRepositoryV3Test {
         db.execute("truncate oppfolgingsbruker_arena_v2");
         db.update("truncate bruker_identer");
         db.update("truncate nom_skjerming");
+        db.update("truncate ao_kontor");
     }
 
     @Test
@@ -114,5 +115,36 @@ public class OppfolginsbrukerRepositoryV3Test {
                 new NavKontor("0000"),
                 aktorId);
         skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
+    }
+
+    @Test
+    public void oppdaterIdentPaaNavKontor_skal_flytte_ident_til_nytt_fnr() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        oppfolgingsbrukerRepository.upsertNavKontor(aktorId, gammeltFnr, new NavKontor("1001"));
+
+        oppfolgingsbrukerRepository.oppdaterIdentPaaNavKontor(aktorId, gammeltFnr, nyttFnr);
+
+        assertThat(hentIdentPaaNavKontor(aktorId)).isEqualTo(nyttFnr.get());
+        assertThat(oppfolgingsbrukerRepository.hentNavKontor(aktorId).get().getValue()).isEqualTo("1001");
+    }
+
+    @Test
+    public void oppdaterIdentPaaNavKontor_skal_slette_utdatert_rad_med_nytt_fnr_paa_annen_aktorid() {
+        Fnr gammeltFnr = Fnr.of("11111111111");
+        Fnr nyttFnr = Fnr.of("22222222222");
+        AktorId annenAktorId = AktorId.of("2222222222222");
+        oppfolgingsbrukerRepository.upsertNavKontor(aktorId, gammeltFnr, new NavKontor("1001"));
+        oppfolgingsbrukerRepository.upsertNavKontor(annenAktorId, nyttFnr, new NavKontor("2002"));
+
+        oppfolgingsbrukerRepository.oppdaterIdentPaaNavKontor(aktorId, gammeltFnr, nyttFnr);
+
+        assertThat(hentIdentPaaNavKontor(aktorId)).isEqualTo(nyttFnr.get());
+        assertThat(oppfolgingsbrukerRepository.hentNavKontor(aktorId).get().getValue()).isEqualTo("1001");
+        assertThat(oppfolgingsbrukerRepository.hentNavKontor(annenAktorId).isPresent()).isFalse();
+    }
+
+    private String hentIdentPaaNavKontor(AktorId aktorId) {
+        return db.queryForObject("SELECT ident FROM ao_kontor WHERE aktorid = ?", String.class, aktorId.get());
     }
 }

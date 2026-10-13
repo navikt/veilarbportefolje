@@ -79,6 +79,13 @@ class TiltakshendelseRepository(private val db: JdbcTemplate) {
         }
     }
 
+    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        db.update(
+            "UPDATE tiltakshendelse SET ${TILTAKSHENDELSE.FNR} = ? WHERE ${TILTAKSHENDELSE.FNR} = ?",
+            nyttFnr.get(), gammeltFnr.get()
+        )
+    }
+
     fun hentAlleTiltakshendelser(): List<Tiltakshendelse> {
         val sql = "SELECT * FROM tiltakshendelse"
 
