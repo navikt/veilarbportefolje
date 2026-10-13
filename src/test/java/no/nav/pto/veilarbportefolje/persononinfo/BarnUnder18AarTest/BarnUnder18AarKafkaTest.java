@@ -105,7 +105,8 @@ public class BarnUnder18AarKafkaTest {
                 , this.pdlIdentRepository,
             new BrukerServiceV2(this.pdlIdentRepository, this.oppfolgingsbrukerRepositoryV3, this.oppfolgingRepositoryV2, mock(AktorClient.class)),
                 this.barnUnder18AarService,
-                opensearchIndexer
+                opensearchIndexer,
+                mock(IdentEndringService.class)
         );
     }
 

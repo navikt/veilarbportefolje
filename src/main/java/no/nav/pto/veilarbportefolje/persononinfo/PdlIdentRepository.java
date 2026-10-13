@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,21 @@ public class PdlIdentRepository {
                 where bi2.gruppe = 'FOLKEREGISTERIDENT' and bi1.ident = ?
                 """, String.class, brukerId);
         return new IdenterForBruker(identer);
+    }
+
+    public List<Fnr> hentAktivtFnrForPdlIdenter(List<PDLIdent> identer) {
+        String identerParam = identer.stream().map(PDLIdent::getIdent).collect(Collectors.joining(",", "{", "}"));
+        return db.queryForList("""
+                        select distinct bi2.ident
+                        from bruker_identer bi1
+                        inner join bruker_identer bi2 on bi2.person = bi1.person
+                        where bi1.ident = any (?::varchar[])
+                        and bi2.gruppe = 'FOLKEREGISTERIDENT'
+                        and not bi2.historisk
+                        """, String.class, identerParam)
+                .stream().filter(Objects::nonNull)
+                .map(Fnr::of)
+                .toList();
     }
 
     @SneakyThrows

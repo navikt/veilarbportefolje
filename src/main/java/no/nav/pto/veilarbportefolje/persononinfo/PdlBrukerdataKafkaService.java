@@ -35,6 +35,7 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
     private final BrukerServiceV2 brukerService;
     private final BarnUnder18AarService barnUnder18AarService;
     private final OpensearchIndexer opensearchIndexer;
+    private final IdentEndringService identEndringService;
 
     @Override
     @SneakyThrows
@@ -55,9 +56,12 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
         if (pdlIdentRepository.harAktorIdUnderOppfolging(aktorIder)) {
             AktorId aktivAktorId = hentAktivAktor(pdlIdenter);
             secureLog.info("Det oppsto en PDL endring aktoer: {}", aktivAktorId);
+            List<Fnr> lagredeAktiveFnr = pdlIdentRepository.hentAktivtFnrForPdlIdenter(pdlIdenter);
             handterIdentEndring(pdlIdenter);
 
             handterBrukerDataEndring(pdlDokument.getHentPerson(), pdlIdenter);
+
+            handterFnrEndring(aktivAktorId, lagredeAktiveFnr, pdlIdenter);
 
             oppdaterOpensearch(aktivAktorId, pdlIdenter);
         }
@@ -124,6 +128,13 @@ public class PdlBrukerdataKafkaService extends KafkaCommonNonKeyedConsumerServic
 
     private void handterIdentEndring(List<PDLIdent> pdlIdenter) {
         pdlIdentRepository.upsertIdenter(pdlIdenter);
+    }
+
+    private void handterFnrEndring(AktorId aktivAktorId, List<Fnr> lagredeAktiveFnr, List<PDLIdent> pdlIdenter) {
+        Fnr aktivFnrFraPdl = hentAktivFnr(pdlIdenter);
+        lagredeAktiveFnr.stream()
+                .filter(gammeltFnr -> !gammeltFnr.equals(aktivFnrFraPdl))
+                .forEach(gammeltFnr -> identEndringService.handterNyttFnr(aktivAktorId, gammeltFnr, aktivFnrFraPdl));
     }
 
     private void oppdaterOpensearch(AktorId aktivAktorId, List<PDLIdent> pdlIdenter) {

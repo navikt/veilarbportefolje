@@ -7,23 +7,36 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlDokument;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlResponses.PdlIdentResponse;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static no.nav.pto.veilarbportefolje.util.TestUtil.readFileAsJsonString;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
+import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.FOLKEREGISTERIDENT;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
@@ -34,6 +47,12 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
     private static JdbcTemplate db;
 
+    private static PdlIdentRepository pdlIdentRepository;
+
+    private static OppfolgingRepositoryV2 oppfolgingRepositoryV2;
+
+    private static IdentEndringService identEndringService;
+
     public PdlBrukerdataKafkaServiceTest() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String pdlDokumentAsString = readFileAsJsonString("/PDL_Files/pdl_dokument.json", getClass());
@@ -41,10 +60,11 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
 
         db = SingletonPostgresContainer.init().createJdbcTemplate();
         BarnUnder18AarRepository barnUnder18AarRepository = new BarnUnder18AarRepository(db, db);
-        PdlIdentRepository pdlIdentRepository = new PdlIdentRepository(db);
+        pdlIdentRepository = new PdlIdentRepository(db);
         PdlPersonRepository pdlPersonRepository = new PdlPersonRepository(db, db);
         OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(db, null);
-        OppfolgingRepositoryV2 oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
+        oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(db);
+        identEndringService = Mockito.mock(IdentEndringService.class);
 
         db.update("truncate bruker_data CASCADE");
         db.update("truncate bruker_data_barn CASCADE");
@@ -64,8 +84,14 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
                 , pdlIdentRepository,
             new BrukerServiceV2(pdlIdentRepository, oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class)),
                 barnUnder18AarService,
-                Mockito.mock(OpensearchIndexer.class)
+                Mockito.mock(OpensearchIndexer.class),
+                identEndringService
         );
+    }
+
+    @BeforeEach
+    public void resetMocks() {
+        Mockito.reset(identEndringService);
     }
 
     @AfterAll
@@ -83,5 +109,61 @@ public class PdlBrukerdataKafkaServiceTest extends EndToEndTest {
             pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(randomPdlDokument);
             i++;
         }
+    }
+
+    @Test
+    public void nyttFnr_skalTriggeIdentEndring() {
+        AktorId aktorId = randomAktorId();
+        Fnr gammeltFnr = randomFnr();
+        Fnr nyttFnr = randomFnr();
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(gammeltFnr.get(), false, FOLKEREGISTERIDENT)
+        ));
+
+        pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(lagPdlDokument(List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(gammeltFnr.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(nyttFnr.get(), false, FOLKEREGISTERIDENT)
+        )));
+
+        verify(identEndringService).handterNyttFnr(aktorId, gammeltFnr, nyttFnr);
+    }
+
+    @Test
+    public void uendretFnr_skalIkkeTriggeIdentEndring() {
+        AktorId aktorId = randomAktorId();
+        Fnr fnr = randomFnr();
+        List<PDLIdent> identer = List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT)
+        );
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        pdlIdentRepository.upsertIdenter(identer);
+
+        pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(lagPdlDokument(identer));
+
+        verifyNoInteractions(identEndringService);
+    }
+
+    @Test
+    public void ingenLagredeIdenter_skalIkkeTriggeIdentEndring() {
+        AktorId aktorId = randomAktorId();
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+
+        pdlBrukerdataKafkaService.behandleKafkaMeldingLogikk(lagPdlDokument(List.of(
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(randomFnr().get(), false, FOLKEREGISTERIDENT)
+        )));
+
+        verifyNoInteractions(identEndringService);
+    }
+
+    private PdlDokument lagPdlDokument(List<PDLIdent> identer) {
+        return PdlDokument.builder()
+                .hentPerson(randomPdlDokument.getHentPerson())
+                .hentIdenter(new PdlIdentResponse.HentIdenterResponseData.HentIdenterResponsData().setIdenter(identer))
+                .build();
     }
 }
