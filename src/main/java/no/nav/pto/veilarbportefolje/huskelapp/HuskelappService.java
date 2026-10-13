@@ -127,6 +127,11 @@ public class HuskelappService {
     }
 
     @Transactional
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        huskelappRepository.oppdaterFnr(gammeltFnr, nyttFnr);
+    }
+
+    @Transactional
     public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId nyEnhetId, VeilederId veilederId) {
         try {
             Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);

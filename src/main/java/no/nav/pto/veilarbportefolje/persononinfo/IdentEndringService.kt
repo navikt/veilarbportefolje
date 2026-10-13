@@ -3,8 +3,11 @@ package no.nav.pto.veilarbportefolje.persononinfo
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.AapService
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
+import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriService
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseService
+import no.nav.pto.veilarbportefolje.huskelapp.HuskelappService
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService
@@ -19,6 +22,9 @@ class IdentEndringService(
     private val dagpengerService: DagpengerService,
     private val ungdomsprogramService: UngdomsprogramService,
     private val uforetrygdService: UforetrygdService,
+    private val fargekategoriService: FargekategoriService,
+    private val huskelappService: HuskelappService,
+    private val arbeidssoekerService: ArbeidssoekerService,
 ) {
 
     fun handterNyttFnr(aktorId: AktorId, gammeltFnr: Fnr, nyttFnr: Fnr) {
@@ -28,6 +34,9 @@ class IdentEndringService(
         )
         hendelseService.oppdaterPersonIdent(gammeltFnr, nyttFnr)
         oppdaterYtelser(gammeltFnr, nyttFnr)
+        fargekategoriService.oppdaterFnr(gammeltFnr, nyttFnr)
+        huskelappService.oppdaterFnr(gammeltFnr, nyttFnr)
+        arbeidssoekerService.oppdaterFnr(gammeltFnr, nyttFnr)
     }
 
     private fun oppdaterYtelser(gammeltFnr: Fnr, nyttFnr: Fnr) {

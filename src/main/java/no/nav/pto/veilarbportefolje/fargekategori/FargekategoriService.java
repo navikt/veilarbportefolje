@@ -68,6 +68,10 @@ public class FargekategoriService {
         }
     }
 
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        fargekategoriRepository.oppdaterFnr(gammeltFnr, nyttFnr);
+    }
+
     public void oppdaterEnhetPaaFargekategori(Fnr fnr, EnhetId enhetId, VeilederId veilederId) {
         try {
             Optional<FargekategoriEntity> fargekategoriForBruker = fargekategoriRepository.hentFargekategoriForBruker(fnr);

@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettRequest
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest
+import no.nav.pto.veilarbportefolje.huskelapp.domain.HuskelappStatus
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -169,5 +170,34 @@ class HuskelappRepositoryTest {
             repo.opprettHuskelapp(huskelapp1, veilederA, enhet0010)
         }
         Assertions.assertThat(exception.message).contains("duplicate key value violates unique constraint \"unique_fnr_active_status\"")
+    }
+
+    @Test
+    fun oppdaterFnrSkalFlytteHuskelappTilNyttFnr() {
+        val gammeltFnr = Fnr.ofValidFnr("01010101010")
+        val nyttFnr = Fnr.ofValidFnr("01010101015")
+        repo!!.opprettHuskelapp(HuskelappOpprettRequest(gammeltFnr, frist1, "gammel"), veilederA, enhet0010)
+
+        repo.oppdaterFnr(gammeltFnr, nyttFnr)
+
+        Assertions.assertThat(repo.hentAktivHuskelapp(gammeltFnr)).isEmpty
+        Assertions.assertThat(repo.hentAktivHuskelapp(nyttFnr).get().kommentar).isEqualTo("gammel")
+    }
+
+    @Test
+    fun oppdaterFnrSkalDeaktivereGammelHuskelappNaarNyttFnrHarAktivHuskelapp() {
+        val gammeltFnr = Fnr.ofValidFnr("01010101010")
+        val nyttFnr = Fnr.ofValidFnr("01010101015")
+        val gammelHuskelappId = repo!!.opprettHuskelapp(HuskelappOpprettRequest(gammeltFnr, frist1, "gammel"), veilederA, enhet0010)
+        repo.opprettHuskelapp(HuskelappOpprettRequest(nyttFnr, frist1, "ny"), veilederA, enhet0010)
+
+        repo.oppdaterFnr(gammeltFnr, nyttFnr)
+
+        Assertions.assertThat(repo.hentAktivHuskelapp(gammeltFnr)).isEmpty
+        Assertions.assertThat(repo.hentAktivHuskelapp(nyttFnr).get().kommentar).isEqualTo("ny")
+        val gammelHuskelapp = repo.hentAlleRaderPaHuskelapp(gammelHuskelappId)
+        Assertions.assertThat(gammelHuskelapp).hasSize(1)
+        Assertions.assertThat(gammelHuskelapp[0].brukerFnr).isEqualTo(nyttFnr)
+        Assertions.assertThat(gammelHuskelapp[0].status).isEqualTo(HuskelappStatus.IKKE_AKTIV)
     }
 }

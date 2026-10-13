@@ -258,6 +258,10 @@ class ArbeidssoekerService(
         }
     }
 
+    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        sisteArbeidssoekerPeriodeRepository.oppdaterFnr(gammeltFnr, nyttFnr)
+    }
+
     fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
         if (maybeFnr.isEmpty) {
             secureLog.warn(

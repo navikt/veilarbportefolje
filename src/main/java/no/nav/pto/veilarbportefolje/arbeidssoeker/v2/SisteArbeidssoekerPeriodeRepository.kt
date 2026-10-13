@@ -34,6 +34,18 @@ class SisteArbeidssoekerPeriodeRepository(
         }
     }
 
+    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr) {
+        db.update(
+            """
+            UPDATE $TABLE_NAME SET $FNR = ?
+            WHERE $FNR = ?
+            AND NOT EXISTS (SELECT 1 FROM $TABLE_NAME WHERE $FNR = ?)
+            """,
+            nyttFnr.get(), gammeltFnr.get(), nyttFnr.get()
+        )
+        slettSisteArbeidssoekerPeriode(gammeltFnr)
+    }
+
     fun slettSisteArbeidssoekerPeriode(fnr: Fnr) {
         db.update(
             """DELETE FROM $TABLE_NAME WHERE FNR = ?""",

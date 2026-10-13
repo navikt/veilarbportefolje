@@ -97,6 +97,24 @@ public class HuskelappRepository {
         db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnr.get(), HuskelappStatus.AKTIV.name());
     }
 
+    // Om huskelapp med status "aktiv" finnes på nytt fnr allerede, så settes evt eksisternde rader på gammelt fnr med
+    // status aktiv til ikke aktiv. Deretter oppdaters fnr for alle rader.
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        String deaktiverSql = String.format("""
+                        UPDATE %1$s SET %2$s = ?
+                        WHERE %3$s = ? AND %2$s = ?
+                        AND EXISTS (SELECT 1 FROM %1$s WHERE %3$s = ? AND %2$s = ?)
+                        """,
+                TABLE_NAME, STATUS, FNR);
+        db.update(deaktiverSql,
+                HuskelappStatus.IKKE_AKTIV.name(),
+                gammeltFnr.get(), HuskelappStatus.AKTIV.name(),
+                nyttFnr.get(), HuskelappStatus.AKTIV.name());
+
+        String oppdaterFnrSql = String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NAME, FNR, FNR);
+        db.update(oppdaterFnrSql, nyttFnr.get(), gammeltFnr.get());
+    }
+
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
         String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ? AND STATUS = ?",

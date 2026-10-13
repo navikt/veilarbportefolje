@@ -61,6 +61,16 @@ public class FargekategoriRepository {
         jdbcTemplate.update(deleteSql, fnr.get());
     }
 
+    public void oppdaterFnr(Fnr gammeltFnr, Fnr nyttFnr) {
+        String updateSql = """
+                    UPDATE fargekategori SET fnr = ?
+                    WHERE fnr = ?
+                    AND NOT EXISTS (SELECT 1 FROM fargekategori WHERE fnr = ?)
+                """;
+        jdbcTemplate.update(updateSql, nyttFnr.get(), gammeltFnr.get(), nyttFnr.get());
+        deleteFargekategori(gammeltFnr);
+    }
+
 
     public void batchdeleteFargekategori(List<Fnr> fnr) {
         String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
