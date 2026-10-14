@@ -151,4 +151,24 @@ public class OppfolgingsbrukerRepositoryV3 {
                                 NavKontor.navKontorOrNull(rs.getString("kontor_id")))
                 ));
     }
+
+    public Map<AktorId, NavKontor> hentNavKontorForBrukere(Set<AktorId> aktorIder) {
+        if (aktorIder.isEmpty()) {
+            return Map.of();
+        }
+        var sql = """
+            SELECT aktorid, kontor_id FROM ao_kontor
+            WHERE aktorid = ANY (:aktorIder::varchar[])
+                """;
+        var params = new MapSqlParameterSource()
+                .addValue("aktorIder", aktorIder.stream().map(AktorId::get).collect(Collectors.joining(",", "{", "}")));
+        Map<AktorId, NavKontor> result = new HashMap<>();
+        dbNamed.query(sql, params, rs -> {
+            NavKontor navKontor = NavKontor.navKontorOrNull(rs.getString("kontor_id"));
+            if (navKontor != null) {
+                result.put(AktorId.of(rs.getString("aktorid")), navKontor);
+            }
+        });
+        return result;
+    }
 }
