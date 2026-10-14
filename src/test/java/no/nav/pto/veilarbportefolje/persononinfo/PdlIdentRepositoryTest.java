@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.FnrIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
@@ -158,6 +159,36 @@ public class PdlIdentRepositoryTest {
 
         assertThat(identer.identer())
                 .containsExactlyInAnyOrderElementsOf(brukersIdenter.stream().map(PDLIdent::getIdent).toList());
+    }
+
+    @Test
+    public void henterFnrIdenterForFlereBrukere() {
+        Fnr brukerAFnr = randomFnr();
+        Fnr brukerAHistoriskFnr = randomFnr();
+        Fnr brukerBFnr = randomFnr();
+        Fnr ukjentFnr = randomFnr();
+
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(brukerAFnr.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(randomAktorId().get(), true, AKTORID),
+                new PDLIdent(brukerAHistoriskFnr.get(), true, FOLKEREGISTERIDENT)
+        ));
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(randomAktorId().get(), false, AKTORID),
+                new PDLIdent(brukerBFnr.get(), false, FOLKEREGISTERIDENT)
+        ));
+
+        var resultat = pdlIdentRepository.hentFnrIdenterForBrukere(
+                List.of(brukerAFnr.get(), brukerBFnr.get(), ukjentFnr.get())
+        );
+
+        assertThat(resultat).containsOnlyKeys(brukerAFnr.get(), brukerBFnr.get());
+        assertThat(resultat.get(brukerAFnr.get())).containsExactlyInAnyOrder(
+                new FnrIdent(brukerAFnr.get(), false),
+                new FnrIdent(brukerAHistoriskFnr.get(), true)
+        );
+        assertThat(resultat.get(brukerBFnr.get())).containsExactly(new FnrIdent(brukerBFnr.get(), false));
     }
 
     @Test

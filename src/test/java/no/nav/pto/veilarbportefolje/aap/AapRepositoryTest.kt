@@ -8,12 +8,15 @@ import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class AapRepositoryTest(
@@ -108,11 +111,13 @@ class AapRepositoryTest(
         val resultat = aapRepository.hentAapKelvinVedtak(listOf(identMedAap1, identMedAap2, identUtenAap))
 
         assertThat(resultat).containsOnlyKeys(identMedAap1, identMedAap2)
-        assertThat(resultat[identMedAap1]).isEqualTo(
-            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato)
+        assertThat(resultat[identMedAap1]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
+        assertThat(resultat[identMedAap2]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
+        assertThat(resultat[identMedAap1]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
+            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato, LocalDateTime.MIN)
         )
-        assertThat(resultat[identMedAap2]).isEqualTo(
-            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null)
+        assertThat(resultat[identMedAap2]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
+            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null, LocalDateTime.MIN)
         )
     }
 

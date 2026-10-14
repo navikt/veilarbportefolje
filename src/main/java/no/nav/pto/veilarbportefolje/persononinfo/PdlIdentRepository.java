@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.FnrIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -81,6 +82,26 @@ public class PdlIdentRepository {
                 where bi2.gruppe = 'FOLKEREGISTERIDENT' and bi1.ident = ?
                 """, String.class, brukerId);
         return new IdenterForBruker(identer);
+    }
+
+    public Map<String, List<FnrIdent>> hentFnrIdenterForBrukere(List<String> brukerIder) {
+        if (brukerIder.isEmpty()) {
+            return Map.of();
+        }
+        String brukerIderParam = brukerIder.stream().collect(Collectors.joining(",", "{", "}"));
+        return db.query("""
+                        select bi1.ident as oppslag_ident, bi2.ident, bi2.historisk
+                        from bruker_identer bi1
+                        inner join bruker_identer bi2 on bi2.person = bi1.person
+                        where bi2.gruppe = 'FOLKEREGISTERIDENT' and bi1.ident = any (?::varchar[])
+                        """,
+                        (rs, row) -> Map.entry(
+                                rs.getString("oppslag_ident"),
+                                new FnrIdent(rs.getString("ident"), rs.getBoolean("historisk"))
+                        ),
+                        brukerIderParam)
+                .stream()
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 
     @SneakyThrows

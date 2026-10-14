@@ -71,7 +71,7 @@ class AapRepository(
         if (norskeIdenter.isEmpty()) return emptyMap()
 
         val sql = """
-            SELECT ${YTELSER_AAP.NORSK_IDENT}, ${YTELSER_AAP.NYESTE_PERIODE_TOM}, ${YTELSER_AAP.RETTIGHETSTYPE}, ${YTELSER_AAP.MAKSDATO}
+            SELECT ${YTELSER_AAP.NORSK_IDENT}, ${YTELSER_AAP.NYESTE_PERIODE_TOM}, ${YTELSER_AAP.RETTIGHETSTYPE}, ${YTELSER_AAP.MAKSDATO},  ${YTELSER_AAP.RAD_SIST_ENDRET}
             FROM ${YTELSER_AAP.TABLE_NAME}
             WHERE ${YTELSER_AAP.NORSK_IDENT} IN (:norskeIdenter)
         """
@@ -80,7 +80,8 @@ class AapRepository(
             rs.getString(YTELSER_AAP.NORSK_IDENT) to AapKelvinVedtak(
                 nyestePeriodeTom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_TOM).toLocalDate(),
                 rettighetstype = AapRettighetstype.valueOf(rs.getString(YTELSER_AAP.RETTIGHETSTYPE)),
-                maksdato = rs.getDate(YTELSER_AAP.MAKSDATO)?.toLocalDate()
+                maksdato = rs.getDate(YTELSER_AAP.MAKSDATO)?.toLocalDate(),
+                radSistEndret = rs.getTimestamp(YTELSER_AAP.RAD_SIST_ENDRET).toLocalDateTime()
             )
         }.toMap()
     }
