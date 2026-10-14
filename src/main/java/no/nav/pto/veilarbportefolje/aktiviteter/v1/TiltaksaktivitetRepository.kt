@@ -36,10 +36,12 @@ class TiltaksaktivitetRepository(
                 SELECT *
                 FROM tiltakkodeverket WHERE
                 kode IN (
-                     SELECT DISTINCT aktiviteter.$TILTAKSKODE FROM $KAFKA_AKTIVITET_MELDING_TABLE aktiviteter
-                     INNER JOIN $AKTIVE_IDENTER_TABLE ai on ai.$AKTORID = aktiviteter.$AKTOR_ID
-                     INNER JOIN $ARENA_OPPFOLGINGSBRUKER_TABLE OP ON OP.$FODSELSNR = ai.$FNR
-                     INNER JOIN $AO_KONTOR_TABLE ao_kontor ON ao_kontor.$IDENT = ai.$FNR
+                     SELECT DISTINCT aktiviteter.$TILTAKSKODE 
+                     FROM $KAFKA_AKTIVITET_MELDING_TABLE aktiviteter
+                     INNER JOIN $AKTIVE_IDENTER_TABLE aktiv_ident 
+                     ON aktiv_ident.$AKTORID = aktiviteter.$AKTOR_ID
+                     INNER JOIN $AO_KONTOR_TABLE ao_kontor 
+                     ON ao_kontor.$AKTORID = aktiv_ident.$AKTORID
                      WHERE ao_kontor.$KONTOR_ID = :enhetId
                      AND NOT aktiviteter.$AKTIVITET_STATUS = ANY (string_to_array(:inaktivAktivitetStatus, ',')::text[])
                      AND aktiviteter.$AVTALT = true
