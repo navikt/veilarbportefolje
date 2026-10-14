@@ -498,6 +498,19 @@ class OpensearchFilterQueryBuilder {
 
         }
 
+        if (filtervalg.harIngenYtelserFilter()) {
+            queryBuilder.must(
+                QueryBuilders.boolQuery()
+                    .mustNot(QueryBuilders.existsQuery(YTELSE))
+                    .mustNot(QueryBuilders.termQuery(AAP_KELVIN, true))
+                    .mustNot(QueryBuilders.termQuery(TILTAKSPENGER, true))
+                    .mustNot(QueryBuilders.termQuery("$DAGPENGER.$DAGPENGER_HAR_DAGPENGER", true))
+                    .mustNot(QueryBuilders.existsQuery(UNGDOMSPROGRAM))
+                    .mustNot(QueryBuilders.existsQuery(UFORETRYGD))
+                    .mustNot(QueryBuilders.existsQuery(ENSLIGE_FORSORGERE_OVERGANGSSTONAD))
+            )
+        }
+
         if (filtervalg.harKjonnfilter()) {
             queryBuilder.must(QueryBuilders.matchQuery(KJONN, filtervalg.kjonn?.name))
         }
