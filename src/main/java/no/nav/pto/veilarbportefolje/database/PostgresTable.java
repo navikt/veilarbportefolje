@@ -103,12 +103,6 @@ public class PostgresTable {
         public static final String HUSKELAPP_HUSKELAPP_ID = "HUSKELAPP_HUSKELAPP_ID";
         public static final String HUSKELAPP_ENHET_ID = "HUSKELAPP_ENHET_ID";
 
-        // YTELSER AAP KELVIN
-        public static final String YTELSER_AAP_STATUS = "YTELSER_AAP_STATUS";
-        public static final String YTELSER_AAP_NYESTE_PERIODE_TOM = "YTELSER_AAP_NYESTE_PERIODE_TOM";
-        public static final String YTELSER_AAP_RETTIGHETSTYPE = "YTELSER_AAP_RETTIGHETSTYPE";
-        public static final String YTELSER_AAP_MAKSDATO = "YTELSER_AAP_MAKSDATO";
-
         // YTELSER TILTAKSPENGER
         public static final String YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM = "YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM";
         public static final String YTELSER_TILTAKSPENGER_RETTIGHET = "YTELSER_TILTAKSPENGER_RETTIGHET";

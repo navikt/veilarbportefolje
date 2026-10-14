@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
@@ -121,10 +120,6 @@ public class BrukerRepositoryV2 {
                        HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
                        HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
                        HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
-                       YTELSER_AAP.STATUS                                       as YTELSER_AAP_STATUS,
-                       YTELSER_AAP.NYESTE_PERIODE_TOM                           as YTELSER_AAP_NYESTE_PERIODE_TOM,
-                       YTELSER_AAP.RETTIGHETSTYPE                               as YTELSER_AAP_RETTIGHETSTYPE,
-                       YTELSER_AAP.MAKSDATO                                     as YTELSER_AAP_MAKSDATO,
                        YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
                        YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
                        YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
@@ -151,7 +146,6 @@ public class BrukerRepositoryV2 {
                          left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                          left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
-                         left join YTELSER_AAP                                  on YTELSER_AAP.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
@@ -250,7 +244,6 @@ public class BrukerRepositoryV2 {
 
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
-        setAapKelvin(brukerOpensearchModell, rs);
         setTiltakspenger(brukerOpensearchModell, rs);
         setDagpenger(brukerOpensearchModell, rs);
         setUngdomsprogram(brukerOpensearchModell, rs);
@@ -269,20 +262,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setAapKelvin(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_AAP_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
-        LocalDate maksdato = rs.getDate(YTELSER_AAP_MAKSDATO) != null ? rs.getDate(YTELSER_AAP_MAKSDATO).toLocalDate() : null;
-        String rettighetstype = rs.getString(YTELSER_AAP_RETTIGHETSTYPE);
-        AapRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : AapRettighetstype.valueOf(rettighetstype);
-
-        brukerOpensearchModell.setAap_kelvin(vedtakErFortsattGjeldende);
-        brukerOpensearchModell.setAap_kelvin_tom_vedtaksdato(vedtakErFortsattGjeldende ? vedtaksDatoTom : null);
-        brukerOpensearchModell.setAap_kelvin_rettighetstype(vedtakErFortsattGjeldende ? rettighetstypeOrNull : null);
-        brukerOpensearchModell.setAap_kelvin_maksdato(vedtakErFortsattGjeldende ? maksdato : null);
     }
 
     @SneakyThrows

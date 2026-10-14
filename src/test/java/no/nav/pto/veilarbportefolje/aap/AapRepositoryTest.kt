@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
+import no.nav.pto.veilarbportefolje.aap.domene.AapKelvinVedtak
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
@@ -89,6 +90,30 @@ class AapRepositoryTest(
         aapRepository.slettAapForBruker(ident)
         val resultatEtterSletting = aapRepository.hentAap(ident)
         assertThat(resultatEtterSletting).isNull()
+    }
+
+    @Test
+    fun `hentAapKelvinVedtak skal returnere vedtak kun for brukere med aap`() {
+        val identMedAap1 = "11111111111"
+        val identMedAap2 = "22222222222"
+        val identUtenAap = "33333333333"
+        val maksdato = LocalDate.of(2028, 12, 31)
+
+        aapRepository.upsertAap(identMedAap1, AapEntity("FERDIGBEHANDLET", maksdato, aapVedtakDto))
+        aapRepository.upsertAap(
+            identMedAap2,
+            AapEntity("FERDIGBEHANDLET", null, aapVedtakDto.copy(rettighetsType = AapRettighetstype.STUDENT))
+        )
+
+        val resultat = aapRepository.hentAapKelvinVedtak(listOf(identMedAap1, identMedAap2, identUtenAap))
+
+        assertThat(resultat).containsOnlyKeys(identMedAap1, identMedAap2)
+        assertThat(resultat[identMedAap1]).isEqualTo(
+            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato)
+        )
+        assertThat(resultat[identMedAap2]).isEqualTo(
+            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null)
+        )
     }
 
 

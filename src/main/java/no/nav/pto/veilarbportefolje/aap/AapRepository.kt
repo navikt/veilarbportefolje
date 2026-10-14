@@ -2,16 +2,22 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
+import no.nav.pto.veilarbportefolje.aap.domene.AapKelvinVedtak
+import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakPeriodeEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.jetbrains.annotations.TestOnly
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class AapRepository(private val db: JdbcTemplate) {
+class AapRepository(
+    private val db: JdbcTemplate,
+    private val namedDb: NamedParameterJdbcTemplate
+) {
 
     fun upsertAap(
         norskIdent: NorskIdent,
@@ -59,6 +65,24 @@ class AapRepository(private val db: JdbcTemplate) {
             aap.maksdato,
             aap.sakstatus
         )
+    }
+
+    fun hentAapKelvinVedtak(norskeIdenter: List<String>): Map<String, AapKelvinVedtak> {
+        if (norskeIdenter.isEmpty()) return emptyMap()
+
+        val sql = """
+            SELECT ${YTELSER_AAP.NORSK_IDENT}, ${YTELSER_AAP.NYESTE_PERIODE_TOM}, ${YTELSER_AAP.RETTIGHETSTYPE}, ${YTELSER_AAP.MAKSDATO}
+            FROM ${YTELSER_AAP.TABLE_NAME}
+            WHERE ${YTELSER_AAP.NORSK_IDENT} IN (:norskeIdenter)
+        """
+
+        return namedDb.query(sql, mapOf("norskeIdenter" to norskeIdenter)) { rs, _ ->
+            rs.getString(YTELSER_AAP.NORSK_IDENT) to AapKelvinVedtak(
+                nyestePeriodeTom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_TOM).toLocalDate(),
+                rettighetstype = AapRettighetstype.valueOf(rs.getString(YTELSER_AAP.RETTIGHETSTYPE)),
+                maksdato = rs.getDate(YTELSER_AAP.MAKSDATO)?.toLocalDate()
+            )
+        }.toMap()
     }
 
     @TestOnly
