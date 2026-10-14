@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.domene.Kjonn.K;
 import static no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe.AKTORID;
@@ -54,12 +55,14 @@ public class BrukerRepositoryV2Test {
         Fnr fnr_2 = Fnr.of("2");
         Fnr fnr_ny = Fnr.of("3");
         AktorId aktorId = randomAktorId();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+
         List<PDLIdent> identer = List.of(
                 new PDLIdent(fnr_1.get(), true, FOLKEREGISTERIDENT),
                 new PDLIdent(fnr_2.get(), false, FOLKEREGISTERIDENT),
                 new PDLIdent(aktorId.get(), false, AKTORID)
         );
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now());
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(),oppfolgingsperiodeId);
         pdlPersonRepository.upsertPerson(fnr_ny, new PDLPerson().setKjonn(K).setFoedsel(LocalDate.now()));
         pdlIdentRepository.upsertIdenter(identer);
 

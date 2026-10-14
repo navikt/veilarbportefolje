@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -27,7 +28,7 @@ public class OppfolgingRepositoryV2Test {
 
     @Test
     public void skal_ut_av_oppfolging() {
-        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now(), UUID.randomUUID());
         oppfolgingRepository.slettOppfolgingData(aktoerId);
 
         List<AktorId> aktorIds = oppfolgingRepository.hentAlleBrukereUnderOppfolging();
@@ -37,7 +38,7 @@ public class OppfolgingRepositoryV2Test {
     @Test
     public void skal_sette_ny_veileder() {
         VeilederId veilederId = VeilederId.of("Z12345");
-        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now());
+        oppfolgingRepository.settUnderOppfolging(aktoerId, ZonedDateTime.now(), UUID.randomUUID());
         oppfolgingRepository.settVeileder(aktoerId, veilederId);
 
         OppfolgingData oppfolgingData = oppfolgingRepository.hentOppfolgingData(aktoerId).get();

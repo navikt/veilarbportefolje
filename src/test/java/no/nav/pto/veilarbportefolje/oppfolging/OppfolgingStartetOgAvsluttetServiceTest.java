@@ -374,7 +374,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOppfolgingsbrukerResponse(fnr);
 
         ZonedDateTime oppfølgingStartDato = tilfeldigDatoTilbakeITid();
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfølgingStartDato);
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfølgingStartDato, oppfolgingsperiodeId);
 
         oppfolgingsbrukerService.hentOgLagreOppfolgingsbruker(aktorId, new NavKontor("0101"));
 
@@ -396,7 +398,8 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockHentOpplysningerOmArbeidssoekerResponse(fnr, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
 
         ZonedDateTime oppfolgingStartDato = tilfeldigDatoTilbakeITid();
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfolgingStartDato);
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, oppfolgingStartDato, oppfolgingsperiodeId);
 
         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
 

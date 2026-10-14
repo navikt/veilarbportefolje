@@ -57,7 +57,6 @@ class MineFilterService(
         }
         val aktiveFiltervalg = ekstraherAktiveFiltervalg(oppdaterFilterRequest.filterValg)
         validerFilterNavnEllerKast(oppdaterFilterRequest.filterNavn)
-        validerFiltervalgEllerKast(oppdaterFilterRequest.filterValg)
         validerUnikhetEllerKast(
             veilederIdent,
             oppdaterFilterRequest.filterNavn,
