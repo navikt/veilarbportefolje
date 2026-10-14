@@ -17,6 +17,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -48,6 +50,7 @@ public class OppfolginsbrukerRepositoryV3Test {
         db.execute("truncate oppfolgingsbruker_arena_v2");
         db.update("truncate bruker_identer");
         db.update("truncate nom_skjerming");
+        db.update("truncate ao_kontor");
     }
 
     @Test
@@ -88,6 +91,19 @@ public class OppfolginsbrukerRepositoryV3Test {
 
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(new_msg, new NavKontor(new_msg.nav_kontor()), aktorId);
         assertThat(oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr).get()).isEqualTo(new_msg);
+    }
+
+    @Test
+    public void skal_hente_nav_kontor_for_flere_brukere() {
+        AktorId aktorId2 = AktorId.of("2222222222222");
+        AktorId utenKontor = AktorId.of("3333333333333");
+        oppfolgingsbrukerRepository.upsertNavKontor(aktorId, fnr, NavKontor.of("0321"));
+        oppfolgingsbrukerRepository.upsertNavKontor(aktorId2, randomFnr(), NavKontor.of("1234"));
+
+        Map<AktorId, NavKontor> resultat = oppfolgingsbrukerRepository.hentNavKontorForBrukere(Set.of(aktorId, aktorId2, utenKontor));
+
+        assertThat(resultat).isEqualTo(Map.of(aktorId, NavKontor.of("0321"), aktorId2, NavKontor.of("1234")));
+        assertThat(oppfolgingsbrukerRepository.hentNavKontorForBrukere(Set.of())).isEqualTo(Map.of());
     }
 
     @Test

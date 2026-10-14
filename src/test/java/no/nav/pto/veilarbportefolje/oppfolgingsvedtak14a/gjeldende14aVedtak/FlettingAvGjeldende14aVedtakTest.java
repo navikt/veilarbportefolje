@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.domene.GjeldendeIdenter;
+import no.nav.pto.veilarbportefolje.domene.NavKontor;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
+import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerRepositoryV3;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakForBruker;
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakRepository;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
@@ -29,9 +31,11 @@ public class FlettingAvGjeldende14aVedtakTest {
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final Siste14aVedtakRepository siste14aVedtakRepository = mock(Siste14aVedtakRepository.class);
     private final OppfolgingRepositoryV2 oppfolgingRepositoryV2 = mock(OppfolgingRepositoryV2.class);
+    private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = mock(OppfolgingsbrukerRepositoryV3.class);
 
     FlettingAvGjeldende14aVedtakTest() {
-        final Gjeldende14aVedtakService gjeldende14aVedtakService = new Gjeldende14aVedtakService(siste14aVedtakRepository, oppfolgingRepositoryV2);
+        final Gjeldende14aVedtakService gjeldende14aVedtakService = new Gjeldende14aVedtakService(
+                siste14aVedtakRepository, oppfolgingRepositoryV2, oppfolgingsbrukerRepositoryV3);
 
         this.postgresOpensearchMapper = new PostgresOpensearchMapper(
                 null,
@@ -51,10 +55,11 @@ public class FlettingAvGjeldende14aVedtakTest {
     public void resetMocks() {
         reset(siste14aVedtakRepository);
         reset(oppfolgingRepositoryV2);
+        reset(oppfolgingsbrukerRepositoryV3);
     }
 
     @Test
-    public void skal_flette_inn_gjeldende_14a_vedtak_nar_siste_14a_vedtak_er_fattet_før_lansering_av_veilarboppfolging() {
+    public void skal_flette_inn_gjeldende_14a_vedtak_nar_siste_14a_vedtak_er_fra_arena_og_fattet_før_lansering_av_veilarboppfolging() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
 
         PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell();
@@ -62,6 +67,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         oppfolgingsbruker.setAktoer_id(ident1.getAktorId().get());
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
+                .fraArena(true)
                 .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
@@ -221,12 +227,14 @@ public class FlettingAvGjeldende14aVedtakTest {
         oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode.setAktoer_id(oppfolgingsbrukerUtenVedtakIInneværendeOppfølgingsperiode_gjeldendeIdenter.getAktorId().get());
 
         Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
+                .fraArena(true)
                 .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
                 .fattetDato(ZonedDateTime.parse("2015-01-20T10:00:00+02:00"))
                 .build();
         Siste14aVedtakForBruker oppfolgingsbrukerMedVedtakFraEtterLanseringAvOppfolgingsperiode_siste14AVedtak = Siste14aVedtakForBruker.builder()
+                .fraArena(true)
                 .aktorId(oppfolgingsbrukerMedVedtakFraFørLanseringAvOppfolgingsperiode_gjeldendeIdenter.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
@@ -302,7 +310,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     }
 
     @Test
-    public void skal_flette_inn_gjeldende_14a_vedtak_når_personen_har_vedtak_og_vedtak_fattet_dato_er_innenfor_oppfølging_startdato_minus_4_døgn() {
+    public void skal_flette_inn_gjeldende_14a_vedtak_når_personen_har_vedtak_fra_arena_og_vedtak_fattet_dato_er_innenfor_oppfølging_startdato_minus_4_døgn() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2020-11-13T10:00:00+02:00");
 
@@ -311,6 +319,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         oppfolgingsbruker.setAktoer_id(ident1.getAktorId().get());
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
+                .fraArena(true)
                 .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
@@ -335,7 +344,7 @@ public class FlettingAvGjeldende14aVedtakTest {
     }
 
     @Test
-    public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_personen_har_vedtak_og_vedtak_fattet_dato_er_utenfor_oppfølging_startdato_minus_4_døgn() {
+    public void skal_ikke_flette_inn_gjeldende_14a_vedtak_når_personen_har_vedtak_fra_arena_og_vedtak_fattet_dato_er_utenfor_oppfølging_startdato_minus_4_døgn() {
         GjeldendeIdenter ident1 = genererGjeldendeIdent();
         ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2020-11-13T10:00:00+02:00");
 
@@ -344,6 +353,7 @@ public class FlettingAvGjeldende14aVedtakTest {
         oppfolgingsbruker.setAktoer_id(ident1.getAktorId().get());
 
         Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
+                .fraArena(true)
                 .aktorId(ident1.getAktorId())
                 .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
                 .hovedmal(Hovedmal.BEHOLDE_ARBEID)
@@ -362,6 +372,69 @@ public class FlettingAvGjeldende14aVedtakTest {
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(oppfolgingsbruker));
 
         assertThat(oppfolgingsbruker.getGjeldendeVedtak14a()).isNull();
+    }
+
+    @Test
+    public void skal_ikke_flette_inn_gjeldende_14a_vedtak_fra_vedtaksstotte_når_vedtak_fattet_dato_er_før_oppfølging_startdato() {
+        GjeldendeIdenter ident1 = genererGjeldendeIdent();
+        ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2026-10-14T10:00:00+02:00");
+
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell();
+        oppfolgingsbruker.setFnr(ident1.getFnr().get());
+        oppfolgingsbruker.setAktoer_id(ident1.getAktorId().get());
+
+        Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
+                .fraArena(false)
+                .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
+                .hovedmal(Hovedmal.BEHOLDE_ARBEID)
+                .fattetDato(startdatoForOppfolging.minusDays(1))
+                .build();
+
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = Map.of(ident1.getAktorId(), siste14AVedtakForBruker);
+
+        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap =
+                Map.of(ident1.getAktorId(), Optional.of(startdatoForOppfolging));
+
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(any())).thenReturn(aktorIdSiste14aVedtakMap);
+        when(oppfolgingRepositoryV2.hentStartDatoForOppfolging(any())).thenReturn(aktorIdStartDatoForOppfolgingMap);
+        when(oppfolgingsbrukerRepositoryV3.hentNavKontorForBrukere(any())).thenReturn(Map.of(ident1.getAktorId(), NavKontor.of("1234")));
+
+        postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(oppfolgingsbruker));
+
+        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a()).isNull();
+    }
+
+    @Test
+    public void skal_flette_inn_gjeldende_14a_vedtak_fra_vedtaksstotte_for_nav_østensjø_når_vedtak_er_fattet_samme_dag_som_oppfølging_startdato() {
+        GjeldendeIdenter ident1 = genererGjeldendeIdent();
+        ZonedDateTime startdatoForOppfolging = ZonedDateTime.parse("2026-10-14T10:00:00+02:00");
+
+        PortefoljebrukerOpensearchModell oppfolgingsbruker = new PortefoljebrukerOpensearchModell();
+        oppfolgingsbruker.setFnr(ident1.getFnr().get());
+        oppfolgingsbruker.setAktoer_id(ident1.getAktorId().get());
+
+        Siste14aVedtakForBruker siste14AVedtakForBruker = Siste14aVedtakForBruker.builder()
+                .fraArena(false)
+                .aktorId(ident1.getAktorId())
+                .innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS)
+                .hovedmal(Hovedmal.BEHOLDE_ARBEID)
+                .fattetDato(startdatoForOppfolging.minusHours(1))
+                .build();
+
+        Map<AktorId, Siste14aVedtakForBruker> aktorIdSiste14aVedtakMap = Map.of(ident1.getAktorId(), siste14AVedtakForBruker);
+
+        Map<AktorId, Optional<ZonedDateTime>> aktorIdStartDatoForOppfolgingMap =
+                Map.of(ident1.getAktorId(), Optional.of(startdatoForOppfolging));
+
+        when(siste14aVedtakRepository.hentSiste14aVedtakForBrukere(any())).thenReturn(aktorIdSiste14aVedtakMap);
+        when(oppfolgingRepositoryV2.hentStartDatoForOppfolging(any())).thenReturn(aktorIdStartDatoForOppfolgingMap);
+        when(oppfolgingsbrukerRepositoryV3.hentNavKontorForBrukere(any())).thenReturn(Map.of(ident1.getAktorId(), NavKontor.of("0321")));
+
+        postgresOpensearchMapper.flettInnGjeldende14aVedtak(List.of(oppfolgingsbruker));
+
+        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a()).isNotNull();
+        assertThat(oppfolgingsbruker.getGjeldendeVedtak14a().fattetDato()).isEqualTo(siste14AVedtakForBruker.getFattetDato());
     }
 
     private GjeldendeIdenter genererGjeldendeIdent() {
