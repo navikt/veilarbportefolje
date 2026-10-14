@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.FnrIdent
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class PostgresYtelserMapper(
@@ -21,12 +22,13 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val gjeldendeVedtak = velgAapVedtak(bruker.fnr, identer, aapVedtakForAlleIdenterPerBruker)
+            val aktueltVedtak = velgAapVedtak(bruker.fnr, identer, aapVedtakForAlleIdenterPerBruker)
+            val vedtakErGjeldende = aktueltVedtak != null && aktueltVedtak.nyestePeriodeTom.isAfter(LocalDate.now().minusDays(1))
 
-            bruker.aap_kelvin = gjeldendeVedtak != null
-            bruker.aap_kelvin_tom_vedtaksdato = gjeldendeVedtak?.nyestePeriodeTom
-            bruker.aap_kelvin_rettighetstype = gjeldendeVedtak?.rettighetstype
-            bruker.aap_kelvin_maksdato = gjeldendeVedtak?.maksdato
+            bruker.aap_kelvin = vedtakErGjeldende
+            bruker.aap_kelvin_tom_vedtaksdato = if (vedtakErGjeldende) aktueltVedtak.nyestePeriodeTom else null
+            bruker.aap_kelvin_rettighetstype = if (vedtakErGjeldende) aktueltVedtak.rettighetstype else null
+            bruker.aap_kelvin_maksdato = if (vedtakErGjeldende) aktueltVedtak.maksdato else null
         }
     }
 
