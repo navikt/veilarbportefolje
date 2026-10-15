@@ -35,9 +35,10 @@ class PostgresYtelserMapper(
     private fun hentFnrIdenterPerBruker(brukere: List<PortefoljebrukerOpensearchModell>): Map<String, List<FnrIdent>> {
         val fnrs = brukere.mapNotNull { it.fnr }
         val fnrIdenterPerBruker = pdlIdentRepository.hentFnrIdenterForBrukere(fnrs)
-        return fnrs.associateWith { fnr ->
-            fnrIdenterPerBruker[fnr] ?: listOf(FnrIdent(fnr, historisk = false))
+        fnrs.filterNot { fnrIdenterPerBruker.containsKey(it) }.forEach { fnr ->
+            secureLog.error("Fant ingen folkeregisteridenter i bruker_identer for fnr: $fnr")
         }
+        return fnrIdenterPerBruker
     }
 
     // Hvis det finnes flere rader så skal aktiv ident prioriteres. Deretter velges vedtak med siste "rad sist endret" tidspunkt (vil nok aldri inntreffe).
