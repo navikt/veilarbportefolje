@@ -39,7 +39,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.`when`
@@ -575,6 +574,112 @@ class ArbeidssoekerServiceTest(
 
     }
 
+    @Test
+    fun periode_paa_historisk_fnr_flyttes_til_aktivt_fnr() {
+        val (aktivtFnr, historiskFnr) = lagPersonUnderOppfolgingMedIdentbytte()
+        val gammelPeriodeId = UUID.randomUUID()
+        val nyPeriodeId = UUID.randomUUID()
+
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(gammelPeriodeId, historiskFnr.get())
+        )
+        mockHentOpplysningerOmArbeidssoekerResponse(aktivtFnr, nyPeriodeId)
+
+        arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(nyPeriodeId, historiskFnr))
+
+        assertThat(hentPeriodeIderPaaFnr(historiskFnr)).isEmpty()
+        assertThat(hentPeriodeIderPaaFnr(aktivtFnr)).containsExactly(nyPeriodeId)
+        assertThat(getOpplysningerOmArbeidssoekerFraDb(db, nyPeriodeId)).isNotNull()
+    }
+
+    @Test
+    fun periode_paa_baade_historisk_og_aktivt_fnr_gir_kun_meldingens_periode_paa_aktivt_fnr() {
+        val (aktivtFnr, historiskFnr) = lagPersonUnderOppfolgingMedIdentbytte()
+        val periodeIdPaaHistoriskFnr = UUID.randomUUID()
+        val periodeIdPaaAktivtFnr = UUID.randomUUID()
+        val nyPeriodeId = UUID.randomUUID()
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(periodeIdPaaHistoriskFnr, historiskFnr.get())
+        )
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(periodeIdPaaAktivtFnr, aktivtFnr.get())
+        )
+
+        arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(nyPeriodeId, historiskFnr))
+
+        assertThat(hentPeriodeIderPaaFnr(historiskFnr)).isEmpty()
+        assertThat(hentPeriodeIderPaaFnr(aktivtFnr)).containsExactly(nyPeriodeId)
+    }
+
+    @Test
+    fun samme_periodeId_paa_historisk_fnr_gir_ikke_duplicate_key() {
+        val (aktivtFnr, historiskFnr) = lagPersonUnderOppfolgingMedIdentbytte()
+        val periodeId = UUID.randomUUID()
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(periodeId, historiskFnr.get())
+        )
+
+        assertDoesNotThrow {
+            arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(periodeId, historiskFnr))
+        }
+
+        assertThat(hentPeriodeIderPaaFnr(historiskFnr)).isEmpty()
+        assertThat(hentPeriodeIderPaaFnr(aktivtFnr)).containsExactly(periodeId)
+    }
+
+    @Test
+    fun periode_ignoreres_dersom_personen_ikke_har_aktivt_fnr() {
+        val aktorId = randomAktorId()
+        val historiskFnr = TestDataUtils.randomFnr()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
+        pdlIdentRepository.upsertIdenter(
+            listOf(
+                PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+            )
+        )
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId )
+        val eksisterendePeriodeId = UUID.randomUUID()
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(eksisterendePeriodeId, historiskFnr.get())
+        )
+
+        arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(UUID.randomUUID(), historiskFnr))
+
+        assertThat(hentPeriodeIderPaaFnr(historiskFnr)).containsExactly(eksisterendePeriodeId)
+    }
+
+    private fun lagPersonUnderOppfolgingMedIdentbytte(): Pair<Fnr, Fnr> {
+        val aktorId = randomAktorId()
+        val aktivtFnr = TestDataUtils.randomFnr()
+        val historiskFnr = TestDataUtils.randomFnr()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
+        pdlIdentRepository.upsertIdenter(
+            listOf(
+                PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                PDLIdent(aktivtFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+            )
+        )
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId)
+        return aktivtFnr to historiskFnr
+    }
+
+    private fun periodeMelding(periodeId: UUID, fnr: Fnr) = Periode(
+        periodeId,
+        fnr.get(),
+        Metadata(Instant.now(), null, null, null),
+        null
+    )
+
+    private fun hentPeriodeIderPaaFnr(fnr: Fnr): List<UUID?> = db.queryForList(
+        "SELECT ${SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} FROM ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${SISTE_ARBEIDSSOEKER_PERIODE.FNR} = ?",
+        UUID::class.java,
+        fnr.get()
+    )
+
     private fun mockPdlIdenterRespons(aktorId: AktorId, fnr: Fnr) {
         val identer = listOf(
             PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
@@ -601,7 +706,7 @@ class ArbeidssoekerServiceTest(
             JsonUtils.fromJson(file, PdlBarnResponse::class.java).data.hentPerson
         )
 
-        `when`(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(ArgumentMatchers.any())).thenReturn(pdlPersonBarn)
+        `when`(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn)
 
         return pdlPersonBarn
     }

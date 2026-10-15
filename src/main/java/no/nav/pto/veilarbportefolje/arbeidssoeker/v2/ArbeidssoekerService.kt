@@ -52,24 +52,32 @@ class ArbeidssoekerService(
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
 
-    @Transactional
+    @Transactional(rollbackFor = [Exception::class])
     fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
 
         val periodeId = kafkaMelding.id
         val identitetsnummer = kafkaMelding.identitetsnummer
 
-        val fnr: Fnr = Fnr.ofValidFnr(identitetsnummer.toString())
+        // Registeret sender fortsatt gammelt fnr etter identbytte, så meldingens fnr brukes bare til oppslag.
+        val fnrIMelding: Fnr = Fnr.ofValidFnr(identitetsnummer.toString())
 
-        secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnr, periodeId: $periodeId")
+        secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnrIMelding, periodeId: $periodeId")
 
-        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())) {
-            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}", fnr.get())
+        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnrIMelding.get())) {
+            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}", fnrIMelding.get())
+            return
+        }
+
+        val fnr: Fnr? = pdlIdentRepository.hentAktivFnrForPerson(fnrIMelding.get())
+        if (fnr == null) {
+            secureLog.warn("Fant ikke aktivt fnr for bruker med fnr: $fnrIMelding, ignorerer arbeidssøkerperiode $periodeId")
             return
         }
 
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr)
 
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
+        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
+        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
