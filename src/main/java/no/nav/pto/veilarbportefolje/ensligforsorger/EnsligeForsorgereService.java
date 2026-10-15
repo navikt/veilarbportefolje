@@ -40,6 +40,11 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
 
         String personIdent = melding.personIdent();
+        boolean erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(personIdent);
+        if (!erUnderOppfolging) {
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer overgangsstønad melding.", personIdent);
+            return;
+        }
 
         fjernTidligereVedtakOmOvergangsstonad(personIdent);
 
@@ -129,9 +134,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     }
 
     public void hentOgLagreEnsligForsorgerDataVedAdminjobb(AktorId aktorId) {
-        Fnr fnr = aktorClient.hentFnr(aktorId);
         hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        oppdaterOvergangsstonadIOpenSearch(fnr.get());
     }
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
@@ -148,6 +151,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
                 secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, periode);
             }
+            oppdaterOvergangsstonadIOpenSearch(fnr.get());
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
         }
