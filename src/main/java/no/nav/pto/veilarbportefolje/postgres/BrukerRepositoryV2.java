@@ -7,7 +7,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -115,11 +114,7 @@ public class BrukerRepositoryV2 {
                        HUSKELAPP.ENDRET_DATO                                    as HUSKELAPP_ENDRET_DATO,
                        HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
                        HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
-                       HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
-                       YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM,
-                       YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM,
-                       YTELSER_UNGDOMSPROGRAM.MAKSDATO                          as YTELSER_UNGDOMSPROGRAM_MAKSDATO,
-                       YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE             as YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE
+                       HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -134,7 +129,6 @@ public class BrukerRepositoryV2 {
                          left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                          left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
-                         left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                 """;
@@ -229,7 +223,6 @@ public class BrukerRepositoryV2 {
 
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
-        setUngdomsprogram(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
@@ -244,39 +237,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setUngdomsprogram(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        Date fraOgMedDate = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM);
-
-        // Ingen rad i YTELSER_UNGDOMSPROGRAM => bruker har ikke ytelsen
-        if (fraOgMedDate == null) {
-            brukerOpensearchModell.setUngdomsprogram(null);
-            return;
-        }
-        LocalDate fraOgMed = fraOgMedDate.toLocalDate();
-        LocalDate tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        LocalDate maksdato = rs.getDate(YTELSER_UNGDOMSPROGRAM_MAKSDATO).toLocalDate();
-        boolean harForlengetPeriode = rs.getBoolean(YTELSER_UNGDOMSPROGRAM_HAR_FORLENGET_PERIODE);
-
-        // Aktiv hvis åpen periode (tom == null) eller til og med ikke er i fortiden, OG hvis maksdato ikke er i fortiden
-        boolean harAktivYtelse = (tilOgMed == null || !tilOgMed.isBefore(LocalDate.now())) && !maksdato.isBefore(
-                LocalDate.now()
-        );
-        if (!harAktivYtelse) {
-            brukerOpensearchModell.setUngdomsprogram(null);
-            return;
-        }
-
-        UngdomsprogramForOpensearch ungdomsprogram = new UngdomsprogramForOpensearch(
-                fraOgMed,
-                tilOgMed,
-                maksdato,
-                harForlengetPeriode
-        );
-
-        brukerOpensearchModell.setUngdomsprogram(ungdomsprogram);
     }
 
     @SneakyThrows
