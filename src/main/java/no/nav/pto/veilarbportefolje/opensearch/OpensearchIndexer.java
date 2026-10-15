@@ -158,7 +158,6 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnAktivitetsData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnSisteEndringerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukerOpensearchModell);
-        postgresOpensearchMapper.flettInnEnsligeForsorgereData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnBarnUnder18Aar(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnTiltakshendelser(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnEldsteHendelsePerKategori(brukerOpensearchModell);

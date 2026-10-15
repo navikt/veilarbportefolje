@@ -11,6 +11,13 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.*
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereRepository
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Stønadstype
+import no.nav.pto.veilarbportefolje.ensligforsorger.domain.Vedtaksresultat
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Barn
+import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.VedtakOvergangsstønadArbeidsoppfølging
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -40,6 +47,7 @@ class PostgresYtelserMapperTest(
     @param:Autowired val uforetrygdRepository: UforetrygdRepository,
     @param:Autowired val tiltakspengerRepository: TiltakspengerRespository,
     @param:Autowired val ungdomsprogramRepository: UngdomsprogramRepository,
+    @param:Autowired val ensligeForsorgereRepository: EnsligeForsorgereRepository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -51,6 +59,7 @@ class PostgresYtelserMapperTest(
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UFORETRYGD.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_TILTAKSPENGER.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE enslige_forsorgere CASCADE")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
@@ -373,6 +382,59 @@ class PostgresYtelserMapperTest(
         assertThat(brukerUtenUngdomsprogram.ungdomsprogram).isNull()
     }
 
+    @Test
+    fun `flettInnEnsligeForsorgere skal finne overgangsstønad lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMed = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstonadVedtak(1L, historiskFnr, tilOgMed))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.enslige_forsorgere_overgangsstonad?.utlopsDato()).isEqualTo(tilOgMed)
+        assertThat(bruker.enslige_forsorgere_overgangsstonad?.harAktivitetsplikt()).isFalse()
+        assertThat(bruker.enslige_forsorgere_overgangsstonad?.yngsteBarnsFødselsdato()).isEqualTo(LocalDate.of(2023, 5, 4))
+    }
+
+    @Test
+    fun `flettInnEnsligeForsorgere skal velge overgangsstønad på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstonadVedtak(1L, fnr, tilOgMedGjeldende))
+        ensligeForsorgereRepository.lagreOvergangsstonad(
+            overgangsstonadVedtak(2L, historiskFnr, LocalDate.now().plusMonths(6))
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.enslige_forsorgere_overgangsstonad?.utlopsDato()).isEqualTo(tilOgMedGjeldende)
+    }
+
+    @Test
+    fun `flettInnEnsligeForsorgere skal sette overgangsstønad null når periode er utløpt eller vedtak mangler`() {
+        val fnrMedUtloptPeriode = randomFnr().get()
+        val fnrUtenOvergangsstonad = randomFnr().get()
+        lagreIdenter(fnrMedUtloptPeriode)
+        lagreIdenter(fnrUtenOvergangsstonad)
+        ensligeForsorgereRepository.lagreOvergangsstonad(
+            overgangsstonadVedtak(1L, fnrMedUtloptPeriode, LocalDate.now().minusDays(1))
+        )
+
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        val brukerUtenOvergangsstonad = PortefoljebrukerOpensearchModell(fnr = fnrUtenOvergangsstonad)
+        postgresYtelserMapper.flettInnYtelser(listOf(brukerMedUtloptPeriode, brukerUtenOvergangsstonad))
+
+        assertThat(brukerMedUtloptPeriode.enslige_forsorgere_overgangsstonad).isNull()
+        assertThat(brukerUtenOvergangsstonad.enslige_forsorgere_overgangsstonad).isNull()
+    }
+
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(
             listOf(
@@ -424,4 +486,21 @@ class PostgresYtelserMapperTest(
         harForlengetPeriode = false,
         periodeMaksDato = maksdato
     )
+
+    private fun overgangsstonadVedtak(vedtakId: Long, fnr: String, tilOgMed: LocalDate) =
+        VedtakOvergangsstønadArbeidsoppfølging(
+            vedtakId,
+            fnr,
+            listOf(Barn(null, LocalDate.of(2023, 5, 4))),
+            Stønadstype.OVERGANGSSTØNAD,
+            listOf(
+                no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.Periode(
+                    LocalDate.now().minusMonths(6),
+                    tilOgMed,
+                    Periodetype.NY_PERIODE_FOR_NYTT_BARN,
+                    Aktivitetstype.BARN_UNDER_ETT_ÅR
+                )
+            ),
+            Vedtaksresultat.INNVILGET
+        )
 }
