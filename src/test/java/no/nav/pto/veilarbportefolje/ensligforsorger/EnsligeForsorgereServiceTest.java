@@ -26,10 +26,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
@@ -131,6 +134,30 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
                 }
         );
+    }
+
+    @Test
+    public void testOvergangsstonadForBrukerUtenOppfolgingIgnoreres() {
+        Fnr fnr = randomFnr();
+        List<Periode> perioder = List.of(new Periode(
+                LocalDate.now().minusDays(5),
+                LocalDate.now().plusDays(30),
+                NY_PERIODE_FOR_NYTT_BARN,
+                Aktivitetstype.BARN_UNDER_ETT_ÅR
+        ));
+
+        ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        99887766L,
+                        fnr.get(),
+                        List.of(),
+                        Stønadstype.OVERGANGSSTØNAD,
+                        perioder,
+                        Vedtaksresultat.INNVILGET
+                )
+        );
+
+        assertThat(antallVedtakForIdent(fnr)).isZero();
     }
 
     @Test
@@ -373,6 +400,21 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     }
 
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
+        List<String> linkedFnrs = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer();
+        AktorId aktorId = linkedFnrs.stream()
+                .map(Fnr::of)
+                .map(pdlIdentRepository::hentAktorIdForAktivBruker)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+        if (aktorId == null) {
+            aktorId = aktorClient.hentAktorId(fnr);
+            insertOppfolgingsInformasjon(aktorId, fnr);
+        } else {
+            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
+        }
+
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
         List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
