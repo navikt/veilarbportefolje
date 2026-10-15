@@ -1,18 +1,22 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class AapRepositoryTest(
@@ -89,6 +93,32 @@ class AapRepositoryTest(
         aapRepository.slettAapForBruker(ident)
         val resultatEtterSletting = aapRepository.hentAap(ident)
         assertThat(resultatEtterSletting).isNull()
+    }
+
+    @Test
+    fun `hentAapKelvinVedtak skal returnere vedtak kun for brukere med aap`() {
+        val identMedAap1 = "11111111111"
+        val identMedAap2 = "22222222222"
+        val identUtenAap = "33333333333"
+        val maksdato = LocalDate.of(2028, 12, 31)
+
+        aapRepository.upsertAap(identMedAap1, AapEntity("FERDIGBEHANDLET", maksdato, aapVedtakDto))
+        aapRepository.upsertAap(
+            identMedAap2,
+            AapEntity("FERDIGBEHANDLET", null, aapVedtakDto.copy(rettighetsType = AapRettighetstype.STUDENT))
+        )
+
+        val resultat = aapRepository.hentAapKelvinVedtak(listOf(identMedAap1, identMedAap2, identUtenAap))
+
+        assertThat(resultat).containsOnlyKeys(identMedAap1, identMedAap2)
+        assertThat(resultat[identMedAap1]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
+        assertThat(resultat[identMedAap2]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
+        assertThat(resultat[identMedAap1]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
+            AapVedtakEntity(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato, LocalDateTime.MIN)
+        )
+        assertThat(resultat[identMedAap2]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
+            AapVedtakEntity(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null, LocalDateTime.MIN)
+        )
     }
 
 

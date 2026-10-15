@@ -70,6 +70,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinne
 import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresYtelserMapper;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
@@ -159,6 +160,7 @@ import static org.mockito.Mockito.when;
         TiltaksaktivitetRepository.class,
         PortefoljeAktivitetKafkaMeldingRepository.class,
         PostgresOpensearchMapper.class,
+        PostgresYtelserMapper.class,
         AktivitetOpensearchService.class,
         YtelsesService.class,
         YtelsesRepositoryV2.class,
