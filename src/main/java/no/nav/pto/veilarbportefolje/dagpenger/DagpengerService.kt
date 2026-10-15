@@ -12,6 +12,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_KILDESYSTEM
+import no.nav.pto.veilarbportefolje.ytelserkafka.YTELSE_MELDINGSTYPE
 import no.nav.pto.veilarbportefolje.ytelserkafka.YtelserKafkaDTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -54,27 +55,38 @@ class DagpengerService(
         }
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personId))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreDagpengerForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato)
+        lagreDagpengerForBruker(kafkaMelding.personId, aktorId, oppfolgingsStartdato, kafkaMelding.meldingstype)
     }
 
     fun hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        lagreDagpengerForBruker(personIdent, aktorId, LocalDate.now())
+        lagreDagpengerForBruker(personIdent, aktorId, LocalDate.now(), YTELSE_MELDINGSTYPE.OPPRETT)
     }
 
     fun lagreDagpengerForBruker(
         personIdent: String,
         aktorId: AktorId,
         oppfolgingsStartdato: LocalDate,
+        meldingstype: YTELSE_MELDINGSTYPE
     ) {
         val sisteDagpengerPeriode = hentSistePeriodeFraApi(personIdent, oppfolgingsStartdato)
 
         if (sisteDagpengerPeriode == null) {
-            secureLog.info(
-                "Ingen Dagpenger-periode funnet i oppfølgingsperioden for bruker {}, ignorerer dagpenger-ytelse melding.",
-                personIdent
-            )
-            return
+            if (meldingstype == YTELSE_MELDINGSTYPE.OPPDATER) {
+                secureLog.info(
+                    "Ingen Dagpenger-periode funnet i oppfølgingsperioden for bruker {}, " +
+                            "sletter eventuell eksisterende Dagpenger-periode i databasen", personIdent
+                )
+                slettDagpengerForAlleIdenterForBruker(personIdent)
+                opensearchIndexerPaDatafelt.slettDagpenger(aktorId)
+                return
+            } else {
+                secureLog.info(
+                    "Ingen Dagpenger-periode funnet i oppfølgingsperioden for bruker {}, ignorerer dagpenger-ytelse melding.",
+                    personIdent
+                )
+                return
+            }
         }
 
         val harAktivYtelse = sisteDagpengerPeriode.tilOgMedDato == null || sisteDagpengerPeriode.tilOgMedDato.isAfter(
