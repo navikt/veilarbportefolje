@@ -107,7 +107,6 @@ class TiltakspengerRepositoryTest(
         assertThat(resultat[identMedTiltakspenger2]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
         assertThat(resultat[identMedTiltakspenger1]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
             TiltakspengerVedtakEntity(
-                "SAK-1",
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2025, 12, 13),
                 TiltakspengerRettighet.TILTAKSPENGER,
@@ -116,7 +115,6 @@ class TiltakspengerRepositoryTest(
         )
         assertThat(resultat[identMedTiltakspenger2]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
             TiltakspengerVedtakEntity(
-                "SAK-2",
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2026, 12, 31),
                 TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG,
