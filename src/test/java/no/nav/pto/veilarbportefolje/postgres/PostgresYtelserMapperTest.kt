@@ -12,10 +12,13 @@ import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDt
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_DAGPENGER
+import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
+import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import org.assertj.core.api.Assertions.assertThat
@@ -31,6 +34,7 @@ class PostgresYtelserMapperTest(
     @param:Autowired val postgresYtelserMapper: PostgresYtelserMapper,
     @param:Autowired val aapRepository: AapRepository,
     @param:Autowired val dagpengerRepository: DagpengerRepository,
+    @param:Autowired val uforetrygdRepository: UforetrygdRepository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -39,6 +43,7 @@ class PostgresYtelserMapperTest(
     fun reset() {
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_DAGPENGER.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UFORETRYGD.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
@@ -175,6 +180,48 @@ class PostgresYtelserMapperTest(
         assertThat(brukerUtenDapgener.dagpenger?.harDagpenger).isFalse()
     }
 
+    @Test
+    fun `flettInnUforetrygd skal finne uføretrygd lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val virkningsdato = LocalDate.now().minusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        uforetrygdRepository.upsertUforetrygd(
+            historiskFnr,
+            uforetrygd(uforegrad = 50, virkningsdato = virkningsdato)
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.uforetrygd?.virkningsdato).isEqualTo(virkningsdato)
+        assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
+    }
+
+    @Test
+    fun `flettInnUforetrygd skal velge uføretrygd på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val virkningsdatoGjeldende = LocalDate.now().minusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        uforetrygdRepository.upsertUforetrygd(
+            fnr,
+            uforetrygd(uforegrad = 50, virkningsdato = virkningsdatoGjeldende)
+        )
+        uforetrygdRepository.upsertUforetrygd(
+            historiskFnr,
+            uforetrygd(uforegrad = 60, virkningsdato = LocalDate.now().minusMonths(6))
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.uforetrygd?.virkningsdato).isEqualTo(virkningsdatoGjeldende)
+        assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
+    }
+
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(
             listOf(
@@ -201,5 +248,11 @@ class PostgresYtelserMapperTest(
             tilOgMedDato = tilOgMed
         ),
         rettighetsType = AapRettighetstype.BISTANDSBEHOV
+    )
+
+    private fun uforetrygd(uforegrad: Int, virkningsdato: LocalDate) = UforetrygdResponseDto(
+        lopendeUforetrygd = true,
+        uforegrad = uforegrad,
+        forsteVirkningstidspunkt = virkningsdato
     )
 }

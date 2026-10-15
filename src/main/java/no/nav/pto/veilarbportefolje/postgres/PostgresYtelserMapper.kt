@@ -6,9 +6,12 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerVedtakEntity
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
+import no.nav.pto.veilarbportefolje.uforetrygd.domene.UforetrygdEntity
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -18,6 +21,7 @@ import java.time.LocalDateTime
 class PostgresYtelserMapper(
     private val aapRepository: AapRepository,
     private val dagpengerRepository: DagpengerRepository,
+    private val uforetrygdRepository: UforetrygdRepository,
     private val pdlIdentRepository: PdlIdentRepository
 ) {
 
@@ -25,6 +29,7 @@ class PostgresYtelserMapper(
         val fnrIdenterPerBruker = hentFnrIdenterPerBruker(brukere)
         flettInnAapKelvin(brukere, fnrIdenterPerBruker)
         flettInnDagpenger(brukere, fnrIdenterPerBruker)
+        flettInnUforetrygd(brukere, fnrIdenterPerBruker)
     }
 
     private fun flettInnAapKelvin(
@@ -75,6 +80,32 @@ class PostgresYtelserMapper(
                 datoStans = if (vedtakErGjeldende) aktueltVedtak.nyestePeriodeTom else null,
                 antallResterendeDager = if (vedtakErGjeldende) aktueltVedtak.antallResterendeDager else null
             )
+        }
+    }
+
+    private fun flettInnUforetrygd(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val uforetrygdForAlleIdenterPerBruker =
+            uforetrygdRepository.hentUforetrygdVedtak(alleIdenter(fnrIdenterPerBruker))
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val aktueltVedtak = velgVedtak(
+                "uføretrygd",
+                bruker.fnr,
+                identer,
+                uforetrygdForAlleIdenterPerBruker,
+                UforetrygdEntity::radSistEndret
+            )
+
+            bruker.uforetrygd = aktueltVedtak?.let {
+                UforetrygdForOpensearch(
+                    virkningsdato = it.virkningsdato,
+                    uforegrad = it.uføregrad
+                )
+            }
         }
     }
 
