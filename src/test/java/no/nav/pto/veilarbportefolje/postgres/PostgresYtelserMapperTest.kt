@@ -12,11 +12,15 @@ import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDt
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_DAGPENGER
+import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
 import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -35,6 +39,7 @@ class PostgresYtelserMapperTest(
     @param:Autowired val aapRepository: AapRepository,
     @param:Autowired val dagpengerRepository: DagpengerRepository,
     @param:Autowired val uforetrygdRepository: UforetrygdRepository,
+    @param:Autowired val tiltakspengerRepository: TiltakspengerRespository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -44,6 +49,7 @@ class PostgresYtelserMapperTest(
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_DAGPENGER.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UFORETRYGD.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_TILTAKSPENGER.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
@@ -222,6 +228,71 @@ class PostgresYtelserMapperTest(
         assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
     }
 
+    @Test
+    fun `flettInnTiltakspenger skal finne tiltakspenger lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMed = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        tiltakspengerRepository.upsertTiltakspenger(historiskFnr, tiltakspengerVedtak(tilOgMed))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.tiltakspenger).isTrue()
+        assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMed)
+        assertThat(bruker.tiltakspenger_rettighet).isEqualTo(TiltakspengerRettighet.TILTAKSPENGER)
+    }
+
+    @Test
+    fun `flettInnTiltakspenger skal velge tiltakspenger på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        tiltakspengerRepository.upsertTiltakspenger(fnr, tiltakspengerVedtak(tilOgMedGjeldende))
+        tiltakspengerRepository.upsertTiltakspenger(historiskFnr, tiltakspengerVedtak(LocalDate.now().plusMonths(6)))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.tiltakspenger).isTrue()
+        assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMedGjeldende)
+    }
+
+    @Test
+    fun `flettInnTiltakspenger skal sette tiltakspenger false når periode er utløpt, rettighet er INGENTING eller vedtak mangler`() {
+        val fnrMedUtloptPeriode = randomFnr().get()
+        val fnrMedIngenRettighet = randomFnr().get()
+        val fnrUtenTiltakspenger = randomFnr().get()
+        lagreIdenter(fnrMedUtloptPeriode)
+        lagreIdenter(fnrMedIngenRettighet)
+        lagreIdenter(fnrUtenTiltakspenger)
+        tiltakspengerRepository.upsertTiltakspenger(
+            fnrMedUtloptPeriode,
+            tiltakspengerVedtak(LocalDate.now().minusDays(1))
+        )
+        tiltakspengerRepository.upsertTiltakspenger(
+            fnrMedIngenRettighet,
+            tiltakspengerVedtak(LocalDate.now().plusMonths(3)).copy(rettighet = TiltakspengerRettighet.INGENTING)
+        )
+
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        val brukerMedIngenRettighet = PortefoljebrukerOpensearchModell(fnr = fnrMedIngenRettighet)
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell(fnr = fnrUtenTiltakspenger)
+        postgresYtelserMapper.flettInnYtelser(
+            listOf(brukerMedUtloptPeriode, brukerMedIngenRettighet, brukerUtenTiltakspenger)
+        )
+
+        assertThat(brukerMedUtloptPeriode.tiltakspenger).isFalse()
+        assertThat(brukerMedIngenRettighet.tiltakspenger).isFalse()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger).isFalse()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger_vedtaksdato_tom).isNull()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger_rettighet).isNull()
+    }
+
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(
             listOf(
@@ -254,5 +325,13 @@ class PostgresYtelserMapperTest(
         lopendeUforetrygd = true,
         uforegrad = uforegrad,
         forsteVirkningstidspunkt = virkningsdato
+    )
+
+    private fun tiltakspengerVedtak(tilOgMed: LocalDate) = TiltakspengerResponseDto(
+        sakId = "SAK-1",
+        fom = LocalDate.now().minusMonths(6),
+        tom = tilOgMed,
+        rettighet = TiltakspengerRettighet.TILTAKSPENGER,
+        kilde = "tp"
     )
 }

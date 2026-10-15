@@ -10,6 +10,9 @@ import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensea
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtakEntity
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
 import no.nav.pto.veilarbportefolje.uforetrygd.domene.UforetrygdEntity
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
@@ -22,6 +25,7 @@ class PostgresYtelserMapper(
     private val aapRepository: AapRepository,
     private val dagpengerRepository: DagpengerRepository,
     private val uforetrygdRepository: UforetrygdRepository,
+    private val tiltakspengerRepository: TiltakspengerRespository,
     private val pdlIdentRepository: PdlIdentRepository
 ) {
 
@@ -30,6 +34,7 @@ class PostgresYtelserMapper(
         flettInnAapKelvin(brukere, fnrIdenterPerBruker)
         flettInnDagpenger(brukere, fnrIdenterPerBruker)
         flettInnUforetrygd(brukere, fnrIdenterPerBruker)
+        flettInnTiltakspenger(brukere, fnrIdenterPerBruker)
     }
 
     private fun flettInnAapKelvin(
@@ -106,6 +111,31 @@ class PostgresYtelserMapper(
                     uforegrad = it.uføregrad
                 )
             }
+        }
+    }
+
+    private fun flettInnTiltakspenger(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val tiltakspengerVedtakForAlleIdenterPerBruker =
+            tiltakspengerRepository.hentTiltakspengerVedtak(alleIdenter(fnrIdenterPerBruker))
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val aktueltVedtak = velgVedtak(
+                "tiltakspenger",
+                bruker.fnr,
+                identer,
+                tiltakspengerVedtakForAlleIdenterPerBruker,
+                TiltakspengerVedtakEntity::radSistEndret
+            )
+            val harAktivYtelse = aktueltVedtak != null && aktueltVedtak.rettighet != TiltakspengerRettighet.INGENTING
+            val vedtakErGjeldende = harAktivYtelse && aktueltVedtak.tom.isAfter(LocalDate.now().minusDays(1))
+
+            bruker.tiltakspenger = vedtakErGjeldende
+            bruker.tiltakspenger_vedtaksdato_tom = if (vedtakErGjeldende) aktueltVedtak.tom else null
+            bruker.tiltakspenger_rettighet = if (vedtakErGjeldende) aktueltVedtak.rettighet else null
         }
     }
 

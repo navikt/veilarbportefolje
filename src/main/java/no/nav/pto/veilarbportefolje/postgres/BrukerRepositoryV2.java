@@ -11,7 +11,6 @@ import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpe
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
-import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
 import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -117,8 +116,6 @@ public class BrukerRepositoryV2 {
                        HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
                        HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
                        HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
-                       YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
-                       YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM,
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM,
                        YTELSER_UNGDOMSPROGRAM.MAKSDATO                          as YTELSER_UNGDOMSPROGRAM_MAKSDATO,
@@ -137,7 +134,6 @@ public class BrukerRepositoryV2 {
                          left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                          left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
-                         left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
@@ -233,7 +229,6 @@ public class BrukerRepositoryV2 {
 
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
-        setTiltakspenger(brukerOpensearchModell, rs);
         setUngdomsprogram(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
@@ -249,19 +244,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setTiltakspenger(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        String rettighet = rs.getString(YTELSER_TILTAKSPENGER_RETTIGHET);
-        TiltakspengerRettighet rettighetstypeOrNull = rettighet == null ? null : TiltakspengerRettighet.valueOf(rettighet);
-        boolean harAktivYtelseStatus = rettighetstypeOrNull != null && rettighetstypeOrNull != TiltakspengerRettighet.INGENTING;
-        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        boolean vedtakErFortsattGjeldende = vedtaksDatoTom != null && vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1));
-
-        brukerOpensearchModell.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
-        brukerOpensearchModell.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
-        brukerOpensearchModell.setTiltakspenger_rettighet(rettighetstypeOrNull);
     }
 
     @SneakyThrows
