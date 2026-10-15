@@ -425,6 +425,14 @@ class OpensearchIndexerPaDatafelt(
         update(aktorId, content, "Oppdatert dagpenger for aktorId: $aktorId")
     }
 
+    fun slettDagpenger(aktorId: AktorId) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .nullField(DatafeltKeys.Ytelser.DAGPENGER)
+            .endObject()
+        update(aktorId, content, "Slettet dagpenger for aktorId: $aktorId")
+    }
+
     fun oppdaterUngdomsprogram(
         aktorId: AktorId,
         periode: Periode
