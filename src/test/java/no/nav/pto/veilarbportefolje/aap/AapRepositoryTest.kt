@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
-import no.nav.pto.veilarbportefolje.aap.domene.AapKelvinVedtak
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
@@ -114,10 +114,10 @@ class AapRepositoryTest(
         assertThat(resultat[identMedAap1]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
         assertThat(resultat[identMedAap2]!!.radSistEndret).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES))
         assertThat(resultat[identMedAap1]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
-            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato, LocalDateTime.MIN)
+            AapVedtakEntity(LocalDate.of(2024, 12, 31), AapRettighetstype.ARBEIDSSØKER, maksdato, LocalDateTime.MIN)
         )
         assertThat(resultat[identMedAap2]).usingRecursiveComparison().ignoringFields("radSistEndret").isEqualTo(
-            AapKelvinVedtak(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null, LocalDateTime.MIN)
+            AapVedtakEntity(LocalDate.of(2024, 12, 31), AapRettighetstype.STUDENT, null, LocalDateTime.MIN)
         )
     }
 

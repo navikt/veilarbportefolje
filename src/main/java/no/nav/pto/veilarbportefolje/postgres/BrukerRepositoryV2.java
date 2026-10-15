@@ -5,10 +5,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
-import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype;
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch;
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
@@ -122,10 +120,6 @@ public class BrukerRepositoryV2 {
                        HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID,
                        YTELSER_TILTAKSPENGER.NYESTE_PERIODE_TOM                 as YTELSER_TILTAKSPENGER_NYESTE_PERIODE_TOM,
                        YTELSER_TILTAKSPENGER.RETTIGHET                          as YTELSER_TILTAKSPENGER_RETTIGHET,
-                       YTELSER_DAGPENGER.NYESTE_PERIODE_TOM                     as YTELSER_DAGPENGER_NYESTE_PERIODE_TOM,
-                       YTELSER_DAGPENGER.RETTIGHETSTYPE                         as YTELSER_DAGPENGER_RETTIGHETSTYPE,
-                       YTELSER_DAGPENGER.ANTALL_RESTERENDE_DAGER                as YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER,
-                       YTELSER_DAGPENGER.DATO_ANTALL_DAGER_BLE_BEREGNET         as YTELSER_DAGPENGER_DATO_ANTALL_DAGER_BLE_BEREGNET,
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_FOM,
                        YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM                as YTELSER_UNGDOMSPROGRAM_NYESTE_PERIODE_TOM,
                        YTELSER_UNGDOMSPROGRAM.MAKSDATO                          as YTELSER_UNGDOMSPROGRAM_MAKSDATO,
@@ -147,7 +141,6 @@ public class BrukerRepositoryV2 {
                          left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
                          left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                          left join YTELSER_TILTAKSPENGER                        on YTELSER_TILTAKSPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
-                         left join YTELSER_DAGPENGER                            on YTELSER_DAGPENGER.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_UNGDOMSPROGRAM                       on YTELSER_UNGDOMSPROGRAM.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join YTELSER_UFORETRYGD                           on YTELSER_UFORETRYGD.NORSK_IDENT = AKTIVE_IDENTER.FNR
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
@@ -245,7 +238,6 @@ public class BrukerRepositoryV2 {
         setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
         setTiltakspenger(brukerOpensearchModell, rs);
-        setDagpenger(brukerOpensearchModell, rs);
         setUngdomsprogram(brukerOpensearchModell, rs);
         setUforetrygd(brukerOpensearchModell, rs);
 
@@ -275,26 +267,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setTiltakspenger(harAktivYtelseStatus && vedtakErFortsattGjeldende);
         brukerOpensearchModell.setTiltakspenger_vedtaksdato_tom(vedtaksDatoTom);
         brukerOpensearchModell.setTiltakspenger_rettighet(rettighetstypeOrNull);
-    }
-
-    @SneakyThrows
-    private void setDagpenger(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        String rettighetstype = rs.getString(YTELSER_DAGPENGER_RETTIGHETSTYPE);
-        DagpengerRettighetstype rettighetstypeOrNull = rettighetstype == null ? null : DagpengerRettighetstype.valueOf(rettighetstype);
-        LocalDate vedtaksDatoTom = rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM) != null ? rs.getDate(YTELSER_DAGPENGER_NYESTE_PERIODE_TOM).toLocalDate() : null;
-        Integer antallDagerResterende = rs.getObject(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) != null ? rs.getInt(YTELSER_DAGPENGER_ANTALL_RESTERENDE_DAGER) : null;
-
-        boolean harEnDagpengeperiodeIDatabasen = rettighetstype != null;
-        boolean vedtakErFortsattGjeldende = harEnDagpengeperiodeIDatabasen && (vedtaksDatoTom == null || vedtaksDatoTom.isAfter(LocalDate.now().minusDays(1)));
-
-        DagpengerForOpensearch dagpenger = new DagpengerForOpensearch(
-                vedtakErFortsattGjeldende,
-                rettighetstypeOrNull,
-                vedtaksDatoTom,
-                antallDagerResterende
-        );
-
-        brukerOpensearchModell.setDagpenger(dagpenger);
     }
 
     @SneakyThrows

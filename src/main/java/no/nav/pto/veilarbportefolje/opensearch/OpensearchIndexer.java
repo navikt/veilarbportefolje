@@ -164,7 +164,7 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnEldsteHendelsePerKategori(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(brukerOpensearchModell);
-        postgresYtelserMapper.flettInnAapKelvin(brukerOpensearchModell);
+        postgresYtelserMapper.flettInnYtelser(brukerOpensearchModell);
 
         if (brukerOpensearchModell.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

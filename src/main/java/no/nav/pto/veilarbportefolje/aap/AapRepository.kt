@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.aap
 
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.aap.domene.AapEntity
-import no.nav.pto.veilarbportefolje.aap.domene.AapKelvinVedtak
+import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakPeriodeEntity
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
@@ -67,7 +67,7 @@ class AapRepository(
         )
     }
 
-    fun hentAapKelvinVedtak(norskeIdenter: List<String>): Map<String, AapKelvinVedtak> {
+    fun hentAapKelvinVedtak(norskeIdenter: List<String>): Map<String, AapVedtakEntity> {
         if (norskeIdenter.isEmpty()) return emptyMap()
 
         val sql = """
@@ -77,7 +77,7 @@ class AapRepository(
         """
 
         return namedDb.query(sql, mapOf("norskeIdenter" to norskeIdenter)) { rs, _ ->
-            rs.getString(YTELSER_AAP.NORSK_IDENT) to AapKelvinVedtak(
+            rs.getString(YTELSER_AAP.NORSK_IDENT) to AapVedtakEntity(
                 nyestePeriodeTom = rs.getDate(YTELSER_AAP.NYESTE_PERIODE_TOM).toLocalDate(),
                 rettighetstype = AapRettighetstype.valueOf(rs.getString(YTELSER_AAP.RETTIGHETSTYPE)),
                 maksdato = rs.getDate(YTELSER_AAP.MAKSDATO)?.toLocalDate(),

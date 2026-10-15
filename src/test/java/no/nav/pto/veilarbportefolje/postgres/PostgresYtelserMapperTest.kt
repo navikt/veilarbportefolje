@@ -6,7 +6,12 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakStatus
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository
+import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
+import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
 import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
+import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -20,12 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PostgresYtelserMapperTest(
     @param:Autowired val postgresYtelserMapper: PostgresYtelserMapper,
     @param:Autowired val aapRepository: AapRepository,
+    @param:Autowired val dagpengerRepository: DagpengerRepository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -33,6 +38,7 @@ class PostgresYtelserMapperTest(
     @BeforeEach
     fun reset() {
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_DAGPENGER.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
@@ -53,7 +59,7 @@ class PostgresYtelserMapperTest(
         aapRepository.upsertAap(historiskFnr, AapEntity("FERDIGBEHANDLET", maksdato, aapVedtak(tilOgMed)))
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnAapKelvin(listOf(bruker))
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
 
         assertThat(bruker.aap_kelvin).isTrue()
         assertThat(bruker.aap_kelvin_tom_vedtaksdato).isEqualTo(tilOgMed)
@@ -79,47 +85,113 @@ class PostgresYtelserMapperTest(
         aapRepository.upsertAap(historiskFnr, AapEntity("FERDIGBEHANDLET", null, aapVedtak(tilOgMedHistorisk)))
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnAapKelvin(listOf(bruker))
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
 
         assertThat(bruker.aap_kelvin).isTrue()
         assertThat(bruker.aap_kelvin_tom_vedtaksdato).isEqualTo(tilOgMedGjeldende)
     }
 
     @Test
-    fun `flettInnAapKelvin skal velge sist endrede aap når det kun finnes på historiske fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnrEldst = randomFnr().get()
-        val historiskFnrNyest = randomFnr().get()
-        val tilOgMedEldst = LocalDate.now().plusMonths(6)
-        val tilOgMedNyest = LocalDate.now().plusMonths(3)
+    fun `flettInnAapKelvin skal sette aap_kelvin false når periode er utløpt eller null`() {
+        val fnrUtenAap = randomFnr().get()
+        val fnrMedUtloptPeriode = randomFnr().get()
+        lagreIdenter(fnrMedUtloptPeriode)
+        lagreIdenter(fnrUtenAap)
+        aapRepository.upsertAap(
+            fnrMedUtloptPeriode,
+            AapEntity("FERDIGBEHANDLET", null, aapVedtak(LocalDate.now().minusDays(1)))
+        )
 
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        val brukerUtenAap = PortefoljebrukerOpensearchModell(fnr = fnrUtenAap)
+        postgresYtelserMapper.flettInnYtelser(listOf(brukerMedUtloptPeriode, brukerUtenAap))
+
+        assertThat(brukerMedUtloptPeriode.aap_kelvin).isFalse()
+        assertThat(brukerUtenAap.aap_kelvin).isFalse()
+    }
+
+    @Test
+    fun `flettInnDagpenger skal finne dagpenger lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMed = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        dagpengerRepository.upsertDagpengerPerioder(
+            historiskFnr,
+            dagpengerPeriode(tilOgMed),
+            DagpengerBeregningerResponseDto(
+                fraOgMed = LocalDate.now(),
+                sats = 600,
+                utbetaltBeløp = 400,
+                gjenståendeDager = 42
+            )
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.dagpenger?.harDagpenger).isTrue()
+        assertThat(bruker.dagpenger?.rettighetstype).isEqualTo(DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER)
+        assertThat(bruker.dagpenger?.datoStans).isEqualTo(tilOgMed)
+        assertThat(bruker.dagpenger?.antallResterendeDager).isEqualTo(42)
+    }
+
+    @Test
+    fun `flettInnDagpenger skal velge dagpenger på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        dagpengerRepository.upsertDagpengerPerioder(fnr, dagpengerPeriode(tilOgMedGjeldende), null)
+        dagpengerRepository.upsertDagpengerPerioder(historiskFnr, dagpengerPeriode(LocalDate.now().plusMonths(6)), null)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.dagpenger?.harDagpenger).isTrue()
+        assertThat(bruker.dagpenger?.datoStans).isEqualTo(tilOgMedGjeldende)
+    }
+
+
+    @Test
+    fun `flettInnDagpenger skal sette harDagpenger false når periode er utløpt eller null`() {
+        val fnrUtenDapgener = randomFnr().get()
+        val fnrMedUloptDagpenger = randomFnr().get()
+        lagreIdenter(fnrMedUloptDagpenger)
+        lagreIdenter(fnrUtenDapgener)
+        dagpengerRepository.upsertDagpengerPerioder(
+            fnrMedUloptDagpenger,
+            dagpengerPeriode(LocalDate.now().minusDays(1)),
+            null
+        )
+
+        val brukerMedUtloptDagpenger = PortefoljebrukerOpensearchModell(fnr = fnrMedUloptDagpenger)
+        val brukerUtenDapgener = PortefoljebrukerOpensearchModell(fnr = fnrUtenDapgener)
+        postgresYtelserMapper.flettInnYtelser(listOf(brukerMedUtloptDagpenger, brukerUtenDapgener))
+
+        assertThat(brukerMedUtloptDagpenger.dagpenger?.harDagpenger).isFalse()
+        assertThat(brukerUtenDapgener.dagpenger?.harDagpenger).isFalse()
+    }
+
+    private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(
             listOf(
                 PDLIdent(randomAktorId().get(), false, Gruppe.AKTORID),
-                PDLIdent(fnr, false, Gruppe.FOLKEREGISTERIDENT),
-                PDLIdent(historiskFnrEldst, true, Gruppe.FOLKEREGISTERIDENT),
-                PDLIdent(historiskFnrNyest, true, Gruppe.FOLKEREGISTERIDENT)
-            )
-        )
-        aapRepository.upsertAap(historiskFnrEldst, AapEntity("FERDIGBEHANDLET", null, aapVedtak(tilOgMedEldst)))
-        aapRepository.upsertAap(historiskFnrNyest, AapEntity("FERDIGBEHANDLET", null, aapVedtak(tilOgMedNyest)))
-        settRadSistEndret(historiskFnrEldst, LocalDateTime.now().minusDays(2))
-        settRadSistEndret(historiskFnrNyest, LocalDateTime.now().minusDays(1))
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnAapKelvin(listOf(bruker))
-
-        assertThat(bruker.aap_kelvin).isTrue()
-        assertThat(bruker.aap_kelvin_tom_vedtaksdato).isEqualTo(tilOgMedNyest)
-    }
-
-    private fun settRadSistEndret(norskIdent: String, radSistEndret: LocalDateTime) {
-        jdbcTemplate.update(
-            "UPDATE ${YTELSER_AAP.TABLE_NAME} SET ${YTELSER_AAP.RAD_SIST_ENDRET} = ? WHERE ${YTELSER_AAP.NORSK_IDENT} = ?",
-            radSistEndret,
-            norskIdent
+                PDLIdent(fnr, false, Gruppe.FOLKEREGISTERIDENT)
+            ) + historisk.map { PDLIdent(it, true, Gruppe.FOLKEREGISTERIDENT) }
         )
     }
+
+
+    private fun dagpengerPeriode(tilOgMed: LocalDate?) = DagpengerPeriodeDto(
+        fraOgMedDato = LocalDate.now().minusMonths(6),
+        tilOgMedDato = tilOgMed,
+        ytelseType = DagpengerRettighetstype.DAGPENGER_ARBEIDSSOKER_ORDINAER,
+        kilde = "DP_SAK"
+    )
+
 
     private fun aapVedtak(tilOgMed: LocalDate) = AapVedtakResponseDto.Vedtak(
         status = AapVedtakStatus.LØPENDE,
