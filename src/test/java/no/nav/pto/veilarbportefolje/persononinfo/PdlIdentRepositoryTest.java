@@ -8,7 +8,7 @@ import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.FnrIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
@@ -185,10 +185,10 @@ public class PdlIdentRepositoryTest {
 
         assertThat(resultat).containsOnlyKeys(brukerAFnr.get(), brukerBFnr.get());
         assertThat(resultat.get(brukerAFnr.get())).containsExactlyInAnyOrder(
-                new FnrIdent(brukerAFnr.get(), false),
-                new FnrIdent(brukerAHistoriskFnr.get(), true)
+                new NorskIdentMedHistorikk(brukerAFnr.get(), false),
+                new NorskIdentMedHistorikk(brukerAHistoriskFnr.get(), true)
         );
-        assertThat(resultat.get(brukerBFnr.get())).containsExactly(new FnrIdent(brukerBFnr.get(), false));
+        assertThat(resultat.get(brukerBFnr.get())).containsExactly(new NorskIdentMedHistorikk(brukerBFnr.get(), false));
     }
 
     @Test

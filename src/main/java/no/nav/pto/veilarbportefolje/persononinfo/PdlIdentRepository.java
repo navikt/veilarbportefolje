@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.FnrIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -84,7 +84,7 @@ public class PdlIdentRepository {
         return new IdenterForBruker(identer);
     }
 
-    public Map<String, List<FnrIdent>> hentFnrIdenterForBrukere(List<String> brukerIder) {
+    public Map<String, List<NorskIdentMedHistorikk>> hentFnrIdenterForBrukere(List<String> brukerIder) {
         if (brukerIder.isEmpty()) {
             return Map.of();
         }
@@ -97,7 +97,7 @@ public class PdlIdentRepository {
                         """,
                         (rs, row) -> Map.entry(
                                 rs.getString("oppslag_ident"),
-                                new FnrIdent(rs.getString("ident"), rs.getBoolean("historisk"))
+                                new NorskIdentMedHistorikk(rs.getString("ident"), rs.getBoolean("historisk"))
                         ),
                         brukerIderParam)
                 .stream()
