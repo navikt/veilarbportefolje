@@ -41,7 +41,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import tools.jackson.core.type.TypeReference;
 
 import java.time.ZonedDateTime;
@@ -57,6 +59,9 @@ import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_I
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
@@ -97,6 +102,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @Autowired
     private ArbeidssoekerService arbeidssoekerService;
+
+    @MockitoSpyBean
+    private SisteArbeidssoekerPeriodeRepository sisteArbeidssoekerPeriodeRepository;
 
     @Autowired
     private AapClient aapClient;
@@ -410,6 +418,16 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonForAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerForAvsluttet.getOpplysningerOmArbeidssoekerId());
         assertThat(opplysningerOmArbeidssoekerJobbsituasjonForAvsluttet).isNotNull();
 
+        Fnr historiskFnr = randomFnr();
+        UUID historiskPeriodeId = UUID.randomUUID();
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+        ));
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+                new ArbeidssoekerPeriodeEntity(historiskPeriodeId, historiskFnr.get()));
+
         UUID oppfølgingsperiodeId = UUID.randomUUID();
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererAvsluttetOppfolgingsperiode(aktorId, oppfølgingsperiodeId, genererStartetOppfolgingsperiode(aktorId, oppfolgingStartDato, oppfølgingsperiodeId)));
 
@@ -419,6 +437,52 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         assertThat(opplysningerOmArbeidssoekerEtterAvsluttet).isNull();
         OpplysningerOmArbeidssoekerJobbsituasjonEntity opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet = TestDataClient.getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(jdbcTemplate, opplysningerOmArbeidssoekerForAvsluttet.getOpplysningerOmArbeidssoekerId());
         assertThat(opplysningerOmArbeidssoekerJobbsituasjonEtterAvsluttet).isNull();
+        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, historiskPeriodeId)).isNull();
+        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId)).isEmpty();
+        assertThat(pdlIdentRepository.hentIdenterForBruker(fnr.get()).identer()).isEmpty();
+        assertThat(pdlIdentRepository.hentIdenterForBruker(historiskFnr.get()).identer()).isEmpty();
+    }
+
+    @Test
+    void feil_ved_sletting_av_arbeidssoekerdata_bevarer_oppfolging_og_identer_for_retry() {
+        ZonedDateTime startDato = ZonedDateTime.now().minusDays(1);
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+        Fnr historiskFnr = randomFnr();
+        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, startDato, oppfolgingsperiodeId);
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+        ));
+        UUID aktivPeriodeId = UUID.randomUUID();
+        UUID historiskPeriodeId = UUID.randomUUID();
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+                new ArbeidssoekerPeriodeEntity(aktivPeriodeId, fnr.get()));
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+                new ArbeidssoekerPeriodeEntity(historiskPeriodeId, historiskFnr.get()));
+        var avsluttetMelding = genererAvsluttetOppfolgingsperiode(
+                aktorId, oppfolgingsperiodeId,
+                genererStartetOppfolgingsperiode(aktorId, startDato, oppfolgingsperiodeId));
+        var feil = new DataAccessResourceFailureException("Simulert databasefeil");
+        doThrow(feil).when(sisteArbeidssoekerPeriodeRepository).slettSisteArbeidssoekerPeriode(anyList());
+
+        var kastetFeil = assertThrows(DataAccessResourceFailureException.class,
+                () -> oppfolgingPeriodeService.behandleKafkaMeldingLogikk(avsluttetMelding));
+
+        assertThat(kastetFeil).isSameAs(feil);
+        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId).orElseThrow().getOppfolging()).isTrue();
+        assertThat(pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer())
+                .containsExactlyInAnyOrder(aktorId.get(), fnr.get(), historiskFnr.get());
+        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, aktivPeriodeId)).isNotNull();
+        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, historiskPeriodeId)).isNotNull();
+
+        reset(sisteArbeidssoekerPeriodeRepository);
+        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(avsluttetMelding);
+
+        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId)).isEmpty();
+        assertThat(pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer()).isEmpty();
+        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, aktivPeriodeId)).isNull();
+        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, historiskPeriodeId)).isNull();
     }
 
     @Test

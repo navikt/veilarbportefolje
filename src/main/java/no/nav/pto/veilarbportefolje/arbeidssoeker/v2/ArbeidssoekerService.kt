@@ -76,8 +76,7 @@ class ArbeidssoekerService(
 
         val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr)
 
-        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
+        hentAlleFnrOgSlettGamlePerioder(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
@@ -219,7 +218,7 @@ class ArbeidssoekerService(
             return
         }
 
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(fnr)
+        hentAlleFnrOgSlettGamlePerioder(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(aktivArbeidssoekerperiode.periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
@@ -275,10 +274,10 @@ class ArbeidssoekerService(
         }
 
         try {
-            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(maybeFnr.get())
+            hentAlleFnrOgSlettGamlePerioder(maybeFnr.get())
         } catch (e: Exception) {
             secureLog.error("Feil ved sletting av siste arbeidssøkerperiode for bruker med fnr: ${maybeFnr.get()}", e)
-            return
+            throw e
         }
     }
 
@@ -308,5 +307,10 @@ class ArbeidssoekerService(
             it.sendtInnAv.tidspunkt
         }
         return sisteOpplysningerOmArbeidssoeker
+    }
+
+    private fun hentAlleFnrOgSlettGamlePerioder(fnr: Fnr) {
+        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
+            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
     }
 }

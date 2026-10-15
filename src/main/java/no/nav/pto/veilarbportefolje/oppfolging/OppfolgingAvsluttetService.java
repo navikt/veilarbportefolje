@@ -77,6 +77,7 @@ public class OppfolgingAvsluttetService {
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktorId));
 
+        arbeidssoekerService.slettArbeidssoekerData(aktorId, maybeFnr);
         oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerRegistrering(aktorId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerProfilering(aktorId);
@@ -88,7 +89,6 @@ public class OppfolgingAvsluttetService {
         ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
         fargekategoriService.slettFargekategoriPaaBruker(aktorId, maybeFnr);
         oppfolgingsbrukerServiceV2.slettOppfolgingsbruker(aktorId, maybeFnr);
-        arbeidssoekerService.slettArbeidssoekerData(aktorId, maybeFnr);
         aapService.slettAapData(aktorId, maybeFnr);
         tiltakspengerService.slettTiltakspengerData(aktorId, maybeFnr);
         dagpengerService.slettDagpengerData(aktorId, maybeFnr);
