@@ -39,7 +39,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.`when`
@@ -580,6 +579,7 @@ class ArbeidssoekerServiceTest(
         val (aktivtFnr, historiskFnr) = lagPersonUnderOppfolgingMedIdentbytte()
         val gammelPeriodeId = UUID.randomUUID()
         val nyPeriodeId = UUID.randomUUID()
+
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
             ArbeidssoekerPeriodeEntity(gammelPeriodeId, historiskFnr.get())
         )
@@ -631,13 +631,15 @@ class ArbeidssoekerServiceTest(
     fun periode_ignoreres_dersom_personen_ikke_har_aktivt_fnr() {
         val aktorId = randomAktorId()
         val historiskFnr = TestDataUtils.randomFnr()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
         pdlIdentRepository.upsertIdenter(
             listOf(
                 PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
                 PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
             )
         )
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now())
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId )
         val eksisterendePeriodeId = UUID.randomUUID()
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
             ArbeidssoekerPeriodeEntity(eksisterendePeriodeId, historiskFnr.get())
@@ -652,6 +654,8 @@ class ArbeidssoekerServiceTest(
         val aktorId = randomAktorId()
         val aktivtFnr = TestDataUtils.randomFnr()
         val historiskFnr = TestDataUtils.randomFnr()
+        val oppfolgingsperiodeId = UUID.randomUUID()
+
         pdlIdentRepository.upsertIdenter(
             listOf(
                 PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
@@ -659,7 +663,7 @@ class ArbeidssoekerServiceTest(
                 PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
             )
         )
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now())
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), oppfolgingsperiodeId)
         return aktivtFnr to historiskFnr
     }
 
@@ -702,7 +706,7 @@ class ArbeidssoekerServiceTest(
             JsonUtils.fromJson(file, PdlBarnResponse::class.java).data.hentPerson
         )
 
-        `when`(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(ArgumentMatchers.any())).thenReturn(pdlPersonBarn)
+        `when`(pdlPortefoljeClient.hentBrukerBarnDataFraPdl(any())).thenReturn(pdlPersonBarn)
 
         return pdlPersonBarn
     }
