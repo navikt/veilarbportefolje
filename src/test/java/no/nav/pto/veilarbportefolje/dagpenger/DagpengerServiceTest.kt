@@ -41,6 +41,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Optional
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class DagpengerServiceTest(
@@ -91,7 +92,7 @@ class DagpengerServiceTest(
     @Test
     fun `skal starte henting og lagring av dagpenger ved mottatt kafkamelding`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
         `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(mockedPerioder)
@@ -114,7 +115,7 @@ class DagpengerServiceTest(
     @Test
     fun `skal ikke behandle kafkamelding når person ikke har dagpenger`() {
         // Given
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -147,7 +148,7 @@ class DagpengerServiceTest(
     fun `hentDagpengerForOppfolgingPeriode filtrerer perioder utenfor oppfolging og fra arena`() {
         // Given
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato, UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -183,7 +184,7 @@ class DagpengerServiceTest(
     fun `hentAntallResterendeDagerFraApi skal hente ut antall dager fra den nyeste datoen `() {
         // Given
         val oppfolgingStartdato = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Oslo"))
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato)
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartdato, UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -213,7 +214,7 @@ class DagpengerServiceTest(
             PDLIdent(norskIdentHistorisk.get(), true, Gruppe.FOLKEREGISTERIDENT)
         )
 
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(2), UUID.randomUUID())
         pdlIdentRepository.upsertIdenter(identerBruker)
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
@@ -276,7 +277,7 @@ class DagpengerServiceTest(
 
     private fun setInitialState(aktorId: AktorId) {
         testDataClient.lagreBrukerUnderOppfolging(aktorId, norskIdent, navKontor, veilederId)
-        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24))
+        oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now().minusMonths(24),UUID.randomUUID())
         populateOpensearch(navKontor, veilederId, aktorId.get())
 
         `when`(aktorClient.hentAktorId(any())).thenReturn(aktorId)
