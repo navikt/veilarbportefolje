@@ -10,12 +10,18 @@ import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerBeregningerResponseDto
 import no.nav.pto.veilarbportefolje.dagpenger.dto.DagpengerPeriodeDto
-import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_AAP
-import no.nav.pto.veilarbportefolje.database.PostgresTable.YTELSER_DAGPENGER
+import no.nav.pto.veilarbportefolje.database.PostgresTable.*
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
+import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
+import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
+import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
+import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
+import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramRepository
+import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import org.assertj.core.api.Assertions.assertThat
@@ -31,6 +37,9 @@ class PostgresYtelserMapperTest(
     @param:Autowired val postgresYtelserMapper: PostgresYtelserMapper,
     @param:Autowired val aapRepository: AapRepository,
     @param:Autowired val dagpengerRepository: DagpengerRepository,
+    @param:Autowired val uforetrygdRepository: UforetrygdRepository,
+    @param:Autowired val tiltakspengerRepository: TiltakspengerRespository,
+    @param:Autowired val ungdomsprogramRepository: UngdomsprogramRepository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -39,6 +48,9 @@ class PostgresYtelserMapperTest(
     fun reset() {
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_AAP.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_DAGPENGER.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UFORETRYGD.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_TILTAKSPENGER.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
@@ -175,6 +187,192 @@ class PostgresYtelserMapperTest(
         assertThat(brukerUtenDapgener.dagpenger?.harDagpenger).isFalse()
     }
 
+    @Test
+    fun `flettInnUforetrygd skal finne uføretrygd lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val virkningsdato = LocalDate.now().minusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        uforetrygdRepository.upsertUforetrygd(
+            historiskFnr,
+            uforetrygd(uforegrad = 50, virkningsdato = virkningsdato)
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.uforetrygd?.virkningsdato).isEqualTo(virkningsdato)
+        assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
+    }
+
+    @Test
+    fun `flettInnUforetrygd skal velge uføretrygd på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val virkningsdatoGjeldende = LocalDate.now().minusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        uforetrygdRepository.upsertUforetrygd(
+            fnr,
+            uforetrygd(uforegrad = 50, virkningsdato = virkningsdatoGjeldende)
+        )
+        uforetrygdRepository.upsertUforetrygd(
+            historiskFnr,
+            uforetrygd(uforegrad = 60, virkningsdato = LocalDate.now().minusMonths(6))
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.uforetrygd?.virkningsdato).isEqualTo(virkningsdatoGjeldende)
+        assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
+    }
+
+    @Test
+    fun `flettInnTiltakspenger skal finne tiltakspenger lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMed = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        tiltakspengerRepository.upsertTiltakspenger(historiskFnr, tiltakspengerVedtak(tilOgMed))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.tiltakspenger).isTrue()
+        assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMed)
+        assertThat(bruker.tiltakspenger_rettighet).isEqualTo(TiltakspengerRettighet.TILTAKSPENGER)
+    }
+
+    @Test
+    fun `flettInnTiltakspenger skal velge tiltakspenger på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        tiltakspengerRepository.upsertTiltakspenger(fnr, tiltakspengerVedtak(tilOgMedGjeldende))
+        tiltakspengerRepository.upsertTiltakspenger(historiskFnr, tiltakspengerVedtak(LocalDate.now().plusMonths(6)))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.tiltakspenger).isTrue()
+        assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMedGjeldende)
+    }
+
+    @Test
+    fun `flettInnTiltakspenger skal sette tiltakspenger false når periode er utløpt, rettighet er INGENTING eller vedtak mangler`() {
+        val fnrMedUtloptPeriode = randomFnr().get()
+        val fnrMedIngenRettighet = randomFnr().get()
+        val fnrUtenTiltakspenger = randomFnr().get()
+        lagreIdenter(fnrMedUtloptPeriode)
+        lagreIdenter(fnrMedIngenRettighet)
+        lagreIdenter(fnrUtenTiltakspenger)
+        tiltakspengerRepository.upsertTiltakspenger(
+            fnrMedUtloptPeriode,
+            tiltakspengerVedtak(LocalDate.now().minusDays(1))
+        )
+        tiltakspengerRepository.upsertTiltakspenger(
+            fnrMedIngenRettighet,
+            tiltakspengerVedtak(LocalDate.now().plusMonths(3)).copy(rettighet = TiltakspengerRettighet.INGENTING)
+        )
+
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        val brukerMedIngenRettighet = PortefoljebrukerOpensearchModell(fnr = fnrMedIngenRettighet)
+        val brukerUtenTiltakspenger = PortefoljebrukerOpensearchModell(fnr = fnrUtenTiltakspenger)
+        postgresYtelserMapper.flettInnYtelser(
+            listOf(brukerMedUtloptPeriode, brukerMedIngenRettighet, brukerUtenTiltakspenger)
+        )
+
+        assertThat(brukerMedUtloptPeriode.tiltakspenger).isFalse()
+        assertThat(brukerMedIngenRettighet.tiltakspenger).isFalse()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger).isFalse()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger_vedtaksdato_tom).isNull()
+        assertThat(brukerUtenTiltakspenger.tiltakspenger_rettighet).isNull()
+    }
+
+    @Test
+    fun `flettInnUngdomsprogram skal finne ungdomsprogram lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val periode = ungdomsprogramPeriode(tilOgMed = LocalDate.now().plusMonths(3))
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        ungdomsprogramRepository.upsertUngdomsprogram(historiskFnr, periode)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.ungdomsprogram?.fraOgMed).isEqualTo(periode.fraOgMed)
+        assertThat(bruker.ungdomsprogram?.tilOgMed).isEqualTo(periode.tilOgMed)
+        assertThat(bruker.ungdomsprogram?.maksdato).isEqualTo(periode.periodeMaksDato)
+        assertThat(bruker.ungdomsprogram?.harForlengetPeriode).isFalse()
+    }
+
+    @Test
+    fun `flettInnUngdomsprogram skal velge ungdomsprogram på ikke-historisk fnr når det finnes på flere fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
+
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        ungdomsprogramRepository.upsertUngdomsprogram(fnr, ungdomsprogramPeriode(tilOgMed = tilOgMedGjeldende))
+        ungdomsprogramRepository.upsertUngdomsprogram(
+            historiskFnr,
+            ungdomsprogramPeriode(tilOgMed = LocalDate.now().plusMonths(6))
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.ungdomsprogram?.tilOgMed).isEqualTo(tilOgMedGjeldende)
+    }
+
+    @Test
+    fun `flettInnUngdomsprogram skal sette ungdomsprogram når periode er åpen og maksdato er fram i tid`() {
+        val fnr = randomFnr().get()
+        lagreIdenter(fnr)
+        ungdomsprogramRepository.upsertUngdomsprogram(fnr, ungdomsprogramPeriode(tilOgMed = null))
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
+
+        assertThat(bruker.ungdomsprogram).isNotNull()
+        assertThat(bruker.ungdomsprogram?.tilOgMed).isNull()
+    }
+
+    @Test
+    fun `flettInnUngdomsprogram skal sette ungdomsprogram null når periode eller maksdato er utløpt eller periode mangler`() {
+        val fnrMedUtloptPeriode = randomFnr().get()
+        val fnrMedUtloptMaksdato = randomFnr().get()
+        val fnrUtenUngdomsprogram = randomFnr().get()
+        lagreIdenter(fnrMedUtloptPeriode)
+        lagreIdenter(fnrMedUtloptMaksdato)
+        lagreIdenter(fnrUtenUngdomsprogram)
+        ungdomsprogramRepository.upsertUngdomsprogram(
+            fnrMedUtloptPeriode,
+            ungdomsprogramPeriode(tilOgMed = LocalDate.now().minusDays(1))
+        )
+        ungdomsprogramRepository.upsertUngdomsprogram(
+            fnrMedUtloptMaksdato,
+            ungdomsprogramPeriode(tilOgMed = null, maksdato = LocalDate.now().minusDays(1))
+        )
+
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        val brukerMedUtloptMaksdato = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptMaksdato)
+        val brukerUtenUngdomsprogram = PortefoljebrukerOpensearchModell(fnr = fnrUtenUngdomsprogram)
+        postgresYtelserMapper.flettInnYtelser(
+            listOf(brukerMedUtloptPeriode, brukerMedUtloptMaksdato, brukerUtenUngdomsprogram)
+        )
+
+        assertThat(brukerMedUtloptPeriode.ungdomsprogram).isNull()
+        assertThat(brukerMedUtloptMaksdato.ungdomsprogram).isNull()
+        assertThat(brukerUtenUngdomsprogram.ungdomsprogram).isNull()
+    }
+
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(
             listOf(
@@ -201,5 +399,29 @@ class PostgresYtelserMapperTest(
             tilOgMedDato = tilOgMed
         ),
         rettighetsType = AapRettighetstype.BISTANDSBEHOV
+    )
+
+    private fun uforetrygd(uforegrad: Int, virkningsdato: LocalDate) = UforetrygdResponseDto(
+        lopendeUforetrygd = true,
+        uforegrad = uforegrad,
+        forsteVirkningstidspunkt = virkningsdato
+    )
+
+    private fun tiltakspengerVedtak(tilOgMed: LocalDate) = TiltakspengerResponseDto(
+        sakId = "SAK-1",
+        fom = LocalDate.now().minusMonths(6),
+        tom = tilOgMed,
+        rettighet = TiltakspengerRettighet.TILTAKSPENGER,
+        kilde = "tp"
+    )
+
+    private fun ungdomsprogramPeriode(
+        tilOgMed: LocalDate?,
+        maksdato: LocalDate = LocalDate.now().plusYears(1)
+    ) = Periode(
+        fraOgMed = LocalDate.now().minusMonths(6),
+        tilOgMed = tilOgMed,
+        harForlengetPeriode = false,
+        periodeMaksDato = maksdato
     )
 }

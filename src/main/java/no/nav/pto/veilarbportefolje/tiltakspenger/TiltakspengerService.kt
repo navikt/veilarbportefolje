@@ -82,8 +82,8 @@ class TiltakspengerService(
         opensearchIndexerPaDatafelt.oppdaterTiltakspenger(
             aktorId,
             harAktivYtelse,
-            sisteTiltakspengerVedtak.tom,
-            sisteTiltakspengerVedtak.rettighet
+            if (harAktivYtelse) sisteTiltakspengerVedtak.tom else null,
+            if (harAktivYtelse) sisteTiltakspengerVedtak.rettighet else null
         )
     }
 

@@ -7,11 +7,16 @@ import no.nav.pto.veilarbportefolje.ungdomsprogram.dto.Periode
 import org.jetbrains.annotations.TestOnly
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Repository
 
 @Repository
-class UngdomsprogramRepository(private val db: JdbcTemplate) {
+class UngdomsprogramRepository(
+    private val db: JdbcTemplate,
+    private val namedDb: NamedParameterJdbcTemplate
+) {
     fun upsertUngdomsprogram(
         norskIdent: NorskIdent,
         ungdomsprogramperiode: Periode,
@@ -48,21 +53,38 @@ class UngdomsprogramRepository(private val db: JdbcTemplate) {
         )
     }
 
+    fun hentUngdomsprogramPerioder(norskeIdenter: List<String>): Map<String, UngdomsprogramPeriodeEntity> {
+        if (norskeIdenter.isEmpty()) return emptyMap()
+
+        val sql = """
+            SELECT ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT}, ${YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM}, ${YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM}, ${YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE}, ${YTELSER_UNGDOMSPROGRAM.MAKSDATO}, ${YTELSER_UNGDOMSPROGRAM.RAD_SIST_ENDRET}
+            FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME}
+            WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} IN (:norskeIdenter)
+        """
+
+        return namedDb.query(sql, mapOf("norskeIdenter" to norskeIdenter)) { rs, rowNum ->
+            rs.getString(YTELSER_UNGDOMSPROGRAM.NORSK_IDENT) to ungdomsprogramPeriodeRowMapper.mapRow(rs, rowNum)
+        }.toMap()
+    }
+
     @TestOnly
     fun hentUngdomsprogram(norskIdent: NorskIdent): UngdomsprogramPeriodeEntity? {
         val sql = "SELECT * FROM ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME} WHERE ${YTELSER_UNGDOMSPROGRAM.NORSK_IDENT} = ?"
         return try {
-            db.queryForObject(sql, { rs, _ ->
-                UngdomsprogramPeriodeEntity(
-                    fraOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM).toLocalDate(),
-                    tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM)?.toLocalDate(),
-                    harForlengetPeriode = rs.getBoolean(YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE),
-                    maksdato = rs.getDate(YTELSER_UNGDOMSPROGRAM.MAKSDATO).toLocalDate()
-                )
-            }, norskIdent)
+            db.queryForObject(sql, ungdomsprogramPeriodeRowMapper, norskIdent)
         } catch (ex: EmptyResultDataAccessException) {
             null
         }
+    }
+
+    private val ungdomsprogramPeriodeRowMapper = RowMapper { rs, _ ->
+        UngdomsprogramPeriodeEntity(
+            fraOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_FOM).toLocalDate(),
+            tilOgMed = rs.getDate(YTELSER_UNGDOMSPROGRAM.NYESTE_PERIODE_TOM)?.toLocalDate(),
+            harForlengetPeriode = rs.getBoolean(YTELSER_UNGDOMSPROGRAM.HAR_FORLENGET_PERIODE),
+            maksdato = rs.getDate(YTELSER_UNGDOMSPROGRAM.MAKSDATO).toLocalDate(),
+            radSistEndret = rs.getTimestamp(YTELSER_UNGDOMSPROGRAM.RAD_SIST_ENDRET).toLocalDateTime()
+        )
     }
 
     fun slettUngdomsprogramForBruker(norskIdent: NorskIdent) {

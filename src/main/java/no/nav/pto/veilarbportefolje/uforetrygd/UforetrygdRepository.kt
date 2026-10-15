@@ -7,10 +7,14 @@ import no.nav.pto.veilarbportefolje.uforetrygd.dto.UforetrygdResponseDto
 import org.jetbrains.annotations.TestOnly
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class UforetrygdRepository(private val db: JdbcTemplate) {
+class UforetrygdRepository(
+    private val db: JdbcTemplate,
+    private val namedDb: NamedParameterJdbcTemplate
+) {
 
     fun upsertUforetrygd(norskIdent: String, uføretrygd: UforetrygdResponseDto) {
         db.update(
@@ -37,6 +41,23 @@ class UforetrygdRepository(private val db: JdbcTemplate) {
         )
     }
 
+    fun hentUforetrygdVedtak(norskeIdenter: List<String>): Map<String, UforetrygdEntity> {
+        if (norskeIdenter.isEmpty()) return emptyMap()
+
+        val sql = """
+            SELECT ${YTELSER_UFORETRYGD.NORSK_IDENT}, ${YTELSER_UFORETRYGD.UFOREGRAD}, ${YTELSER_UFORETRYGD.VIRKNINGSDATO}, ${YTELSER_UFORETRYGD.RAD_SIST_ENDRET}
+            FROM ${YTELSER_UFORETRYGD.TABLE_NAME}
+            WHERE ${YTELSER_UFORETRYGD.NORSK_IDENT} IN (:norskeIdenter)
+        """
+
+        return namedDb.query(sql, mapOf("norskeIdenter" to norskeIdenter)) { rs, _ ->
+            rs.getString(YTELSER_UFORETRYGD.NORSK_IDENT) to UforetrygdEntity(
+                uføregrad = rs.getInt(YTELSER_UFORETRYGD.UFOREGRAD),
+                virkningsdato = rs.getDate(YTELSER_UFORETRYGD.VIRKNINGSDATO).toLocalDate(),
+                radSistEndret = rs.getTimestamp(YTELSER_UFORETRYGD.RAD_SIST_ENDRET).toLocalDateTime()
+            )
+        }.toMap()
+    }
 
     @TestOnly
     fun hentUforetrygd(norskIdent: NorskIdent): UforetrygdEntity? {
@@ -46,6 +67,7 @@ class UforetrygdRepository(private val db: JdbcTemplate) {
                 UforetrygdEntity(
                     uføregrad = rs.getInt(YTELSER_UFORETRYGD.UFOREGRAD),
                     virkningsdato = rs.getDate(YTELSER_UFORETRYGD.VIRKNINGSDATO).toLocalDate(),
+                    radSistEndret = rs.getTimestamp(YTELSER_UFORETRYGD.RAD_SIST_ENDRET).toLocalDateTime()
                 )
             }, norskIdent)
         } catch (ex: EmptyResultDataAccessException) {
