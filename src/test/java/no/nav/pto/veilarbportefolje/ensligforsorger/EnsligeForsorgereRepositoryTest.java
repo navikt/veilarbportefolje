@@ -15,7 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -24,6 +26,8 @@ import java.util.stream.Stream;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Aktivitetstype.BARN_UNDER_ETT_ÅR;
 import static no.nav.pto.veilarbportefolje.ensligforsorger.domain.Periodetype.NY_PERIODE_FOR_NYTT_BARN;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -187,5 +191,16 @@ public class EnsligeForsorgereRepositoryTest {
         assertEquals(2, ensligeForsorgerOvergangsstønadTiltaks.size());
         assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(2))));
         assertTrue(ensligeForsorgerOvergangsstønadTiltaks.stream().anyMatch(x -> x.personIdent().equals(fnrList.get(4))));
+    }
+
+    @Test
+    void hentOvergangsstønadForEnsligeForsorgereSkalReturnereRadSistEndret() {
+        Fnr fnr = randomFnr();
+        lagreRandomVedtakIdatabase(1L, fnr, LocalDate.now().minusDays(10), LocalDate.now().plusMonths(1));
+
+        List<EnsligeForsorgerOvergangsstønadTiltak> tiltak = ensligeForsorgereRepository.hentOvergangsstønadForEnsligeForsorger(List.of(fnr), true);
+
+        assertEquals(1, tiltak.size());
+        assertThat(tiltak.getFirst().radSistEndret()).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 }

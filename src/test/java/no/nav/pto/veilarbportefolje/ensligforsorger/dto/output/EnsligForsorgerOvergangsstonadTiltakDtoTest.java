@@ -10,7 +10,7 @@ public class EnsligForsorgerOvergangsstonadTiltakDtoTest {
 
     @Test
     void testCastingToOpensearchDto() {
-        EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgereTiltak = new EnsligeForsorgerOvergangsstønadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate());
+        EnsligeForsorgerOvergangsstønadTiltakDto ensligeForsorgereTiltak = new EnsligeForsorgerOvergangsstønadTiltakDto("Hovedperiode", false, randomLocalDate(), randomLocalDate(), null);
         EnsligeForsorgereOvergangsstonad ensligeForsorgereOpensearchDto = ensligeForsorgereTiltak.toEnsligeForsorgereOpensearchDto();
 
         assertEquals(ensligeForsorgereOpensearchDto.vedtaksPeriodetype(), ensligeForsorgereTiltak.vedtaksPeriodetypeBeskrivelse);
