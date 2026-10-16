@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -22,6 +23,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
     private val db: NamedParameterJdbcTemplate,
     private val opensearchIndexer: OpensearchIndexer,
     private val defaultUnleash: DefaultUnleash,
+    private val oppfolgingRepository: OppfolgingRepositoryV2
 ) {
     @Transactional
     fun behandleAktivitetsKafkaMeldinger(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
@@ -35,9 +37,10 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val endeligeAktiviteterEkskludertTiltak = endeligeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val gjeldendeAktiviteter = endeligeAktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) }
+        val endeligeAktiviteterEkskludertTiltak = gjeldendeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE}
 
-        val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val tiltaksaktiviteter = gjeldendeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
         val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
         val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
@@ -76,6 +79,18 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             }
         }
          return antallTiltaksMeldinger;
+    }
+
+    private fun tilhorerGjeldendeOppfolgingsperiode(aktivitet: KafkaAktivitetMeldingEntity): Boolean {
+        val oppfolgingsperiodeId = oppfolgingRepository.hentOppfolgingsperiodeId(AktorId.of(aktivitet.aktorId))
+
+        val erGjeldendeOppfolgingsperiodeId = aktivitet.oppfolgingsperiodeId!= null && oppfolgingsperiodeId != null && aktivitet.oppfolgingsperiodeId == oppfolgingsperiodeId.toString()
+
+        if (erGjeldendeOppfolgingsperiodeId) {
+            return true
+        }
+        secureLog.info("Meldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
+        return false
     }
 
     private fun batchUpsertAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {
