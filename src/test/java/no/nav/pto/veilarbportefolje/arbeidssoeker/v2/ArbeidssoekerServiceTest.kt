@@ -90,6 +90,9 @@ class ArbeidssoekerServiceTest(
         val aktorId = randomAktorId()
         val fnr1 = TestDataUtils.randomFnr()
         val fnr2 = TestDataUtils.randomFnr()
+        val historiskFnr = TestDataUtils.randomFnr()
+        val historiskPeriodeId = UUID.randomUUID()
+        val historiskOpplysningerId = UUID.randomUUID()
         val periodeId1 = UUID.randomUUID()
         val opplysningerOmArbeidssoekerId1 = UUID.randomUUID()
         val periodeId2 = UUID.randomUUID()
@@ -97,6 +100,7 @@ class ArbeidssoekerServiceTest(
         pdlIdentRepository.upsertIdenter(
             listOf(
                 PDLIdent(fnr1.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
                 PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)
             )
         )
@@ -133,10 +137,28 @@ class ArbeidssoekerServiceTest(
             )
         )
 
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(historiskPeriodeId, historiskFnr.get())
+        )
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+            genererRandomOpplysningerOmArbeidssoekerEntity(historiskPeriodeId, historiskOpplysningerId)
+        )
+        profileringRepository.insertProfilering(
+            ProfileringEntity(
+                historiskPeriodeId,
+                Profileringsresultat.OPPGITT_HINDRINGER.name,
+                DateUtils.toTimestamp(ZonedDateTime.now())
+            )
+        )
+
         // Act
         arbeidssoekerService.slettArbeidssoekerData(aktorId, Optional.of(fnr1))
 
         // Assert
+        assertThat(getArbeidssoekerPeriodeFraDb(db, historiskPeriodeId)).isNull()
+        assertThat(getOpplysningerOmArbeidssoekerFraDb(db, historiskPeriodeId)).isNull()
+        assertThat(getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(db, historiskOpplysningerId)).isNull()
+        assertThat(getProfileringFraDb(db, historiskPeriodeId)).isNull()
         val sisteArbeidssoekerPeriode1 = getArbeidssoekerPeriodeFraDb(db, periodeId1)
         assertThat(sisteArbeidssoekerPeriode1).isNull()
         val sisteArbeidssoekerPeriode2 = getArbeidssoekerPeriodeFraDb(db, periodeId2)
@@ -819,4 +841,3 @@ fun genererRandomOpplysningerOmArbeidssoekerEntity(
         )
     ).toOpplysningerOmArbeidssoekerEntity()
 }
-
