@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.postgres
 
+import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.aap.AapRepository
 import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
@@ -8,6 +9,7 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerVedtakEntity
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
+import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk
@@ -30,6 +32,7 @@ class PostgresYtelserMapper(
     private val uforetrygdRepository: UforetrygdRepository,
     private val tiltakspengerRepository: TiltakspengerRespository,
     private val ungdomsprogramRepository: UngdomsprogramRepository,
+    private val ensligeForsorgereService: EnsligeForsorgereService,
     private val pdlIdentRepository: PdlIdentRepository
 ) {
 
@@ -40,6 +43,7 @@ class PostgresYtelserMapper(
         flettInnUforetrygd(brukere, fnrIdenterPerBruker)
         flettInnTiltakspenger(brukere, fnrIdenterPerBruker)
         flettInnUngdomsprogram(brukere, fnrIdenterPerBruker)
+        flettInnEnsligeForsorgere(brukere, fnrIdenterPerBruker)
     }
 
     private fun flettInnAapKelvin(
@@ -173,6 +177,28 @@ class PostgresYtelserMapper(
                     harForlengetPeriode = aktuellPeriode.harForlengetPeriode
                 )
             } else null
+        }
+    }
+
+    private fun flettInnEnsligeForsorgere(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val overgangsstonadForAlleIdenterPerBruker = ensligeForsorgereService
+            .hentEnsligeForsorgerOvergangsstønadTiltak(alleIdenter(fnrIdenterPerBruker).map { Fnr.of(it) })
+            .mapKeys { it.key.get() }
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val aktueltVedtak = velgVedtak(
+                "enslig forsørger",
+                bruker.fnr,
+                identer,
+                overgangsstonadForAlleIdenterPerBruker,
+                { it.radSistEndret ?: LocalDateTime.MIN }
+            )
+
+            bruker.enslige_forsorgere_overgangsstonad = aktueltVedtak?.toEnsligeForsorgereOpensearchDto()
         }
     }
 
