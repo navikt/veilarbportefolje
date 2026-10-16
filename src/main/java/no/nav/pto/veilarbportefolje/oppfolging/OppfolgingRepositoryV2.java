@@ -65,6 +65,12 @@ public class OppfolgingRepositoryV2 {
         ));
     }
 
+    public UUID hentOppfolgingsperiodeId(AktorId aktoerId) {
+        return Optional.ofNullable(queryForObjectOrNull(() ->
+                db.queryForObject("SELECT oppfolgingsperiode_id FROM oppfolging_data WHERE aktoerid = ?", (rs, i) -> rs.getString(OPPFOLGINGSPERIODE_ID), aktoerId.get())
+        )).map(UUID::fromString).orElse(null);
+    }
+
     public boolean erUnderOppfolgingOgErAktivIdent(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("""
@@ -96,7 +102,8 @@ public class OppfolgingRepositoryV2 {
                 rs.getBoolean(NY_FOR_VEILEDER),
                 rs.getBoolean(MANUELL),
                 rs.getTimestamp(STARTDATO),
-                rs.getTimestamp(TILDELT_TIDSPUNKT)
+                rs.getTimestamp(TILDELT_TIDSPUNKT),
+                rs.getObject(OPPFOLGINGSPERIODE_ID, UUID.class)
         );
     }
 

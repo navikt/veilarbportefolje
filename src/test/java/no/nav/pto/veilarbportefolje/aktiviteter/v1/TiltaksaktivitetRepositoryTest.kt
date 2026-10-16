@@ -10,6 +10,7 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.NAV_KONTOR
 import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.KODE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.VERDI
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.time.ZonedDateTime
+import java.util.UUID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.TABLE_NAME as AO_KONTOR_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME as KAFKA_AKTIVITET_MELDING_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME as ARENA_OPPFOLGINGSBRUKER_TABLE
@@ -26,12 +29,14 @@ import no.nav.pto.veilarbportefolje.database.PostgresTable.TILTAKKODEVERK.TABLE_
 class TiltaksaktivitetRepositoryTest (
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
     @param:Autowired private val tiltaksaktivitetRepository: TiltaksaktivitetRepository,
-    @param:Autowired private val portefoljeAktivitetKafkaMeldingRepository: PortefoljeAktivitetKafkaMeldingRepository
+    @param:Autowired private val portefoljeAktivitetKafkaMeldingRepository: PortefoljeAktivitetKafkaMeldingRepository,
+    @param:Autowired private val oppfolgingRepository: OppfolgingRepositoryV2
 ){
     private lateinit var jdbcNameParameter: NamedParameterJdbcTemplate
 
     val fnr = Fnr.ofValidFnr("12345678911")
     val aktorid = AktorId.of("1234567891234")
+    val oppfolgingsperiodeId = UUID.randomUUID()
 
     @BeforeEach
     fun setupData(){
@@ -51,12 +56,13 @@ class TiltaksaktivitetRepositoryTest (
         jdbcTemplate.execute("""INSERT INTO $TILTAKKODEVERK_TABLE ($KODE, $VERDI) VALUES('TILTAK4', 'Tiltak 4')""")
 
         jdbcTemplate.execute("""INSERT INTO $AO_KONTOR_TABLE ($IDENT, $AKTORID, $KONTOR_ID) VALUES('${fnr.get()}', '${aktorid.get()}', '1234')""")
-        jdbcTemplate.execute("""INSERT INTO $ARENA_OPPFOLGINGSBRUKER_TABLE ($FODSELSNR, $NAV_KONTOR) VALUES('${fnr.get()}', '1234')""")
 
-        val aktivitetEntity = aktivitetEntity(aktivitetId = "aktivitetId-1", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK1")
-        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitetId-2", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK2")
-        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitetId-3", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK3")
-        val aktivitetEntity4 = aktivitetEntity(aktivitetId = "aktivitetId-4", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK4", aktivitetStatus = InaktivAktivitetStatus.AVBRUTT.name)
+        oppfolgingRepository.settUnderOppfolging(aktorid , ZonedDateTime.now(), oppfolgingsperiodeId)
+
+        val aktivitetEntity = aktivitetEntity(aktivitetId = "aktivitetId-1", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK1", oppfolgingsperiodeId = oppfolgingsperiodeId.toString())
+        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitetId-2", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK2", oppfolgingsperiodeId = oppfolgingsperiodeId.toString())
+        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitetId-3", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK3", oppfolgingsperiodeId = oppfolgingsperiodeId.toString())
+        val aktivitetEntity4 = aktivitetEntity(aktivitetId = "aktivitetId-4", aktorId = "${aktorid.get()}", tiltakskode = "TILTAK4", aktivitetStatus = InaktivAktivitetStatus.AVBRUTT.name, oppfolgingsperiodeId = oppfolgingsperiodeId.toString())
 
         val aktiviteterListe = listOf(aktivitetEntity, aktivitetEntity2, aktivitetEntity3, aktivitetEntity4)
 
@@ -76,7 +82,6 @@ class TiltaksaktivitetRepositoryTest (
         assertThat(tiltakskodeMapping.tiltak.containsKey("TILTAK2")).isTrue
         assertThat(tiltakskodeMapping.tiltak.containsValue("Tiltak 2")).isTrue
     }
-
 
     @Test
     fun `Tiltakstype lagres når den finnes ikke i tiltakskodeverket-tabellen`() {
@@ -136,6 +141,7 @@ class TiltaksaktivitetRepositoryTest (
         aktivitetStatus: String = "GJENNOMFORES",
         tiltakskode: String = "ARBFORB",
         aktivitetType: String = "TILTAK",
+        oppfolgingsperiodeId: String? = UUID.randomUUID().toString(),
         recordOffset: Long = 15,
         recordPartition: Int = 3,
         recordKey: String = aktivitetId,
@@ -153,7 +159,7 @@ class TiltaksaktivitetRepositoryTest (
         avtalt = true,
         version = version,
         historisk = historisk,
-        oppfolgingsperiodeId = "oppfolgingsperiodeId-1",
+        oppfolgingsperiodeId = oppfolgingsperiodeId,
         cvKanDelesStatus = "IKKE_SVART",
         svarfristStillingFraNav = "2024-04-01",
         recordOffset = recordOffset,

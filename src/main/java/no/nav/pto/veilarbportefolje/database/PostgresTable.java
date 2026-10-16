@@ -126,6 +126,7 @@ public class PostgresTable {
         public static final String MANUELL = "MANUELL";
         public static final String STARTDATO = "STARTDATO";
         public static final String TILDELT_TIDSPUNKT = "TILDELT_TIDSPUNKT";
+        public static final String OPPFOLGINGSPERIODE_ID = "OPPFOLGINGSPERIODE_ID";
     }
 
     public static final class OPPFOLGINGSBRUKER_ARENA_V2 {
