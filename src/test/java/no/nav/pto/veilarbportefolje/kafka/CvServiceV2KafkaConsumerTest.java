@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 import static java.util.Arrays.stream;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
@@ -39,9 +38,9 @@ public class CvServiceV2KafkaConsumerTest extends EndToEndTest {
         postgres.update("truncate TABLE OPPFOLGING_DATA");
         postgres.update("truncate TABLE oppfolgingsbruker_arena_v2");
         postgres.update("truncate TABLE bruker_cv");
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId1, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId2, ZonedDateTime.now());
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId3, ZonedDateTime.now());
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId1);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId2);
+        testDataClient.lagreBrukerUnderOppfolging(aktoerId3);
     }
 
     @Test
