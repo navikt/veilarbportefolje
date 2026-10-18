@@ -32,7 +32,7 @@ public class AktivitetKafkaConsumerTest extends EndToEndTest {
     @Test
     public void skal_oppdatere_aktivitet_i_opensearch() throws JSONException {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId);
+        testDataClient.settBrukerUnderOppfolging(aktoerId);
 
         final String tilDato = (LocalDate.now().plusMonths(1)).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toString();
         createAktivitetDocument(aktoerId);

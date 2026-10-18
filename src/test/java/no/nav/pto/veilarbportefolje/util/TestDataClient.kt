@@ -46,7 +46,7 @@ class TestDataClient(
         )
     }
 
-    fun lagreBrukerUnderOppfolging(aktoerId: AktorId) {
+    fun settBrukerUnderOppfolging(aktoerId: AktorId) {
         lagreBrukerUnderOppfolging(aktoerId, randomFnr(), randomNavKontor(), null, ZonedDateTime.now(), null, oppfolgingsperiodeId = UUID.randomUUID())
     }
 
