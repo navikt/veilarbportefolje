@@ -21,6 +21,7 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -106,6 +107,17 @@ public class ClientConfig {
         return new UforetrygdClient(
                 environmentProperties.getUforetrygdUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getUforetrygdScope())
+        );
+    }
+
+    @Bean
+    public SykefravaerClient sykefravaerClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new SykefravaerClient(
+                environmentProperties.getSykefravaeroppfolgingUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getSykefravaeroppfolgingScope())
         );
     }
 

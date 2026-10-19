@@ -83,6 +83,7 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
@@ -416,6 +417,11 @@ public class ApplicationConfigTest {
     @Bean
     public UforetrygdClient uforetrygdClient() {
         return mock(UforetrygdClient.class);
+    }
+
+    @Bean
+    public SykefravaerClient sykefravaerClient() {
+        return mock(SykefravaerClient.class);
     }
 
     @Bean
