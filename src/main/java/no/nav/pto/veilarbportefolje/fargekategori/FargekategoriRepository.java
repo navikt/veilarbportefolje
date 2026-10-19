@@ -40,7 +40,7 @@ public class FargekategoriRepository {
                 fnrListParam(fnrIdenter));
     }
 
-    public Map<String, FargekategoriForIdent> hentFargekategoriPerIdent(List<String> fnrIdenter) {
+    public Map<String, FargekategoriForIndekseringEntity> hentFargekategoriPerIdent(List<String> fnrIdenter) {
         if (fnrIdenter.isEmpty()) {
             return Map.of();
         }
@@ -48,14 +48,14 @@ public class FargekategoriRepository {
         String fnrIdenterParam = fnrIdenter.stream().collect(Collectors.joining(",", "{", "}"));
 
         return jdbcTemplate.query(hentSql,
-                        (rs, rowNumber) -> new FargekategoriForIdent(
+                        (rs, rowNumber) -> new FargekategoriForIndekseringEntity(
                                 rs.getString("fnr"),
                                 rs.getString("verdi"),
                                 rs.getString("enhet_id"),
                                 toLocalDateTimeOrNull(rs.getTimestamp("sist_endret"))),
                         fnrIdenterParam)
                 .stream()
-                .collect(Collectors.toMap(FargekategoriForIdent::fnr, Function.identity()));
+                .collect(Collectors.toMap(FargekategoriForIndekseringEntity::fnr, Function.identity()));
     }
 
     public void upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
