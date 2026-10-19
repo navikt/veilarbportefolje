@@ -152,7 +152,9 @@ public class HuskelappService {
             return false;
         }
 
-        Optional<String> navKontorPaHuskelapp = huskelappRepository.hentNavkontorPaHuskelapp(maybeFnr.get());
+        Optional<String> navKontorPaHuskelapp = hentPrioritertAktivHuskelapp(maybeFnr.get(), hentAlleFnrIdenterForBruker(maybeFnr.get()))
+                .map(Huskelapp::enhetId)
+                .map(EnhetId::get);
 
         if (navKontorPaHuskelapp.isEmpty()) {
             secureLog.info("Bruker {} har ikke Nav-kontor på huskelapp", aktoerId.toString());

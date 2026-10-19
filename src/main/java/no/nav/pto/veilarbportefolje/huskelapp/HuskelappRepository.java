@@ -23,7 +23,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -135,13 +134,6 @@ public class HuskelappRepository {
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
         db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), huskelappId, HuskelappStatus.AKTIV.name());
-    }
-
-    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr) {
-        //Hvordan gjør vi dette ved støtte for flere huskelapper...
-        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get(), HuskelappStatus.AKTIV.name())));
     }
 
     @SneakyThrows

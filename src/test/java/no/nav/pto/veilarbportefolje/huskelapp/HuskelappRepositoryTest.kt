@@ -154,13 +154,6 @@ class HuskelappRepositoryTest {
 
 
     @Test
-    fun faarHentetNavkontorPaHuskelapp() {
-        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
-        val enhetId = repo.hentNavkontorPaHuskelapp(huskelapp2.brukerFnr)
-        Assertions.assertThat(enhetId.isPresent).isTrue()
-    }
-
-    @Test
     fun kasterExceptionVedInsertAvToAktiveHuskelapperSammeBruker() {
         repo!!.opprettHuskelapp(huskelapp1, veilederA, enhet0010)
         val huskelapp = repo.hentAktivHuskelapp(fnr1)

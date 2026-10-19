@@ -181,9 +181,45 @@ public class HuskelappServiceTest {
         assertThat(jdbcTemplate.queryForList("SELECT HUSKELAPP_ID FROM HUSKELAPP", UUID.class)).containsExactly(annenBrukersHuskelapp);
     }
 
+    @Test
+    public void brukerHarHuskelappPaForrigeNavkontorSkalSjekkeHuskelappPaaHistoriskFnr() {
+        Fnr aktivFnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        insertOppfolgingsInformasjon(aktivFnr, aktorId, VeilederId.of("1111"), EnhetId.of("0110"), UUID.randomUUID());
+        leggTilHistoriskFnr(aktivFnr, historiskFnr, aktorId);
+        insertAktivHuskelapp(UUID.randomUUID(), historiskFnr, "0220", ZonedDateTime.now());
+
+        assertThat(huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktorId, Optional.of(aktivFnr))).isTrue();
+    }
+
+    @Test
+    public void brukerHarHuskelappPaForrigeNavkontorSkalPrioritereHuskelappPaaAktivFnr() {
+        Fnr aktivFnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        insertOppfolgingsInformasjon(aktivFnr, aktorId, VeilederId.of("1111"), EnhetId.of("0110"), UUID.randomUUID());
+        leggTilHistoriskFnr(aktivFnr, historiskFnr, aktorId);
+        insertAktivHuskelapp(UUID.randomUUID(), aktivFnr, "0110", ZonedDateTime.now().minusDays(2));
+        insertAktivHuskelapp(UUID.randomUUID(), historiskFnr, "0220", ZonedDateTime.now());
+
+        assertThat(huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktorId, Optional.of(aktivFnr))).isFalse();
+    }
+
+    private void leggTilHistoriskFnr(Fnr aktivFnr, Fnr historiskFnr, AktorId aktorId) {
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktivFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+    }
+
     private void insertAktivHuskelapp(UUID huskelappId, Fnr fnr, ZonedDateTime endretDato) {
+        insertAktivHuskelapp(huskelappId, fnr, "0110", endretDato);
+    }
+
+    private void insertAktivHuskelapp(UUID huskelappId, Fnr fnr, String enhetId, ZonedDateTime endretDato) {
         jdbcTemplate.update("INSERT INTO HUSKELAPP (HUSKELAPP_ID, FNR, ENHET_ID, ENDRET_AV_VEILEDER, ENDRET_DATO, FRIST, KOMMENTAR, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                huskelappId, fnr.get(), "0110", "1111", Timestamp.from(endretDato.toInstant()), null, "kommentar", "AKTIV");
+                huskelappId, fnr.get(), enhetId, "1111", Timestamp.from(endretDato.toInstant()), null, "kommentar", "AKTIV");
     }
 
     @Test
