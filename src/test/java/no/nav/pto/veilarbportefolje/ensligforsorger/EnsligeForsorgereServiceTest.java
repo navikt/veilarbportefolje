@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.input.*;
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,10 +26,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.empty;
@@ -64,12 +68,16 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     EnsligForsorgerClient ensligForsorgerClient;
 
     @Autowired
+    private EnsligeForsorgereRepository ensligeForsorgereRepository;
+
+    @Autowired
     private JdbcTemplate postgres;
 
 
     @BeforeEach
     public void setup() {
         postgres.update("truncate TABLE enslige_forsorgere CASCADE");
+        postgres.update("truncate TABLE bruker_identer");
     }
 
     @Test
@@ -126,6 +134,30 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
                     assertThat(responseBrukere.getAntall()).isEqualTo(0);
                 }
         );
+    }
+
+    @Test
+    public void testOvergangsstonadForBrukerUtenOppfolgingIgnoreres() {
+        Fnr fnr = randomFnr();
+        List<Periode> perioder = List.of(new Periode(
+                LocalDate.now().minusDays(5),
+                LocalDate.now().plusDays(30),
+                NY_PERIODE_FOR_NYTT_BARN,
+                Aktivitetstype.BARN_UNDER_ETT_ÅR
+        ));
+
+        ensligeForsorgereService.behandleKafkaMeldingLogikk(
+                new VedtakOvergangsstønadArbeidsoppfølging(
+                        99887766L,
+                        fnr.get(),
+                        List.of(),
+                        Stønadstype.OVERGANGSSTØNAD,
+                        perioder,
+                        Vedtaksresultat.INNVILGET
+                )
+        );
+
+        assertThat(antallVedtakForIdent(fnr)).isZero();
     }
 
     @Test
@@ -368,6 +400,21 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
     }
 
     private void lagreRandomVedtakIdatabase(Long vedtakId, Fnr fnr, LocalDate vedtakPeriodeFra, LocalDate vedtakPeriodeTil) {
+        List<String> linkedFnrs = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer();
+        AktorId aktorId = linkedFnrs.stream()
+                .map(Fnr::of)
+                .map(pdlIdentRepository::hentAktorIdForAktivBruker)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+        if (aktorId == null) {
+            aktorId = aktorClient.hentAktorId(fnr);
+            insertOppfolgingsInformasjon(aktorId, fnr);
+        } else {
+            oppfolgingRepositoryV2.settUnderOppfolging(aktorId, ZonedDateTime.now(), UUID.randomUUID());
+        }
+
         List<Barn> barn = List.of(new Barn(randomFnr().toString(), null));
         List<Periode> periodeType = List.of(new Periode(vedtakPeriodeFra, vedtakPeriodeTil, NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR));
         ensligeForsorgereService.behandleKafkaMeldingLogikk(
@@ -436,5 +483,59 @@ public class EnsligeForsorgereServiceTest extends EndToEndTest {
         String vedtakid = postgres.queryForObject("select vedtakid from enslige_forsorgere where personident = ?", (rs, row) -> rs.getString("vedtakid"), fnr.get());
         assertThat(vedtakid).isNotNull();
         assertThat(vedtakid).isEqualTo("20532");
+    }
+
+    @Test
+    public void nyttVedtakSkalFjerneOvergangsstonadPaHistoriskeIdenter() {
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        lagreIdenter(fnr, historiskFnr);
+        Mockito.when(aktorClient.hentAktorId(Mockito.any())).thenReturn(randomAktorId());
+
+        lagreRandomVedtakIdatabase(1L, historiskFnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(20));
+        lagreRandomVedtakIdatabase(2L, fnr, LocalDate.now().minusDays(10), LocalDate.now().plusDays(40));
+
+        assertThat(antallVedtakForIdent(historiskFnr)).isZero();
+        assertThat(antallVedtakForIdent(fnr)).isEqualTo(1);
+    }
+
+    @Test
+    public void slettEnsligeForsorgereDataSkalSletteOvergangsstonadPaAlleIdenter() {
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        lagreIdenter(fnr, historiskFnr);
+        Mockito.when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
+
+        ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstonadVedtak(1L, historiskFnr));
+        ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstonadVedtak(2L, fnr));
+
+        ensligeForsorgereService.slettEnsligeForsorgereData(aktorId);
+
+        assertThat(antallVedtakForIdent(fnr)).isZero();
+        assertThat(antallVedtakForIdent(historiskFnr)).isZero();
+    }
+
+    private void lagreIdenter(Fnr fnr, Fnr historiskFnr) {
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(randomAktorId().get(), false, PDLIdent.Gruppe.AKTORID),
+                new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+        ));
+    }
+
+    private VedtakOvergangsstønadArbeidsoppfølging overgangsstonadVedtak(Long vedtakId, Fnr fnr) {
+        return new VedtakOvergangsstønadArbeidsoppfølging(
+                vedtakId,
+                fnr.get(),
+                List.of(),
+                Stønadstype.OVERGANGSSTØNAD,
+                List.of(new Periode(LocalDate.now().minusDays(10), LocalDate.now().plusDays(20), NY_PERIODE_FOR_NYTT_BARN, Aktivitetstype.BARN_UNDER_ETT_ÅR)),
+                Vedtaksresultat.INNVILGET
+        );
+    }
+
+    private int antallVedtakForIdent(Fnr fnr) {
+        return postgres.queryForObject("SELECT count(*) FROM enslige_forsorgere WHERE personident = ?", Integer.class, fnr.get());
     }
 }

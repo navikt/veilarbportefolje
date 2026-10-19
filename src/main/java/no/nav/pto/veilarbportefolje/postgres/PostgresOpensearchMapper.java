@@ -7,8 +7,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
-import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
-import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
 import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
@@ -48,7 +46,6 @@ public class PostgresOpensearchMapper {
     private final KodeverkService kodeverkService;
 
     private final BarnUnder18AarService barnUnder18AarService;
-    private final EnsligeForsorgereService ensligeForsorgereService;
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
     private final HendelseRepository hendelseRepository;
@@ -164,16 +161,6 @@ public class PostgresOpensearchMapper {
             Fnr brukerFnr = Fnr.of(bruker.getFnr());
             if (barnUnder18AarMap.containsKey(brukerFnr)) {
                 bruker.setBarn_under_18_aar(barnUnder18AarMap.get(brukerFnr));
-            }
-        });
-    }
-
-    public void flettInnEnsligeForsorgereData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        Map<Fnr, EnsligeForsorgerOvergangsstønadTiltakDto> fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap =
-                ensligeForsorgereService.hentEnsligeForsorgerOvergangsstønadTiltak(brukerOpensearchModellList.stream().map(bruker -> Fnr.of(bruker.getFnr())).collect(Collectors.toList()));
-        brukerOpensearchModellList.forEach(bruker -> {
-            if (fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.containsKey(Fnr.of(bruker.getFnr()))) {
-                bruker.setEnslige_forsorgere_overgangsstonad(fnrEnsligeForsorgerOvergangsstønadTiltakDtoMap.get(Fnr.of(bruker.getFnr())).toEnsligeForsorgereOpensearchDto());
             }
         });
     }

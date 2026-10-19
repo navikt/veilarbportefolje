@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.fnrToDate;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
 @Slf4j
@@ -69,8 +71,8 @@ public class EnsligeForsorgereRepository {
         String sql = """
                 INSERT INTO ENSLIGE_FORSORGERE(VEDTAKID, PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
                 VALUES (?, ?, ?, ?) ON CONFLICT (VEDTAKID)
-                DO UPDATE SET(PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT)
-                = (excluded.PERSONIDENT, excluded.STONADSTYPE, excluded.VEDTAKSRESULTAT);
+                DO UPDATE SET(PERSONIDENT, STONADSTYPE, VEDTAKSRESULTAT, OPPDATERT)
+                = (excluded.PERSONIDENT, excluded.STONADSTYPE, excluded.VEDTAKSRESULTAT, now());
                 """;
         db.update(sql, vedtakId, vedtakOvergangsstønadArbeidsoppfølging.personIdent(),
                 stonadstypeId, vedtakResultatId);
@@ -202,7 +204,7 @@ public class EnsligeForsorgereRepository {
             vedtakPeriode = "now() BETWEEN efp.fra_dato - interval '6 months' and efp.til_dato";
         }
         String sql = """
-                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
+                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato, ef.oppdatert,
                        vperiode_type.periode_type as vedtaksPeriodeType,
                        eat.aktivitet_type as aktivitetsType
                 FROM enslige_forsorgere ef
@@ -232,7 +234,7 @@ public class EnsligeForsorgereRepository {
 
         String personIdenterStr = personIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
         String sql = """
-                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato,
+                 SELECT ef.personIdent, ef.vedtakId, efp.fra_dato, efp.til_dato, ef.oppdatert,
                        vperiode_type.PERIODE_TYPE as vedtaksPeriodeType,
                        EAT.AKTIVITET_TYPE as aktivitetsType
                 FROM enslige_forsorgere ef
@@ -289,7 +291,8 @@ public class EnsligeForsorgereRepository {
                 Periodetype.valueOf((String) rs.get("vedtaksPeriodeType")),
                 Aktivitetstype.valueOf((String) rs.get("aktivitetsType")),
                 toLocalDateOrNull(String.valueOf(rs.get("fra_dato"))),
-                toLocalDateOrNull(String.valueOf(rs.get("til_dato"))));
+                toLocalDateOrNull(String.valueOf(rs.get("til_dato"))),
+                toLocalDateTimeOrNull((Timestamp) rs.get("oppdatert")));
     }
 
     @SneakyThrows

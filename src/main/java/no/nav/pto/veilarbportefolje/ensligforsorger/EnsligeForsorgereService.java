@@ -14,6 +14,7 @@ import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerO
 import no.nav.pto.veilarbportefolje.ensligforsorger.mapping.AktivitetsTypeTilAktivitetsplikt;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -30,6 +31,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     private final EnsligeForsorgereRepository ensligeForsorgereRepository;
     private final AktorClient aktorClient;
     private final EnsligForsorgerClient ensligForsorgerClient;
+    private final PdlIdentRepository pdlIdentRepository;
 
     @Override
     protected void behandleKafkaMeldingLogikk(VedtakOvergangsstønadArbeidsoppfølging melding) {
@@ -38,6 +40,11 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         }
 
         String personIdent = melding.personIdent();
+        boolean erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(personIdent);
+        if (!erUnderOppfolging) {
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer overgangsstønad melding.", personIdent);
+            return;
+        }
 
         fjernTidligereVedtakOmOvergangsstonad(personIdent);
 
@@ -69,7 +76,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         Fnr fnr = aktorClient.hentFnr(aktorId);
 
         if (fnr != null) {
-            ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(fnr.get());
+            fjernOvergangsstonadForAlleIdenter(hentAlleFnrIdenterForBruker(fnr.get()));
         }
     }
 
@@ -82,7 +89,8 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
                 vedtakPeriodeBeskrivelse,
                 harAktivitetsplikt.orElse(null),
                 ensligeForsorgerOvergangsstønadTiltak.til_dato(),
-                yngsteBarn.orElse(null)
+                yngsteBarn.orElse(null),
+                ensligeForsorgerOvergangsstønadTiltak.radSistEndret()
         );
     }
 
@@ -96,10 +104,22 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     }
 
     private void fjernTidligereVedtakOmOvergangsstonad(String personIdent) {
-        int fjernTidligereVedtak = ensligeForsorgereRepository.fjernTidligereOvergangsstønadVedtak(personIdent);
+        int fjernTidligereVedtak = fjernOvergangsstonadForAlleIdenter(hentAlleFnrIdenterForBruker(personIdent));
         if (fjernTidligereVedtak > 0) {
             secureLog.info("Fjernet tidligere vedtak for bruker: {}", personIdent);
         }
+    }
+
+    private int fjernOvergangsstonadForAlleIdenter(List<String> identer) {
+        return identer.stream()
+                .mapToInt(ensligeForsorgereRepository::fjernTidligereOvergangsstønadVedtak)
+                .sum();
+    }
+
+    private List<String> hentAlleFnrIdenterForBruker(String personIdent) {
+        Set<String> identer = new LinkedHashSet<>(pdlIdentRepository.hentFnrIdenterForBruker(personIdent).identer());
+        identer.add(personIdent);
+        return new ArrayList<>(identer);
     }
 
     private void oppdaterOvergangsstonadIOpenSearch(String personIdent) {
@@ -114,9 +134,7 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
     }
 
     public void hentOgLagreEnsligForsorgerDataVedAdminjobb(AktorId aktorId) {
-        Fnr fnr = aktorClient.hentFnr(aktorId);
         hentOgLagreEnsligForsorgerDataFraApi(aktorId);
-        oppdaterOvergangsstonadIOpenSearch(fnr.get());
     }
 
     public void hentOgLagreEnsligForsorgerDataFraApi(AktorId aktorId) {
@@ -124,12 +142,16 @@ public class EnsligeForsorgereService extends KafkaCommonNonKeyedConsumerService
         Optional<OvergangsstønadResponseDto> overgangsstønadResponseDto = ensligForsorgerClient.hentEnsligForsorgerOvergangsstonad(fnr);
 
         if (fnr != null && overgangsstønadResponseDto.isPresent()) {
+            fjernOvergangsstonadForAlleIdenter(hentAlleFnrIdenterForBruker(fnr.get()).stream()
+                    .filter(ident -> !ident.equals(fnr.get()))
+                    .toList());
             List<OvergangsstønadPeriode> ensligForsorgerPerioder = overgangsstønadResponseDto.get().getData().getPerioder();
             for (OvergangsstønadPeriode periode : ensligForsorgerPerioder) {
                 VedtakOvergangsstønadArbeidsoppfølging overgangsstønadDto = ensligForsorgerDataMapper(fnr, periode);
                 ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstønadDto);
                 secureLog.info("Hentet overgangsstønad for bruker {} med perioder {} ", fnr, periode);
             }
+            oppdaterOvergangsstonadIOpenSearch(fnr.get());
         } else {
             secureLog.info("Data om enslig forsorger for brukeren {} finnes ikke", aktorId);
         }
