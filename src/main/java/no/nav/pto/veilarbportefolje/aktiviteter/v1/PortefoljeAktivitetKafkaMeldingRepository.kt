@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
+import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -37,7 +38,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val gjeldendeAktiviteter = endeligeAktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) }
+        val gjeldendeAktiviteter = endeligeAktiviteter.filter {tilhorerGjeldendeOppfolgingsperiode(it) || it.historisk}
         val endeligeAktiviteterEkskludertTiltak = gjeldendeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE}
 
         val tiltaksaktiviteter = gjeldendeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
@@ -72,25 +73,36 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
             if (antallTiltaksAktiviteterOppdatert == 1) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
-            } else if (antallTiltaksAktiviteterSlettet == 1) {
+            }
+            if (antallTiltaksAktiviteterSlettet == 1) {
                 indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
-            } else if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
+            }
+            if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
                 indekserAktiviteter(tiltaksaktiviteter)
             }
         }
          return antallTiltaksMeldinger;
     }
 
-    private fun tilhorerGjeldendeOppfolgingsperiode(aktivitet: KafkaAktivitetMeldingEntity): Boolean {
+    fun tilhorerGjeldendeOppfolgingsperiode(aktivitet: KafkaAktivitetMeldingEntity): Boolean {
         val oppfolgingsperiodeId = oppfolgingRepository.hentOppfolgingsperiodeId(AktorId.of(aktivitet.aktorId))
 
-        val erGjeldendeOppfolgingsperiodeId = aktivitet.oppfolgingsperiodeId!= null && oppfolgingsperiodeId != null && aktivitet.oppfolgingsperiodeId == oppfolgingsperiodeId.toString()
-
-        if (erGjeldendeOppfolgingsperiodeId) {
-            return true
+        if (oppfolgingsperiodeId != null) {
+            if (aktivitet.oppfolgingsperiodeId!= null) {
+                if (aktivitet.oppfolgingsperiodeId == oppfolgingsperiodeId.toString()) {
+                    return true
+                } else {
+                    secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
+                    return false
+                }
+            } else {
+                secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitets-oppfolgingsperiodeId er null")
+                return false
+            }
+        } else {
+            secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} ignoreres fordi bruker er ikke under oppfølging i ${PostgresTable.OPPFOLGING_DATA.TABLE_NAME}-tabellen")
+            return false
         }
-        secureLog.info("Meldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
-        return false
     }
 
     private fun batchUpsertAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {

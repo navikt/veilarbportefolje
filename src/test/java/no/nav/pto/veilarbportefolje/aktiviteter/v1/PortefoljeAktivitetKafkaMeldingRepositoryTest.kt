@@ -129,6 +129,31 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     }
 
     @Test
+    fun `skal prosesseres meldingen med historisk-true selv om aktivitet tilhorer ikke brukerens gjeldende oppfolgingsperiode`() {
+        val gammelOppfolgingsperiodeId = UUID.randomUUID()
+        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = false, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_2_OppfolgingsperiodeId.toString())
+
+        val aktiviteterListe = listOf(aktivitetEntity1, aktivitetEntity2)
+        val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
+
+        assertThat (portefoljeAktivitetBatchResult.mottatte).isEqualTo(2)
+        assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(1)
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1) //aktivitetEntity2 med historisk:true ignoreres fordi aktivitet finnes ikke i DB
+
+        oppfolgingRepository.slettOppfolgingData(AktorId.of("aktor-1"))
+        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktiviteter = listOf(aktivitetEntity3)
+        val portefoljeAktivitetResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteter)
+
+        assertThat (portefoljeAktivitetResult.mottatte).isEqualTo(1)
+        assertThat (portefoljeAktivitetResult.prosesserte).isEqualTo(1)
+        assertThat (portefoljeAktivitetResult.ignorert).isZero()
+
+
+    }
+
+    @Test
     fun `skal lagre ny aktivitet med kafka-metadata`() {
         val aktivitet = aktivitetEntity()
 
