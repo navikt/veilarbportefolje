@@ -81,7 +81,7 @@ public class FargekategoriServiceTest {
     }
 
     @Test
-    public void batchoppdateringSkalFjerneFargekategoriPaaHistoriskFnr() {
+    public void batchoppdateringSkalLagrePaaAktivFnrOgSletteFargekategoriPaaHistoriskFnr() {
         Fnr aktivFnr = randomFnr();
         Fnr historiskFnr = randomFnr();
         lagreIdenter(aktivFnr, historiskFnr);

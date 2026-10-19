@@ -46,8 +46,8 @@ public class FargekategoriService {
             fnr.forEach(this::slettIOpensearch);
 
         } else {
+            fargekategoriRepository.deleteFargekategori(alleFnrIdenter.stream().filter(ident -> !fnr.contains(ident)).toList());
             fargekategoriRepository.batchupsertFargekategori(fargekategoriVerdi, fnr, innloggetVeileder, enhetId);
-
             fnr.forEach(f -> oppdaterIOpensearch(f, fargekategoriVerdi.name(), enhetId.get()));
         }
     }
@@ -84,6 +84,7 @@ public class FargekategoriService {
             Optional<FargekategoriEntity> fargekategoriForBruker = hentPrioritertFargekategori(fnr, fnrIdenter);
             fargekategoriForBruker.ifPresent(fargekategoriEntity -> {
                 OppdaterFargekategoriRequest fargekategoriMedNyEnhet = new OppdaterFargekategoriRequest(fnr, fargekategoriEntity.fargekategoriVerdi());
+                fargekategoriRepository.deleteFargekategori(fnrIdenter.stream().filter(ident -> !ident.equals(fnr)).toList());
                 fargekategoriRepository.upsertFargekateori(fargekategoriMedNyEnhet, veilederId, enhetId);
                 oppdaterIOpensearch(fargekategoriMedNyEnhet.fnr(), fargekategoriMedNyEnhet.fargekategoriVerdi().name(), enhetId.get());
             });
