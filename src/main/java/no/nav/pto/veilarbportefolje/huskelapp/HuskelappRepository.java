@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
@@ -77,6 +78,14 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
 
+    public List<Huskelapp> hentAktiveHuskelapper(List<Fnr> brukerFnrIdenter) {
+        if (brukerFnrIdenter.isEmpty()) {
+            return List.of();
+        }
+        String sql = String.format("SELECT * FROM %s WHERE %s = ANY (?::varchar[]) AND STATUS = ? ORDER BY %s DESC", TABLE_NAME, FNR, ENDRET_DATO);
+        return dbReadOnly.queryForList(sql, fnrListParam(brukerFnrIdenter), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).toList();
+    }
+
     public Optional<Huskelapp> hentAktivHuskelapp(UUID huskelappId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).findFirst();
@@ -87,14 +96,24 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).toList();
     }
 
-    public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
-        String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        db.update(sql, fnr.get());
+    public void slettAlleHuskelappRaderPaaBruker(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return;
+        }
+        String sql = String.format("DELETE FROM %s WHERE %s = ANY (?::varchar[]) ", TABLE_NAME, FNR);
+        db.update(sql, fnrListParam(fnrIdenter));
     }
 
-    public void deaktivereAlleHuskelappRaderPaaBruker(Fnr fnr) {
-        String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
-        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnr.get(), HuskelappStatus.AKTIV.name());
+    public void deaktivereAlleHuskelappRaderPaaBruker(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return;
+        }
+        String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ANY (?::varchar[]) AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnrListParam(fnrIdenter), HuskelappStatus.AKTIV.name());
+    }
+
+    private static String fnrListParam(List<Fnr> fnrIdenter) {
+        return fnrIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {

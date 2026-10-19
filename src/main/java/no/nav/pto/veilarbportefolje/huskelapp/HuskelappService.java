@@ -11,13 +11,13 @@ import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappOpprettReq
 import no.nav.pto.veilarbportefolje.huskelapp.controller.dto.HuskelappRedigerRequest;
 import no.nav.pto.veilarbportefolje.huskelapp.domain.Huskelapp;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -27,6 +27,7 @@ public class HuskelappService {
     private final OpensearchIndexerPaDatafelt opensearchIndexerPaDatafelt;
     private final BrukerServiceV2 brukerServiceV2;
     private final HuskelappRepository huskelappRepository;
+    private final PdlIdentRepository pdlIdentRepository;
 
 
     @Transactional
@@ -35,7 +36,7 @@ public class HuskelappService {
             Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappOpprettRequest.brukerFnr());
             NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
 
-            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappOpprettRequest.brukerFnr());
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(hentAlleFnrIdenterForBruker(huskelappOpprettRequest.brukerFnr()));
             UUID huskelappId = huskelappRepository.opprettHuskelapp(huskelappOpprettRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappOpprettRequest.brukerFnr()).orElseThrow(RuntimeException::new);
@@ -54,7 +55,7 @@ public class HuskelappService {
             Optional<NavKontor> navKontorOptional = brukerServiceV2.hentNavKontor(huskelappRedigerRequest.brukerFnr());
             NavKontor navKontor = navKontorOptional.orElseThrow(RuntimeException::new);
 
-            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(huskelappRedigerRequest.brukerFnr());
+            huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(hentAlleFnrIdenterForBruker(huskelappRedigerRequest.brukerFnr()));
             huskelappRepository.redigerHuskelapp(huskelappRedigerRequest, veilederId, EnhetId.of(navKontor.getValue()));
 
             AktorId aktorId = hentAktorId(huskelappRedigerRequest.brukerFnr()).orElseThrow(RuntimeException::new);
@@ -77,7 +78,7 @@ public class HuskelappService {
 
     public Optional<Huskelapp> hentHuskelapp(Fnr brukerFnr) {
         try {
-            return huskelappRepository.hentAktivHuskelapp(brukerFnr);
+            return hentPrioritertAktivHuskelapp(brukerFnr, hentAlleFnrIdenterForBruker(brukerFnr));
         } catch (Exception e) {
             secureLog.error("Kunne ikke hente huskelapp for bruker: " + brukerFnr, e);
             throw new RuntimeException("Kunne ikke hente huskelapp");
@@ -100,7 +101,7 @@ public class HuskelappService {
         try {
             secureLog.info("Sletter alle huskelapper paa bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
-                huskelappRepository.slettAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                huskelappRepository.slettAlleHuskelappRaderPaaBruker(hentAlleFnrIdenterForBruker(maybeFnr.get()));
                 opensearchIndexerPaDatafelt.slettHuskelapp(aktorId);
             } else {
                 secureLog.warn("Kunne ikke slette huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
@@ -115,7 +116,7 @@ public class HuskelappService {
         try {
             secureLog.info("Deaktiverer alle huskelapper paa bruker med aktoerid: " + aktorId);
             if (maybeFnr.isPresent()) {
-                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(maybeFnr.get());
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(hentAlleFnrIdenterForBruker(maybeFnr.get()));
                 opensearchIndexerPaDatafelt.slettHuskelapp(aktorId);
             } else {
                 secureLog.warn("Kunne ikke deaktivere huskelapper for bruker med AktørID {}. Årsak fødselsnummer-parameter var tom.", aktorId.get());
@@ -129,11 +130,12 @@ public class HuskelappService {
     @Transactional
     public void oppdaterEnhetPaaHuskelapp(Fnr fnr, EnhetId nyEnhetId, VeilederId veilederId) {
         try {
-            Optional<Huskelapp> huskelappForBruker = huskelappRepository.hentAktivHuskelapp(fnr);
+            List<Fnr> fnrIdenter = hentAlleFnrIdenterForBruker(fnr);
+            Optional<Huskelapp> huskelappForBruker = hentPrioritertAktivHuskelapp(fnr, fnrIdenter);
             huskelappForBruker.ifPresent(huskelapp -> {
                 HuskelappRedigerRequest huskelappRequest = new HuskelappRedigerRequest(huskelapp.huskelappId(), fnr, huskelapp.frist(), huskelapp.kommentar());
 
-                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(fnr);
+                huskelappRepository.deaktivereAlleHuskelappRaderPaaBruker(fnrIdenter);
                 huskelappRepository.redigerHuskelapp(huskelappRequest, veilederId, nyEnhetId);
 
                 AktorId aktorId = hentAktorId(huskelappRequest.brukerFnr()).orElseThrow(RuntimeException::new);
@@ -172,6 +174,25 @@ public class HuskelappService {
         }
 
         return navkontorForBrukerUlikNavkontorPaHuskelapp;
+    }
+
+    // Huskelapp kan tidligere ha vært lagret på flere identer for samme person. Vi prioriterer huskelapp lagret på
+    // aktiv ident om det er flere (per 10.2026 er det ca 300 stk  som har to aktive, og 109 som kun har på historisk ident).
+    private Optional<Huskelapp> hentPrioritertAktivHuskelapp(Fnr brukerFnr, List<Fnr> fnrIdenter) {
+        List<Huskelapp> aktiveHuskelapper = huskelappRepository.hentAktiveHuskelapper(fnrIdenter);
+        if (aktiveHuskelapper.size() <= 1) {
+            return aktiveHuskelapper.stream().findFirst();
+        }
+        return aktiveHuskelapper.stream()
+                .filter(huskelapp -> huskelapp.brukerFnr().equals(brukerFnr))
+                .findFirst()
+                .or(() -> aktiveHuskelapper.stream().findFirst());
+    }
+
+    private List<Fnr> hentAlleFnrIdenterForBruker(Fnr fnr) {
+        Set<String> identer = new LinkedHashSet<>(pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer());
+        identer.add(fnr.get());
+        return identer.stream().map(Fnr::of).toList();
     }
 
     private Optional<AktorId> hentAktorId(Fnr fnr) {

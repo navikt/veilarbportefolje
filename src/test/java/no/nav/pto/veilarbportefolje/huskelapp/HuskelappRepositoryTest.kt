@@ -146,7 +146,7 @@ class HuskelappRepositoryTest {
         val alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
         Assertions.assertThat(alleHuskelappRader.size).isEqualTo(4)
 
-        repo.slettAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr)
+        repo.slettAlleHuskelappRaderPaaBruker(listOf(huskelapp2.brukerFnr))
 
         val alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
         Assertions.assertThat(alleHuskelappRader2.size).isEqualTo(0)
