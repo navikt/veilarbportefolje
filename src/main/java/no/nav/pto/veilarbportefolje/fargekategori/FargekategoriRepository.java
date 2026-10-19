@@ -14,10 +14,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Repository
@@ -35,6 +39,24 @@ public class FargekategoriRepository {
                         (resultSet, rowNumber) -> FargekategoriMapper.fargekategoriMapper(resultSet),
                         fnr.get())
         ));
+    }
+
+    public Map<String, FargekategoriForIdent> hentFargekategoriPerIdent(List<String> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return Map.of();
+        }
+        String hentSql = "SELECT fnr, verdi, enhet_id, sist_endret FROM fargekategori WHERE fnr = ANY (?::varchar[])";
+        String fnrIdenterParam = fnrIdenter.stream().collect(Collectors.joining(",", "{", "}"));
+
+        return jdbcTemplate.query(hentSql,
+                        (rs, rowNumber) -> new FargekategoriForIdent(
+                                rs.getString("fnr"),
+                                rs.getString("verdi"),
+                                rs.getString("enhet_id"),
+                                toLocalDateTimeOrNull(rs.getTimestamp("sist_endret"))),
+                        fnrIdenterParam)
+                .stream()
+                .collect(Collectors.toMap(FargekategoriForIdent::fnr, Function.identity()));
     }
 
     public void upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {

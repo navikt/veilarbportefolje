@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
@@ -84,6 +85,18 @@ public class HuskelappRepository {
         }
         String sql = String.format("SELECT * FROM %s WHERE %s = ANY (?::varchar[]) AND STATUS = ? ORDER BY %s DESC", TABLE_NAME, FNR, ENDRET_DATO);
         return dbReadOnly.queryForList(sql, fnrListParam(brukerFnrIdenter), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).toList();
+    }
+
+    public Map<String, Huskelapp> hentAktivHuskelappPerIdent(List<String> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return Map.of();
+        }
+        String sql = String.format("SELECT DISTINCT ON (%s) * FROM %s WHERE %s = ANY (?::varchar[]) AND %s = ? ORDER BY %s, %s DESC NULLS LAST",
+                FNR, TABLE_NAME, FNR, STATUS, FNR, ENDRET_DATO);
+        String fnrIdenterParam = fnrIdenter.stream().collect(Collectors.joining(",", "{", "}"));
+        return dbReadOnly.queryForList(sql, fnrIdenterParam, HuskelappStatus.AKTIV.name()).stream()
+                .map(HuskelappRepository::huskelappMapper)
+                .collect(Collectors.toMap(huskelapp -> huskelapp.brukerFnr().get(), Function.identity()));
     }
 
     public Optional<Huskelapp> hentAktivHuskelapp(UUID huskelappId) {
