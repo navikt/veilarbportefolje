@@ -71,6 +71,30 @@ public class OppfolgingRepositoryV2 {
         )).map(UUID::fromString).orElse(null);
     }
 
+    public Map<AktorId, UUID> hentOppfolgingsperiodeIder(List<AktorId> aktorIder) {
+        if (aktorIder.isEmpty()) return Map.of();
+
+        String ider = aktorIder.stream()
+                .map(AktorId::get)
+                .collect(Collectors.joining(",", "{", "}"));
+
+        return db.query(
+                "SELECT aktoerid, oppfolgingsperiode_id FROM oppfolging_data WHERE aktoerid = any (?::varchar[])",
+                ps -> ps.setString(1, ider),
+                rs -> {
+                    Map<AktorId, UUID> result = new HashMap<>();
+                    while (rs.next()) {
+                        String aktoerid = rs.getString("aktoerid");
+                        String oppfolgingId = rs.getString("oppfolgingsperiode_id");
+                        if (oppfolgingId != null) {
+                            result.put(AktorId.of(aktoerid), UUID.fromString(oppfolgingId));
+                        }
+                    }
+                    return result;
+                }
+        );
+    }
+
     public boolean erUnderOppfolgingOgErAktivIdent(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("""

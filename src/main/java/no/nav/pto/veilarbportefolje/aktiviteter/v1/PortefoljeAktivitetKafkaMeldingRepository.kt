@@ -38,7 +38,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val gjeldendeAktiviteter = endeligeAktiviteter.filter {tilhorerGjeldendeOppfolgingsperiode(it) || it.historisk}
+        val gjeldendeAktiviteter = filtrerGjeldendeOppfolgingsperiode(endeligeAktiviteter)
         val endeligeAktiviteterEkskludertTiltak = gjeldendeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE}
 
         val tiltaksaktiviteter = gjeldendeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
@@ -103,6 +103,32 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} ignoreres fordi bruker er ikke under oppfølging i ${PostgresTable.OPPFOLGING_DATA.TABLE_NAME}-tabellen")
             return false
         }
+    }
+
+    private fun filtrerGjeldendeOppfolgingsperiode(
+        aktiviteter: List<KafkaAktivitetMeldingEntity>
+    ): List<KafkaAktivitetMeldingEntity> {
+        if (aktiviteter.isEmpty()) return emptyList()
+
+        if (aktiviteter.size == 1) return aktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) || it.historisk }
+
+        val aktorIder = aktiviteter.map { AktorId.of(it.aktorId) }.distinct()
+        val oppfolgingsperiodePrAktor = oppfolgingRepository.hentOppfolgingsperiodeIder(aktorIder)
+
+        val matchende =  aktiviteter.filter { aktivitet ->
+            val aktivAktorId = AktorId.of(aktivitet.aktorId)
+            val gjeldendeId = oppfolgingsperiodePrAktor[aktivAktorId] ?: return@filter false
+            val meldingId = aktivitet.oppfolgingsperiodeId ?: return@filter false
+
+            meldingId == gjeldendeId.toString() || aktivitet.historisk
+        }
+
+        val ignorert = aktiviteter.size - matchende.size
+        if (ignorert > 0) {
+            secureLog.info("Ignorerte {} aktivitet-meldinger fordi de ikke tilhørte gjeldende oppfølgingsperiode", ignorert)
+        }
+
+        return matchende
     }
 
     private fun batchUpsertAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {

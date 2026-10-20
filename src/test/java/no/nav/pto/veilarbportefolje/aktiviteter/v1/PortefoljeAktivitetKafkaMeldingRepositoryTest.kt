@@ -118,7 +118,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     }
 
     @Test
-    fun `skal ignorere aktivitet om meldingen inneholder null oppfolgingsperiode`() {
+    fun `skal ignorere aktiviteten om meldingen inneholder null oppfolgingsperiode`() {
         val aktivitetEntity1 = aktivitetEntity().copy(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", oppfolgingsperiodeId = null)
         val aktiviteterListe = listOf(aktivitetEntity1)
 
@@ -130,7 +130,6 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
     @Test
     fun `skal prosesseres meldingen med historisk-true selv om aktivitet tilhorer ikke brukerens gjeldende oppfolgingsperiode`() {
-        val gammelOppfolgingsperiodeId = UUID.randomUUID()
         val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = false, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
         val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_2_OppfolgingsperiodeId.toString())
 
@@ -139,7 +138,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
         assertThat (portefoljeAktivitetBatchResult.mottatte).isEqualTo(2)
         assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(1)
-        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1) //aktivitetEntity2 med historisk:true ignoreres fordi aktivitet finnes ikke i DB
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1) //aktivitetEntity2 med historisk:true ignoreres fordi tilsvarende aktivitet finnes ikke i DB for å slette
 
         oppfolgingRepository.slettOppfolgingData(AktorId.of("aktor-1"))
         val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
@@ -147,10 +146,8 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         val portefoljeAktivitetResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteter)
 
         assertThat (portefoljeAktivitetResult.mottatte).isEqualTo(1)
-        assertThat (portefoljeAktivitetResult.prosesserte).isEqualTo(1)
+        assertThat (portefoljeAktivitetResult.prosesserte).isEqualTo(1) //aktivitet med "aktivitet-1" slettet fra DBen etter bruker har gått ut av oppfølgingen.
         assertThat (portefoljeAktivitetResult.ignorert).isZero()
-
-
     }
 
     @Test
