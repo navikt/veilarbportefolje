@@ -11,6 +11,7 @@ enum class AdminDataType(val displayName: String) {
     TILTAKSPENGER_DATA("Tiltakspenger (tpsak)"),
     ARBEIDSSOKER_DATA("Arbeidssøkerdata"),
     UFORETRYGD_DATA("Uføretrygd"),
+    SYKEFRAVAER_DATA("Sykefravær"),
 }
 
 data class AdminDataTypeResponse(

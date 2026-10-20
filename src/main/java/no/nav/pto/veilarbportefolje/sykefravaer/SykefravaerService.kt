@@ -58,6 +58,16 @@ class SykefravaerService(
         lagreSykefravaerForBruker(personIdent, LocalDate.now())
     }
 
+    fun hentOgLagreSykefravaerVedAdminjobb(aktorId: AktorId) {
+        val personIdent = aktorClient.hentFnr(aktorId)
+        if (personIdent == null) {
+            secureLog.warn("Batchjobb for sykefravær - kunne ikke hente fødselsnummer for aktørId $aktorId")
+            return
+        }
+        val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
+        lagreSykefravaerForBruker(personIdent.get(), oppfolgingsStartdato)
+    }
+
     fun lagreSykefravaerForBruker(personIdent: String, oppfolgingsStartdato: LocalDate) {
         val sykefravaersPeriode = hentSykefravaersoppfolgingFraApi(personIdent, oppfolgingsStartdato)
 

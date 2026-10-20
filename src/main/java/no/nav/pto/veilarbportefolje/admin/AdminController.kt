@@ -27,6 +27,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -57,6 +58,7 @@ class AdminController(
     private val aapService: AapService,
     private val oppfolgingClient: OppfolgingClient,
     private val uforetrygdService: UforetrygdService,
+    private val sykefravaerService: SykefravaerService,
     private val dagpengerService: DagpengerService,
     private val tiltakspengerService: TiltakspengerService,
     private val arbeidssoekerService: ArbeidssoekerService,
@@ -285,6 +287,10 @@ class AdminController(
                             uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
                         }
 
+                        AdminDataType.SYKEFRAVAER_DATA -> {
+                            sykefravaerService.hentOgLagreSykefravaerVedAdminjobb(aktorId)
+                        }
+
                         AdminDataType.PDL_DATA -> {
                             pdlService.hentOgLagrePdlData(aktorId)
                         }
@@ -363,6 +369,11 @@ class AdminController(
                     AdminDataType.UFORETRYGD_DATA -> {
                         secureLog.info("Starter datahenting for uføretrygd for aktorId {}", request.aktorId)
                         uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(request.aktorId)
+                    }
+
+                    AdminDataType.SYKEFRAVAER_DATA -> {
+                        secureLog.info("Starter datahenting for sykefravær for aktorId {}", request.aktorId)
+                        sykefravaerService.hentOgLagreSykefravaerVedAdminjobb(request.aktorId)
                     }
 
                     AdminDataType.PDL_DATA -> {
