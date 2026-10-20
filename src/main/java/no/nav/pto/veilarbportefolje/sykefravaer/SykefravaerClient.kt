@@ -15,7 +15,7 @@ const val NAV_PERSONIDENT_HEADER = "nav-personident"
 class SykefravaerClient(private val baseUrl: String, private val machineToMachineTokenSupplier: Supplier<String>) {
     private val client: OkHttpClient = baseClient()
 
-    fun hentOppfolgingstilfelle(personIdent: String): OppfolgingstilfellePersonDTO {
+    fun hentSykefravaersoppfolingPeriode(personIdent: String): OppfolgingstilfellePersonDTO {
         val request = Request.Builder()
             .url(UrlUtils.joinPaths(baseUrl, "/api/system/v1/oppfolgingstilfelle/personident"))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + machineToMachineTokenSupplier.get())

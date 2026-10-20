@@ -18,7 +18,7 @@ class SykefravaerTestController(
     @PostMapping("/sykefravaer/client")
     fun hentOppfolgingstilfelleFraClient(@RequestBody request: SykefravaerRequest): OppfolgingstilfellePersonDTO {
         sjekkErDev()
-        return sykefravaerClient.hentOppfolgingstilfelle(request.fnr)
+        return sykefravaerClient.hentSykefravaersoppfolingPeriode(request.fnr)
     }
 
     private fun sjekkErDev() {

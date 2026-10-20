@@ -84,6 +84,8 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
 import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient;
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerRepository;
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
@@ -205,6 +207,8 @@ import static org.mockito.Mockito.when;
         UngdomsprogramRepository.class,
         UforetrygdService.class,
         UforetrygdRepository.class,
+        SykefravaerService.class,
+        SykefravaerRepository.class,
         OppfolgingsbrukerTestRepository.class,
         VeiledergrupperService.class,
         VeiledergrupperRepository.class,
