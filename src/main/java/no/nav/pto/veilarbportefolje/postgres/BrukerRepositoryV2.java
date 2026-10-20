@@ -5,8 +5,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
-import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker;
-import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -106,15 +104,7 @@ public class BrukerRepositoryV2 {
                        YTELSE_STATUS_FOR_BRUKER.ANTALLDAGERIGJEN                as YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN,
                        YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO,
                        ENDRING_I_REGISTRERING.BRUKERS_SITUASJON                 as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON,
-                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON_SIST_ENDRET     as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET,
-                       FARGEKATEGORI.VERDI                                      as FARGEKATEGORI_VERDI,
-                       FARGEKATEGORI.ENHET_ID                                   as FARGEKATEGORI_ENHET_ID,
-                       HUSKELAPP.FRIST                                          as HUSKELAPP_FRIST,
-                       HUSKELAPP.KOMMENTAR                                      as HUSKELAPP_KOMMENTAR,
-                       HUSKELAPP.ENDRET_DATO                                    as HUSKELAPP_ENDRET_DATO,
-                       HUSKELAPP.ENDRET_AV_VEILEDER                             as HUSKELAPP_ENDRET_AV_VEILEDER,
-                       HUSKELAPP.HUSKELAPP_ID                                   as HUSKELAPP_HUSKELAPP_ID,
-                       HUSKELAPP.ENHET_ID                                       as HUSKELAPP_ENHET_ID
+                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON_SIST_ENDRET     as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -127,8 +117,6 @@ public class BrukerRepositoryV2 {
                          left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join YTELSE_STATUS_FOR_BRUKER                     on YTELSE_STATUS_FOR_BRUKER.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
-                         left join FARGEKATEGORI                                on FARGEKATEGORI.FNR = AKTIVE_IDENTER.FNR
-                         left join HUSKELAPP                                    on HUSKELAPP.FNR = AKTIVE_IDENTER.FNR and HUSKELAPP.STATUS = 'AKTIV'
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                 """;
@@ -217,11 +205,8 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setAapmaxtiduke(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE, Integer.class));
         brukerOpensearchModell.setAapordinerutlopsdato(aapordinerutlopsdato);
         brukerOpensearchModell.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)));
-        brukerOpensearchModell.setFargekategori(rs.getString(FARGEKATEGORI_VERDI));
-        brukerOpensearchModell.setFargekategori_enhetId(rs.getString(FARGEKATEGORI_ENHET_ID));
         brukerOpensearchModell.setEnhet_id(rs.getString(AO_KONTOR_KONTOR_ID));
 
-        setHuskelapp(brukerOpensearchModell, rs);
         setBrukersSituasjon(brukerOpensearchModell, rs);
 
         // ARENA DB LENKE: skal fjernes på sikt
@@ -237,19 +222,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setHuskelapp(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        LocalDate frist = toLocalDateOrNull(rs.getTimestamp(HUSKELAPP_FRIST));
-        String kommentar = rs.getString(HUSKELAPP_KOMMENTAR);
-        String huskelappId = rs.getString(HUSKELAPP_HUSKELAPP_ID);
-        LocalDate endretDato = toLocalDateOrNull(rs.getTimestamp(HUSKELAPP_ENDRET_DATO));
-        VeilederId endretAv = VeilederId.veilederIdOrNull(rs.getString(HUSKELAPP_ENDRET_AV_VEILEDER));
-        String enhetId = rs.getString(HUSKELAPP_ENHET_ID);
-        if (frist != null || kommentar != null) {
-            brukerOpensearchModell.setHuskelapp(new HuskelappForBruker(frist, kommentar, endretDato, endretAv.getValue(), huskelappId, enhetId));
-        }
     }
 
     @SneakyThrows

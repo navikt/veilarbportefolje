@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 
 import java.sql.ResultSet;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.FARGEKATEGORI.*;
@@ -19,10 +20,10 @@ public class FargekategoriMapper {
         return new FargekategoriEntity(
                 UUID.fromString(rs.getString(ID)),
                 Fnr.of(rs.getString(FNR)),
-                FargekategoriVerdi.valueOf(rs.getString(VERDI)),
+                Optional.ofNullable(rs.getString(VERDI)).map(FargekategoriVerdi::valueOf).orElse(null),
                 toLocalDateOrNull(rs.getTimestamp(SIST_ENDRET)),
-                NavIdent.of(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)),
-                EnhetId.of(rs.getString(ENHET_ID))
+                Optional.ofNullable(rs.getString(SIST_ENDRET_AV_VEILEDERIDENT)).map(NavIdent::of).orElse(null),
+                Optional.ofNullable(rs.getString(ENHET_ID)).map(EnhetId::of).orElse(null)
         );
     }
 }

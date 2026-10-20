@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -46,7 +47,7 @@ public class HuskelappServiceTest {
         OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3 = new OppfolgingsbrukerRepositoryV3(jdbcTemplate, new NamedParameterJdbcTemplate(jdbcTemplate));
         this.oppfolgingRepositoryV2 = new OppfolgingRepositoryV2(jdbcTemplate);
         this.brukerServiceV2 = new BrukerServiceV2(new PdlIdentRepository(jdbcTemplate), oppfolgingsbrukerRepositoryV3, oppfolgingRepositoryV2, Mockito.mock(AktorClient.class));
-        huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate));
+        huskelappService = new HuskelappService(Mockito.mock(OpensearchIndexerPaDatafelt.class), brukerServiceV2, new HuskelappRepository(jdbcTemplate, jdbcTemplate), pdlIdentRepository);
     }
 
     @BeforeEach
@@ -112,6 +113,113 @@ public class HuskelappServiceTest {
 
         Optional<Huskelapp> result1 = huskelappService.hentHuskelapp(fnr1);
         assertThat(result1.isPresent()).isTrue();
+    }
+
+    @Test
+    public void skalHenteOgDeaktivereHuskelappPaaHistoriskFnr() {
+        Fnr historiskFnr = randomFnr();
+        Fnr gjeldendeFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        EnhetId enhetId = EnhetId.of("0110");
+        VeilederId veilederId = VeilederId.of("1111");
+
+        insertOppfolgingsInformasjon(historiskFnr, aktorId, veilederId, enhetId, UUID.randomUUID());
+        UUID gammelHuskelappId = huskelappService.opprettHuskelapp(new HuskelappOpprettRequest(historiskFnr, LocalDate.of(2026, 1, 1), "Gammel"), veilederId);
+
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(gjeldendeFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+
+        Optional<Huskelapp> huskelappPaaGjeldendeFnr = huskelappService.hentHuskelapp(gjeldendeFnr);
+        assertThat(huskelappPaaGjeldendeFnr).isPresent();
+        assertThat(huskelappPaaGjeldendeFnr.get().huskelappId()).isEqualTo(gammelHuskelappId);
+
+        UUID nyHuskelappId = huskelappService.opprettHuskelapp(new HuskelappOpprettRequest(gjeldendeFnr, LocalDate.of(2026, 2, 1), "Ny"), veilederId);
+
+        Integer antallAktive = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM HUSKELAPP WHERE STATUS = 'AKTIV'", Integer.class);
+        assertThat(antallAktive).isEqualTo(1);
+        assertThat(huskelappService.hentHuskelapp(gjeldendeFnr).map(Huskelapp::huskelappId)).contains(nyHuskelappId);
+    }
+
+    @Test
+    public void skalPrioritereHuskelappPaaAktivIdentFoerEndretDatoVedFlereAktiveHuskelapper() {
+        Fnr historiskFnr = randomFnr();
+        Fnr aktivFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktivFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+
+        UUID huskelappPaaAktivFnr = UUID.randomUUID();
+        UUID huskelappPaaHistoriskFnr = UUID.randomUUID();
+        insertAktivHuskelapp(huskelappPaaAktivFnr, aktivFnr, ZonedDateTime.now().minusDays(2));
+        insertAktivHuskelapp(huskelappPaaHistoriskFnr, historiskFnr, ZonedDateTime.now());
+
+        assertThat(huskelappService.hentHuskelapp(aktivFnr).map(Huskelapp::huskelappId)).contains(huskelappPaaAktivFnr);
+    }
+
+    @Test
+    public void skalSletteHuskelapperPaaAlleIdenterForBruker() {
+        Fnr historiskFnr = randomFnr();
+        Fnr aktivFnr = randomFnr();
+        Fnr annenBrukerFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktivFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+
+        insertAktivHuskelapp(UUID.randomUUID(), historiskFnr, ZonedDateTime.now().minusDays(1));
+        insertAktivHuskelapp(UUID.randomUUID(), aktivFnr, ZonedDateTime.now());
+        UUID annenBrukersHuskelapp = UUID.randomUUID();
+        insertAktivHuskelapp(annenBrukersHuskelapp, annenBrukerFnr, ZonedDateTime.now());
+
+        huskelappService.sletteAlleHuskelapperPaaBruker(aktorId, Optional.of(aktivFnr));
+
+        assertThat(jdbcTemplate.queryForList("SELECT HUSKELAPP_ID FROM HUSKELAPP", UUID.class)).containsExactly(annenBrukersHuskelapp);
+    }
+
+    @Test
+    public void brukerHarHuskelappPaForrigeNavkontorSkalSjekkeHuskelappPaaHistoriskFnr() {
+        Fnr aktivFnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        insertOppfolgingsInformasjon(aktivFnr, aktorId, VeilederId.of("1111"), EnhetId.of("0110"), UUID.randomUUID());
+        leggTilHistoriskFnr(aktivFnr, historiskFnr, aktorId);
+        insertAktivHuskelapp(UUID.randomUUID(), historiskFnr, "0220", ZonedDateTime.now());
+
+        assertThat(huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktorId, Optional.of(aktivFnr))).isTrue();
+    }
+
+    @Test
+    public void brukerHarHuskelappPaForrigeNavkontorSkalPrioritereHuskelappPaaAktivFnr() {
+        Fnr aktivFnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        insertOppfolgingsInformasjon(aktivFnr, aktorId, VeilederId.of("1111"), EnhetId.of("0110"), UUID.randomUUID());
+        leggTilHistoriskFnr(aktivFnr, historiskFnr, aktorId);
+        insertAktivHuskelapp(UUID.randomUUID(), aktivFnr, "0110", ZonedDateTime.now().minusDays(2));
+        insertAktivHuskelapp(UUID.randomUUID(), historiskFnr, "0220", ZonedDateTime.now());
+
+        assertThat(huskelappService.brukerHarHuskelappPaForrigeNavkontor(aktorId, Optional.of(aktivFnr))).isFalse();
+    }
+
+    private void leggTilHistoriskFnr(Fnr aktivFnr, Fnr historiskFnr, AktorId aktorId) {
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(aktivFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID)));
+    }
+
+    private void insertAktivHuskelapp(UUID huskelappId, Fnr fnr, ZonedDateTime endretDato) {
+        insertAktivHuskelapp(huskelappId, fnr, "0110", endretDato);
+    }
+
+    private void insertAktivHuskelapp(UUID huskelappId, Fnr fnr, String enhetId, ZonedDateTime endretDato) {
+        jdbcTemplate.update("INSERT INTO HUSKELAPP (HUSKELAPP_ID, FNR, ENHET_ID, ENDRET_AV_VEILEDER, ENDRET_DATO, FRIST, KOMMENTAR, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                huskelappId, fnr.get(), enhetId, "1111", Timestamp.from(endretDato.toInstant()), null, "kommentar", "AKTIV");
     }
 
     @Test
