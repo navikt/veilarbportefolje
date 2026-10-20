@@ -25,6 +25,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn
 import no.nav.pto.veilarbportefolje.postgres.PostgresUtils
+import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient
+import no.nav.pto.veilarbportefolje.sykefravaer.dto.OppfolgingstilfellePersonDTO
 import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.TestDataClient.Companion.getArbeidssoekerPeriodeFraDb
@@ -66,6 +68,7 @@ class ArbeidssoekerServiceTest(
     @param:Autowired private val aapClient: AapClient,
     @param:Autowired private val aktorClient: AktorClient,
     @param:Autowired private val dagpengerClient: DagpengerClient,
+    @param:Autowired private val sykefravaerClient: SykefravaerClient,
 
     ) : EndToEndTest() {
 
@@ -82,6 +85,7 @@ class ArbeidssoekerServiceTest(
         // bruker under oppfølging (via bruker_identer/oppfolging_data) lekke inn i neste test.
         db.update("truncate bruker_identer")
         db.update("truncate oppfolging_data")
+        mockHentSykefravaerResponse()
     }
 
     @Test
@@ -798,6 +802,11 @@ class ArbeidssoekerServiceTest(
         `when`(aktorClient.hentFnr(any())).thenReturn(fnr)
         `when`(dagpengerClient.hentDagpengerPerioder(anyString(), anyString(), any())).thenReturn(response)
         `when`(dagpengerClient.hentDagpengerBeregninger(anyString(), anyString(), any())).thenReturn(emptyList())
+    }
+
+    private fun mockHentSykefravaerResponse() {
+        `when`(sykefravaerClient.hentSykefravaersoppfolingPeriode(anyString()))
+            .thenReturn(OppfolgingstilfellePersonDTO(emptyList(), ""))
     }
 
 
