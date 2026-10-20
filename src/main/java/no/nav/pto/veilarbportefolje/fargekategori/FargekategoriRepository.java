@@ -14,10 +14,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
+import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateTimeOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
 @Repository
@@ -26,15 +28,34 @@ public class FargekategoriRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public Optional<FargekategoriEntity> hentFargekategoriForBruker(Fnr fnr) {
-        String hentSql = "SELECT * FROM fargekategori WHERE fnr=?";
+    public List<FargekategoriEntity> hentFargekategorierForIdenter(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return List.of();
+        }
+        String hentSql = "SELECT * FROM fargekategori WHERE fnr = ANY (?::varchar[]) ORDER BY sist_endret DESC";
 
-        return Optional.ofNullable(queryForObjectOrNull(() ->
-                jdbcTemplate.queryForObject(
-                        hentSql,
-                        (resultSet, rowNumber) -> FargekategoriMapper.fargekategoriMapper(resultSet),
-                        fnr.get())
-        ));
+        return jdbcTemplate.query(
+                hentSql,
+                (resultSet, rowNumber) -> FargekategoriMapper.fargekategoriMapper(resultSet),
+                fnrListParam(fnrIdenter));
+    }
+
+    public Map<String, FargekategoriForIndekseringEntity> hentFargekategoriPerIdent(List<String> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return Map.of();
+        }
+        String hentSql = "SELECT fnr, verdi, enhet_id, sist_endret FROM fargekategori WHERE fnr = ANY (?::varchar[])";
+        String fnrIdenterParam = fnrIdenter.stream().collect(Collectors.joining(",", "{", "}"));
+
+        return jdbcTemplate.query(hentSql,
+                        (rs, rowNumber) -> new FargekategoriForIndekseringEntity(
+                                rs.getString("fnr"),
+                                rs.getString("verdi"),
+                                rs.getString("enhet_id"),
+                                toLocalDateTimeOrNull(rs.getTimestamp("sist_endret"))),
+                        fnrIdenterParam)
+                .stream()
+                .collect(Collectors.toMap(FargekategoriForIndekseringEntity::fnr, Function.identity()));
     }
 
     public void upsertFargekateori(OppdaterFargekategoriRequest request, VeilederId sistEndretAv, EnhetId enhetId) {
@@ -56,26 +77,12 @@ public class FargekategoriRepository {
                 enhetId.get());
     }
 
-    public void deleteFargekategori(Fnr fnr) {
-        String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
-        jdbcTemplate.update(deleteSql, fnr.get());
-    }
-
-
-    public void batchdeleteFargekategori(List<Fnr> fnr) {
-        String deleteSql = "DELETE FROM fargekategori WHERE fnr=?";
-
-        jdbcTemplate.batchUpdate(deleteSql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setString(1, fnr.get(i).get());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return fnr.size();
-            }
-        });
+    public void deleteFargekategori(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return;
+        }
+        String deleteSql = "DELETE FROM fargekategori WHERE fnr = ANY (?::varchar[])";
+        jdbcTemplate.update(deleteSql, fnrListParam(fnrIdenter));
     }
 
     public void batchupsertFargekategori(FargekategoriVerdi fargekategoriVerdi, List<Fnr> fnr, VeilederId sisteEndretAv, EnhetId enhetId) {
@@ -104,14 +111,7 @@ public class FargekategoriRepository {
         });
     }
 
-    public Optional<String> hentNavkontorPaFargekategori(Fnr fnr) {
-        String hentSql = "SELECT enhet_id FROM fargekategori WHERE fnr=?";
-
-        return Optional.ofNullable(queryForObjectOrNull(() ->
-                jdbcTemplate.queryForObject(
-                        hentSql,
-                        (resultSet, rowNumber) -> resultSet.getString("enhet_id"),
-                        fnr.get())
-        ));
+    private static String fnrListParam(List<Fnr> fnrIdenter) {
+        return fnrIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
     }
 }

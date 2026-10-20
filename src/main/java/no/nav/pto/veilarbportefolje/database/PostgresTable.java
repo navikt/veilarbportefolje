@@ -90,18 +90,6 @@ public class PostgresTable {
         // ENDRING_I_REGISTRERING
         public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON";
         public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET";
-
-        // FARGEKATEGORI
-        public static final String FARGEKATEGORI_VERDI = "FARGEKATEGORI_VERDI";
-        public static final String FARGEKATEGORI_ENHET_ID = "FARGEKATEGORI_ENHET_ID";
-
-        // HUSKELAPP
-        public static final String HUSKELAPP_FRIST = "HUSKELAPP_FRIST";
-        public static final String HUSKELAPP_KOMMENTAR = "HUSKELAPP_KOMMENTAR";
-        public static final String HUSKELAPP_ENDRET_DATO = "HUSKELAPP_ENDRET_DATO";
-        public static final String HUSKELAPP_ENDRET_AV_VEILEDER = "HUSKELAPP_ENDRET_AV_VEILEDER";
-        public static final String HUSKELAPP_HUSKELAPP_ID = "HUSKELAPP_HUSKELAPP_ID";
-        public static final String HUSKELAPP_ENHET_ID = "HUSKELAPP_ENHET_ID";
     }
 
     // AKTIVE_IDENTER

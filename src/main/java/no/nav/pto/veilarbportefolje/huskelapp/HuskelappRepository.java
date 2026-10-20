@@ -19,9 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.HUSKELAPP.*;
-import static no.nav.pto.veilarbportefolje.postgres.PostgresUtils.queryForObjectOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp;
 
@@ -77,6 +78,26 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, brukerFnr.get(), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).findFirst();
     }
 
+    public List<Huskelapp> hentAktiveHuskelapper(List<Fnr> brukerFnrIdenter) {
+        if (brukerFnrIdenter.isEmpty()) {
+            return List.of();
+        }
+        String sql = String.format("SELECT * FROM %s WHERE %s = ANY (?::varchar[]) AND STATUS = ? ORDER BY %s DESC", TABLE_NAME, FNR, ENDRET_DATO);
+        return dbReadOnly.queryForList(sql, fnrListParam(brukerFnrIdenter), HuskelappStatus.AKTIV.name()).stream().map(HuskelappRepository::huskelappMapper).toList();
+    }
+
+    public Map<String, Huskelapp> hentAktivHuskelappPerIdent(List<String> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return Map.of();
+        }
+        String sql = String.format("SELECT DISTINCT ON (%s) * FROM %s WHERE %s = ANY (?::varchar[]) AND %s = ? ORDER BY %s, %s DESC NULLS LAST",
+                FNR, TABLE_NAME, FNR, STATUS, FNR, ENDRET_DATO);
+        String fnrIdenterParam = fnrIdenter.stream().collect(Collectors.joining(",", "{", "}"));
+        return dbReadOnly.queryForList(sql, fnrIdenterParam, HuskelappStatus.AKTIV.name()).stream()
+                .map(HuskelappRepository::huskelappMapper)
+                .collect(Collectors.toMap(huskelapp -> huskelapp.brukerFnr().get(), Function.identity()));
+    }
+
     public Optional<Huskelapp> hentAktivHuskelapp(UUID huskelappId) {
         String sql = String.format("SELECT * FROM %s WHERE %s=? ", TABLE_NAME, HUSKELAPP_ID);
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).findFirst();
@@ -87,14 +108,24 @@ public class HuskelappRepository {
         return dbReadOnly.queryForList(sql, huskelappId).stream().map(HuskelappRepository::huskelappMapper).toList();
     }
 
-    public void slettAlleHuskelappRaderPaaBruker(Fnr fnr) {
-        String sql = String.format("DELETE FROM %s WHERE %s=? ", TABLE_NAME, FNR);
-        db.update(sql, fnr.get());
+    public void slettAlleHuskelappRaderPaaBruker(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return;
+        }
+        String sql = String.format("DELETE FROM %s WHERE %s = ANY (?::varchar[]) ", TABLE_NAME, FNR);
+        db.update(sql, fnrListParam(fnrIdenter));
     }
 
-    public void deaktivereAlleHuskelappRaderPaaBruker(Fnr fnr) {
-        String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ? AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
-        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnr.get(), HuskelappStatus.AKTIV.name());
+    public void deaktivereAlleHuskelappRaderPaaBruker(List<Fnr> fnrIdenter) {
+        if (fnrIdenter.isEmpty()) {
+            return;
+        }
+        String sql = String.format("UPDATE %s SET %s = ? WHERE %s = ANY (?::varchar[]) AND %s = ? ", TABLE_NAME, STATUS, FNR, STATUS);
+        db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), fnrListParam(fnrIdenter), HuskelappStatus.AKTIV.name());
+    }
+
+    private static String fnrListParam(List<Fnr> fnrIdenter) {
+        return fnrIdenter.stream().map(Fnr::get).collect(Collectors.joining(",", "{", "}"));
     }
 
     public void settSisteHuskelappRadIkkeAktiv(UUID huskelappId) {
@@ -103,13 +134,6 @@ public class HuskelappRepository {
                 TABLE_NAME, STATUS, HUSKELAPP_ID
         );
         db.update(sql, HuskelappStatus.IKKE_AKTIV.name(), huskelappId, HuskelappStatus.AKTIV.name());
-    }
-
-    public Optional<String> hentNavkontorPaHuskelapp(Fnr brukerFnr) {
-        //Hvordan gjør vi dette ved støtte for flere huskelapper...
-        String sql = String.format("SELECT ENHET_ID FROM %s WHERE %s=? AND STATUS = ?", TABLE_NAME, FNR);
-        return Optional.ofNullable(
-                queryForObjectOrNull(() -> db.queryForObject(sql, (rs, row) -> rs.getString(ENHET_ID), brukerFnr.get(), HuskelappStatus.AKTIV.name())));
     }
 
     @SneakyThrows

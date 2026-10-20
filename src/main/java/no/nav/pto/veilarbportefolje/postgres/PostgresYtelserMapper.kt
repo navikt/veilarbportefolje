@@ -20,7 +20,6 @@ import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository
 import no.nav.pto.veilarbportefolje.uforetrygd.domene.UforetrygdEntity
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramRepository
 import no.nav.pto.veilarbportefolje.ungdomsprogram.domene.UngdomsprogramPeriodeEntity
-import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -37,7 +36,7 @@ class PostgresYtelserMapper(
 ) {
 
     fun flettInnYtelser(brukere: List<PortefoljebrukerOpensearchModell>) {
-        val fnrIdenterPerBruker = hentFnrIdenterPerBruker(brukere)
+        val fnrIdenterPerBruker = hentFnrIdenterPerBruker(pdlIdentRepository, brukere)
         flettInnAapKelvin(brukere, fnrIdenterPerBruker)
         flettInnDagpenger(brukere, fnrIdenterPerBruker)
         flettInnUforetrygd(brukere, fnrIdenterPerBruker)
@@ -56,7 +55,7 @@ class PostgresYtelserMapper(
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
             val aktueltVedtak =
-                velgVedtak("AAP", bruker.fnr, identer, aapVedtakForAlleIdenterPerBruker, AapVedtakEntity::radSistEndret)
+                velgDataForPrioritertIdent("AAP", bruker.fnr, identer, aapVedtakForAlleIdenterPerBruker, AapVedtakEntity::radSistEndret)
             val vedtakErGjeldende =
                 aktueltVedtak != null && aktueltVedtak.nyestePeriodeTom.isAfter(LocalDate.now().minusDays(1))
 
@@ -76,7 +75,7 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktueltVedtak = velgVedtak(
+            val aktueltVedtak = velgDataForPrioritertIdent(
                 "dagpenger",
                 bruker.fnr,
                 identer,
@@ -106,7 +105,7 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktueltVedtak = velgVedtak(
+            val aktueltVedtak = velgDataForPrioritertIdent(
                 "uføretrygd",
                 bruker.fnr,
                 identer,
@@ -132,7 +131,7 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktueltVedtak = velgVedtak(
+            val aktueltVedtak = velgDataForPrioritertIdent(
                 "tiltakspenger",
                 bruker.fnr,
                 identer,
@@ -157,7 +156,7 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktuellPeriode = velgVedtak(
+            val aktuellPeriode = velgDataForPrioritertIdent(
                 "ungdomsprogram",
                 bruker.fnr,
                 identer,
@@ -190,7 +189,7 @@ class PostgresYtelserMapper(
 
         brukere.forEach { bruker ->
             val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktueltVedtak = velgVedtak(
+            val aktueltVedtak = velgDataForPrioritertIdent(
                 "enslig forsørger",
                 bruker.fnr,
                 identer,
@@ -200,34 +199,5 @@ class PostgresYtelserMapper(
 
             bruker.enslige_forsorgere_overgangsstonad = aktueltVedtak?.toEnsligeForsorgereOpensearchDto()
         }
-    }
-
-    private fun hentFnrIdenterPerBruker(brukere: List<PortefoljebrukerOpensearchModell>): Map<NorskIdent, List<NorskIdentMedHistorikk>> {
-        val fnrs = brukere.mapNotNull { it.fnr }
-        val fnrIdenterPerBruker = pdlIdentRepository.hentFnrIdenterForBrukere(fnrs)
-        fnrs.filterNot { fnrIdenterPerBruker.containsKey(it) }.forEach { fnr ->
-            secureLog.error("Fant ingen folkeregisteridenter i bruker_identer for fnr: $fnr")
-        }
-        return fnrIdenterPerBruker
-    }
-
-    private fun alleIdenter(fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>): List<NorskIdent> =
-        fnrIdenterPerBruker.values.flatten().map { it.fnr }.distinct()
-
-    // Hvis det finnes flere rader så skal aktiv ident prioriteres. Deretter velges vedtak med siste "rad sist endret" tidspunkt (vil nok aldri inntreffe).
-    private fun <T> velgVedtak(
-        ytelse: String,
-        fnr: NorskIdent?,
-        identer: List<NorskIdentMedHistorikk>,
-        vedtak: Map<NorskIdent, T>,
-        radSistEndret: (T) -> LocalDateTime
-    ): T? {
-        val identerMedVedtak = identer.filter { vedtak.containsKey(it.fnr) }
-        if (identerMedVedtak.size > 1) {
-            secureLog.warn("Fant $ytelse på flere fnr for samme person. Oppslag: $fnr, identer med $ytelse: ${identerMedVedtak.map { it.fnr }}")
-        }
-        val valgtIdent = identerMedVedtak.firstOrNull { !it.historisk }
-            ?: identerMedVedtak.maxByOrNull { radSistEndret(vedtak.getValue(it.fnr)) }
-        return valgtIdent?.let { vedtak[it.fnr] }
     }
 }

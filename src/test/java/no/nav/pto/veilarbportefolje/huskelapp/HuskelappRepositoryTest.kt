@@ -146,19 +146,12 @@ class HuskelappRepositoryTest {
         val alleHuskelappRader = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
         Assertions.assertThat(alleHuskelappRader.size).isEqualTo(4)
 
-        repo.slettAlleHuskelappRaderPaaBruker(huskelapp2.brukerFnr)
+        repo.slettAlleHuskelappRaderPaaBruker(listOf(huskelapp2.brukerFnr))
 
         val alleHuskelappRader2 = repo.hentAlleRaderPaHuskelapp(huskelappFoer.get().huskelappId)
         Assertions.assertThat(alleHuskelappRader2.size).isEqualTo(0)
     }
 
-
-    @Test
-    fun faarHentetNavkontorPaHuskelapp() {
-        repo!!.opprettHuskelapp(huskelapp2, veilederA, enhet0010)
-        val enhetId = repo.hentNavkontorPaHuskelapp(huskelapp2.brukerFnr)
-        Assertions.assertThat(enhetId.isPresent).isTrue()
-    }
 
     @Test
     fun kasterExceptionVedInsertAvToAktiveHuskelapperSammeBruker() {
