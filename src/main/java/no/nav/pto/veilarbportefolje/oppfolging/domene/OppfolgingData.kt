@@ -11,5 +11,5 @@ data class OppfolgingData(
     val manuell: Boolean,
     val startDato: Timestamp,
     val tildeltTidspunkt: Timestamp? = null,
-    val oppfolgingsperiodeId: UUID,
+    val oppfolgingsperiodeId: UUID?,
 )
