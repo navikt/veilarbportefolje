@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
-import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
@@ -9,7 +8,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -26,9 +24,9 @@ import java.util.*
  */
 @Service
 class HendelseService(
-    @param:Autowired private val hendelseRepository: HendelseRepository,
-    @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
-    @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
+    private val hendelseRepository: HendelseRepository,
+    private val pdlIdentRepository: PdlIdentRepository,
+    private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) : KafkaCommonKeyedConsumerService<HendelseRecordValue>() {
     private val logger: Logger = LoggerFactory.getLogger(HendelseService::class.java)
 
@@ -83,7 +81,7 @@ class HendelseService(
             return
         }
 
-        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
+        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hentAlleFnrIdenter(hendelse.personIdent), hendelse.kategori)
 
         if (eldsteHendelseIKategorien.id == hendelse.id) {
             oppdaterHendelseForBrukerIOpenSearch(hendelse)
@@ -110,7 +108,7 @@ class HendelseService(
             return
         }
 
-        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hendelse.personIdent, hendelse.kategori)
+        val eldsteHendelseIKategorien = hendelseRepository.getEldste(hentAlleFnrIdenter(hendelse.personIdent), hendelse.kategori)
 
         if (eldsteHendelseIKategorien.id == hendelse.id) {
             oppdaterHendelseForBrukerIOpenSearch(hendelse)
@@ -147,7 +145,7 @@ class HendelseService(
         }
 
         val resultatAvGetEldsteHendelseIKategorien = try {
-            hendelseRepository.getEldste(personIdent, kategori)
+            hendelseRepository.getEldste(hentAlleFnrIdenter(personIdent), kategori)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
@@ -166,16 +164,26 @@ class HendelseService(
     }
 
     private fun oppdaterHendelseForBrukerIOpenSearch(hendelse: Hendelse) {
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(hendelse.personIdent.get()))
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(hendelse.personIdent.get())
+        if (aktorId == null) {
+            logger.warn("Fant ingen aktiv aktorId for person med hendelse ID ${hendelse.id} (bruker er trolig ikke under oppfølging). Hopper over oppdatering i OpenSearch.")
+            return
+        }
         opensearchIndexerPaDatafelt.oppdaterHendelse(hendelse, aktorId)
     }
 
     private fun slettHendelseForBrukerIOpenSearch(hendelseId: UUID, personIdent: NorskIdent, kategori: Kategori) {
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(personIdent.get()))
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(personIdent.get())
         if (aktorId == null) {
-            logger.info("Fant ingen aktiv aktorId for person med hendelse ID $hendelseId (bruker er trolig ikke under oppfølging). Hopper over sletting i OpenSearch.")
+            logger.warn("Fant ingen aktiv aktorId for person med hendelse ID $hendelseId (bruker er trolig ikke under oppfølging). Hopper over sletting i OpenSearch.")
             return
         }
         opensearchIndexerPaDatafelt.slettHendelse(kategori, aktorId)
+    }
+
+    private fun hentAlleFnrIdenter(personIdent: NorskIdent): List<NorskIdent> {
+        val identer = LinkedHashSet(pdlIdentRepository.hentFnrIdenterForBruker(personIdent.get()).identer)
+        identer.add(personIdent.get())
+        return identer.map { NorskIdent.of(it) }
     }
 }

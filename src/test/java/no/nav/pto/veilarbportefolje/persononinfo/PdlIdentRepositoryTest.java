@@ -247,6 +247,27 @@ public class PdlIdentRepositoryTest {
         assertTrue(pdlIdentRepository.erBrukerUnderOppfolging(annenBrukersAktorId.get()));
     }
 
+    @Test
+    public void hentAktivAktorIdForPerson__skal_returnere_aktiv_aktorId_for_alle_identer_til_person() {
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        AktorId historiskAktorId = randomAktorId();
+
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(historiskFnr.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(historiskAktorId.get(), true, AKTORID)
+        ));
+
+        assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(fnr.get())).isEqualTo(aktorId);
+        assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(historiskFnr.get())).isEqualTo(aktorId);
+        assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(aktorId.get())).isEqualTo(aktorId);
+        assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(historiskAktorId.get())).isEqualTo(aktorId);
+        assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(randomFnr().get())).isNull();
+    }
+
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {
         return pdlIdentRepository.hentIdenter(pdlIdentRepository.hentPerson(ident.get()));
     }
