@@ -15,7 +15,7 @@ import java.util.*
 
 @Repository
 class HendelseRepository(
-    @Autowired private val jdbcTemplate: JdbcTemplate
+    private val jdbcTemplate: JdbcTemplate
 ) {
 
     /**
@@ -38,20 +38,25 @@ class HendelseRepository(
     }
 
     /**
-     * Henter den eldste hendelsen med en bestemt kategori:
+     * Henter den eldste hendelsen med en bestemt kategori på tvers av alle [personIdenter] (f.eks. aktive og historiske identer for samme person):
      *
-     * * dersom minst en hendelse eksisterer for [personIdent] returneres den eldste av disse
-     * * dersom ingen hendelser eksisterer for [personIdent] kastes en [IngenHendelseForPersonException]
+     * * dersom minst en hendelse eksisterer for en av [personIdenter] returneres den eldste av disse
+     * * dersom ingen hendelser eksisterer for [personIdenter] kastes en [IngenHendelseForPersonException]
      */
-    fun getEldste(personIdent: NorskIdent, kategori: Kategori): Hendelse {
+    fun getEldste(personIdenter: List<NorskIdent>, kategori: Kategori): Hendelse {
+        if (personIdenter.isEmpty()) {
+            throw IngenHendelseForPersonException(cause = IllegalArgumentException("Ingen identer å søke på."))
+        }
+
         // language=postgresql
         val sql = """
-            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ? AND ${HENDELSE.KATEGORI} = ?
+            SELECT * FROM ${HENDELSE.TABLE_NAME} WHERE ${HENDELSE.PERSON_IDENT} = ANY (?::varchar[]) AND ${HENDELSE.KATEGORI} = ?
             ORDER BY ${HENDELSE.HENDELSE_DATO} LIMIT 1
             """.trimIndent()
 
+        val personIdenterParam = personIdenter.joinToString(separator = ",", prefix = "{", postfix = "}") { it.get() }
         val resultat = try {
-            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdent.get(), kategori.name)
+            jdbcTemplate.queryForObject(sql, ::toHendelse, personIdenterParam, kategori.name)
         } catch (ex: EmptyResultDataAccessException) {
             throw IngenHendelseForPersonException(cause = ex)
         }

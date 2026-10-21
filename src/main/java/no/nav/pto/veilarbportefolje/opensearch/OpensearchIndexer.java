@@ -7,7 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.PostgresHuskelappOgFargekategoriMapper;
+import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapperV2;
 import no.nav.pto.veilarbportefolje.postgres.PostgresYtelserMapper;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.bulk.BulkItemResponse;
@@ -44,7 +44,7 @@ public class OpensearchIndexer {
     private final BrukerRepositoryV2 brukerRepositoryV2;
     private final PostgresOpensearchMapper postgresOpensearchMapper;
     private final PostgresYtelserMapper postgresYtelserMapper;
-    private final PostgresHuskelappOgFargekategoriMapper postgresHuskelappOgFargekategoriMapper;
+    private final PostgresOpensearchMapperV2 postgresOpensearchMapperV2;
 
     public void indekser(AktorId aktoerId) {
         Optional<PortefoljebrukerOpensearchModell> brukerOpensearchModell;
@@ -162,11 +162,10 @@ public class OpensearchIndexer {
         postgresOpensearchMapper.flettInnStatsborgerskapData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnBarnUnder18Aar(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnTiltakshendelser(brukerOpensearchModell);
-        postgresOpensearchMapper.flettInnEldsteHendelsePerKategori(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnOpplysningerOmArbeidssoekerData(brukerOpensearchModell);
         postgresOpensearchMapper.flettInnGjeldende14aVedtak(brukerOpensearchModell);
         postgresYtelserMapper.flettInnYtelser(brukerOpensearchModell);
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(brukerOpensearchModell);
+        postgresOpensearchMapperV2.flettInnData(brukerOpensearchModell);
 
         if (brukerOpensearchModell.isEmpty()) {
             log.warn("Skriver ikke til index da alle brukere i batchen er ugyldige");

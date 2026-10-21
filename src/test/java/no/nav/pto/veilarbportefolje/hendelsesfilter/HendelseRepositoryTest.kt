@@ -108,7 +108,7 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelse = hendelse)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdenter = listOf(personIdent), kategori = kategori)
 
         // Then
         val forventetHendelse = hendelse.copy()
@@ -131,11 +131,36 @@ class HendelseRepositoryTest(
         hendelseRepository.insert(hendelse = hendelseEldste)
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdenter = listOf(personIdent), kategori = kategori)
 
         // Then
         val forventetHendelse = hendelseEldste.copy()
         assertThat(resultatAvHenting).isEqualTo(forventetHendelse)
+    }
+
+    @ParameterizedTest
+    @EnumSource(Kategori::class)
+    fun `skal hente eldste Hendelse på tvers av alle identer for person`(kategori: Kategori) {
+        // Given
+        val aktivIdent = randomNorskIdent()
+        val historiskIdent = randomNorskIdent()
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        val hendelsePaaHistoriskIdent =
+            genererRandomHendelse(personIdent = historiskIdent, hendelseDato = naa.minusDays(1), kategori = kategori)
+        val hendelsePaaAktivIdent =
+            genererRandomHendelse(personIdent = aktivIdent, hendelseDato = naa, kategori = kategori)
+        hendelseRepository.insert(hendelsePaaAktivIdent)
+        hendelseRepository.insert(hendelsePaaHistoriskIdent)
+        hendelseRepository.insert(
+            genererRandomHendelse(personIdent = randomNorskIdent(), hendelseDato = naa.minusDays(2), kategori = kategori)
+        )
+
+        // When
+        val resultatAvHenting =
+            hendelseRepository.getEldste(personIdenter = listOf(aktivIdent, historiskIdent), kategori = kategori)
+
+        // Then
+        assertThat(resultatAvHenting).isEqualTo(hendelsePaaHistoriskIdent)
     }
 
     @ParameterizedTest
@@ -162,7 +187,7 @@ class HendelseRepositoryTest(
         }
 
         // When
-        val resultatAvHenting = hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+        val resultatAvHenting = hendelseRepository.getEldste(personIdenter = listOf(personIdent), kategori = kategori)
 
         // Then
         val forventetHendelse = hendelseEldsteAvKategori.copy()
@@ -186,7 +211,7 @@ class HendelseRepositoryTest(
 
         // When
         val resultatAvHenting = try {
-            hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+            hendelseRepository.getEldste(personIdenter = listOf(personIdent), kategori = kategori)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
@@ -203,7 +228,7 @@ class HendelseRepositoryTest(
 
         // When
         val resultatAvHenting = try {
-            hendelseRepository.getEldste(personIdent = personIdent, kategori = kategori)
+            hendelseRepository.getEldste(personIdenter = listOf(personIdent), kategori = kategori)
         } catch (ex: IngenHendelseForPersonException) {
             ex
         }
