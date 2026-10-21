@@ -50,7 +50,6 @@ class PostgresYtelserMapperTest(
     @param:Autowired val tiltakspengerRepository: TiltakspengerRespository,
     @param:Autowired val ungdomsprogramRepository: UngdomsprogramRepository,
     @param:Autowired val ensligeForsorgereRepository: EnsligeForsorgereRepository,
-    @param:Autowired val sykmeldtRepository: SykmeldtRepository,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
@@ -318,37 +317,6 @@ class PostgresYtelserMapperTest(
 
         assertThat(brukerMedUtloptPeriode.enslige_forsorgere_overgangsstonad).isNull()
         assertThat(brukerUtenOvergangsstonad.enslige_forsorgere_overgangsstonad).isNull()
-    }
-
-    @Test
-    fun `flettInnSykmeldt skal kun sette sykmeldt når sluttdato er i dag eller fram i tid`() {
-        val fnrMedSluttIDag = randomFnr().get()
-        val fnrMedUtloptPeriode = randomFnr().get()
-        lagreIdenter(fnrMedSluttIDag)
-        lagreIdenter(fnrMedUtloptPeriode)
-        sykmeldtRepository.upsertSykmeldtperiode(
-            fnrMedSluttIDag,
-            OppfolgingstilfelleDTO(
-                arbeidstakerAtTilfelleEnd = true,
-                start = LocalDate.now().minusWeeks(2),
-                end = LocalDate.now()
-            )
-        )
-        sykmeldtRepository.upsertSykmeldtperiode(
-            fnrMedUtloptPeriode,
-            OppfolgingstilfelleDTO(
-                arbeidstakerAtTilfelleEnd = true,
-                start = LocalDate.now().minusWeeks(2),
-                end = LocalDate.now().minusDays(1)
-            )
-        )
-
-        val brukerMedSluttIDag = PortefoljebrukerOpensearchModell(fnr = fnrMedSluttIDag)
-        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
-        postgresYtelserMapper.flettInnYtelser(listOf(brukerMedSluttIDag, brukerMedUtloptPeriode))
-
-        assertThat(brukerMedSluttIDag.sykmeldt?.sluttdato).isEqualTo(LocalDate.now())
-        assertThat(brukerMedUtloptPeriode.sykmeldt).isNull()
     }
 
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {

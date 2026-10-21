@@ -35,7 +35,6 @@ class PostgresYtelserMapper(
     private val tiltakspengerRepository: TiltakspengerRespository,
     private val ungdomsprogramRepository: UngdomsprogramRepository,
     private val ensligeForsorgereService: EnsligeForsorgereService,
-    private val sykmeldtRepository: SykmeldtRepository,
     private val pdlIdentRepository: PdlIdentRepository
 ) {
 
@@ -47,7 +46,6 @@ class PostgresYtelserMapper(
         flettInnTiltakspenger(brukere, fnrIdenterPerBruker)
         flettInnUngdomsprogram(brukere, fnrIdenterPerBruker)
         flettInnEnsligeForsorgere(brukere, fnrIdenterPerBruker)
-        flettInnSykmeldt(brukere, fnrIdenterPerBruker)
     }
 
     private fun flettInnAapKelvin(
@@ -206,32 +204,4 @@ class PostgresYtelserMapper(
         }
     }
 
-    // flyttes til PostgresMapperV2 når annen brach er merget inn
-    private fun flettInnSykmeldt(
-        brukere: List<PortefoljebrukerOpensearchModell>,
-        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
-    ) {
-        val sykmeldtForAlleIdenterPerBruker =
-            sykmeldtRepository.hentSykmeldtPerioder(alleIdenter(fnrIdenterPerBruker))
-
-        brukere.forEach { bruker ->
-            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
-            val aktuellPeriode = velgDataForPrioritertIdent(
-                "sykmeldt",
-                bruker.fnr,
-                identer,
-                sykmeldtForAlleIdenterPerBruker,
-                SykmeldtEntity::radSistEndret
-            )
-            val periodeErGjeldende = aktuellPeriode != null && !aktuellPeriode.slutt.isBefore(LocalDate.now())
-
-            bruker.sykmeldt = if (periodeErGjeldende) {
-                SykmeldtForOpensearch(
-                    startdato = aktuellPeriode.start,
-                    sluttdato = aktuellPeriode.slutt,
-                    harArbeidsgiver = aktuellPeriode.harArbeidsgiver
-                )
-            } else null
-        }
-    }
 }
