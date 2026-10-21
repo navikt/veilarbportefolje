@@ -49,7 +49,7 @@ data class Filtervalg(
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
     val ytelseUforetrygd: List<YtelseUforetrygd>,
     val ingenYtelser: List<IngenYtelser>,
-    val sykmeldt: List<Sykmeldt>,
+    val sykmeldt: List<Sykmeldt> = emptyList(), // default fjernes etter frontend har lagt til filtervalget
     val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
