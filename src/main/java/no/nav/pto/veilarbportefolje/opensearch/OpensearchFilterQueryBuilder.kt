@@ -6,7 +6,6 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Uforetrygd
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITETER
@@ -20,6 +19,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FARGEKA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FORMIDLINGSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidsforhold.ER_SYKMELDT_MED_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
@@ -495,7 +495,6 @@ class OpensearchFilterQueryBuilder {
                     UFORETRYGD
                 )
             )
-
         }
 
         if (filtervalg.harIngenYtelserFilter()) {
@@ -508,6 +507,14 @@ class OpensearchFilterQueryBuilder {
                     .mustNot(QueryBuilders.existsQuery(UNGDOMSPROGRAM))
                     .mustNot(QueryBuilders.existsQuery(UFORETRYGD))
                     .mustNot(QueryBuilders.existsQuery(ENSLIGE_FORSORGERE_OVERGANGSSTONAD))
+            )
+        }
+
+        if (filtervalg.harSykmeldtFilter()) {
+            queryBuilder.must(
+                QueryBuilders.existsQuery(
+                    SYKMELDT
+                )
             )
         }
 
