@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.kafka.KafkaConfigCommon.Topic
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.sykmeldt.dto.OppfolgingstilfelleDTO
@@ -30,6 +31,7 @@ class SykmeldtService(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val pdlIdentRepository: PdlIdentRepository,
     val aktorClient: AktorClient,
+    val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
 ) : KafkaCommonNonKeyedConsumerService<SykmeldtPersonKafkaDTO>() {
 
     public override fun behandleKafkaMeldingLogikk(kafkaMelding: SykmeldtPersonKafkaDTO) {
@@ -51,12 +53,12 @@ class SykmeldtService(
 
         val aktorId = aktorClient.hentAktorId(Fnr.of(kafkaMelding.personIdentNumber))
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreSykmeldtperiodeForBruker(kafkaMelding.personIdentNumber, oppfolgingsStartdato)
+        lagreSykmeldtperiodeForBruker(kafkaMelding.personIdentNumber, aktorId, oppfolgingsStartdato)
     }
 
     fun hentOgLagreSykmeldtperiodeForBrukerVedOppfolgingStart(aktorId: AktorId) {
         val personIdent = aktorClient.hentFnr(aktorId).get()
-        lagreSykmeldtperiodeForBruker(personIdent, LocalDate.now())
+        lagreSykmeldtperiodeForBruker(personIdent, aktorId, LocalDate.now())
     }
 
     fun hentOgLagreSykmeldtperiodeVedAdminjobb(aktorId: AktorId) {
@@ -66,10 +68,10 @@ class SykmeldtService(
             return
         }
         val oppfolgingsStartdato = hentOppfolgingStartdato(aktorId)
-        lagreSykmeldtperiodeForBruker(personIdent.get(), oppfolgingsStartdato)
+        lagreSykmeldtperiodeForBruker(personIdent.get(), aktorId, oppfolgingsStartdato)
     }
 
-    fun lagreSykmeldtperiodeForBruker(personIdent: String, oppfolgingsStartdato: LocalDate) {
+    fun lagreSykmeldtperiodeForBruker(personIdent: String, aktorId: AktorId, oppfolgingsStartdato: LocalDate) {
         val sykmeldtPeriode = hentSykmeldtperiodeFraApi(personIdent, oppfolgingsStartdato)
 
         if (sykmeldtPeriode == null) {
@@ -78,10 +80,17 @@ class SykmeldtService(
                 personIdent
             )
             slettSykmeldtForAlleIdenterForBruker(personIdent)
+            opensearchIndexerPaDatafelt.slettSykmeldt(aktorId)
             return
         }
 
         upsertSykmeldtperiodeForAktivIdentForBruker(personIdent, sykmeldtPeriode)
+        opensearchIndexerPaDatafelt.oppdaterSykmeldt(
+            aktorId,
+            sykmeldtPeriode.start,
+            sykmeldtPeriode.end,
+            sykmeldtPeriode.arbeidstakerAtTilfelleEnd
+        )
     }
 
     /**
@@ -124,6 +133,7 @@ class SykmeldtService(
 
         try {
             slettSykmeldtForAlleIdenterForBruker(maybeFnr.get().toString())
+            opensearchIndexerPaDatafelt.slettSykmeldt(aktorId)
         } catch (e: Exception) {
             secureLog.error("Feil ved sletting av sykmeldtdata for bruker med fnr: ${maybeFnr.get()}", e)
             return
