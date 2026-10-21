@@ -7,7 +7,7 @@ data class SykmeldtPersonDTO(
     val personIdent: String,
 )
 
-// Første i lista om det er flere er den vi skal bruke. De filtrerer bort fremtidige perioder. Om "end" er passert så er ikke bruker sykmeldt.
+// Aktuell periode er den første i lista. De filtrerer bort fremtidige perioder. Om "end" er passert så er ikke bruker sykmeldt.
 // arbeidstakerAtTilfelleEnd sier om bruker er arbeidstaker ved slutten ("end") av perioden.
 data class OppfolgingstilfelleDTO(
     val arbeidstakerAtTilfelleEnd: Boolean,

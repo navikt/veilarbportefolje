@@ -18,8 +18,8 @@ import java.util.*
 /**
  * Håndterer behandling av Kafka-meldinger fra [Topic.SYKMELDT_TOPIC].
  *
- * Kafka-meldingen brukes kun som trigger for å hente oppfølgingstilfeller fra isoppfolgingstilfelle.
- * Dette er brukere som er sykmeldte og under oppføling, både med og uten arbeidsgiver.
+ * Kafka-meldingen brukes kun som trigger for å hente sykmeldtperioder fra isoppfolgingstilfelle.
+ * Dette er brukere som er sykmeldte og under oppfølging, både med og uten arbeidsgiver.
  * Denne klassen håndterer funksjonalitet knyttet til å lagre, oppdatere og slette
  * gjeldende sykmeldtperiode for en bruker som er sykmeldt i oppfølgingsperioden.
  */
@@ -34,7 +34,7 @@ class SykmeldtService(
 
     public override fun behandleKafkaMeldingLogikk(kafkaMelding: SykmeldtPersonKafkaDTO) {
         secureLog.info(
-            "Mottok sykmeldtsmelding med uuid {} for person {}",
+            "Mottok sykmeldtmelding med uuid {} for person {}",
             kafkaMelding.uuid,
             kafkaMelding.personIdentNumber
         )
