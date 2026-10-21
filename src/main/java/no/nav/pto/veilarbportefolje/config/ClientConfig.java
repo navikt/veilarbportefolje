@@ -17,11 +17,11 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -111,13 +111,13 @@ public class ClientConfig {
     }
 
     @Bean
-    public SykefravaerClient sykefravaerClient(
+    public SykmeldtClient sykmeldtClient(
             AzureAdMachineToMachineTokenClient tokenClient,
             EnvironmentProperties environmentProperties
     ) {
-        return new SykefravaerClient(
-                environmentProperties.getSykefravaeroppfolgingUrl(),
-                () -> tokenClient.createMachineToMachineToken(environmentProperties.getSykefravaeroppfolgingScope())
+        return new SykmeldtClient(
+                environmentProperties.getSykmeldtUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getSykmeldtScope())
         );
     }
 

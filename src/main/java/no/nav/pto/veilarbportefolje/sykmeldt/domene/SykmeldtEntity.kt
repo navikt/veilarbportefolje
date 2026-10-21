@@ -1,9 +1,9 @@
-package no.nav.pto.veilarbportefolje.sykefravaer.domene
+package no.nav.pto.veilarbportefolje.sykmeldt.domene
 
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class SykefravaerEntity(
+data class SykmeldtEntity(
     val start: LocalDate,
     val slutt: LocalDate,
     val harArbeidsgiver: Boolean,

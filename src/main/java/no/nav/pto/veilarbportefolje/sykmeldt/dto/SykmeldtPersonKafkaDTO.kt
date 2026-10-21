@@ -1,8 +1,8 @@
-package no.nav.pto.veilarbportefolje.sykefravaer.dto
+package no.nav.pto.veilarbportefolje.sykmeldt.dto
 
 import java.time.OffsetDateTime
 
-data class SykefravaerPersonKafkaDTO(
+data class SykmeldtPersonKafkaDTO(
     val uuid: String,
     val createdAt: OffsetDateTime,
     val personIdentNumber: String,

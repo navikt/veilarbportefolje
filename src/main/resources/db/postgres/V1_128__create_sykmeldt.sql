@@ -1,4 +1,4 @@
-CREATE TABLE SYKEFRAVAER_OPPFOLGING
+CREATE TABLE SYKMELDT
 (
     norsk_ident      varchar(11) not null,
     start            date        not null,

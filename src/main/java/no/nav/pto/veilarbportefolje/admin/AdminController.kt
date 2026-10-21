@@ -27,7 +27,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -58,7 +58,7 @@ class AdminController(
     private val aapService: AapService,
     private val oppfolgingClient: OppfolgingClient,
     private val uforetrygdService: UforetrygdService,
-    private val sykefravaerService: SykefravaerService,
+    private val sykmeldtService: SykmeldtService,
     private val dagpengerService: DagpengerService,
     private val tiltakspengerService: TiltakspengerService,
     private val arbeidssoekerService: ArbeidssoekerService,
@@ -287,8 +287,8 @@ class AdminController(
                             uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
                         }
 
-                        AdminDataType.SYKEFRAVAER_DATA -> {
-                            sykefravaerService.hentOgLagreSykefravaerVedAdminjobb(aktorId)
+                        AdminDataType.SYKMELDT_DATA -> {
+                            sykmeldtService.hentOgLagreSykmeldtperiodeVedAdminjobb(aktorId)
                         }
 
                         AdminDataType.PDL_DATA -> {
@@ -371,9 +371,9 @@ class AdminController(
                         uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(request.aktorId)
                     }
 
-                    AdminDataType.SYKEFRAVAER_DATA -> {
-                        secureLog.info("Starter datahenting for sykefravær for aktorId {}", request.aktorId)
-                        sykefravaerService.hentOgLagreSykefravaerVedAdminjobb(request.aktorId)
+                    AdminDataType.SYKMELDT_DATA -> {
+                        secureLog.info("Starter datahenting for sykmeldtperiode for aktorId {}", request.aktorId)
+                        sykmeldtService.hentOgLagreSykmeldtperiodeVedAdminjobb(request.aktorId)
                     }
 
                     AdminDataType.PDL_DATA -> {

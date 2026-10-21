@@ -181,7 +181,7 @@ spec:
       value: "https://pensjon-pen.prod-fss-pub.nais.io"
     - name: UFORETRYGD_SCOPE
       value: "api://prod-fss.pensjondeployer.pensjon-pen/.default"
-    - name: SYKEFRAVAEROPPFOLGING_URL
+    - name: SYKMELDT_URL
       value: "http://isoppfolgingstilfelle.teamsykefravr"
-    - name: SYKEFRAVAEROPPFOLGING_SCOPE
+    - name: SYKMELDT_SCOPE
       value: "api://prod-gcp.teamsykefravr.isoppfolgingstilfelle/.default"

@@ -62,8 +62,8 @@ import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingDTO;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingStatusService;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService;
-import no.nav.pto.veilarbportefolje.sykefravaer.dto.SykefravaerPersonKafkaDTO;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.SykmeldtPersonKafkaDTO;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.dto.input.KafkaTiltakshendelse;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
@@ -148,7 +148,7 @@ public class KafkaConfigCommon {
 
         YTELSER_TOPIC("obo.ytelser-v1"),
 
-        SYKEFRAVAEROPPFOLGING_TOPIC("teamsykefravr.isoppfolgingstilfelle-oppfolgingstilfelle-person");
+        SYKMELDT_TOPIC("teamsykefravr.isoppfolgingstilfelle-oppfolgingstilfelle-person");
 
         final String topicName;
 
@@ -188,7 +188,7 @@ public class KafkaConfigCommon {
             Siste14aVedtakService siste14aVedtakService,
             SkjermedePersonerService skjermedePersonerService,
             SkjermingStatusService skjermingStatusService,
-            SykefravaerService sykefravaerService,
+            SykmeldtService sykmeldtService,
             TiltakService tiltakService,
             TiltakshendelseService tiltakshendelseService,
             TiltaksaktivitetService tiltaksaktivitetService,
@@ -467,15 +467,15 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(YtelserKafkaDTO.class),
                                         ytelserKafkaService::behandleKafkaRecord
                                 ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, SykefravaerPersonKafkaDTO>()
+                        new KafkaConsumerClientBuilder.TopicConfig<String, SykmeldtPersonKafkaDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
                                 .withStoreOnFailure(consumerRepository)
                                 .withConsumerConfig(
-                                        Topic.SYKEFRAVAEROPPFOLGING_TOPIC.topicName,
+                                        Topic.SYKMELDT_TOPIC.topicName,
                                         Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(SykefravaerPersonKafkaDTO.class),
-                                        sykefravaerService::behandleKafkaRecord
+                                        Deserializers.jsonDeserializer(SykmeldtPersonKafkaDTO.class),
+                                        sykmeldtService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<String, HendelseRecordValue>()
                                 .withLogging()

@@ -21,7 +21,7 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14a
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -51,7 +51,7 @@ public class OppfolgingStartetService {
     private final TiltakspengerService tiltakspengerService;
     private final DagpengerService dagpengerService;
     private final UforetrygdService uforetrygdService;
-    private final SykefravaerService sykefravaerService;
+    private final SykmeldtService sykmeldtService;
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepositoryV3;
     private final BrukerServiceV2 brukerServiceV2;
     private final VeilarbVeilederClient veilarbVeilederClient;
@@ -110,7 +110,7 @@ public class OppfolgingStartetService {
             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);
             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
             uforetrygdService.hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId);
-            sykefravaerService.hentOgLagreSykefravaerForBrukerVedOppfolgingStart(aktorId);
+            sykmeldtService.hentOgLagreSykmeldtperiodeForBrukerVedOppfolgingStart(aktorId);
         });
 
         opensearchIndexer.indekser(aktorId);

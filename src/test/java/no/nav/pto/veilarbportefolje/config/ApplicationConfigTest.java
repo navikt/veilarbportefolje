@@ -67,26 +67,22 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.PostgresHuskelappOgFargekategoriMapper;
-import no.nav.pto.veilarbportefolje.postgres.PostgresYtelserMapper;
+import no.nav.pto.veilarbportefolje.postgres.*;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerClient;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerRepository;
-import no.nav.pto.veilarbportefolje.sykefravaer.SykefravaerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdRepository;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
@@ -209,8 +205,8 @@ import static org.mockito.Mockito.when;
         UngdomsprogramRepository.class,
         UforetrygdService.class,
         UforetrygdRepository.class,
-        SykefravaerService.class,
-        SykefravaerRepository.class,
+        SykmeldtService.class,
+        SykmeldtRepository.class,
         OppfolgingsbrukerTestRepository.class,
         VeiledergrupperService.class,
         VeiledergrupperRepository.class,
@@ -426,8 +422,8 @@ public class ApplicationConfigTest {
     }
 
     @Bean
-    public SykefravaerClient sykefravaerClient() {
-        return mock(SykefravaerClient.class);
+    public SykmeldtClient sykmeldtClient() {
+        return mock(SykmeldtClient.class);
     }
 
     @Bean

@@ -1,28 +1,28 @@
-package no.nav.pto.veilarbportefolje.sykefravaer
+package no.nav.pto.veilarbportefolje.sykmeldt
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
-import no.nav.pto.veilarbportefolje.sykefravaer.dto.OppfolgingstilfelleDTO
-import no.nav.pto.veilarbportefolje.sykefravaer.dto.OppfolgingstilfellePersonDTO
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.OppfolgingstilfelleDTO
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.SykmeldtPersonDTO
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 @WireMockTest
-class SykefravaerClientTest {
+class SykmeldtClientTest {
 
     private val fnr = "10108000000"
     private val path = "/api/system/v1/oppfolgingstilfelle/personident"
 
-    private fun client(wireMockRuntimeInfo: WireMockRuntimeInfo) = SykefravaerClient(
+    private fun client(wireMockRuntimeInfo: WireMockRuntimeInfo) = SykmeldtClient(
         "http://localhost:" + wireMockRuntimeInfo.httpPort,
         { "TOKEN" }
     )
 
     @Test
-    fun `hentSykefravaersoppfolingPeriode gir forventet respons naar bruker har oppfolgingstilfeller`(
+    fun `hentSykmeldtPeriode gir forventet respons naar bruker har oppfolgingstilfeller`(
         wireMockRuntimeInfo: WireMockRuntimeInfo
     ) {
         val responseBody = """
@@ -58,9 +58,9 @@ class SykefravaerClientTest {
                 .willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
 
-        val response = client(wireMockRuntimeInfo).hentSykefravaersoppfolingPeriode(fnr)
+        val response = client(wireMockRuntimeInfo).hentSykmeldtPeriode(fnr)
 
-        val forventet = OppfolgingstilfellePersonDTO(
+        val forventet = SykmeldtPersonDTO(
             oppfolgingstilfelleList = listOf(
                 OppfolgingstilfelleDTO(
                     arbeidstakerAtTilfelleEnd = true,
@@ -79,7 +79,7 @@ class SykefravaerClientTest {
     }
 
     @Test
-    fun `hentSykefravaersoppfolingPeriode gir tom liste naar bruker ikke har oppfolgingstilfeller`(
+    fun `hentSykmeldtPeriode gir tom liste naar bruker ikke har oppfolgingstilfeller`(
         wireMockRuntimeInfo: WireMockRuntimeInfo
     ) {
         val responseBody = """
@@ -97,20 +97,20 @@ class SykefravaerClientTest {
                 .willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
 
-        val response = client(wireMockRuntimeInfo).hentSykefravaersoppfolingPeriode(fnr)
+        val response = client(wireMockRuntimeInfo).hentSykmeldtPeriode(fnr)
 
         assertThat(response.oppfolgingstilfelleList).isEmpty()
         assertThat(response.personIdent).isEqualTo(fnr)
     }
 
     @Test
-    fun `hentSykefravaersoppfolingPeriode kaster exception ved feilrespons`(wireMockRuntimeInfo: WireMockRuntimeInfo) {
+    fun `hentSykmeldtPeriode kaster exception ved feilrespons`(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         WireMock.givenThat(
             WireMock.get(WireMock.urlEqualTo(path))
                 .willReturn(WireMock.aResponse().withStatus(500))
         )
 
-        assertThatThrownBy { client(wireMockRuntimeInfo).hentSykefravaersoppfolingPeriode(fnr) }
+        assertThatThrownBy { client(wireMockRuntimeInfo).hentSykmeldtPeriode(fnr) }
             .isInstanceOf(RuntimeException::class.java)
     }
 }
