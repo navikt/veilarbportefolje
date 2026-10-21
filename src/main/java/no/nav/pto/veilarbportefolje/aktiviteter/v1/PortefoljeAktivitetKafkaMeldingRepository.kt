@@ -38,17 +38,16 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val gjeldendeAktiviteter = filtrerGjeldendeOppfolgingsperiode(endeligeAktiviteter)
-        val endeligeAktiviteterEkskludertTiltak = gjeldendeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE}
+        val overigeAktiviteter = endeligeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
 
-        val tiltaksaktiviteter = gjeldendeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
         val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
-        val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
-        val aktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filterNot { it.historisk }
+        val (inaktivAktiviteter, aktivAktiviteter) = overigeAktiviteter.partition { it.historisk }
+        val gyldigeAktiveAktiviteter = filtrerGjeldendeOppfolgingsperiode(aktivAktiviteter)
 
         val antallAktiviteterSlettet = batchDeleteById(inaktivAktiviteter).sumOf(::normaliserUpdateCount)
-        val antallAktiviteterOppdatert = batchUpsertAktivitet(aktivAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallAktiviteterOppdatert = batchUpsertAktivitet(gyldigeAktiveAktiviteter).sumOf(::normaliserUpdateCount)
 
         val antallMeldingerBehandlet = antallAktiviteterSlettet + antallAktiviteterOppdatert + antallTiltaksAktiviteterBehandlet
 
@@ -61,23 +60,20 @@ class PortefoljeAktivitetKafkaMeldingRepository(
     }
 
     fun behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
-        val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
-        //Aktiviteter som starter med ARENA, er feilaktiviteter og skal ikke lagres i DB-en. Derfor filtrerer vi dem bort her.
-        val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk || it.aktivitetId.startsWith("ARENA") }
+        val (inaktivTiltaksAktiviteter, aktivTiltaksAktiviteter) = tiltaksaktiviteter.partition { it.historisk }
+        val gyldigeTiltaksAktiviteter = filtrerGjeldendeOppfolgingsperiode(aktivTiltaksAktiviteter)
 
         val antallTiltaksAktiviteterSlettet = batchDeleteById(inaktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
-        val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(aktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(gyldigeTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
 
         val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
 
         if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
             if (antallTiltaksAktiviteterOppdatert == 1) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
-            }
-            if (antallTiltaksAktiviteterSlettet == 1) {
+            } else if (antallTiltaksAktiviteterSlettet == 1) {
                 indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
-            }
-            if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
+            } else if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
                 indekserAktiviteter(tiltaksaktiviteter)
             }
         }
@@ -110,7 +106,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
     ): List<KafkaAktivitetMeldingEntity> {
         if (aktiviteter.isEmpty()) return emptyList()
 
-        if (aktiviteter.size == 1) return aktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) || it.historisk }
+        if (aktiviteter.size == 1) return aktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) }
 
         val aktorIder = aktiviteter.map { AktorId.of(it.aktorId) }.distinct()
         val oppfolgingsperiodePrAktor = oppfolgingRepository.hentOppfolgingsperiodeIder(aktorIder)
@@ -120,7 +116,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
             val gjeldendeId = oppfolgingsperiodePrAktor[aktivAktorId] ?: return@filter false
             val meldingId = aktivitet.oppfolgingsperiodeId ?: return@filter false
 
-            meldingId == gjeldendeId.toString() || aktivitet.historisk
+            meldingId == gjeldendeId.toString()
         }
 
         val ignorert = aktiviteter.size - matchende.size
