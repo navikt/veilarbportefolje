@@ -90,17 +90,11 @@ class PostgresOpensearchMapperV2(
         fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
     ) {
         brukere.forEach { bruker ->
-            val fnr = bruker.fnr
-            if (fnr == null) {
-                bruker.hendelser = emptyMap()
-                return@forEach
-            }
-            val alleFnrIdenter = (listOf(fnr) + fnrIdenterPerBruker[fnr].orEmpty().map { it.fnr })
-                .distinct()
-                .map { NorskIdentType.of(it) }
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val fnrIdenter = identer.map { NorskIdentType.of(it.fnr) }
 
             bruker.hendelser = Kategori.entries.mapNotNull { kategori ->
-                hentEldsteHendelse(alleFnrIdenter, kategori)?.let { kategori to it.hendelse }
+                hentEldsteHendelse(fnrIdenter, kategori)?.let { kategori to it.hendelse }
             }.toMap()
         }
     }

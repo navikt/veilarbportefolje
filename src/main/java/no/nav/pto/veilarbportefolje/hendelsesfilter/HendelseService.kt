@@ -181,9 +181,6 @@ class HendelseService(
         opensearchIndexerPaDatafelt.slettHendelse(kategori, aktorId)
     }
 
-    private fun hentAlleFnrIdenter(personIdent: NorskIdent): List<NorskIdent> {
-        val identer = LinkedHashSet(pdlIdentRepository.hentFnrIdenterForBruker(personIdent.get()).identer)
-        identer.add(personIdent.get())
-        return identer.map { NorskIdent.of(it) }
-    }
+    private fun hentAlleFnrIdenter(personIdent: NorskIdent): List<NorskIdent> =
+        pdlIdentRepository.hentFnrIdenterForBruker(personIdent.get()).identer.map { NorskIdent.of(it) }
 }
