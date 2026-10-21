@@ -34,14 +34,21 @@ class OpensearchServiceIntSykmeldtTest @Autowired constructor(
     }
 
     @Test
-    fun skal_hente_ut_brukere_som_er_sykmeldt() {
-        val brukerSomErSykmeldt = lagSykmeldtBruker()
-        val brukerSomIkkeErSykmeldt = lagSykmeldtBruker().copy(sykmeldt = null)
-        skrivOgVent(listOf(brukerSomErSykmeldt, brukerSomIkkeErSykmeldt))
+    fun skal_hente_ut_brukere_som_er_sykmeldt_med_og_uten_arbeidsgiver() {
+        val medArbeidsgiver = lagSykmeldtBruker(harArbeidsgiver = true)
+        val utenArbeidsgiver = lagSykmeldtBruker(harArbeidsgiver = false)
+        val ikkeSykmeldt = lagSykmeldtBruker().copy(sykmeldt = null)
+        skrivOgVent(listOf(medArbeidsgiver, utenArbeidsgiver, ikkeSykmeldt))
 
-        val respons = hentSykmeldte(Sorteringsfelt.IKKE_SATT, Sorteringsrekkefolge.IKKE_SATT)
+        val kunMedArbeidsgiver = hentSykmeldte(filter = listOf(Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER))
+        val kunUtenArbeidsgiver = hentSykmeldte(filter = listOf(Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER))
+        val begge = hentSykmeldte(
+            filter = listOf(Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER, Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER)
+        )
 
-        assertThat(respons).containsExactly(brukerSomErSykmeldt.fnr)
+        assertThat(kunMedArbeidsgiver).containsExactly(medArbeidsgiver.fnr)
+        assertThat(kunUtenArbeidsgiver).containsExactly(utenArbeidsgiver.fnr)
+        assertThat(begge).containsExactlyInAnyOrder(medArbeidsgiver.fnr, utenArbeidsgiver.fnr)
     }
 
     @Test
@@ -105,13 +112,17 @@ class OpensearchServiceIntSykmeldtTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
     }
 
-    private fun hentSykmeldte(sorteringsfelt: Sorteringsfelt, rekkefolge: Sorteringsrekkefolge): List<String?> =
+    private fun hentSykmeldte(
+        sorteringsfelt: Sorteringsfelt = Sorteringsfelt.IKKE_SATT,
+        rekkefolge: Sorteringsrekkefolge = Sorteringsrekkefolge.IKKE_SATT,
+        filter: List<Sykmeldt> = Sykmeldt.entries
+    ): List<String?> =
         opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.of(TEST_VEILEDER_0),
             rekkefolge,
             sorteringsfelt,
-            getFiltervalgDefaults().copy(sykmeldt = listOf(Sykmeldt.ER_SYKMELDT)),
+            getFiltervalgDefaults().copy(sykmeldt = filter),
             null,
             null
         ).brukere.map { it.fnr }

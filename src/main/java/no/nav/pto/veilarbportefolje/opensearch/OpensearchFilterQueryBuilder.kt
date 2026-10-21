@@ -20,6 +20,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FORMIDL
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidsforhold.ER_SYKMELDT_MED_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
@@ -511,11 +512,15 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harSykmeldtFilter()) {
-            queryBuilder.must(
-                QueryBuilders.existsQuery(
-                    SYKMELDT
-                )
-            )
+            val subQuery = QueryBuilders.boolQuery()
+            filtervalg.sykmeldt.forEach { sykmeldt ->
+                val harArbeidsgiver = when (sykmeldt) {
+                    Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER -> true
+                    Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER -> false
+                }
+                subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", harArbeidsgiver))
+            }
+            queryBuilder.must(subQuery)
         }
 
         if (filtervalg.harKjonnfilter()) {
