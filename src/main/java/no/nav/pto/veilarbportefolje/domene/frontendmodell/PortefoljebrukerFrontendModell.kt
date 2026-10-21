@@ -39,6 +39,7 @@ data class PortefoljebrukerFrontendModell(
 
     val ytelser: YtelserForBruker,
     val vedtak14a: Vedtak14aForBruker,
+    val sykmeldt: Sykmeldt?,
 
     var huskelapp: HuskelappForBruker?,
     var fargekategori: String?,
