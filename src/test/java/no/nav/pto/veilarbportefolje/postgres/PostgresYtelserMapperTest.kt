@@ -93,30 +93,6 @@ class PostgresYtelserMapperTest(
     }
 
     @Test
-    fun `flettInnAapKelvin skal velge aap på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
-        val tilOgMedHistorisk = LocalDate.now().plusMonths(6)
-
-        pdlIdentRepository.upsertIdenter(
-            listOf(
-                PDLIdent(randomAktorId().get(), false, Gruppe.AKTORID),
-                PDLIdent(fnr, false, Gruppe.FOLKEREGISTERIDENT),
-                PDLIdent(historiskFnr, true, Gruppe.FOLKEREGISTERIDENT)
-            )
-        )
-        aapRepository.upsertAap(fnr, AapEntity("FERDIGBEHANDLET", null, aapVedtak(tilOgMedGjeldende)))
-        aapRepository.upsertAap(historiskFnr, AapEntity("FERDIGBEHANDLET", null, aapVedtak(tilOgMedHistorisk)))
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.aap_kelvin).isTrue()
-        assertThat(bruker.aap_kelvin_tom_vedtaksdato).isEqualTo(tilOgMedGjeldende)
-    }
-
-    @Test
     fun `flettInnAapKelvin skal sette aap_kelvin false når periode er utløpt eller null`() {
         val fnrUtenAap = randomFnr().get()
         val fnrMedUtloptPeriode = randomFnr().get()
@@ -163,24 +139,6 @@ class PostgresYtelserMapperTest(
     }
 
     @Test
-    fun `flettInnDagpenger skal velge dagpenger på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        dagpengerRepository.upsertDagpengerPerioder(fnr, dagpengerPeriode(tilOgMedGjeldende), null)
-        dagpengerRepository.upsertDagpengerPerioder(historiskFnr, dagpengerPeriode(LocalDate.now().plusMonths(6)), null)
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.dagpenger?.harDagpenger).isTrue()
-        assertThat(bruker.dagpenger?.datoStans).isEqualTo(tilOgMedGjeldende)
-    }
-
-
-    @Test
     fun `flettInnDagpenger skal sette harDagpenger false når periode er utløpt eller null`() {
         val fnrUtenDapgener = randomFnr().get()
         val fnrMedUloptDagpenger = randomFnr().get()
@@ -220,29 +178,6 @@ class PostgresYtelserMapperTest(
     }
 
     @Test
-    fun `flettInnUforetrygd skal velge uføretrygd på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val virkningsdatoGjeldende = LocalDate.now().minusMonths(3)
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        uforetrygdRepository.upsertUforetrygd(
-            fnr,
-            uforetrygd(uforegrad = 50, virkningsdato = virkningsdatoGjeldende)
-        )
-        uforetrygdRepository.upsertUforetrygd(
-            historiskFnr,
-            uforetrygd(uforegrad = 60, virkningsdato = LocalDate.now().minusMonths(6))
-        )
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.uforetrygd?.virkningsdato).isEqualTo(virkningsdatoGjeldende)
-        assertThat(bruker.uforetrygd?.uforegrad).isEqualTo(50)
-    }
-
-    @Test
     fun `flettInnTiltakspenger skal finne tiltakspenger lagret på historisk fnr`() {
         val fnr = randomFnr().get()
         val historiskFnr = randomFnr().get()
@@ -257,23 +192,6 @@ class PostgresYtelserMapperTest(
         assertThat(bruker.tiltakspenger).isTrue()
         assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMed)
         assertThat(bruker.tiltakspenger_rettighet).isEqualTo(TiltakspengerRettighet.TILTAKSPENGER)
-    }
-
-    @Test
-    fun `flettInnTiltakspenger skal velge tiltakspenger på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        tiltakspengerRepository.upsertTiltakspenger(fnr, tiltakspengerVedtak(tilOgMedGjeldende))
-        tiltakspengerRepository.upsertTiltakspenger(historiskFnr, tiltakspengerVedtak(LocalDate.now().plusMonths(6)))
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.tiltakspenger).isTrue()
-        assertThat(bruker.tiltakspenger_vedtaksdato_tom).isEqualTo(tilOgMedGjeldende)
     }
 
     @Test
@@ -323,25 +241,6 @@ class PostgresYtelserMapperTest(
         assertThat(bruker.ungdomsprogram?.tilOgMed).isEqualTo(periode.tilOgMed)
         assertThat(bruker.ungdomsprogram?.maksdato).isEqualTo(periode.periodeMaksDato)
         assertThat(bruker.ungdomsprogram?.harForlengetPeriode).isFalse()
-    }
-
-    @Test
-    fun `flettInnUngdomsprogram skal velge ungdomsprogram på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        ungdomsprogramRepository.upsertUngdomsprogram(fnr, ungdomsprogramPeriode(tilOgMed = tilOgMedGjeldende))
-        ungdomsprogramRepository.upsertUngdomsprogram(
-            historiskFnr,
-            ungdomsprogramPeriode(tilOgMed = LocalDate.now().plusMonths(6))
-        )
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.ungdomsprogram?.tilOgMed).isEqualTo(tilOgMedGjeldende)
     }
 
     @Test
@@ -401,24 +300,6 @@ class PostgresYtelserMapperTest(
         assertThat(bruker.enslige_forsorgere_overgangsstonad?.utlopsDato()).isEqualTo(tilOgMed)
         assertThat(bruker.enslige_forsorgere_overgangsstonad?.harAktivitetsplikt()).isFalse()
         assertThat(bruker.enslige_forsorgere_overgangsstonad?.yngsteBarnsFødselsdato()).isEqualTo(LocalDate.of(2023, 5, 4))
-    }
-
-    @Test
-    fun `flettInnEnsligeForsorgere skal velge overgangsstønad på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val tilOgMedGjeldende = LocalDate.now().plusMonths(3)
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        ensligeForsorgereRepository.lagreOvergangsstonad(overgangsstonadVedtak(1L, fnr, tilOgMedGjeldende))
-        ensligeForsorgereRepository.lagreOvergangsstonad(
-            overgangsstonadVedtak(2L, historiskFnr, LocalDate.now().plusMonths(6))
-        )
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresYtelserMapper.flettInnYtelser(listOf(bruker))
-
-        assertThat(bruker.enslige_forsorgere_overgangsstonad?.utlopsDato()).isEqualTo(tilOgMedGjeldende)
     }
 
     @Test

@@ -171,6 +171,24 @@ public class PdlIdentRepository {
               """, (rs, i) -> Fnr.of(rs.getString("ident")), ident));
     }
 
+    /**
+     * Henter aktiv (ikke-historisk) aktørId for personen som eier {@code ident}, uansett om
+     * {@code ident} selv er aktiv eller historisk.
+     *
+     * @param ident fnr eller aktørId, aktiv eller historisk
+     * @return aktiv {@code AktorId}, eller {@code null} hvis personen ikke har en aktiv aktørId
+     */
+    public AktorId hentAktivAktorIdForPerson(String ident) {
+        return queryForObjectOrNull(() -> db.queryForObject("""
+              select bi2.ident
+              from bruker_identer bi1
+              inner join bruker_identer bi2 on bi2.person = bi1.person
+              where bi1.ident = ?
+                  and bi2.gruppe = 'AKTORID'
+                  and not bi2.historisk
+              """, (rs, i) -> AktorId.of(rs.getString("ident")), ident));
+    }
+
     private void insertIdent(String person, PDLIdent ident) {
         db.update("insert into bruker_identer (person, ident, historisk, gruppe) VALUES (?, ?, ?, ?)",
                 person, ident.getIdent(), ident.isHistorisk(), ident.getGruppe().name());

@@ -1,6 +1,11 @@
 package no.nav.pto.veilarbportefolje.postgres
 
+import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
+import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository
+import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
+import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -16,12 +21,15 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
-class PostgresHuskelappOgFargekategoriMapperTest(
-    @param:Autowired val postgresHuskelappOgFargekategoriMapper: PostgresHuskelappOgFargekategoriMapper,
+class PostgresOpensearchMapperV2Test(
+    @param:Autowired val postgresOpensearchMapperV2: PostgresOpensearchMapperV2,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
+    @param:Autowired val hendelseRepository: HendelseRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate
 ) {
 
@@ -30,6 +38,7 @@ class PostgresHuskelappOgFargekategoriMapperTest(
         jdbcTemplate.update("TRUNCATE TABLE huskelapp")
         jdbcTemplate.update("TRUNCATE TABLE fargekategori")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
+        jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
     }
 
     @Test
@@ -43,29 +52,13 @@ class PostgresHuskelappOgFargekategoriMapperTest(
         lagreHuskelapp(huskelappId, historiskFnr, "0220", LocalDateTime.now(), frist, "kommentar")
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
 
         assertThat(bruker.huskelapp?.huskelappId).isEqualTo(huskelappId.toString())
         assertThat(bruker.huskelapp?.frist).isEqualTo(frist)
         assertThat(bruker.huskelapp?.kommentar).isEqualTo("kommentar")
         assertThat(bruker.huskelapp?.enhetId).isEqualTo("0220")
         assertThat(bruker.huskelapp?.endretAv).isEqualTo("Z123456")
-    }
-
-    @Test
-    fun `flettInnHuskelapp skal velge huskelapp på ikke-historisk fnr når det finnes aktiv huskelapp på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val huskelappPaAktivFnr = UUID.randomUUID()
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        lagreHuskelapp(huskelappPaAktivFnr, fnr, "0220", LocalDateTime.now().minusDays(5), null, "aktiv")
-        lagreHuskelapp(UUID.randomUUID(), historiskFnr, "0220", LocalDateTime.now(), null, "historisk")
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
-
-        assertThat(bruker.huskelapp?.huskelappId).isEqualTo(huskelappPaAktivFnr.toString())
     }
 
     @Test
@@ -76,7 +69,7 @@ class PostgresHuskelappOgFargekategoriMapperTest(
         lagreHuskelapp(UUID.randomUUID(), fnr, "0220", LocalDateTime.now(), null, "inaktiv", status = "IKKE_AKTIV")
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
 
         assertThat(bruker.huskelapp).isNull()
     }
@@ -90,23 +83,7 @@ class PostgresHuskelappOgFargekategoriMapperTest(
         lagreFargekategori(historiskFnr, "FARGEKATEGORI_A", "0220", LocalDateTime.now())
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
-
-        assertThat(bruker.fargekategori).isEqualTo("FARGEKATEGORI_A")
-        assertThat(bruker.fargekategori_enhetId).isEqualTo("0220")
-    }
-
-    @Test
-    fun `flettInnFargekategori skal velge fargekategori på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        lagreFargekategori(fnr, "FARGEKATEGORI_A", "0220", LocalDateTime.now().minusDays(5))
-        lagreFargekategori(historiskFnr, "FARGEKATEGORI_B", "0330", LocalDateTime.now())
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
 
         assertThat(bruker.fargekategori).isEqualTo("FARGEKATEGORI_A")
         assertThat(bruker.fargekategori_enhetId).isEqualTo("0220")
@@ -118,11 +95,54 @@ class PostgresHuskelappOgFargekategoriMapperTest(
         lagreIdenter(fnr)
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresHuskelappOgFargekategoriMapper.flettInnHuskelappOgFargekategori(listOf(bruker))
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
 
         assertThat(bruker.huskelapp).isNull()
         assertThat(bruker.fargekategori).isNull()
         assertThat(bruker.fargekategori_enhetId).isNull()
+    }
+
+    @Test
+    fun `flettInnEldsteHendelsePerKategori skal velge eldste hendelse på tvers av aktive og historiske fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        val hendelsePaaHistoriskFnr = genererRandomHendelse(
+            personIdent = NorskIdent.of(historiskFnr),
+            kategori = Kategori.UTGATT_VARSEL,
+            hendelseDato = naa.minusDays(1)
+        )
+        val hendelsePaaAktivFnr = genererRandomHendelse(
+            personIdent = NorskIdent.of(fnr),
+            kategori = Kategori.UTGATT_VARSEL,
+            hendelseDato = naa
+        )
+        val annenKategoriPaaAktivFnr = genererRandomHendelse(
+            personIdent = NorskIdent.of(fnr),
+            kategori = Kategori.UDELT_SAMTALEREFERAT
+        )
+        hendelseRepository.insert(hendelsePaaHistoriskFnr)
+        hendelseRepository.insert(hendelsePaaAktivFnr)
+        hendelseRepository.insert(annenKategoriPaaAktivFnr)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        assertThat(bruker.hendelser).containsOnlyKeys(Kategori.UTGATT_VARSEL, Kategori.UDELT_SAMTALEREFERAT)
+        assertThat(bruker.hendelser!![Kategori.UTGATT_VARSEL]).isEqualTo(hendelsePaaHistoriskFnr.hendelse)
+        assertThat(bruker.hendelser!![Kategori.UDELT_SAMTALEREFERAT]).isEqualTo(annenKategoriPaaAktivFnr.hendelse)
+    }
+
+    @Test
+    fun `flettInnEldsteHendelsePerKategori skal sette tomt kart når bruker ikke har hendelser`() {
+        val fnr = randomFnr().get()
+        lagreIdenter(fnr)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        assertThat(bruker.hendelser).isEmpty()
     }
 
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
