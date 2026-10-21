@@ -11,6 +11,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
@@ -59,6 +60,9 @@ public class PdlIdentRepositoryTest {
 
     @MockitoBean
     private UforetrygdService uforetrygdService;
+
+    @MockitoBean
+    private SykmeldtService sykmeldtService;
 
     @Test
     public void identSplitt_allePersonerMedTidligereIdenterSkalSlettes() {

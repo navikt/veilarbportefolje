@@ -78,6 +78,9 @@ import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
@@ -206,6 +209,8 @@ import static org.mockito.Mockito.when;
         UngdomsprogramRepository.class,
         UforetrygdService.class,
         UforetrygdRepository.class,
+        SykmeldtService.class,
+        SykmeldtRepository.class,
         OppfolgingsbrukerTestRepository.class,
         VeiledergrupperService.class,
         VeiledergrupperRepository.class,
@@ -418,6 +423,11 @@ public class ApplicationConfigTest {
     @Bean
     public UforetrygdClient uforetrygdClient() {
         return mock(UforetrygdClient.class);
+    }
+
+    @Bean
+    public SykmeldtClient sykmeldtClient() {
+        return mock(SykmeldtClient.class);
     }
 
     @Bean
