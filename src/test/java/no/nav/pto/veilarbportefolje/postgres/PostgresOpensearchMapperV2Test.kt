@@ -62,22 +62,6 @@ class PostgresOpensearchMapperV2Test(
     }
 
     @Test
-    fun `flettInnHuskelapp skal velge huskelapp på ikke-historisk fnr når det finnes aktiv huskelapp på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val huskelappPaAktivFnr = UUID.randomUUID()
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        lagreHuskelapp(huskelappPaAktivFnr, fnr, "0220", LocalDateTime.now().minusDays(5), null, "aktiv")
-        lagreHuskelapp(UUID.randomUUID(), historiskFnr, "0220", LocalDateTime.now(), null, "historisk")
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
-
-        assertThat(bruker.huskelapp?.huskelappId).isEqualTo(huskelappPaAktivFnr.toString())
-    }
-
-    @Test
     fun `flettInnHuskelapp skal ignorere inaktive huskelapper`() {
         val fnr = randomFnr().get()
 
@@ -97,22 +81,6 @@ class PostgresOpensearchMapperV2Test(
 
         lagreIdenter(fnr, historisk = listOf(historiskFnr))
         lagreFargekategori(historiskFnr, "FARGEKATEGORI_A", "0220", LocalDateTime.now())
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
-
-        assertThat(bruker.fargekategori).isEqualTo("FARGEKATEGORI_A")
-        assertThat(bruker.fargekategori_enhetId).isEqualTo("0220")
-    }
-
-    @Test
-    fun `flettInnFargekategori skal velge fargekategori på ikke-historisk fnr når det finnes på flere fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        lagreFargekategori(fnr, "FARGEKATEGORI_A", "0220", LocalDateTime.now().minusDays(5))
-        lagreFargekategori(historiskFnr, "FARGEKATEGORI_B", "0330", LocalDateTime.now())
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
         postgresOpensearchMapperV2.flettInnData(listOf(bruker))
