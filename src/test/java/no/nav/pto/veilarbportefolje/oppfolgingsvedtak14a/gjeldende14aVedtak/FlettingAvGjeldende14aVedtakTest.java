@@ -45,7 +45,6 @@ public class FlettingAvGjeldende14aVedtakTest {
                 null,
                 null,
                 null,
-                null,
                 gjeldende14aVedtakService
         );
     }

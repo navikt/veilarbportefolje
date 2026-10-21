@@ -4,13 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse;
-import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository;
-import no.nav.pto.veilarbportefolje.hendelsesfilter.IngenHendelseForPersonException;
-import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
@@ -48,7 +43,6 @@ public class PostgresOpensearchMapper {
     private final BarnUnder18AarService barnUnder18AarService;
     private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
-    private final HendelseRepository hendelseRepository;
     private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
     public void flettInnAktivitetsData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
@@ -230,21 +224,6 @@ public class PostgresOpensearchMapper {
                         gjeldende14aVedtak.getFattetDato()
                 ));
             }
-        });
-    }
-
-    public void flettInnEldsteHendelsePerKategori(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        brukerOpensearchModellList.forEach(bruker -> {
-            Map<Kategori, Hendelse.HendelseInnhold> eldsteHendelserPerKategori = new HashMap<>();
-            for (Kategori kategori : Kategori.getEntries()) {
-                try {
-                    Hendelse eldsteHendelse = hendelseRepository.getEldste(NorskIdent.of(bruker.getFnr()), kategori);
-                    eldsteHendelserPerKategori.put(kategori, eldsteHendelse.getHendelse());
-                } catch (IngenHendelseForPersonException ex) {
-                    // Ingen hendelse funnet for personen, men unødvendig med logging
-                }
-            }
-            bruker.setHendelser(eldsteHendelserPerKategori);
         });
     }
 }

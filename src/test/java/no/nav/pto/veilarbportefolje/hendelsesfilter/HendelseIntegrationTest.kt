@@ -1,5 +1,7 @@
 package no.nav.pto.veilarbportefolje.hendelsesfilter
 
+import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.domene.NavKontor
@@ -9,6 +11,7 @@ import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
@@ -19,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class HendelseIntegrationTest(
@@ -531,6 +536,77 @@ class HendelseIntegrationTest(
             forventetHendelseInnhold.beskrivelse
         )
         assertThat(brukerFraRespons.hendelse!!.lenke).isEqualTo(forventetHendelseInnhold.lenke)
+    }
+
+    @Test
+    fun `skal indeksere eldste hendelse på tvers av aktive og historiske identer for bruker`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val aktivFnr = randomFnr()
+        val historiskFnr = randomFnr()
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, aktivFnr, brukerOppfolgingsEnhet.value, null)
+        lagreHistoriskFnr(brukerAktorId, aktivFnr, historiskFnr)
+        val naa = ZonedDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        val hendelsePaaHistoriskFnr = genererRandomHendelse(
+            personIdent = NorskIdent.of(historiskFnr.get()),
+            kategori = Kategori.UTGATT_VARSEL,
+            hendelseDato = naa.minusDays(1)
+        )
+        val hendelsePaaAktivFnr = genererRandomHendelse(
+            personIdent = NorskIdent.of(aktivFnr.get()),
+            kategori = Kategori.UTGATT_VARSEL,
+            hendelseDato = naa
+        )
+        hendelseRepository.insert(hendelsePaaHistoriskFnr)
+        hendelseRepository.insert(hendelsePaaAktivFnr)
+
+        // When
+        opensearchIndexer.indekser(brukerAktorId)
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+        assertThat(brukerFraRespons.hendelse).isNotNull
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(hendelsePaaHistoriskFnr.hendelse.beskrivelse)
+    }
+
+    @Test
+    fun `skal oppdatere OpenSearch for aktiv aktorId når vi får START-melding på historisk fnr`() {
+        // Given
+        val brukerAktorId = randomAktorId()
+        val aktivFnr = randomFnr()
+        val historiskFnr = randomFnr()
+        val brukerOppfolgingsEnhet = randomNavKontor()
+        testDataClient.lagreBrukerUnderOppfolging(brukerAktorId, aktivFnr, brukerOppfolgingsEnhet.value, null)
+        lagreHistoriskFnr(brukerAktorId, aktivFnr, historiskFnr)
+        opensearchIndexer.indekser(brukerAktorId)
+
+        // When
+        val hendelseRecordValue = genererRandomHendelseRecordValueV1(
+            operasjon = Operasjon.START,
+            personID = NorskIdent.of(historiskFnr.get()),
+            kategori = Kategori.UTGATT_VARSEL
+        )
+        hendelseService.behandleKafkaRecord(
+            genererRandomHendelseConsumerRecord(recordValue = hendelseRecordValue, key = UUID.randomUUID().toString())
+        )
+
+        // Then
+        pollOpensearchUntil { opensearchTestClient.countDocuments() == 1 }
+        val brukerFraRespons = hentHendelseBruker(Brukerstatus.UTGATTE_VARSEL, brukerOppfolgingsEnhet)
+        assertThat(brukerFraRespons.hendelse).isNotNull
+        assertThat(brukerFraRespons.hendelse!!.beskrivelse).isEqualTo(hendelseRecordValue.hendelse.beskrivelse)
+    }
+
+    private fun lagreHistoriskFnr(aktorId: AktorId, aktivFnr: Fnr, historiskFnr: Fnr) {
+        pdlIdentRepository.upsertIdenter(
+            listOf(
+                PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                PDLIdent(aktivFnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+            )
+        )
     }
 
     private fun hentHendelseBruker(
