@@ -27,6 +27,8 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.SykmeldtPersonDTO;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
 import no.nav.pto.veilarbportefolje.util.TestDataClient;
@@ -40,8 +42,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import tools.jackson.core.type.TypeReference;
@@ -60,9 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
@@ -115,6 +115,9 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private DagpengerClient dagpengerClient;
 
+    @Autowired
+    private SykmeldtClient sykmeldtClient;
+
     @MockitoBean
     private PdlPortefoljeClient pdlPortefoljeClient;
 
@@ -137,6 +140,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         jdbcTemplate.update("truncate bruker_data_barn CASCADE");
         jdbcTemplate.update("truncate foreldreansvar");
         jdbcTemplate.update("truncate siste_arbeidssoeker_periode cascade");
+        mockHentSykmeldtResponse();
     }
 
     @Test
@@ -616,19 +620,22 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) {
         String file = readFileAsJsonString("/arbeidssoekerperioder.json", getClass());
-        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(arbeidssoekerResponse);
     }
 
     private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) {
         String file = readFileAsJsonString("/opplysningerOmArbeidssoeker.json", getClass());
-        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
     }
 
     private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) {
         String file = readFileAsJsonString("/profilering.json", getClass());
-        List<ProfileringResponse> profileringResponse = JsonUtils.fromJson(file, new TypeReference<>() {});
+        List<ProfileringResponse> profileringResponse = JsonUtils.fromJson(file, new TypeReference<>() {
+        });
         when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
     }
 
@@ -641,6 +648,11 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private void mockHentTiltakspengerResponse(Fnr fnr) {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(tiltakspengerClient.hentTiltakspenger(any(), any(), any())).thenReturn(Collections.emptyList());
+    }
+
+    private void mockHentSykmeldtResponse() {
+        when(sykmeldtClient.hentSykmeldtPeriode(any()))
+                .thenReturn(new SykmeldtPersonDTO(Collections.emptyList(), fnr.get()));
     }
 
     private void mockHentDagpengerResponse(Fnr fnr) {

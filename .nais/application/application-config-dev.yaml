@@ -114,6 +114,8 @@ spec:
         - application: pensjon-pen-q2
           namespace: pensjon-q2
           cluster: dev-fss
+        - application: isoppfolgingstilfelle
+          namespace: teamsykefravr
       external:
         - host: obo-unleash-api.nav.cloud.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
@@ -185,3 +187,7 @@ spec:
       value: "https://pensjon-pen-q2.dev-fss-pub.nais.io"
     - name: UFORETRYGD_SCOPE
       value: "api://dev-fss.pensjon-q2.pensjon-pen-q2/.default"
+    - name: SYKMELDT_URL
+      value: "http://isoppfolgingstilfelle.teamsykefravr"
+    - name: SYKMELDT_SCOPE
+      value: "api://dev-gcp.teamsykefravr.isoppfolgingstilfelle/.default"

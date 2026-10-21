@@ -522,6 +522,17 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
+    public static final class SYKMELDT {
+        private SYKMELDT() { /* no-op */ }
+
+        public static final String TABLE_NAME = "SYKMELDT";
+        public static final String NORSK_IDENT = "NORSK_IDENT";
+        public static final String START = "START";
+        public static final String SLUTT = "SLUTT";
+        public static final String HAR_ARBEIDSGIVER = "HAR_ARBEIDSGIVER";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
     public static final class LAGREDE_FILTER_VEILEDERGRUPPER {
         private LAGREDE_FILTER_VEILEDERGRUPPER() { /* no-op */ }
 

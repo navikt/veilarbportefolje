@@ -17,6 +17,7 @@ import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient;
 import no.nav.pto.veilarbportefolje.oppfolgingsbruker.VeilarbarenaClient;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdClient;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramClient;
@@ -106,6 +107,17 @@ public class ClientConfig {
         return new UforetrygdClient(
                 environmentProperties.getUforetrygdUrl(),
                 () -> tokenClient.createMachineToMachineToken(environmentProperties.getUforetrygdScope())
+        );
+    }
+
+    @Bean
+    public SykmeldtClient sykmeldtClient(
+            AzureAdMachineToMachineTokenClient tokenClient,
+            EnvironmentProperties environmentProperties
+    ) {
+        return new SykmeldtClient(
+                environmentProperties.getSykmeldtUrl(),
+                () -> tokenClient.createMachineToMachineToken(environmentProperties.getSykmeldtScope())
         );
     }
 
