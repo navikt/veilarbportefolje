@@ -1,0 +1,210 @@
+= Systembeskrivelse: Veilarbportefolje
+
+____
+Sist oppdatert: 2026-10-21 +
+Eier: Team OBO (link:../CODEOWNERS[CODEOWNERS])
+____
+
+== Omfang og avgrensning
+
+Veilarbportefolje gir Nav-veiledere oversikt over personer under arbeidsrettet oppfølging gjennom API-er for veileder- og enhetsporteføljer.
+Tjenesten sammenstiller opplysninger fra andre Nav-systemer og støtter søk, filtrering og statustall, samt huskelapper, fargekategorier og lagrede filtre.
+Den fatter ikke vedtak og er ikke kildesystem for opplysningene den henter fra andre tjenester.
+Se <<k-api,portefølje-API-ene>>, <<k-data,datamodellen>> og <<k-klienter,tjenesteklientene>>.
+
+Systemet består av følgende hovedkomponenter:
+
+* `veilarbportefolje`: applikasjonen som tilbyr API-er, behandler hendelser og bygger søkeindeksen.
+* `veilarbportefolje` (PostgreSQL): tjenestens database i Google Cloud SQL.
+* `veilarbportefolje` (OpenSearch): søkelageret som brukes til porteføljesøk og statustall.
+
+Applikasjonen mottar endringer gjennom Kafka og slår opp i andre tjenester.
+Planlagte oppgaver og administrasjonsfunksjoner kjører i samme applikasjon, ikke som egne tjenester.
+Se <<k-prod,produksjonsmanifestet>>, <<k-kafka,Kafka-oppsettet>> og <<k-jobber,planlagte oppgaver>>.
+
+== Kjøretidsmiljø
+
+[cols="1,3",options="header"]
+|===
+|Egenskap |Oppsett
+|Språk og rammeverk |Java/Kotlin, Spring Boot, Java 21
+|Plattform |Nais på Google Cloud Platform (GCP)
+|Cluster og namespace |`dev-gcp` / `prod-gcp`, namespace `obo`
+|Ingress |`veilarbportefolje.intern.dev.nav.no` / `veilarbportefolje.intern.nav.no`
+|Containerisering |Java 21-image fra Navs Chainguard-register
+|Tilgjengelighet |Tre applikasjonsreplikaer i produksjon
+|===
+
+Kilder: <<k-prod,produksjonsmanifest>>, <<k-dev,utviklingsmanifest>>, <<k-bygg,bygg og container>>.
+
+== Sikkerhetsmekanismer
+
+* *Nettverkstilgang (delegert til Nais).* `accessPolicy` angir tillatte forbindelser inn og ut. Dette erstatter ikke kontroll av veilederens tilgang til personopplysninger. Se <<k-prod,produksjonsmanifestet>>.
+* *Autentisering (delegert til fellesbibliotek).* Et OpenID Connect-filter (OIDC) fra `common-java-modules` autentiserer `/api/*` med Azure AD-konfigurasjon. Filteret er ikke registrert på `/internal/*`, som brukes til helse og metrikker. Se <<k-auth,FilterConfig>>.
+* *Tilgangsavgjørelser (delegert til `poao-tilgang`).* Tjenesten spør om tilgang til Modia, enhet, person, adressebeskyttede opplysninger og egenansatte. Applikasjonen avviser kall eller fjerner opplysninger etter avgjørelsen. Se <<k-tilgang,AuthService og PoaoTilgangWrapper>>.
+* *Innsynsbegrensninger (eksplisitt i applikasjonen).* Søkeresultater filtreres eller sensureres etter veilederens tilganger, også for opplysninger om barn. Se <<k-tilgang,AuthService>> og <<k-sok,OpensearchService>>.
+* *Administrasjon (eksplisitt i applikasjonen).* `AdminController` krever intern brukerrolle og at tokenets `azp_name` identifiserer `poao-admin` i riktig miljø. Se <<k-admin,AdminController>>.
+
+== Brukertyper og tilgangskontroll
+
+[cols="1,2,3",options="header"]
+|===
+|Type |Autentisering |Tilgang
+|Nav-veileder
+|Azure AD gjennom OIDC-filteret
+|Tilgang til oppfølging, enhet og person vurderes gjennom `poao-tilgang`. Applikasjonen håndhever avgjørelsene og begrenser innsyn i skjermede opplysninger.
+|Intern bruker via `poao-admin`
+|Azure AD gjennom OIDC-filteret
+|Administrasjonsfunksjonene krever intern brukerrolle og riktig klientapplikasjon.
+|===
+
+Azure-applikasjonen er konfigurert med `allowAllUsers: true`.
+Dette er ikke i seg selv en lesetillatelse til porteføljedata.
+Kilder: <<k-prod,produksjonsmanifest>>, <<k-auth,autentisering>>, <<k-tilgang,tilgangskontroll>>, <<k-admin,administrasjon>>.
+
+== Avhengigheter
+
+Oversikten nedenfor gjelder forbindelsene som er konfigurert i <<k-prod,produksjonsmanifestet>>.
+En nettverksregel viser en tillatt forbindelse, ikke at alle forbindelser brukes ved hvert kall.
+Adresser og token-scopes vedlikeholdes i manifestet. <<k-klienter,Klientoppsettet>> viser hvordan API-ene brukes.
+
+=== Innkommende applikasjoner
+
+* `veilarbportefoljeflatefs` (`obo`)
+* `veilarbpersonflate` (`poao`)
+* `poao-admin` (`poao`)
+* `inngar` (`dab`)
+
+=== Utgående interne forbindelser
+
+* `kodeverk-api` (`team-rocket`)
+* `veilarbvedtaksstotte` (`obo`)
+* `veilarbveileder` (`obo`)
+* `poao-tilgang` (`poao`)
+* `paw-arbeidssoekerregisteret-api-oppslag-v2` (`paw`)
+* `veilarboppfolging` (`poao`)
+* `familie-ef-sak` (`teamfamilie`)
+* `api-intern` (`aap`)
+* `tiltakspenger-datadeling` (`tpts`)
+* `dp-datadeling` (`teamdagpenger`)
+* `ung-deltakelse-opplyser` (`k9saksbehandling`)
+* `isoppfolgingstilfelle` (`teamsykefravr`)
+* `logging` (`nais-system`), for teamlogger
+
+Manifestet tillater i tillegg `veilarbveileder` i `pto` på `prod-fss`.
+Den konfigurerte klientadressen peker til varianten i `obo`.
+
+=== Utgående forbindelser via HTTPS-ingress
+
+* `pdl-api` (`pdl`, `prod-fss`)
+* `veilarbarena` (`pto`, `prod-fss`)
+* `pensjon-pen` (`pensjondeployer`, `prod-fss`)
+* `obo-unleash-api`, for funksjonsbrytere
+
+PDL, veilarbarena og pensjon-pen har også regler under manifestets interne utgående tilgangspolicy.
+URL-konfigurasjonen viser at klientene bruker de publiserte HTTPS-adressene.
+
+API-klientene bruker hovedsakelig Azure-token med applikasjonens identitet (machine-to-machine).
+Oppslag i `veilarbveileder` støtter også token på vegne av innlogget veileder (on-behalf-of).
+Se <<k-klienter,ClientConfig og VeilarbVeilederClient>>.
+
+=== Kafka
+
+Tjenesten er tilkoblet Kafka-poolen `nav-prod` og konsumerer hendelser om blant annet oppfølging, veiledertilordning, aktiviteter, dialog, CV, arbeidssøkeropplysninger, personopplysninger, skjerming og ytelser.
+Temaene og tilhørende behandling er definert i <<k-kafka,KafkaConfigCommon>>.
+Tilgang til Kafka er plattformstyrt, mens applikasjonen har ansvar for behandling og nye forsøk ved feil.
+
+== Håndtering av secrets
+
+* *Azure AD.* Applikasjonen bruker Nais-konfigurasjonen for å hente token med applikasjonsidentitet eller på vegne av veileder. Se <<k-auth,FilterConfig>> og <<k-klienter,ClientConfig>>.
+* *PostgreSQL.* Nais gjør tilkoblingsopplysninger tilgjengelige med `DB`-prefiks. Koden bruker dem ved tilkobling og databasemigrering. Se <<k-db,DbConfigPostgres>> og https://docs.nais.io/persistence/cloudsql/reference/[Nais om Cloud SQL].
+* *OpenSearch.* Nais injiserer adresse og brukeropplysninger. Applikasjonen bygger klienten fra disse. Se <<k-opensearch,OpensearchConfig>> og https://docs.nais.io/persistence/opensearch/reference/[Nais om OpenSearch].
+* *Unleash.* En Nais `ApiToken`-ressurs oppretter secretet `veilarbportefolje-unleash-api-token`, som applikasjonen får gjennom miljøvariabler. Se <<k-unleash,ApiToken-ressursen>> og <<k-prod,produksjonsmanifestet>>.
+
+Teamets rutine og ansvar for rotasjon ved mistanke om kompromittering: [UKJENT — utfyll manuelt].
+
+== Logging og monitorering
+
+* *Applikasjonslogger.* JSON til stdout, sendt videre til Elastic og Loki av Nais.
+* *Teamlogger.* `SecureLog` sender til teamets separate Google Cloud Logging-lager, ikke til stdout. Koden bruker denne strømmen til blant annet personidentifikatorer ved indeksering. Teamlogger er adskilt fra ordinære loggdestinasjoner etter Nais-oppsettet.
+* *Sporing av innsyn.* Loggoppsettet dokumenterer ikke en fullstendig auditlogg over innsyn i personopplysninger.
+* *Metrikker og varsling.* Tjenesten har Prometheus-metrikker og varsler for nedetid, HTTP-feil og personer uten enhet i søkeindeksen. Det finnes også varsler for Kafka-produsentfeil hos veilarbarena og veilarboppfolging.
+* *Tracing.* Java-autoinstrumentering er aktivert i Nais.
+* *Helsesjekker.* Liveness og readiness kontrollerer at applikasjonen svarer, ikke at avhengighetene fungerer. En separat selvtest kontrollerer database, aktøroppslag og søkeindeks.
+
+Kilder: <<k-logg,loggoppsett>>, <<k-prod,produksjonsmanifest>>, <<k-varsler,varslingsregler>>, <<k-helse,helsesjekker>> og https://docs.nais.io/observability/logging/how-to/team-logs/[Nais om Team Logs].
+
+Oppbevaringstid for logger og eventuell sporingslogg utenfor applikasjonen: [UKJENT — utfyll manuelt].
+
+== Datasikring
+
+* *Lagrede opplysninger.* PostgreSQL lagrer person- og oppfølgingsopplysninger, aktiviteter, ytelser og veiledernes arbeidsdata, som huskelapper og filtre. OpenSearch inneholder et søkbart utvalg, inkludert fødselsnummer, navn, opplysninger om barn, skjerming og ytelser. Se <<k-data,datamodellene>>.
+* *Tilgang til datalagrene.* Applikasjonen har egen databasetilgang og `admin`-tilgang til OpenSearch-indeksene. Nais støtter personlig databasetilgang for teamet, med egen tildeling av rettigheter. Se <<k-prod,produksjonsmanifestet>> og https://docs.nais.io/persistence/cloudsql/how-to/personal-access/[Nais om personlig databasetilgang].
+* *Transportbeskyttelse.* API-er publisert fra FSS bruker HTTPS. De interne API-adressene bruker HTTP, med nettverksbeskyttelse delegert til Nais. Databasens adresse og sertifikatoppsett leveres av plattformen, ikke som faste verdier i koden. Se <<k-prod,produksjonsmanifestet>> og https://docs.nais.io/persistence/cloudsql/reference/[Nais om databaseforbindelser].
+* *Backup.* Nais dokumenterer nattlig Cloud SQL-backup med sju bevarte kopier som standard og en separat daglig katastrofe-backup. Manifestet overstyrer ikke disse standardene og aktiverer ikke punkt-i-tid-gjenoppretting. Se https://docs.nais.io/persistence/cloudsql/reference/#automated-backup[Nais om backup] og <<k-prod,produksjonsmanifestet>>.
+
+Kryptering i ro, faktisk tilgjengelighetsoppsett og backup for OpenSearch må bekreftes mot instansens plattformoppsett: [UKJENT — utfyll manuelt].
+
+== Drift og gjenoppretting
+
+GitHub Actions kjører tester på pull requests og bygger containerimage ved push til `main`.
+Samme workflow kjører deploy til utvikling før produksjon.
+Applikasjonen kjører Flyway-migreringer ved oppstart.
+Se <<k-deploy,deploy-workflow>> og <<k-db,DbConfigPostgres>>.
+
+[cols="1,3",options="header"]
+|===
+|Scenario |Støtte for gjenoppretting
+|Feil eller mangler i søkeindeksen
+|Administrasjons-API-et kan indeksere enkeltpersoner, kjøre full indeksering og bygge en ny indeks. Se <<k-admin,AdminController>>.
+|Feilet Kafka-behandling
+|Feilede hendelser lagres i PostgreSQL og behandles på nytt med økende ventetid. Se <<k-kafka,KafkaConfigCommon>>.
+|Datatap i PostgreSQL
+|Nais har en https://docs.nais.io/persistence/cloudsql/how-to/restore-from-backup/[prosedyre for gjenoppretting fra backup]. Gjenoppretting på samme instans overskriver nyere data og gir nedetid.
+|Kodefeil, kompromittert secret eller bortfall av tilganger
+|Teamets prosedyre, ansvar og beredskap: [UKJENT — utfyll manuelt].
+|===
+
+Verktøystøtten over dokumenterer ikke at teamet har øvd på gjenoppretting eller fastsatt akseptabelt datatap og nedetid.
+Disse rammene er [UKJENT — utfyll manuelt].
+
+== Domenespesifikke egenskaper
+
+=== Opplysninger følger oppfølgingsperioden
+
+Ved oppstart av oppfølging henter tjenesten opplysninger fra flere kilder før personen indekseres.
+Ved avslutning rydder den opp i lokalt lagrede opplysninger og søkeindeksen.
+Se <<k-livslop,tjenestene for oppstart og avslutning av oppfølging>>.
+
+=== Aktualitet i porteføljen
+
+Endringer mottas asynkront og må behandles før de er synlige i porteføljen.
+Forsinket hendelsesbehandling kan derfor gi et utdatert bilde.
+Nattlige oppgaver oppdaterer blant annet aktivitets- og ytelsesdata, kjører hovedindeksering og sletter opplysninger om barn som har fylt 18 år.
+Se <<k-kafka,Kafka-oppsettet>> og <<k-jobber,SchedulConfig>>.
+
+== Referanser og kilder
+
+* [[k-api]]Portefølje-API-er: link:../src/main/java/no/nav/pto/veilarbportefolje/controller/VeilederController.java[VeilederController] og link:../src/main/java/no/nav/pto/veilarbportefolje/controller/EnhetController.java[EnhetController].
+* [[k-prod]]link:../.nais/application/application-config-prod.yaml[Produksjonsmanifest].
+* [[k-dev]]link:../.nais/application/application-config-dev.yaml[Utviklingsmanifest].
+* [[k-bygg]]Bygg og container: link:../pom.xml[pom.xml] og link:../Dockerfile[Dockerfile].
+* [[k-auth]]Autentisering: link:../src/main/java/no/nav/pto/veilarbportefolje/config/FilterConfig.java[FilterConfig].
+* [[k-tilgang]]Tilgangskontroll: link:../src/main/java/no/nav/pto/veilarbportefolje/auth/AuthService.java[AuthService] og link:../src/main/java/no/nav/pto/veilarbportefolje/auth/PoaoTilgangWrapper.java[PoaoTilgangWrapper].
+* [[k-klienter]]Tjenesteklienter: link:../src/main/java/no/nav/pto/veilarbportefolje/config/ClientConfig.java[ClientConfig] og link:../src/main/java/no/nav/pto/veilarbportefolje/client/VeilarbVeilederClient.java[VeilarbVeilederClient].
+* [[k-kafka]]Hendelsesbehandling: link:../src/main/java/no/nav/pto/veilarbportefolje/kafka/KafkaConfigCommon.java[KafkaConfigCommon].
+* [[k-data]]Datamodeller: link:../src/main/java/no/nav/pto/veilarbportefolje/database/PostgresTable.java[PostgresTable] og link:../src/main/java/no/nav/pto/veilarbportefolje/opensearch/domene/PortefoljebrukerOpensearchModell.kt[indeksmodellen].
+* [[k-sok]]Porteføljesøk: link:../src/main/java/no/nav/pto/veilarbportefolje/opensearch/OpensearchService.java[OpensearchService].
+* [[k-opensearch]]Søkeindeks: link:../src/main/java/no/nav/pto/veilarbportefolje/opensearch/OpensearchConfig.java[OpensearchConfig] og link:../src/main/java/no/nav/pto/veilarbportefolje/opensearch/OpensearchIndexer.java[OpensearchIndexer].
+* [[k-db]]Databasetilkobling og migrering: link:../src/main/java/no/nav/pto/veilarbportefolje/config/DbConfigPostgres.java[DbConfigPostgres].
+* [[k-unleash]]link:../.nais/application/unleash-apitoken-prod.yaml[Unleash ApiToken].
+* [[k-logg]]Loggoppsett: link:../src/main/resources/logback.xml[logback.xml] og link:../src/main/java/no/nav/pto/veilarbportefolje/util/SecureLog.kt[SecureLog].
+* [[k-varsler]]link:../.nais/alerts/alerts-config-prod.yaml[Varslingsregler for produksjon].
+* [[k-helse]]Helsesjekker: link:../src/main/java/no/nav/pto/veilarbportefolje/internal/InternalController.java[InternalController] og link:../src/main/java/no/nav/pto/veilarbportefolje/config/HelsesjekkConfig.java[HelsesjekkConfig].
+* [[k-deploy]]link:../.github/workflows/main-gcp.yml[Deploy-workflow].
+* [[k-jobber]]link:../src/main/java/no/nav/pto/veilarbportefolje/config/SchedulConfig.java[Planlagte oppgaver].
+* [[k-admin]]link:../src/main/java/no/nav/pto/veilarbportefolje/admin/AdminController.kt[Administrasjons-API].
+* [[k-livslop]]Oppfølgingens livsløp: link:../src/main/java/no/nav/pto/veilarbportefolje/oppfolging/OppfolgingStartetService.java[OppfolgingStartetService] og link:../src/main/java/no/nav/pto/veilarbportefolje/oppfolging/OppfolgingAvsluttetService.java[OppfolgingAvsluttetService].
+
+Dokumentstrukturen følger https://github.com/navikt/veilarbvedtaksstotte/blob/main/docs/systembeskrivelse.adoc[systembeskrivelsen for veilarbvedtaksstotte].
+Opplysninger om denne tjenesten er hentet fra kode og konfigurasjon, ikke fra README.
