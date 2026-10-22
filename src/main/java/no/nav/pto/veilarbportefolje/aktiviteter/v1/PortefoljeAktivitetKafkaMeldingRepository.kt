@@ -69,9 +69,12 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
 
         if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
-            if (antallTiltaksAktiviteterOppdatert == 1) {
+            if (antallTiltaksAktiviteterOppdatert == 1 && antallTiltaksAktiviteterSlettet == 0) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
-            } else if (antallTiltaksAktiviteterSlettet == 1) {
+            } else if (antallTiltaksAktiviteterSlettet == 1 && antallTiltaksAktiviteterOppdatert == 0) {
+                indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
+            } else if (antallTiltaksAktiviteterOppdatert == 1 && antallTiltaksAktiviteterSlettet == 1) {
+                indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
                 indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
             } else if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
                 indekserAktiviteter(tiltaksaktiviteter)
@@ -88,15 +91,15 @@ class PortefoljeAktivitetKafkaMeldingRepository(
                 if (aktivitet.oppfolgingsperiodeId == oppfolgingsperiodeId.toString()) {
                     return true
                 } else {
-                    secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
+                    secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset}, partition ${aktivitet.recordPartition} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
                     return false
                 }
             } else {
-                secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitets-oppfolgingsperiodeId er null")
+                secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitets-oppfolgingsperiodeId er null")
                 return false
             }
         } else {
-            secureLog.info("Aktivitetsmeldingen med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} ignoreres fordi bruker er ikke under oppfølging i ${PostgresTable.OPPFOLGING_DATA.TABLE_NAME}-tabellen")
+            secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} ignoreres fordi bruker ${aktivitet.aktorId} er ikke under oppfølging i ${PostgresTable.OPPFOLGING_DATA.TABLE_NAME}-tabellen")
             return false
         }
     }
