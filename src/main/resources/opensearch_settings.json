@@ -376,6 +376,19 @@
             "type": "integer"
           }
         }
+      },
+      "sykmeldt": {
+        "properties": {
+          "startdato": {
+            "type": "date"
+          },
+          "sluttdato": {
+            "type": "date"
+          },
+          "harArbeidsgiver": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

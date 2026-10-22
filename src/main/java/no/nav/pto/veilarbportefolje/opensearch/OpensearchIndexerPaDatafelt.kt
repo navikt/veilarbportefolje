@@ -482,6 +482,33 @@ class OpensearchIndexerPaDatafelt(
         update(aktorId, content, "Slettet uføretrygd for aktorId: $aktorId")
     }
 
+    fun oppdaterSykmeldt(
+        aktorId: AktorId,
+        startdato: LocalDate,
+        sluttdato: LocalDate,
+        harArbeidsgiver: Boolean
+    ) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .startObject(DatafeltKeys.Annet.SYKMELDT)
+            .field(DatafeltKeys.Annet.SYKMELDT_STARTDATO, startdato)
+            .field(DatafeltKeys.Annet.SYKMELDT_SLUTTDATO, sluttdato)
+            .field(DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER, harArbeidsgiver)
+            .endObject()
+            .endObject()
+
+        update(aktorId, content, "Oppdatert sykmeldt for aktorId: $aktorId")
+    }
+
+    fun slettSykmeldt(aktorId: AktorId) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .nullField(DatafeltKeys.Annet.SYKMELDT)
+            .endObject()
+
+        update(aktorId, content, "Slettet sykmeldt for aktorId: $aktorId")
+    }
+
     private fun updateWithScript(aktoerId: AktorId, script: Script?, logInfo: String?) {
         val request = UpdateRequest().script(script)
         executeUpdate(aktoerId, request, logInfo)

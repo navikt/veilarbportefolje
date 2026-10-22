@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.database.PostgresTable
+import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
@@ -36,6 +37,7 @@ class SykmeldtServiceTest(
     private lateinit var sykmeldtService: SykmeldtService
     private val sykmeldtClient: SykmeldtClient = mock()
     private val aktorClient: AktorClient = mock()
+    private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt = mock()
 
     private val norskIdent = Fnr.ofValidFnr("10108000000")
     private val aktorId = AktorId.of("12345")
@@ -73,6 +75,7 @@ class SykmeldtServiceTest(
             oppfolgingRepositoryV2 = oppfolgingRepositoryV2,
             pdlIdentRepository = pdlIdentRepository,
             aktorClient = aktorClient,
+            opensearchIndexerPaDatafelt = opensearchIndexerPaDatafelt,
         )
     }
 

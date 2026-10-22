@@ -23,6 +23,10 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_ENDRET_DATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_FRIST
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP_KOMMENTAR
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_SLUTTDATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_STARTDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
@@ -380,6 +384,21 @@ class OpensearchSortQueryBuilder {
 
             Sorteringsfelt.UFORETRYGD_UFOREGRAD -> {
                 searchSourceBuilder.sort("$UFORETRYGD.$UFORETRYGD_UFOREGRAD", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.SYKMELDT_STARTDATO -> {
+                sorterSykmeldtStartdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.SYKMELDT_SLUTTDATO -> {
+                sorterSykmeldtSluttdato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.SYKMELDT_HAR_ARBEIDSGIVER -> {
+                searchSourceBuilder.sort("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -805,6 +824,38 @@ class OpensearchSortQueryBuilder {
         val expression = """
                     if (doc.containsKey('$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO') && !doc['$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO'].empty) {
                         return doc['$UFORETRYGD.$UFORETRYGD_VIRKNINGSDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterSykmeldtStartdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$SYKMELDT.$SYKMELDT_STARTDATO') && !doc['$SYKMELDT.$SYKMELDT_STARTDATO'].empty) {
+                        return doc['$SYKMELDT.$SYKMELDT_STARTDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterSykmeldtSluttdato(builder: SearchSourceBuilder, order: SortOrder) {
+        val expression = """
+                    if (doc.containsKey('$SYKMELDT.$SYKMELDT_SLUTTDATO') && !doc['$SYKMELDT.$SYKMELDT_SLUTTDATO'].empty) {
+                        return doc['$SYKMELDT.$SYKMELDT_SLUTTDATO'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }

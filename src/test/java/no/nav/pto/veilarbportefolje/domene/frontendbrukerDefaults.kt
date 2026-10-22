@@ -80,6 +80,7 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         ungdomsprogram = null,
         uforetrygd = null
     ),
+    sykmeldt = null,
     meldingerVenterPaSvar = MeldingerVenterPaSvar(
         datoMeldingVenterPaNav = null,
         datoMeldingVenterPaBruker = null

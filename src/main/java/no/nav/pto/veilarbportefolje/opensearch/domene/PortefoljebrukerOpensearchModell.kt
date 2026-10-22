@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
@@ -150,5 +151,6 @@ data class PortefoljebrukerOpensearchModell(
     var formidlingsgruppekode: String? = null,
     var huskelapp: HuskelappForBruker? = null,
     var tiltakshendelse: Tiltakshendelse? = null,
-    var hendelser: Map<Kategori, Hendelse.HendelseInnhold>? = null
+    var hendelser: Map<Kategori, Hendelse.HendelseInnhold>? = null,
+    var sykmeldt: SykmeldtForOpensearch? = null
 )

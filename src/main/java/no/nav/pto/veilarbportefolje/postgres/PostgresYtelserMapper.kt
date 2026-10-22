@@ -7,12 +7,15 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapVedtakEntity
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerRepository
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerVedtakEntity
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository
+import no.nav.pto.veilarbportefolje.sykmeldt.domene.SykmeldtEntity
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerVedtakEntity
@@ -200,4 +203,5 @@ class PostgresYtelserMapper(
             bruker.enslige_forsorgere_overgangsstonad = aktueltVedtak?.toEnsligeForsorgereOpensearchDto()
         }
     }
+
 }

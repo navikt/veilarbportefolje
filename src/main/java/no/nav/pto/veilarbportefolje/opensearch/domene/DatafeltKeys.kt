@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
@@ -179,5 +180,9 @@ object DatafeltKeys {
         val HENDELSER_DATO_FRIST = Hendelse.HendelseInnhold::datoFrist.name
         val HENDELSER_LENKE = Hendelse.HendelseInnhold::lenke.name
         val HENDELSER_DETALJER = Hendelse.HendelseInnhold::detaljer.name
+        val SYKMELDT = PortefoljebrukerOpensearchModell::sykmeldt.name
+        val SYKMELDT_STARTDATO = SykmeldtForOpensearch::startdato.name
+        val SYKMELDT_SLUTTDATO = SykmeldtForOpensearch::sluttdato.name
+        val SYKMELDT_HAR_ARBEIDSGIVER = SykmeldtForOpensearch::harArbeidsgiver.name
     }
 }

@@ -10,6 +10,8 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearch
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.OppfolgingstilfelleDTO
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import org.assertj.core.api.Assertions.assertThat
@@ -23,14 +25,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PostgresOpensearchMapperV2Test(
     @param:Autowired val postgresOpensearchMapperV2: PostgresOpensearchMapperV2,
     @param:Autowired val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired val hendelseRepository: HendelseRepository,
-    @param:Autowired val jdbcTemplate: JdbcTemplate
+    @param:Autowired val jdbcTemplate: JdbcTemplate,
+    @param:Autowired val sykmeldtRepository: SykmeldtRepository,
 ) {
 
     @BeforeEach
@@ -144,6 +147,39 @@ class PostgresOpensearchMapperV2Test(
 
         assertThat(bruker.hendelser).isEmpty()
     }
+
+
+    @Test
+    fun `flettInnSykmeldt skal kun sette sykmeldt når sluttdato er i dag eller fram i tid`() {
+        val fnrMedSluttIDag = randomFnr().get()
+        val fnrMedUtloptPeriode = randomFnr().get()
+        lagreIdenter(fnrMedSluttIDag)
+        lagreIdenter(fnrMedUtloptPeriode)
+        sykmeldtRepository.upsertSykmeldtperiode(
+            fnrMedSluttIDag,
+            OppfolgingstilfelleDTO(
+                arbeidstakerAtTilfelleEnd = true,
+                start = LocalDate.now().minusWeeks(2),
+                end = LocalDate.now()
+            )
+        )
+        sykmeldtRepository.upsertSykmeldtperiode(
+            fnrMedUtloptPeriode,
+            OppfolgingstilfelleDTO(
+                arbeidstakerAtTilfelleEnd = true,
+                start = LocalDate.now().minusWeeks(2),
+                end = LocalDate.now().minusDays(1)
+            )
+        )
+
+        val brukerMedSluttIDag = PortefoljebrukerOpensearchModell(fnr = fnrMedSluttIDag)
+        val brukerMedUtloptPeriode = PortefoljebrukerOpensearchModell(fnr = fnrMedUtloptPeriode)
+        postgresOpensearchMapperV2.flettInnData(listOf(brukerMedSluttIDag, brukerMedUtloptPeriode))
+
+        assertThat(brukerMedSluttIDag.sykmeldt?.sluttdato).isEqualTo(LocalDate.now())
+        assertThat(brukerMedUtloptPeriode.sykmeldt).isNull()
+    }
+
 
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(

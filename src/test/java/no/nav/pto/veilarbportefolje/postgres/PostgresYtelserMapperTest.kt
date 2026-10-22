@@ -22,6 +22,8 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearch
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository
+import no.nav.pto.veilarbportefolje.sykmeldt.dto.OppfolgingstilfelleDTO
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerRespository
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.tiltakspenger.dto.TiltakspengerResponseDto
@@ -60,6 +62,7 @@ class PostgresYtelserMapperTest(
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_TILTAKSPENGER.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${YTELSER_UNGDOMSPROGRAM.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE enslige_forsorgere CASCADE")
+        jdbcTemplate.update("TRUNCATE TABLE ${SYKMELDT.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
     }
 
