@@ -6,6 +6,7 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
@@ -140,6 +141,7 @@ object PortefoljebrukerFrontendModellMapper {
                 ungdomsprogram = mapUngdomsprogram(opensearchBruker),
                 uforetrygd = mapUforetrygd(opensearchBruker)
             ),
+            sykmeldt = mapSykmeldt(opensearchBruker.sykmeldt),
             huskelapp = opensearchBruker.huskelapp,
             fargekategori = opensearchBruker.fargekategori,
             fargekategoriEnhetId = opensearchBruker.fargekategori_enhetId
@@ -243,6 +245,15 @@ object PortefoljebrukerFrontendModellMapper {
             avtaltMedNav = erAvtaltMedNav,
             klokkeslett = klokkeslett,
             varighetMinutter = varighet
+        )
+    }
+
+    private fun mapSykmeldt(sykmeldt: SykmeldtForOpensearch?): Sykmeldt? {
+        if (sykmeldt == null) return null
+        return Sykmeldt(
+            startdato = sykmeldt.startdato,
+            sluttdato = sykmeldt.sluttdato,
+            harArbeidsgiver = if (sykmeldt.harArbeidsgiver) "Ja" else "Nei"
         )
     }
 
