@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.AKTIVITET_ID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -18,22 +19,27 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Timestamp
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
     @param:Autowired private val defaultUnleash: DefaultUnleash,
-    @param:Autowired private val opensearchIndexer: OpensearchIndexer
+    @param:Autowired private val opensearchIndexer: OpensearchIndexer,
+    @param:Autowired private val oppfolgingRepository: OppfolgingRepositoryV2
 ) {
     private lateinit var repository: PortefoljeAktivitetKafkaMeldingRepository
     private lateinit var tiltakRepository: TiltakRepositoryV3
     private lateinit var namedParameterJdbcTemplate: NamedParameterJdbcTemplate
+
     @BeforeEach
     fun setup() {
         repository = PortefoljeAktivitetKafkaMeldingRepository(
             NamedParameterJdbcTemplate(jdbcTemplate),
             opensearchIndexer,
-            defaultUnleash
+            defaultUnleash,
+            oppfolgingRepository
         )
         namedParameterJdbcTemplate = NamedParameterJdbcTemplate(jdbcTemplate)
         tiltakRepository = TiltakRepositoryV3(jdbcTemplate,
@@ -42,20 +48,37 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         `when`(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(true);
     }
 
+    val aktor_1_OppfolgingsperiodeId = UUID.randomUUID()
+    val aktor_2_OppfolgingsperiodeId = UUID.randomUUID()
+    val aktor_3_OppfolgingsperiodeId = UUID.randomUUID()
+    val aktor_4_OppfolgingsperiodeId = UUID.randomUUID()
+    val aktor_5_OppfolgingsperiodeId = UUID.randomUUID()
+    val aktor_6_OppfolgingsperiodeId = UUID.randomUUID()
+
+    @BeforeEach
+    fun settBrukerUnderOppfolging() {
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-1") , ZonedDateTime.now(), aktor_1_OppfolgingsperiodeId)
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-2") , ZonedDateTime.now(), aktor_2_OppfolgingsperiodeId)
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-3") , ZonedDateTime.now(), aktor_3_OppfolgingsperiodeId)
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-4") , ZonedDateTime.now(), aktor_4_OppfolgingsperiodeId)
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-5") , ZonedDateTime.now(), aktor_5_OppfolgingsperiodeId)
+        oppfolgingRepository.settUnderOppfolging(AktorId.of("aktor-6") , ZonedDateTime.now(), aktor_6_OppfolgingsperiodeId)
+    }
+
     @Test
     fun `skal hente tiltaksaktiviteter ekskludert inaktivaktiviteter`() {
-        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK")
-        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "FULLFORT", aktivitetType = "TILTAK")
-        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitet-3", aktorId = "aktor-3", aktivitetStatus = "AVBRUTT", aktivitetType = "TILTAK")
-        val aktivitetEntity4 = aktivitetEntity(aktivitetId = "aktivitet-4", aktorId = "aktor-4", aktivitetStatus = "GJENNOMFORT", aktivitetType = "TILTAK")
-        val aktivitetEntity5 = aktivitetEntity(aktivitetId = "aktivitet-5", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "MOTE")
-        val aktivitetEntity6 = aktivitetEntity(aktivitetId = "aktivitet-6", aktorId = "aktor-1", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", tiltakskode = "ARBEIDSMARKEDSOPPLAERING")
+        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "FULLFORT", aktivitetType = "TILTAK", oppfolgingsperiodeId = aktor_2_OppfolgingsperiodeId.toString())
+        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitet-3", aktorId = "aktor-3", aktivitetStatus = "AVBRUTT", aktivitetType = "TILTAK", oppfolgingsperiodeId = aktor_3_OppfolgingsperiodeId.toString())
+        val aktivitetEntity4 = aktivitetEntity(aktivitetId = "aktivitet-4", aktorId = "aktor-4", aktivitetStatus = "GJENNOMFORT", aktivitetType = "TILTAK", oppfolgingsperiodeId = aktor_4_OppfolgingsperiodeId.toString())
+        val aktivitetEntity5 = aktivitetEntity(aktivitetId = "aktivitet-5", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "MOTE", oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktivitetEntity6 = aktivitetEntity(aktivitetId = "aktivitet-6", aktorId = "aktor-5", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", tiltakskode = "ARBEIDSMARKEDSOPPLAERING", oppfolgingsperiodeId = aktor_5_OppfolgingsperiodeId.toString())
         val aktiviteterListe = listOf(aktivitetEntity1, aktivitetEntity2, aktivitetEntity3, aktivitetEntity4, aktivitetEntity5, aktivitetEntity6)
 
         val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult =
             repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
 
-        val aktorIder = listOf(AktorId.of("aktor-1"), AktorId.of("aktor-2"), AktorId.of("aktor-3"), AktorId.of("aktor-4"), AktorId.of("aktor-5"), AktorId.of("aktor-6"))
+        val aktorIder = listOf(AktorId.of("aktor-1"), AktorId.of("aktor-2"), AktorId.of("aktor-3"), AktorId.of("aktor-4"), AktorId.of("aktor-5"))
         val aktorIderJoinToString = aktorIder.joinToString(separator = ",", prefix = "{", postfix = "}") { it.get() }
         val result: HashMap<AktorId, List<AktivitetEntityDto>> = HashMap(aktorIderJoinToString.length)
 
@@ -64,9 +87,67 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         tiltakRepository.leggTilTiltaksAktivitet(aktorIderJoinToString, true, result)
 
         assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(6)
-        assertThat(result.size).isEqualTo(1)
-        assertThat (result[AktorId.of("aktor-1")]!!.size).isEqualTo(2)
+        assertThat(result.size).isEqualTo(2)
+        assertThat (result[AktorId.of("aktor-1")]!!.size).isEqualTo(1)
+        assertThat (result[AktorId.of("aktor-5")]!!.size).isEqualTo(1)
         assertThat (result[AktorId.of("aktor-2")]).isNull()
+    }
+
+    @Test
+    fun `skal ignorere meldingen om aktivitet tilhorer ikke brukers gjeldende oppfolgingsperiode`() {
+        val gammelOppfolgingsperiodeId = UUID.randomUUID()
+        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", oppfolgingsperiodeId = gammelOppfolgingsperiodeId.toString())
+        val aktiviteterListe = listOf(aktivitetEntity1, aktivitetEntity2)
+
+        val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
+
+        assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(1)
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1)
+    }
+
+    @Test
+    fun `skal ignorere aktivitet om bruker er ikke under oppfølging`() {
+        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-7", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", oppfolgingsperiodeId = UUID.randomUUID().toString())
+        val aktiviteterListe = listOf(aktivitetEntity1)
+
+        val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
+
+        assertThat (portefoljeAktivitetBatchResult.prosesserte).isZero()
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1)
+    }
+
+    @Test
+    fun `skal ignorere aktiviteten om meldingen inneholder null oppfolgingsperiode`() {
+        val aktivitetEntity1 = aktivitetEntity().copy(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "PLANLAGT", aktivitetType = "TILTAK", oppfolgingsperiodeId = null)
+        val aktiviteterListe = listOf(aktivitetEntity1)
+
+        val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
+
+        assertThat (portefoljeAktivitetBatchResult.prosesserte).isZero()
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1)
+    }
+
+    @Test
+    fun `skal prosesseres meldingen med historisk-true selv om aktivitet tilhorer ikke brukerens gjeldende oppfolgingsperiode`() {
+        val aktivitetEntity1 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = false, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktivitetEntity2 = aktivitetEntity(aktivitetId = "aktivitet-2", aktorId = "aktor-2", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_2_OppfolgingsperiodeId.toString())
+
+        val aktiviteterListe = listOf(aktivitetEntity1, aktivitetEntity2)
+        val portefoljeAktivitetBatchResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteterListe)
+
+        assertThat (portefoljeAktivitetBatchResult.mottatte).isEqualTo(2)
+        assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(1)
+        assertThat (portefoljeAktivitetBatchResult.ignorert).isEqualTo(1) //aktivitetEntity2 med historisk:true ignoreres fordi tilsvarende aktivitet finnes ikke i DB for å slette
+
+        oppfolgingRepository.slettOppfolgingData(AktorId.of("aktor-1"))
+        val aktivitetEntity3 = aktivitetEntity(aktivitetId = "aktivitet-1", aktorId = "aktor-1", aktivitetStatus = "GJENNOMFORES", aktivitetType = "TILTAK", historisk = true, oppfolgingsperiodeId = aktor_1_OppfolgingsperiodeId.toString())
+        val aktiviteter = listOf(aktivitetEntity3)
+        val portefoljeAktivitetResult: PortefoljeAktivitetBatchResult = repository.behandleAktivitetsKafkaMeldinger(aktiviteter)
+
+        assertThat (portefoljeAktivitetResult.mottatte).isEqualTo(1)
+        assertThat (portefoljeAktivitetResult.prosesserte).isEqualTo(1) //aktivitet med "aktivitet-1" slettet fra DBen etter bruker har gått ut av oppfølgingen.
+        assertThat (portefoljeAktivitetResult.ignorert).isZero()
     }
 
     @Test
@@ -128,25 +209,6 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         assertThat(rad["version"]).isEqualTo(2L)
         assertThat(rad["aktivitet_status"]).isEqualTo("FULLFORT")
         assertThat(rad["record_offset"]).isEqualTo(20L)
-    }
-
-    @Test
-    fun `skal ignorere feil tiltaksaktiviteter som ble publisert i 2023 og starter aktivitetId med ARENA`() {
-        val resultat = repository.behandleAktivitetsKafkaMeldinger(
-            listOf(
-                aktivitetEntity(aktivitetId = "aktivitet-1", version = 2, aktivitetType = "TILTAK", aktivitetStatus = "GJENNOMFORES", recordOffset = 20),
-                aktivitetEntity(aktivitetId = "ARENA-1", version = 3, aktivitetType = "TILTAK", aktivitetStatus = "PLANLAGT", recordOffset = 21)
-            )
-        )
-
-        val feilTiltaksaktivitet = hentRad("ARENA-1")
-        val noramlTiltaksaktivitet = hentRad("aktivitet-1")!!
-
-        assertThat(feilTiltaksaktivitet).isNull()
-        assertThat(noramlTiltaksaktivitet).isNotNull()
-        assertThat(resultat.prosesserte).isEqualTo(1)
-        assertThat(resultat.ignorert).isEqualTo(1)
-        assertThat(noramlTiltaksaktivitet["aktivitet_status"]).isEqualTo("GJENNOMFORES")
     }
 
     @Test
@@ -316,6 +378,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         aktivitetStatus: String = "GJENNOMFORES",
         tiltakskode: String = "ARBFORB",
         aktivitetType: String = "MOTE",
+        oppfolgingsperiodeId: String? = aktor_1_OppfolgingsperiodeId.toString(),
         recordOffset: Long = 15,
         recordPartition: Int = 3,
         recordKey: String = aktivitetId,
@@ -333,7 +396,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
         avtalt = true,
         version = version,
         historisk = historisk,
-        oppfolgingsperiodeId = "oppfolgingsperiodeId-1",
+        oppfolgingsperiodeId = oppfolgingsperiodeId,
         cvKanDelesStatus = "IKKE_SVART",
         svarfristStillingFraNav = "2024-04-01",
         recordOffset = recordOffset,

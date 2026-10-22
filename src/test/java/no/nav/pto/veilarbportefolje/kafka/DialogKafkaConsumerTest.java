@@ -25,7 +25,7 @@ public class DialogKafkaConsumerTest extends EndToEndTest {
     @Test
     public void skal_oppdatere_dialog_datoer() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
+        testDataClient.settBrukerUnderOppfolging(aktoerId);
 
         final DialogdataDto melding = new DialogdataDto().setAktorId(aktoerId.toString())
                 .setSisteEndring(ZonedDateTime.parse("2020-10-10T00:00:00+02:00"))

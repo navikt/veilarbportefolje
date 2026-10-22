@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
+import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
+import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -22,6 +24,7 @@ class PortefoljeAktivitetKafkaMeldingRepository(
     private val db: NamedParameterJdbcTemplate,
     private val opensearchIndexer: OpensearchIndexer,
     private val defaultUnleash: DefaultUnleash,
+    private val oppfolgingRepository: OppfolgingRepositoryV2
 ) {
     @Transactional
     fun behandleAktivitetsKafkaMeldinger(aktiviteter: List<KafkaAktivitetMeldingEntity>): PortefoljeAktivitetBatchResult {
@@ -35,16 +38,16 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         På den måten reduserer vi risikoen ved overgangen til den nye datakilden.
         */
         val endeligeAktiviteter = beholdSisteMeldingPerAktivitet(aktiviteter)
-        val endeligeAktiviteterEkskludertTiltak = endeligeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
+        val overigeAktiviteter = endeligeAktiviteter.filterNot { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
 
         val tiltaksaktiviteter = endeligeAktiviteter.filter { it.aktivitetType == Aktivitetstype.TILTAK.name && it.avtalt == TRUE }
         val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
-        val inaktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filter { it.historisk }
-        val aktivAktiviteter = endeligeAktiviteterEkskludertTiltak.filterNot { it.historisk }
+        val (inaktivAktiviteter, aktivAktiviteter) = overigeAktiviteter.partition { it.historisk }
+        val gyldigeAktiveAktiviteter = filtrerGjeldendeOppfolgingsperiode(aktivAktiviteter)
 
         val antallAktiviteterSlettet = batchDeleteById(inaktivAktiviteter).sumOf(::normaliserUpdateCount)
-        val antallAktiviteterOppdatert = batchUpsertAktivitet(aktivAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallAktiviteterOppdatert = batchUpsertAktivitet(gyldigeAktiveAktiviteter).sumOf(::normaliserUpdateCount)
 
         val antallMeldingerBehandlet = antallAktiviteterSlettet + antallAktiviteterOppdatert + antallTiltaksAktiviteterBehandlet
 
@@ -57,25 +60,74 @@ class PortefoljeAktivitetKafkaMeldingRepository(
     }
 
     fun behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter: List<KafkaAktivitetMeldingEntity>): Int {
-        val inaktivTiltaksAktiviteter = tiltaksaktiviteter.filter { it.historisk }
-        //Aktiviteter som starter med ARENA, er feilaktiviteter og skal ikke lagres i DB-en. Derfor filtrerer vi dem bort her.
-        val aktivTiltaksAktiviteter = tiltaksaktiviteter.filterNot { it.historisk || it.aktivitetId.startsWith("ARENA") }
+        val (inaktivTiltaksAktiviteter, aktivTiltaksAktiviteter) = tiltaksaktiviteter.partition { it.historisk }
+        val gyldigeTiltaksAktiviteter = filtrerGjeldendeOppfolgingsperiode(aktivTiltaksAktiviteter)
 
         val antallTiltaksAktiviteterSlettet = batchDeleteById(inaktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
-        val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(aktivTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallTiltaksAktiviteterOppdatert = batchUpsertAktivitet(gyldigeTiltaksAktiviteter).sumOf(::normaliserUpdateCount)
 
         val antallTiltaksMeldinger = antallTiltaksAktiviteterSlettet + antallTiltaksAktiviteterOppdatert
 
         if(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)) {
-            if (antallTiltaksAktiviteterOppdatert == 1) {
+            if (antallTiltaksAktiviteterOppdatert == 1 && antallTiltaksAktiviteterSlettet == 0) {
                 indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
-            } else if (antallTiltaksAktiviteterSlettet == 1) {
+            } else if (antallTiltaksAktiviteterSlettet == 1 && antallTiltaksAktiviteterOppdatert == 0) {
+                indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
+            } else if (antallTiltaksAktiviteterOppdatert == 1 && antallTiltaksAktiviteterSlettet == 1) {
+                indekserAktivitet(AktorId.of(aktivTiltaksAktiviteter.first().aktorId))
                 indekserAktivitet(AktorId.of(inaktivTiltaksAktiviteter.first().aktorId))
             } else if (antallTiltaksAktiviteterOppdatert > 1 || antallTiltaksAktiviteterSlettet > 1) {
                 indekserAktiviteter(tiltaksaktiviteter)
             }
         }
          return antallTiltaksMeldinger;
+    }
+
+    fun tilhorerGjeldendeOppfolgingsperiode(aktivitet: KafkaAktivitetMeldingEntity): Boolean {
+        val oppfolgingsperiodeId = oppfolgingRepository.hentOppfolgingsperiodeId(AktorId.of(aktivitet.aktorId))
+
+        if (oppfolgingsperiodeId != null) {
+            if (aktivitet.oppfolgingsperiodeId!= null) {
+                if (aktivitet.oppfolgingsperiodeId == oppfolgingsperiodeId.toString()) {
+                    return true
+                } else {
+                    secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset}, partition ${aktivitet.recordPartition} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitet tilhører ikke brukerens gjeldende oppfolgingsperiode")
+                    return false
+                }
+            } else {
+                secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} prosesseres ikke fordi aktivitets-oppfolgingsperiodeId er null")
+                return false
+            }
+        } else {
+            secureLog.info("Aktivitetsmelding med offset ${aktivitet.recordOffset} og aktivitetId ${aktivitet.aktivitetId} ignoreres fordi bruker ${aktivitet.aktorId} er ikke under oppfølging i ${PostgresTable.OPPFOLGING_DATA.TABLE_NAME}-tabellen")
+            return false
+        }
+    }
+
+    private fun filtrerGjeldendeOppfolgingsperiode(
+        aktiviteter: List<KafkaAktivitetMeldingEntity>
+    ): List<KafkaAktivitetMeldingEntity> {
+        if (aktiviteter.isEmpty()) return emptyList()
+
+        if (aktiviteter.size == 1) return aktiviteter.filter { tilhorerGjeldendeOppfolgingsperiode(it) }
+
+        val aktorIder = aktiviteter.map { AktorId.of(it.aktorId) }.distinct()
+        val oppfolgingsperiodePrAktor = oppfolgingRepository.hentOppfolgingsperiodeIder(aktorIder)
+
+        val matchende =  aktiviteter.filter { aktivitet ->
+            val aktivAktorId = AktorId.of(aktivitet.aktorId)
+            val gjeldendeId = oppfolgingsperiodePrAktor[aktivAktorId] ?: return@filter false
+            val meldingId = aktivitet.oppfolgingsperiodeId ?: return@filter false
+
+            meldingId == gjeldendeId.toString()
+        }
+
+        val ignorert = aktiviteter.size - matchende.size
+        if (ignorert > 0) {
+            secureLog.info("Ignorerte {} aktivitet-meldinger fordi de ikke tilhørte gjeldende oppfølgingsperiode", ignorert)
+        }
+
+        return matchende
     }
 
     private fun batchUpsertAktivitet(aktiviteter: List<KafkaAktivitetMeldingEntity>): IntArray {

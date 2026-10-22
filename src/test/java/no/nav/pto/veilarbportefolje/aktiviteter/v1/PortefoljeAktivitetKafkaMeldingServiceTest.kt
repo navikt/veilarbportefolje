@@ -6,6 +6,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
+import java.util.UUID
 
 class PortefoljeAktivitetKafkaMeldingServiceTest {
     private val repository = mock(PortefoljeAktivitetKafkaMeldingRepository::class.java)
@@ -75,7 +76,7 @@ class PortefoljeAktivitetKafkaMeldingServiceTest {
         ),
         avtalt = true,
         historisk = false,
-        oppfolgingsperiodeId = "oppfolgingsperiodeId-1",
+        oppfolgingsperiodeId = UUID.randomUUID().toString(),
         tiltakskode = "ARBFORB",
     )
 }

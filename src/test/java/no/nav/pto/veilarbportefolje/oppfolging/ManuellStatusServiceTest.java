@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.ZonedDateTime;
-
 import static no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus.MANUELL;
 import static no.nav.pto.veilarbportefolje.util.OpensearchTestClient.pollOpensearchUntil;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
@@ -42,7 +40,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     public void skal_oppdatere_oversikten_når_bruker_blir_satt_til_manuell() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
+        testDataClient.settBrukerUnderOppfolging(aktoerId);
 
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), true);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);
@@ -56,7 +54,7 @@ class ManuellStatusServiceTest extends EndToEndTest {
     @Test
     void skal_oppdatere_oversikten_når_bruker_blir_satt_til_digital_oppfølging() {
         final AktorId aktoerId = randomAktorId();
-        testDataClient.lagreBrukerUnderOppfolging(aktoerId, ZonedDateTime.now());
+        testDataClient.settBrukerUnderOppfolging(aktoerId);
 
         ManuellStatusDTO melding = new ManuellStatusDTO(aktoerId.toString(), false);
         manuellStatusService.behandleKafkaMeldingLogikk(melding);

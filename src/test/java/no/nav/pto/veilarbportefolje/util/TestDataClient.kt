@@ -46,9 +46,12 @@ class TestDataClient(
         )
     }
 
+    fun settBrukerUnderOppfolging(aktoerId: AktorId) {
+        lagreBrukerUnderOppfolging(aktoerId, randomFnr(), randomNavKontor(), null, ZonedDateTime.now(), null, oppfolgingsperiodeId = UUID.randomUUID())
+    }
+
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
-        val fnr = randomFnr()
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), null, startDato, null)
+        lagreBrukerUnderOppfolging(aktoerId, randomFnr(), randomNavKontor(), null, startDato, null, oppfolgingsperiodeId = UUID.randomUUID())
     }
 
     fun lagreBrukerUnderOppfolging(
@@ -101,17 +104,17 @@ class TestDataClient(
 
     private fun lagreBrukerUnderOppfolging(
         aktoerId: AktorId,
-        fnr: Fnr,
-        navKontor: NavKontor,
+        fnr: Fnr?,
+        navKontor: NavKontor?,
         veilederId: VeilederId?,
         startDato: ZonedDateTime,
         diskresjonKode: String?,
-        oppfolgingsperiodeId: UUID? = null,
+        oppfolgingsperiodeId: UUID = UUID.randomUUID(),
     ) {
         pdlIdentRepository.upsertIdenter(
             listOf(
                 PDLIdent(aktoerId.get(), false, Gruppe.AKTORID),
-                PDLIdent(fnr.get(), false, Gruppe.FOLKEREGISTERIDENT)
+                PDLIdent(fnr?.get(), false, Gruppe.FOLKEREGISTERIDENT)
             )
         )
         pdlPersonRepository.upsertPerson(
@@ -123,7 +126,7 @@ class TestDataClient(
         upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
-                fnr.get(), null, null,
+                fnr?.get(), null, null,
                 "9999", null, null, null,
                 ZonedDateTime.now()
             ),
