@@ -12,7 +12,9 @@ var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFro
         harSikkerhetstiltak = false,
         diskresjonskodeFortrolig = null,
         profileringResultat = null,
-        kandidatForUtmelding = false
+        kandidatForUtmelding = false,
+        sykmeldtMedArbeidsgiver = false,
+        sykmeldtUtenArbeidsgiver = false
     ),
     fnr = null,
     aktoerid = null,
