@@ -5,7 +5,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
 import no.nav.pto.veilarbportefolje.mal.MalEndringKafkaDTO;
@@ -48,7 +47,6 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
     private final OpensearchService opensearchService;
     private final SistLestService sistLestService;
 
-    private final TiltakService tiltakService;
     private final VeilederId veilederId = VeilederId.of("Z123456");
     private final NavKontor testEnhet = NavKontor.of("0000");
     private final Fnr fodselsnummer1 = Fnr.ofValidFnr("10108000000"); //TESTFAMILIE
@@ -58,12 +56,11 @@ public class SisteEndringIntegrationTest extends EndToEndTest {
 
     @Autowired
     public SisteEndringIntegrationTest(MalService malService, JdbcTemplate jdbcTemplatePostgres, OpensearchService opensearchService, SisteEndringService sisteEndringService, AktiviteterRepositoryV2 aktiviteterRepositoryV2,
-                                       OpensearchIndexer opensearchIndexer, TiltakService tiltakService) {
+                                       OpensearchIndexer opensearchIndexer) {
         this.jdbcTemplatePostgres = jdbcTemplatePostgres;
-        this.tiltakService = tiltakService;
         BrukerServiceV2 brukerService = mock(BrukerServiceV2.class);
         Mockito.when(brukerService.hentVeilederForBruker(any())).thenReturn(Optional.of(veilederId));
-        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer, tiltakService, defaultUnleash);
+        this.aktivitetService = new AktivitetService(aktiviteterRepositoryV2, mock(OppfolgingsbrukerRepositoryV3.class), sisteEndringService, opensearchIndexer);
         this.sistLestService = new SistLestService(brukerService, sisteEndringService);
         this.opensearchService = opensearchService;
         this.malService = malService;

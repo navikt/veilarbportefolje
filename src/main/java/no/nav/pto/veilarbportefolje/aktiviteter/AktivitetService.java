@@ -1,6 +1,5 @@
 package no.nav.pto.veilarbportefolje.aktiviteter;
 
-import io.getunleash.DefaultUnleash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -8,12 +7,10 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.Aktivitet;
 import no.nav.pto.veilarbportefolje.aktiviteter.domene.AktivitetsType;
 import no.nav.pto.veilarbportefolje.aktiviteter.dto.KafkaAktivitetMelding;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger;
-import no.nav.pto.veilarbportefolje.config.FeatureToggle;
 import no.nav.pto.veilarbportefolje.domene.Motedeltaker;
-import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
 import no.nav.pto.veilarbportefolje.domene.Moteplan;
+import no.nav.pto.veilarbportefolje.domene.MoteplanDTO;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer;
@@ -24,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakkodeverkMapper.tiltakskodeTiltaksnavnMap;
 import static no.nav.pto.veilarbportefolje.domene.Motedeltaker.skjermetDeltaker;
 import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 
@@ -36,46 +32,17 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
     private final OppfolgingsbrukerRepositoryV3 oppfolgingsbrukerRepository;
     private final SisteEndringService sisteEndringService;
     private final OpensearchIndexer opensearchIndexer;
-    private final TiltakService tiltakService;
-    private final DefaultUnleash defaultUnleash;
 
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
         sisteEndringService.behandleAktivitet(aktivitetData);
-
-        boolean erTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK == aktivitetData.getAktivitetType();
-
-        if (erTiltaksaktivitet) {
-            // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            log.info("Behandler tiltaksaktivitet fra ny kilde");
-            behandleTiltaksaktivitetMelding(aktivitetData, aktorId);
-        } else {
-            // Midlertidig loggmelding ifbm overgang til ny datakilde for lønnstilskudd
-            log.info("Behandler aktivitetsplanaktivitet");
-            behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
-        }
+        behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
     }
 
     private void behandleAktivitetsplanAktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
         boolean bleProsessert = aktiviteterRepositoryV2.tryLagreAktivitetData(aktivitetData);
         if (bleProsessert) {
             opensearchIndexer.indekser(aktorId);
-        }
-    }
-
-    private void behandleTiltaksaktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
-        boolean erTiltakskodeStottet = tiltakskodeTiltaksnavnMap.containsKey(aktivitetData.getTiltakskode());
-        if (erTiltakskodeStottet) {
-            boolean skalIndeksereBruker = tiltakService.behandleKafkaMelding(aktivitetData);
-            boolean brukTiltaksaktivitetFraAktivitetsplan = FeatureToggle.brukTiltaksaktivitetFraAktivitetsplan(defaultUnleash);
-
-            if (skalIndeksereBruker && !brukTiltaksaktivitetFraAktivitetsplan) {
-                opensearchIndexer.indekser(aktorId);
-            }
-        } else {
-            // TODO 05.07.23: Finne en bedre måte å håndtere dette på - nå bare ignorerer vi alt som ikke er MIDLONTIL eller VARLONTIL.
-            // Dette er greit per nå da vi uansett får dataen vi trenger fra Arena.
-            secureLog.debug("Mottok aktivitet med aktivitetId: " + aktivitetData.getAktivitetId() + " med uventet tiltakskode: " + aktivitetData.getTiltakskode() + " fra ny kilde. Tiltak ble ikke lagret.");
         }
     }
 
