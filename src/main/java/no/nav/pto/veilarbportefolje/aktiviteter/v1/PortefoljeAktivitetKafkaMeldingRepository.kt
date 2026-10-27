@@ -44,10 +44,9 @@ class PortefoljeAktivitetKafkaMeldingRepository(
         val antallTiltaksAktiviteterBehandlet = if (tiltaksaktiviteter.isNotEmpty()) behandleTiltaksaktivitetsMeldinger(tiltaksaktiviteter) else 0
 
         val (inaktivAktiviteter, aktivAktiviteter) = overigeAktiviteter.partition { it.historisk }
-        val gyldigeAktiveAktiviteter = filtrerGjeldendeOppfolgingsperiode(aktivAktiviteter)
 
         val antallAktiviteterSlettet = batchDeleteById(inaktivAktiviteter).sumOf(::normaliserUpdateCount)
-        val antallAktiviteterOppdatert = batchUpsertAktivitet(gyldigeAktiveAktiviteter).sumOf(::normaliserUpdateCount)
+        val antallAktiviteterOppdatert = batchUpsertAktivitet(aktivAktiviteter).sumOf(::normaliserUpdateCount)
 
         val antallMeldingerBehandlet = antallAktiviteterSlettet + antallAktiviteterOppdatert + antallTiltaksAktiviteterBehandlet
 

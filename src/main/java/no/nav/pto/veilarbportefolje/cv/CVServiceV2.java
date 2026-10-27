@@ -47,7 +47,7 @@ public class CVServiceV2 extends KafkaCommonNonKeyedConsumerService<Melding> {
             }
             opensearchIndexerPaDatafelt.updateCvEksistere(aktoerId, erMeldingstypeEndreEllerOpprett);
         } else {
-            secureLog.info("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet. Forkaster cv-kakfamelding", aktoerId);
+            secureLog.info("Bruker med aktoerid {} er ikke aktiv. FNR ikke funnet. Forkaster cv-kafkamelding", aktoerId);
         }
 
     }

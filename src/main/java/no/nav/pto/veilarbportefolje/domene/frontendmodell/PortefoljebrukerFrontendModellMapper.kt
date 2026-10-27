@@ -58,6 +58,8 @@ object PortefoljebrukerFrontendModellMapper {
                 diskresjonskodeFortrolig = diskresjonskodeFortrolig,
                 profileringResultat = profileringResultat,
                 kandidatForUtmelding = opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null,
+                sykmeldtMedArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == true,
+                sykmeldtUtenArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == false,
             ),
             fnr = opensearchBruker.fnr,
             fornavn = opensearchBruker.fornavn,

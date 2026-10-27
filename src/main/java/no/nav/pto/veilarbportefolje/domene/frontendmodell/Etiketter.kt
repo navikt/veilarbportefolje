@@ -11,5 +11,7 @@ data class Etiketter(
     val harSikkerhetstiltak: Boolean,
     var diskresjonskodeFortrolig: String?,
     val profileringResultat: Profileringsresultat?,
-    val kandidatForUtmelding: Boolean
+    val kandidatForUtmelding: Boolean,
+    val sykmeldtMedArbeidsgiver: Boolean,
+    val sykmeldtUtenArbeidsgiver: Boolean,
 )

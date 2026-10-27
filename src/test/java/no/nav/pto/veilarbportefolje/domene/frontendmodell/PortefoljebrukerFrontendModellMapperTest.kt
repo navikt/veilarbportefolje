@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
@@ -21,7 +22,7 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -138,6 +139,42 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         Assertions.assertEquals(true, etiketter.kandidatForUtmelding)
         Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForUtmelding)
+    }
+
+    @Test
+    fun `etiketter for sykmeldtMedArbeidsgiver og sykmeldtUtenArbeidsgiver skal settes riktig`() {
+        val sykmeldt = SykmeldtForOpensearch(
+            startdato = LocalDate.now().minusDays(10),
+            sluttdato = LocalDate.now().plusDays(10),
+            harArbeidsgiver = true
+        )
+
+        val etiketterMedArbeidsgiver = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(sykmeldt = sykmeldt),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        ).etiketter
+
+        val etiketterUtenArbeidsgiver = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(sykmeldt = sykmeldt.copy(harArbeidsgiver = false)),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        ).etiketter
+
+        val etiketterIkkeSykmeldt = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = PortefoljebrukerOpensearchModell(sykmeldt = null),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        ).etiketter
+
+        Assertions.assertEquals(true, etiketterMedArbeidsgiver.sykmeldtMedArbeidsgiver)
+        Assertions.assertEquals(false, etiketterMedArbeidsgiver.sykmeldtUtenArbeidsgiver)
+
+        Assertions.assertEquals(false, etiketterUtenArbeidsgiver.sykmeldtMedArbeidsgiver)
+        Assertions.assertEquals(true, etiketterUtenArbeidsgiver.sykmeldtUtenArbeidsgiver)
+
+        Assertions.assertEquals(false, etiketterIkkeSykmeldt.sykmeldtMedArbeidsgiver)
+        Assertions.assertEquals(false, etiketterIkkeSykmeldt.sykmeldtUtenArbeidsgiver)
     }
 
     @Test
