@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
+import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class AktivitetOpensearchService {
-    private final TiltakRepositoryV3 tiltakRepositoryV3;
+    private final TiltaksaktivitetRepository tiltaksaktivitetRepository;
     private final AktiviteterRepositoryV2 aktiviteterRepositoryV2;
     private final GruppeAktivitetRepositoryV2 gruppeAktivitetRepositoryV2;
 
@@ -27,7 +27,7 @@ public class AktivitetOpensearchService {
 
         aktiviteterRepositoryV2.leggTilAktiviteterFraAktivitetsplanen(aktoerIder, true, result);
         gruppeAktivitetRepositoryV2.leggTilGruppeAktiviteter(aktoerIder, result);
-        tiltakRepositoryV3.leggTilTiltaksAktivitet(aktoerIder, true, result);
+        tiltaksaktivitetRepository.leggTilTiltaksAktiviteter(aktoerIder, true, result);
 
         return result;
     }

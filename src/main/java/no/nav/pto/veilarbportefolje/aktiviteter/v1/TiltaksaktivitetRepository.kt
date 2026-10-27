@@ -1,23 +1,21 @@
 package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.AKTORID
-import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.FNR
-import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.IDENT
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.KONTOR_ID
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.*
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService
+import no.nav.pto.veilarbportefolje.postgres.AktivitetEntityDto
 import org.slf4j.LoggerFactory
-import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TILTAKSKODE as TILTAKSKODE
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
+import java.util.*
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AKTIVE_IDENTER.TABLE_NAME as AKTIVE_IDENTER_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.AO_KONTOR.TABLE_NAME as AO_KONTOR_TABLE
-import no.nav.pto.veilarbportefolje.database.PostgresTable.OPPFOLGINGSBRUKER_ARENA_V2.TABLE_NAME as ARENA_OPPFOLGINGSBRUKER_TABLE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.TABLE_NAME as KAFKA_AKTIVITET_MELDING_TABLE
 
 @Slf4j
@@ -82,6 +80,40 @@ class TiltaksaktivitetRepository(
 
         jdbc.update(sql, params)
         log.info("Lagret eller oppdatert tiltakskode: $tiltakskode with name: $tiltaksnavn")
+    }
+
+    fun leggTilTiltaksAktiviteter(
+        aktorIder: String,
+        avtalt: Boolean,
+        result: HashMap<AktorId, List<AktivitetEntityDto>>
+    ) {
+        //language=postgresql
+        val sql = """
+        SELECT $AKTOR_ID,
+               CAST($TIL_DATO AS TIMESTAMP) AS TIL_DATO,
+               CAST($FRA_DATO AS TIMESTAMP) AS FRA_DATO,
+               $TILTAKSKODE FROM $KAFKA_AKTIVITET_MELDING_TABLE
+        WHERE $AKTOR_ID = ANY (:aktorIder::varchar[])
+        AND $AKTIVITET_TYPE = :aktivitetstype::varchar
+        AND $AVTALT = :avtalt::boolean
+        AND NOT $AKTIVITET_STATUS = ANY (string_to_array(:inaktivAktivitetStatus, ',')::text[])
+        
+        """.trimIndent()
+
+        val params = MapSqlParameterSource()
+            .addValue("aktorIder", aktorIder)
+            .addValue("avtalt", avtalt)
+            .addValue("aktivitetstype", "TILTAK")
+            .addValue("inaktivAktivitetStatus", InaktivAktivitetStatus.entries.joinToString(",") { it.name })
+
+        jdbc.query(sql, params) { rs ->
+            val aktoerId = AktorId.of(rs.getString("AKTOR_ID"))
+            val aktivitet = AktivitetEntityDto.mapTiltaksAktivitetTilEntity(rs)
+
+            result.compute(aktoerId) { _, list ->
+                AktivitetEntityDto.leggTilAktivitetPaResultat(aktivitet, list)
+            }
+        }
     }
 }
 

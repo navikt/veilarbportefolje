@@ -159,7 +159,6 @@ import static org.mockito.Mockito.when;
         UtdanningsAktivitetService.class,
         ArenaHendelseRepository.class,
         GruppeAktivitetRepositoryV2.class,
-        TiltakRepositoryV3.class,
         TiltaksaktivitetRepository.class,
         PortefoljeAktivitetKafkaMeldingRepository.class,
         PostgresOpensearchMapper.class,
