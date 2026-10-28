@@ -41,15 +41,6 @@ public class AktivitetEntityDto {
     }
 
     @SneakyThrows
-    public static AktivitetEntityDto mapTiltakTilEntity(ResultSet rs) {
-        return new AktivitetEntityDto()
-                .setStart(rs.getTimestamp("fradato"))
-                .setUtlop(rs.getTimestamp("tildato"))
-                .setMuligTiltaksNavn(rs.getString("tiltakskode"))
-                .setAktivitetsType(AktivitetsType.tiltak);
-    }
-
-    @SneakyThrows
     public static Optional<AktivitetEntityDto> mapAktivitetTilEntity(ResultSet rs) {
         String type = rs.getString("aktivitettype");
         if (!AktivitetsType.contains(type)) {

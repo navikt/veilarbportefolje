@@ -25,10 +25,6 @@ public class FeatureToggle {
         return defaultUnleash.isEnabled(FeatureToggle.BRUK_FILTER_FOR_BRUKERINNSYN_TILGANGER);
     }
 
-    public static boolean brukTiltaksaktivitetFraAktivitetsplan(DefaultUnleash defaultUnleash) {
-        return defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN);
-    }
-
     public static boolean stoppLagringAvMineFilter(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.STOPP_LAGRING_AV_MINE_FILTER);
     }

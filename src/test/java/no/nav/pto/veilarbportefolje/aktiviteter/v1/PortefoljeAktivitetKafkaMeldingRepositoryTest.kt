@@ -2,7 +2,6 @@ package no.nav.pto.veilarbportefolje.aktiviteter.v1
 
 import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakRepositoryV3
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.config.FeatureToggle
 import no.nav.pto.veilarbportefolje.database.PostgresTable.KAFKA_AKTIVITET_MELDING.AKTIVITET_ID
@@ -27,10 +26,10 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
     @param:Autowired private val defaultUnleash: DefaultUnleash,
     @param:Autowired private val opensearchIndexer: OpensearchIndexer,
-    @param:Autowired private val oppfolgingRepository: OppfolgingRepositoryV2
+    @param:Autowired private val oppfolgingRepository: OppfolgingRepositoryV2,
+    @param:Autowired private val tiltaksaktivitetRepository: TiltaksaktivitetRepository,
 ) {
     private lateinit var repository: PortefoljeAktivitetKafkaMeldingRepository
-    private lateinit var tiltakRepository: TiltakRepositoryV3
     private lateinit var namedParameterJdbcTemplate: NamedParameterJdbcTemplate
 
     @BeforeEach
@@ -42,8 +41,6 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
             oppfolgingRepository
         )
         namedParameterJdbcTemplate = NamedParameterJdbcTemplate(jdbcTemplate)
-        tiltakRepository = TiltakRepositoryV3(jdbcTemplate,
-                jdbcTemplate ,namedParameterJdbcTemplate)
         jdbcTemplate.update("TRUNCATE TABLE $TABLE_NAME")
         `when`(defaultUnleash.isEnabled(FeatureToggle.BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN)).thenReturn(true);
     }
@@ -84,7 +81,7 @@ class PortefoljeAktivitetKafkaMeldingRepositoryTest(
 
         assertThat (result.size).isEqualTo(0)
 
-        tiltakRepository.leggTilTiltaksAktivitet(aktorIderJoinToString, true, result)
+        tiltaksaktivitetRepository.leggTilTiltaksAktiviteter(aktorIderJoinToString, true, result)
 
         assertThat (portefoljeAktivitetBatchResult.prosesserte).isEqualTo(6)
         assertThat(result.size).isEqualTo(2)

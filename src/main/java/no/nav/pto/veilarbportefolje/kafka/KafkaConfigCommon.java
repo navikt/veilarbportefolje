@@ -24,10 +24,8 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOm
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.TiltakService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
-import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.TiltakDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.UtdanningsAktivitetDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.YtelsesDTO;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.TypeKafkaYtelse;
@@ -122,8 +120,6 @@ public class KafkaConfigCommon {
 
         AIVEN_AKTIVITER_TOPIC("pto.aktivitet-portefolje-v1"),
 
-        TILTAK_ARENA_TOPIC("teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-" + requireKafkaTopicPostfix()),
-
         UTDANNINGS_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-" + requireKafkaTopicPostfix()),
 
         GRUPPE_AKTIVITET_ARENA_TOPIC("teamarenanais.aapen-arena-gruppeaktivitetendret-v1-" + requireKafkaTopicPostfix()),
@@ -189,7 +185,6 @@ public class KafkaConfigCommon {
             SkjermedePersonerService skjermedePersonerService,
             SkjermingStatusService skjermingStatusService,
             SykmeldtService sykmeldtService,
-            TiltakService tiltakService,
             TiltakshendelseService tiltakshendelseService,
             TiltaksaktivitetService tiltaksaktivitetService,
             UtdanningsAktivitetService utdanningsAktivitetService,
@@ -221,16 +216,6 @@ public class KafkaConfigCommon {
                                         Deserializers.stringDeserializer(),
                                         Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
                                         gruppeAktivitetService::behandleKafkaRecord
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<String, TiltakDTO>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.TILTAK_ARENA_TOPIC.topicName,
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(TiltakDTO.class),
-                                        tiltakService::behandleKafkaRecord
                                 ),
                         new KafkaConsumerClientBuilder.TopicConfig<Long, Periode>()
                                 .withLogging()
