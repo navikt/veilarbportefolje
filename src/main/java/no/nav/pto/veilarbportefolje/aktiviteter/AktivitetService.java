@@ -36,7 +36,13 @@ public class AktivitetService extends KafkaCommonNonKeyedConsumerService<KafkaAk
     public void behandleKafkaMeldingLogikk(KafkaAktivitetMelding aktivitetData) {
         AktorId aktorId = AktorId.of(aktivitetData.getAktorId());
         sisteEndringService.behandleAktivitet(aktivitetData);
-        behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
+
+        boolean ikkeTiltaksaktivitet = KafkaAktivitetMelding.AktivitetTypeData.TILTAK != aktivitetData.getAktivitetType();
+
+        //Alle aktiviteter untatt tiltakskativiteter fra Aktivitetsplan´s kafka-topic behandles her
+        if (ikkeTiltaksaktivitet) {
+            behandleAktivitetsplanAktivitetMelding(aktivitetData, aktorId);
+        }
     }
 
     private void behandleAktivitetsplanAktivitetMelding(KafkaAktivitetMelding aktivitetData, AktorId aktorId) {
