@@ -13,7 +13,6 @@ data class Filtervalg(
     val fodselsdagIMnd: List<String>,
     val formidlingsgruppe: List<Formidlingsgruppe>,
     val servicegruppe: List<Servicegruppe>,
-    val rettighetsgruppe: List<Rettighetsgruppe>,
     val veiledere: List<String>,
     val aktiviteter: Map<String, AktivitetFiltervalg>,
     val aktiviteterForenklet: List<String>,
@@ -60,7 +59,6 @@ data class Filtervalg(
                 fodselsdagIMnd.isNotEmpty() ||
                 formidlingsgruppe.isNotEmpty() ||
                 servicegruppe.isNotEmpty() ||
-                rettighetsgruppe.isNotEmpty() ||
                 veiledere.isNotEmpty() ||
                 aktiviteter.isNotEmpty() ||
                 tiltakstyper.isNotEmpty() ||

@@ -62,7 +62,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_HAR_DAGPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.DAGPENGER_RETTIGHETSTYPE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.ENSLIGE_FORSORGERE_OVERGANGSSTONAD
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.RETTIGHETSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.TILTAKSPENGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UFORETRYGD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Ytelser.UNGDOMSPROGRAM
@@ -281,7 +280,6 @@ class OpensearchFilterQueryBuilder {
         byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
-        byggManuellFilter(filtervalg.rettighetsgruppe, queryBuilder, RETTIGHETSGRUPPE_KODE)
         byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, AKTIVITETER)
         byggManuellFilter(
             filtervalg.innsatsgruppeGjeldendeVedtak14a,

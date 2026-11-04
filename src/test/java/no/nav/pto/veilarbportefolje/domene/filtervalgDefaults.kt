@@ -12,7 +12,6 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     fodselsdagIMnd = emptyList(),
     formidlingsgruppe = emptyList(),
     servicegruppe = emptyList(),
-    rettighetsgruppe = emptyList(),
     veiledere = emptyList(),
     aktiviteter = mapOf(),
     tiltakstyper = emptyList(),
@@ -72,13 +71,6 @@ fun getFiltervalgSisteEndringForJavaTester(
     getFiltervalgDefaults().copy(
         sisteEndringKategori = sisteEndringKategori,
         ulesteEndringer = ulesteEndringer,
-    )
-
-fun getFiltervalgMedTiltakstyperForJavaTester(
-    tiltakstyper: List<String>
-): Filtervalg =
-    getFiltervalgDefaults().copy(
-        tiltakstyper = tiltakstyper
     )
 
 fun getFiltervalgMedEnsligeforsorgereForJavaTester(
