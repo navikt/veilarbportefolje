@@ -58,7 +58,6 @@ data class Filtervalg(
                 harKjonnfilter() ||
                 fodselsdagIMnd.isNotEmpty() ||
                 formidlingsgruppe.isNotEmpty() ||
-                servicegruppe.isNotEmpty() ||
                 veiledere.isNotEmpty() ||
                 aktiviteter.isNotEmpty() ||
                 tiltakstyper.isNotEmpty() ||

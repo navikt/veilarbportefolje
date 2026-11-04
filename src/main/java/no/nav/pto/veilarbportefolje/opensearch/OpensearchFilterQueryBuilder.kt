@@ -36,7 +36,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.EN
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.KVALIFISERINGSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.MANUELL_BRUKER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.NY_FOR_VEILEDER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.OPPFOLGING
@@ -276,7 +275,6 @@ class OpensearchFilterQueryBuilder {
 
         byggManuellFilter(fodseldagIMndQuery, queryBuilder, FODSELSDAG_I_MND)
         byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, FORMIDLINGSGRUPPE_KODE)
-        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, KVALIFISERINGSGRUPPE_KODE)
         byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
