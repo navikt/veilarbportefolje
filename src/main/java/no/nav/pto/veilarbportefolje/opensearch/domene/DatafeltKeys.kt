@@ -82,10 +82,6 @@ object DatafeltKeys {
             PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
     }
 
-    object Arbeidsforhold {
-        val ER_SYKMELDT_MED_ARBEIDSGIVER = PortefoljebrukerOpensearchModell::er_sykmeldt_med_arbeidsgiver.name
-    }
-
     object Aktiviteter {
         val AKTIVITETER = PortefoljebrukerOpensearchModell::aktiviteter.name
         val ALLE_AKTIVITETER = PortefoljebrukerOpensearchModell::alleAktiviteter.name
