@@ -44,51 +44,6 @@ class OpensearchServiceIntYtelsefilterTest @Autowired constructor(
     }
 
     @Test
-    fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_som_rettighetsgruppefilter() {
-        val brukerMedAAP = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().get(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
-            rettighetsgruppekode = Rettighetsgruppe.AAP.name,
-        )
-
-        val brukerUtenAAP = PortefoljebrukerOpensearchModell(
-            aktoer_id = randomAktorId().get(),
-            fnr = randomFnr().toString(),
-            oppfolging = true,
-            enhet_id = TEST_ENHET,
-            veileder_id = TEST_VEILEDER_0,
-            rettighetsgruppekode = Rettighetsgruppe.DAGP.name,
-        )
-
-
-        val liste = listOf(brukerMedAAP, brukerUtenAAP)
-        skrivBrukereTilTestindeks(liste)
-
-        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
-
-        val filterValg = getFiltervalgDefaults().copy(
-            rettighetsgruppe = listOf(Rettighetsgruppe.AAP)
-        )
-
-        val response = opensearchService.hentBrukere(
-            TEST_ENHET,
-            Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
-            filterValg,
-            null,
-            null
-        )
-
-        Assertions.assertThat(response.antall).isEqualTo(1)
-        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.contains(brukerMedAAP.fnr)
-        Assertions.assertThat(response.brukere).extracting<String> { it.fnr }.doesNotContain(brukerUtenAAP.fnr)
-    }
-
-    @Test
     fun skal_hente_ut_brukere_som_gaar_paa_arbeidsavklaringspenger_behandlet_i_arena() {
         val brukerMedAAPUnntak = PortefoljebrukerOpensearchModell(
             aktoer_id = randomAktorId().get(),

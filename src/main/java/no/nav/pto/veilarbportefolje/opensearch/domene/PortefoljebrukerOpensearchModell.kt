@@ -122,7 +122,6 @@ data class PortefoljebrukerOpensearchModell(
     var dagputlopuke: Int? = null,
     var enslige_forsorgere_overgangsstonad: EnsligeForsorgereOvergangsstonad? = null,
     var permutlopuke: Int? = null,
-    var rettighetsgruppekode: String? = null,
     var tiltakspenger: Boolean = false,
     var tiltakspenger_rettighet: TiltakspengerRettighet? = null,
     var tiltakspenger_vedtaksdato_tom: LocalDate? = null,

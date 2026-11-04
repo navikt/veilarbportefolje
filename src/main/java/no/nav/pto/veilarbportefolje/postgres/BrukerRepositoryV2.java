@@ -55,11 +55,8 @@ public class BrukerRepositoryV2 {
                        AKTIVE_IDENTER.FNR                                       as AKTIVE_IDENTER_FNR,
                        OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                        OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
-                       OPPFOLGINGSBRUKER_ARENA_V2.ISERV_FRA_DATO                as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
                        AO_KONTOR.KONTOR_ID                                      as AO_KONTOR_KONTOR_ID,
                        OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                       OPPFOLGINGSBRUKER_ARENA_V2.RETTIGHETSGRUPPEKODE          as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
-                       OPPFOLGINGSBRUKER_ARENA_V2.HOVEDMAALKODE                 as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE,
                        OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO                   as OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO,
                        NOM_SKJERMING.ER_SKJERMET                                as NOM_SKJERMING_ER_SKJERMET,
                        NOM_SKJERMING.SKJERMET_TIL                               as NOM_SKJERMING_SKJERMET_TIL,
@@ -144,10 +141,7 @@ public class BrukerRepositoryV2 {
                         select
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
                             FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
-                            KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
-                            ISERV_FRA_DATO as OPPFOLGINGSBRUKER_ARENA_V2_ISERV_FRA_DATO,
-                            RETTIGHETSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE,
-                            HOVEDMAALKODE as OPPFOLGINGSBRUKER_ARENA_V2_HOVEDMAALKODE
+                            KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
                         where FODSELSNR in
                             (select IDENT from BRUKER_IDENTER where PERSON =
@@ -248,7 +242,6 @@ public class BrukerRepositoryV2 {
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
 
         brukerOpensearchModell.setFnr(fnr);
-        brukerOpensearchModell.setRettighetsgruppekode(rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_RETTIGHETSGRUPPEKODE));
         brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
         brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
         brukerOpensearchModell.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));

@@ -146,7 +146,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             dagputlopuke = PortefoljebrukerOpensearchModell.DAGP_UTLOP_UKE,
             enslige_forsorgere_overgangsstonad = PortefoljebrukerOpensearchModell.ENSLIGE_FORSORGERE_OVERGANGSSTONAD,
             permutlopuke = PortefoljebrukerOpensearchModell.PERM_UTLOP_UKE,
-            rettighetsgruppekode = PortefoljebrukerOpensearchModell.RETTIGHETSGRUPPE_KODE,
             tiltakspenger = PortefoljebrukerOpensearchModell.TILTAKSPENGER,
             tiltakspenger_rettighet = PortefoljebrukerOpensearchModell.TILTAKSPENGER_RETTIGHET,
             tiltakspenger_vedtaksdato_tom = PortefoljebrukerOpensearchModell.TILTAKSPENGER_VEDTAKSDATO_TOM,
