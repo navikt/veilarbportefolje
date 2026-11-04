@@ -12,7 +12,6 @@ data class Filtervalg(
     val kjonn: Kjonn?,
     val fodselsdagIMnd: List<String>,
     val formidlingsgruppe: List<Formidlingsgruppe>,
-    val servicegruppe: List<Servicegruppe>,
     val veiledere: List<String>,
     val aktiviteter: Map<String, AktivitetFiltervalg>,
     val aktiviteterForenklet: List<String>,
