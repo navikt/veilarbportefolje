@@ -509,11 +509,16 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harSykmeldtFilter()) {
             val subQuery = QueryBuilders.boolQuery()
             filtervalg.sykmeldt.forEach { sykmeldt ->
-                val harArbeidsgiver = when (sykmeldt) {
-                    Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER -> true
-                    Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER -> false
+                when (sykmeldt) {
+                    Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER ->
+                        subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", true))
+
+                    Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER ->
+                        subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", false))
+
+                    Sykmeldt.IKKE_SYKMELDT ->
+                        subQuery.should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(SYKMELDT)))
                 }
-                subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", harArbeidsgiver))
             }
             queryBuilder.must(subQuery)
         }
