@@ -28,7 +28,6 @@ public class StatustallResponse {
                 Bucket iavtaltAktivitet;
                 Bucket ikkeIavtaltAktivitet;
                 Bucket utlopteAktiviteter;
-                Bucket erSykmeldtMedArbeidsgiver;
                 Bucket moterMedNAVIdag;
                 Bucket underVurdering;
                 Bucket mineHuskelapper;
@@ -71,7 +70,6 @@ public class StatustallResponse {
         I_AVTALT_AKTIVITET("iavtaltAktivitet"),
         IKKE_I_AVTALT_AKTIVITET("ikkeIavtaltAktivitet"),
         UTLOPTE_AKTIVITETER("utlopteAktiviteter"),
-        ER_SYKMELDT_MED_ARBEIDSGIVER("erSykmeldtMedArbeidsgiver"),
         MOTER_MED_NAV_I_DAG("moterMedNAVIdag"),
         UNDER_VURDERING("underVurdering"),
         MINE_HUSKELAPPER("mineHuskelapper"),
