@@ -52,6 +52,24 @@ class OpensearchServiceIntSykmeldtTest @Autowired constructor(
     }
 
     @Test
+    fun skal_hente_ut_brukere_som_ikke_er_sykmeldt() {
+        val medArbeidsgiver = lagSykmeldtBruker(harArbeidsgiver = true)
+        val utenArbeidsgiver = lagSykmeldtBruker(harArbeidsgiver = false)
+        val ikkeSykmeldt = lagSykmeldtBruker().copy(sykmeldt = null)
+        skrivOgVent(listOf(medArbeidsgiver, utenArbeidsgiver, ikkeSykmeldt))
+
+        val kunIkkeSykmeldt = hentSykmeldte(filter = listOf(Sykmeldt.IKKE_SYKMELDT))
+        val ikkeSykmeldtEllerMedArbeidsgiver = hentSykmeldte(
+            filter = listOf(Sykmeldt.IKKE_SYKMELDT, Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER)
+        )
+        val alle = hentSykmeldte(filter = Sykmeldt.entries)
+
+        assertThat(kunIkkeSykmeldt).containsExactly(ikkeSykmeldt.fnr)
+        assertThat(ikkeSykmeldtEllerMedArbeidsgiver).containsExactlyInAnyOrder(ikkeSykmeldt.fnr, medArbeidsgiver.fnr)
+        assertThat(alle).containsExactlyInAnyOrder(medArbeidsgiver.fnr, utenArbeidsgiver.fnr, ikkeSykmeldt.fnr)
+    }
+
+    @Test
     fun skal_sortere_brukere_pa_sykmeldt_startdato() {
         val tidligst = lagSykmeldtBruker(startdato = LocalDate.now().minusWeeks(4))
         val senest = lagSykmeldtBruker(startdato = LocalDate.now().minusWeeks(1))
