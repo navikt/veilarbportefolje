@@ -76,6 +76,9 @@ spec:
         - application: inngar
           namespace: dab
           cluster: dev-gcp
+        - application: beslutteroversikt
+          namespace: obo
+          cluster: dev-gcp
     outbound:
       rules:
         - application: kodeverk-api

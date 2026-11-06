@@ -24,6 +24,7 @@ import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ import static org.opensearch.index.query.QueryBuilders.*;
 @Service
 @RequiredArgsConstructor
 public class OpensearchService {
+    private static final int HENT_BRUKERE_MED_FNR_BATCH_STORRELSE = 1000;
     private final RestHighLevelClient restHighLevelClient;
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final DefaultUnleash defaultUnleash;
@@ -158,6 +160,25 @@ public class OpensearchService {
         PortefoljestorrelserResponse response = search(request, BRUKERINDEKS_ALIAS, PortefoljestorrelserResponse.class);
         List<Bucket> buckets = response.getAggregations().getFilter().getSterms().getBuckets();
         return new FacetResults(buckets);
+    }
+
+    public List<PortefoljebrukerOpensearchModell> hentBrukereMedFnr(List<String> fnrListe) {
+        List<PortefoljebrukerOpensearchModell> brukere = new ArrayList<>();
+        for (int fra = 0; fra < fnrListe.size(); fra += HENT_BRUKERE_MED_FNR_BATCH_STORRELSE) {
+            List<String> batch = fnrListe.subList(fra, Math.min(fra + HENT_BRUKERE_MED_FNR_BATCH_STORRELSE, fnrListe.size()));
+
+            BoolQueryBuilder boolQuery = boolQuery()
+                    .must(termQuery("oppfolging", true))
+                    .filter(termsQuery("fnr.raw", batch));
+
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+                    .query(boolQuery)
+                    .size(batch.size());
+
+            OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
+            response.hits().getHits().stream().map(Hit::get_source).forEach(brukere::add);
+        }
+        return brukere;
     }
 
     @SneakyThrows

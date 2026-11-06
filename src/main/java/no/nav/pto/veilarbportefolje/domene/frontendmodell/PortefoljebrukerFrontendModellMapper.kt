@@ -32,10 +32,6 @@ object PortefoljebrukerFrontendModellMapper {
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
-        val diskresjonskodeFortrolig =
-            if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-                || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-            ) opensearchBruker.diskresjonskode else null
 
         val bostedKommuneUkjentEllerUtland = if (harUtenlandskAdresse) {
             "Utland"
@@ -54,9 +50,9 @@ object PortefoljebrukerFrontendModellMapper {
                 nyForVeileder = opensearchBruker.ny_for_veileder,
                 nyForEnhet = ufordelt,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
-                diskresjonskodeFortrolig = diskresjonskodeFortrolig,
+                diskresjonskodeFortrolig = mapDiskresjonskodeFortrolig(opensearchBruker),
                 profileringResultat = profileringResultat,
-                kandidatForUtmelding = opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null,
+                kandidatForUtmelding = erKandidatForUtmelding(opensearchBruker),
                 sykmeldtMedArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == true,
                 sykmeldtUtenArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == false,
             ),
@@ -150,6 +146,14 @@ object PortefoljebrukerFrontendModellMapper {
 
         return frontendbruker
     }
+
+    fun mapDiskresjonskodeFortrolig(opensearchBruker: PortefoljebrukerOpensearchModell): String? =
+        if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+            || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+        ) opensearchBruker.diskresjonskode else null
+
+    fun erKandidatForUtmelding(opensearchBruker: PortefoljebrukerOpensearchModell): Boolean =
+        opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null
 
 
     private fun mapTiltakspenger(opensearchBruker: PortefoljebrukerOpensearchModell): Tiltakspenger? {
