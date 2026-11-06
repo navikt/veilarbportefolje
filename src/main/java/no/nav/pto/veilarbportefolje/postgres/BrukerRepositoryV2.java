@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
-import no.nav.pto.veilarbportefolje.util.OppfolgingUtils;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Kafka14aStatusendring;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -244,7 +243,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setFnr(fnr);
         brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
         brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
-        brukerOpensearchModell.setEr_sykmeldt_med_arbeidsgiver(OppfolgingUtils.erSykmeldtMedArbeidsgiver(formidlingsgruppekode, kvalifiseringsgruppekode));
 
         return brukerOpensearchModell;
     }

@@ -22,7 +22,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidsforhold.ER_SYKMELDT_MED_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
@@ -36,7 +35,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.EN
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_INNSATSGRUPPE
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.KVALIFISERINGSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.MANUELL_BRUKER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.NY_FOR_VEILEDER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.OPPFOLGING
@@ -276,7 +274,6 @@ class OpensearchFilterQueryBuilder {
 
         byggManuellFilter(fodseldagIMndQuery, queryBuilder, FODSELSDAG_I_MND)
         byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, FORMIDLINGSGRUPPE_KODE)
-        byggManuellFilter(filtervalg.servicegruppe, queryBuilder, KVALIFISERINGSGRUPPE_KODE)
         byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
@@ -512,11 +509,16 @@ class OpensearchFilterQueryBuilder {
         if (filtervalg.harSykmeldtFilter()) {
             val subQuery = QueryBuilders.boolQuery()
             filtervalg.sykmeldt.forEach { sykmeldt ->
-                val harArbeidsgiver = when (sykmeldt) {
-                    Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER -> true
-                    Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER -> false
+                when (sykmeldt) {
+                    Sykmeldt.ER_SYKMELDT_MED_ARBEIDSGIVER ->
+                        subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", true))
+
+                    Sykmeldt.ER_SYKMELDT_UTEN_ARBEIDSGIVER ->
+                        subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", false))
+
+                    Sykmeldt.IKKE_SYKMELDT ->
+                        subQuery.should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(SYKMELDT)))
                 }
-                subQuery.should(QueryBuilders.termQuery("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", harArbeidsgiver))
             }
             queryBuilder.must(subQuery)
         }
@@ -842,7 +844,6 @@ class OpensearchFilterQueryBuilder {
             Brukerstatus.MINE_HUSKELAPPER -> QueryBuilders.existsQuery(HUSKELAPP)
             Brukerstatus.NYE_BRUKERE_FOR_VEILEDER -> QueryBuilders.matchQuery(NY_FOR_VEILEDER, true)
             Brukerstatus.MOTER_IDAG -> byggMoteMedNavIdag()
-            Brukerstatus.ER_SYKMELDT_MED_ARBEIDSGIVER -> byggErSykmeldtMedArbeidsgiverFilter()
             Brukerstatus.UNDER_VURDERING -> QueryBuilders.existsQuery(UTKAST_14A_STATUS)
             Brukerstatus.TILTAKSHENDELSER -> QueryBuilders.existsQuery(TILTAKSHENDELSE)
             Brukerstatus.UTGATTE_VARSEL -> QueryBuilders.existsQuery("$HENDELSER.${Kategori.UTGATT_VARSEL.name}")
@@ -856,12 +857,6 @@ class OpensearchFilterQueryBuilder {
     fun byggTrengerOppfolgingsvedtakFilter(): QueryBuilder {
         return QueryBuilders.boolQuery()
             .mustNot(QueryBuilders.existsQuery(GJELDENDE_VEDTAK_14A))
-    }
-
-    fun byggErSykmeldtMedArbeidsgiverFilter(): QueryBuilder {
-        return QueryBuilders.boolQuery()
-            .must(QueryBuilders.matchQuery(ER_SYKMELDT_MED_ARBEIDSGIVER, true))
-            .mustNot(QueryBuilders.existsQuery(UTKAST_14A_STATUS))
     }
 
     // Brukere med veileder uten tilgang til denne enheten ansees som ufordelte brukere
@@ -960,7 +955,6 @@ class OpensearchFilterQueryBuilder {
         veiledereMedTilgangTilEnhet: List<String?>
     ): SearchSourceBuilder {
         val filtre = arrayOf(
-            erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet),
             mustExistFilter(filtrereVeilederOgEnhet, StatustallAggregationKey.I_AVTALT_AKTIVITET.key, AKTIVITETER),
             ikkeIavtaltAktivitet(filtrereVeilederOgEnhet),
             mustBeTrueFilter(
@@ -1100,15 +1094,6 @@ class OpensearchFilterQueryBuilder {
         return QueryBuilders.rangeQuery(ALLE_AKTIVITETER_MOTE_STARTDATO)
             .gte(DateUtils.toIsoUTC(localDate.atStartOfDay()))
             .lt(DateUtils.toIsoUTC(localDate.plusDays(1).atStartOfDay()))
-    }
-
-    private fun erSykemeldtMedArbeidsgiverFilter(filtrereVeilederOgEnhet: BoolQueryBuilder): FiltersAggregator.KeyedFilter {
-        val boolQueryBuilder = QueryBuilders.boolQuery()
-            .must(filtrereVeilederOgEnhet)
-            .must(QueryBuilders.termQuery(ER_SYKMELDT_MED_ARBEIDSGIVER, true))
-            .mustNot(QueryBuilders.existsQuery(UTKAST_14A_STATUS))
-
-        return FiltersAggregator.KeyedFilter("erSykmeldtMedArbeidsgiver", boolQueryBuilder)
     }
 
     private fun moterMedNavIdag(filtrereVeilederOgEnhet: BoolQueryBuilder): FiltersAggregator.KeyedFilter {

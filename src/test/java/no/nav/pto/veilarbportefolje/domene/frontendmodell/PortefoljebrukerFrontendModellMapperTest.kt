@@ -22,8 +22,8 @@ import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet.
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -36,7 +36,6 @@ class PortefoljebrukerFrontendModellMapperTest {
         // given
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             er_doed = true,
-            er_sykmeldt_med_arbeidsgiver = true,
             ny_for_veileder = true,
             gjeldendeVedtak14a = null,
             profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER,
@@ -53,7 +52,6 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         // then
         Assertions.assertEquals(true, etiketter.erDoed)
-        Assertions.assertEquals(true, etiketter.erSykmeldtMedArbeidsgiver)
         Assertions.assertEquals(true, etiketter.nyForVeileder)
         Assertions.assertEquals(true, etiketter.trengerOppfolgingsvedtak)
         Assertions.assertEquals(true, etiketter.nyForEnhet)

@@ -5,7 +5,6 @@ import no.nav.pto.veilarbportefolje.domene.frontendmodell.*
 var frontendbrukerDefaults: PortefoljebrukerFrontendModell = PortefoljebrukerFrontendModell(
     etiketter = Etiketter(
         erDoed = false,
-        erSykmeldtMedArbeidsgiver = false,
         trengerOppfolgingsvedtak = false,
         nyForVeileder = false,
         nyForEnhet = false,

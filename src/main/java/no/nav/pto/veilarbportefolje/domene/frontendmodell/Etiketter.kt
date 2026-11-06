@@ -4,7 +4,6 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 
 data class Etiketter(
     val erDoed: Boolean,
-    val erSykmeldtMedArbeidsgiver: Boolean,
     val trengerOppfolgingsvedtak: Boolean,
     val nyForVeileder: Boolean,
     val nyForEnhet: Boolean,

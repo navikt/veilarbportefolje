@@ -63,7 +63,6 @@ object DatafeltKeys {
         val GJELDENDE_VEDTAK_14A_INNSATSGRUPPE = GjeldendeVedtak14a::innsatsgruppe.name
         val GJELDENDE_VEDTAK_14A_HOVEDMAL = GjeldendeVedtak14a::hovedmal.name
         val GJELDENDE_VEDTAK_14A_FATTET_DATO = GjeldendeVedtak14a::fattetDato.name
-        val KVALIFISERINGSGRUPPE_KODE = PortefoljebrukerOpensearchModell::kvalifiseringsgruppekode.name
         val MANUELL_BRUKER = PortefoljebrukerOpensearchModell::manuell_bruker.name
         val NY_FOR_VEILEDER = PortefoljebrukerOpensearchModell::ny_for_veileder.name
         val OPPFOLGING = PortefoljebrukerOpensearchModell::oppfolging.name
@@ -81,10 +80,6 @@ object DatafeltKeys {
         val UTDANNING_GODKJENT = PortefoljebrukerOpensearchModell::utdanning_godkjent.name
         val UTDANNING_OG_SITUASJON_SIST_ENDRET =
             PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
-    }
-
-    object Arbeidsforhold {
-        val ER_SYKMELDT_MED_ARBEIDSGIVER = PortefoljebrukerOpensearchModell::er_sykmeldt_med_arbeidsgiver.name
     }
 
     object Aktiviteter {

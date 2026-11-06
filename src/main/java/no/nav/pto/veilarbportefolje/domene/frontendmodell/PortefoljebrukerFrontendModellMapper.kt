@@ -14,7 +14,6 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.Gjel
 import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse
 import no.nav.pto.veilarbportefolje.tiltakspenger.domene.TiltakspengerRettighet
 import no.nav.pto.veilarbportefolje.util.DateUtils.*
-import no.nav.pto.veilarbportefolje.util.OppfolgingUtils
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -27,8 +26,9 @@ object PortefoljebrukerFrontendModellMapper {
         filtervalg: Filtervalg
     ): PortefoljebrukerFrontendModell {
         val profileringResultat = opensearchBruker.profilering_resultat
-        val innsatsgruppe = if (OppfolgingUtils.INNSATSGRUPPEKODER.contains(opensearchBruker.kvalifiseringsgruppekode))
-            opensearchBruker.kvalifiseringsgruppekode else null
+        // Det gjøres kun en sjekk på BATT i frontend, forenkler derfor til å kunne sjekke denne.
+        val innsatsgruppe =
+            if (opensearchBruker.kvalifiseringsgruppekode == "BATT") opensearchBruker.kvalifiseringsgruppekode else null
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
@@ -46,7 +46,6 @@ object PortefoljebrukerFrontendModellMapper {
             aktoerid = opensearchBruker.aktoer_id,
             etiketter = Etiketter(
                 erDoed = opensearchBruker.er_doed,
-                erSykmeldtMedArbeidsgiver = opensearchBruker.er_sykmeldt_med_arbeidsgiver,
                 trengerOppfolgingsvedtak = trengerOppfolgingsvedtak,
                 nyForVeileder = opensearchBruker.ny_for_veileder,
                 nyForEnhet = ufordelt,

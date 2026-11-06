@@ -12,7 +12,6 @@ data class Filtervalg(
     val kjonn: Kjonn?,
     val fodselsdagIMnd: List<String>,
     val formidlingsgruppe: List<Formidlingsgruppe>,
-    val servicegruppe: List<Servicegruppe>,
     val veiledere: List<String>,
     val aktiviteter: Map<String, AktivitetFiltervalg>,
     val aktiviteterForenklet: List<String>,
@@ -58,7 +57,6 @@ data class Filtervalg(
                 harKjonnfilter() ||
                 fodselsdagIMnd.isNotEmpty() ||
                 formidlingsgruppe.isNotEmpty() ||
-                servicegruppe.isNotEmpty() ||
                 veiledere.isNotEmpty() ||
                 aktiviteter.isNotEmpty() ||
                 tiltakstyper.isNotEmpty() ||
