@@ -155,7 +155,7 @@ class ArbeidssoekerServiceTest(
         )
 
         // Act
-        arbeidssoekerService.slettArbeidssoekerData(aktorId, Optional.of(fnr1))
+        arbeidssoekerService.slettArbeidssoekerData(aktorId)
 
         // Assert
         assertThat(getArbeidssoekerPeriodeFraDb(db, historiskPeriodeId)).isNull()

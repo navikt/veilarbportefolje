@@ -24,12 +24,8 @@ public class BrukerServiceV2 {
     private final AktorClient aktorClient;
 
     public Optional<AktorId> hentAktorId(Fnr fnr) {
-        return Optional.ofNullable(pdlIdentRepository.hentAktorIdForAktivBruker(fnr))
+        return Optional.ofNullable(pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString()))
                 .or(() -> Optional.ofNullable(aktorClient.hentAktorId(fnr)));
-    }
-
-    public Optional<Fnr> hentFnr(AktorId aktorId) {
-        return Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktorId));
     }
 
     public Optional<NavKontor> hentNavKontor(AktorId aktoerId) {
