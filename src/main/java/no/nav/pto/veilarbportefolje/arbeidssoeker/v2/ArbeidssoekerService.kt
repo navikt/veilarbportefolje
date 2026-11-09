@@ -48,7 +48,6 @@ class ArbeidssoekerService(
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
-    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
 
@@ -250,27 +249,6 @@ class ArbeidssoekerService(
 
         profileringRepository.insertProfilering(sisteProfilering.toProfileringEntity())
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
-    }
-
-    fun hentArbeidssoekerData(fnrList: List<Fnr>): List<ArbeidssoekerData> {
-        val alleFnrPerOppslag: Map<String, List<String>> =
-            pdlIdentRepository.hentFnrIdenterForBrukere(fnrList.map { it.get() })
-                .mapValues { (_, identer) -> identer.map { it.fnr } }
-        val alleFnr = (fnrList.map { it.get() } + alleFnrPerOppslag.values.flatten()).distinct().map { Fnr.of(it) }
-
-        val opplysningerOmArbeidssoekerPaaBrukere = arbeidssoekerDataRepository.hentOpplysningerOmArbeidssoeker(alleFnr)
-        val profileringPaaBrukere = arbeidssoekerDataRepository.hentProfileringsresultatListe(alleFnr)
-
-        return fnrList.mapNotNull { oppslagFnr ->
-            val fnrForPerson = listOf(oppslagFnr.get()) + alleFnrPerOppslag[oppslagFnr.get()].orEmpty()
-            val lagretFnr = fnrForPerson.firstOrNull { opplysningerOmArbeidssoekerPaaBrukere.containsKey(it) }
-                ?: return@mapNotNull null
-            ArbeidssoekerData(
-                fnr = oppslagFnr,
-                opplysningerOmArbeidssoeker = opplysningerOmArbeidssoekerPaaBrukere.getValue(lagretFnr),
-                profilering = profileringPaaBrukere[lagretFnr]
-            )
-        }
     }
 
     fun slettArbeidssoekerData(aktorId: AktorId) {

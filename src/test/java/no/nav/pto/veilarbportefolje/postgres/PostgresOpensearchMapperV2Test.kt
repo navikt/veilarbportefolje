@@ -1,8 +1,16 @@
 package no.nav.pto.veilarbportefolje.postgres
 
 import no.nav.common.types.identer.NorskIdent
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.SisteArbeidssoekerPeriodeRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.genererRandomOpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
+import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -34,6 +42,9 @@ class PostgresOpensearchMapperV2Test(
     @param:Autowired val hendelseRepository: HendelseRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate,
     @param:Autowired val sykmeldtRepository: SykmeldtRepository,
+    @param:Autowired val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
+    @param:Autowired val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
+    @param:Autowired val profileringRepository: ProfileringRepository,
 ) {
 
     @BeforeEach
@@ -42,6 +53,7 @@ class PostgresOpensearchMapperV2Test(
         jdbcTemplate.update("TRUNCATE TABLE fargekategori")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
     }
 
     @Test
@@ -180,6 +192,28 @@ class PostgresOpensearchMapperV2Test(
         assertThat(brukerMedUtloptPeriode.sykmeldt).isNull()
     }
 
+
+    @Test
+    fun `flettInnArbeidssoekerData skal finne data lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val periodeId = UUID.randomUUID()
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, historiskFnr))
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+            genererRandomOpplysningerOmArbeidssoekerEntity(periodeId, UUID.randomUUID())
+        )
+        profileringRepository.insertProfilering(
+            ProfileringEntity(periodeId, Profileringsresultat.OPPGITT_HINDRINGER.name, Timestamp.valueOf(LocalDateTime.now()))
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        assertThat(bruker.utdanning).isNotNull()
+        assertThat(bruker.brukers_situasjoner).isNotEmpty()
+        assertThat(bruker.profilering_resultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+    }
 
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {
         pdlIdentRepository.upsertIdenter(

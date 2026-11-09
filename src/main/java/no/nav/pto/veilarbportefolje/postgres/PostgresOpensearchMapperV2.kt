@@ -1,6 +1,9 @@
 package no.nav.pto.veilarbportefolje.postgres
 
+import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.NorskIdent
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerData
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerDataRepository
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository
@@ -29,6 +32,7 @@ class PostgresOpensearchMapperV2(
     private val hendelseRepository: HendelseRepository,
     private val pdlIdentRepository: PdlIdentRepository,
     private val sykmeldtRepository: SykmeldtRepository,
+    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
 ) {
 
     fun flettInnData(brukere: List<PortefoljebrukerOpensearchModell>) {
@@ -37,6 +41,38 @@ class PostgresOpensearchMapperV2(
         flettInnFargekategori(brukere, fnrIdenterPerBruker)
         flettInnEldsteHendelsePerKategori(brukere, fnrIdenterPerBruker)
         flettInnSykmeldt(brukere, fnrIdenterPerBruker)
+        flettInnArbeidssoekerData(brukere, fnrIdenterPerBruker)
+    }
+
+    private fun flettInnArbeidssoekerData(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val fnrs = alleIdenter(fnrIdenterPerBruker).map { Fnr.of(it) }
+        val opplysningerPerIdent = arbeidssoekerDataRepository.hentOpplysningerOmArbeidssoeker(fnrs)
+        val profileringPerIdent = arbeidssoekerDataRepository.hentProfileringsresultatListe(fnrs)
+        val arbeidssoekerDataPerIdent = opplysningerPerIdent.mapValues { (fnr, opplysninger) ->
+            ArbeidssoekerData(Fnr.of(fnr), opplysninger, profileringPerIdent[fnr])
+        }
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val arbeidssoekerData = velgDataForPrioritertIdent(
+                "arbeidssøkerdata",
+                bruker.fnr,
+                identer,
+                arbeidssoekerDataPerIdent,
+                { it.opplysningerOmArbeidssoeker?.sendtInnTidspunkt?.toLocalDateTime() ?: LocalDateTime.MIN }
+            )
+            val opplysninger = arbeidssoekerData?.opplysningerOmArbeidssoeker
+
+            bruker.utdanning = opplysninger?.utdanning?.name
+            bruker.utdanning_bestatt = opplysninger?.utdanningBestatt?.name
+            bruker.utdanning_godkjent = opplysninger?.utdanningGodkjent?.name
+            bruker.brukers_situasjoner = opplysninger?.jobbsituasjoner?.map { it.name }
+            bruker.utdanning_og_situasjon_sist_endret = opplysninger?.sendtInnTidspunkt?.toLocalDate()
+            bruker.profilering_resultat = arbeidssoekerData?.profilering?.profileringsresultat
+        }
     }
 
     private fun flettInnHuskelapp(
