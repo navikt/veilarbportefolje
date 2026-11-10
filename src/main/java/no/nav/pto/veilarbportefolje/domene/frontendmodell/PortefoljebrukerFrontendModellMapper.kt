@@ -29,7 +29,7 @@ object PortefoljebrukerFrontendModellMapper {
     ): PortefoljebrukerFrontendModell {
         val bruker = toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg)
         bruker.barnUnder18AarData = bruker.barnUnder18AarData
-            ?.filter { brukerinnsynTilganger.harTilgangTilBarn(it.diskresjonskode) }
+            ?.filter { brukerinnsynTilganger.harTilgangTilAdressebeskyttelse(it.diskresjonskode) }
 
         val harTilgang = brukerinnsynTilganger.harTilgangTilKonfidensiellInfo(
             opensearchBruker.diskresjonskode,

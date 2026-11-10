@@ -69,8 +69,14 @@ class SensurerBrukerTest {
     }
 
     @Test
-    fun skalSeKode19BrukerUtenKode6Tilgang() {
+    fun skalIkkeSeKode19BrukerUtenKode6Tilgang() {
         val bruker = sensurer(ikkeKonfidensiellBruker().apply { diskresjonskode = "19" }, ingenTilganger)
+        assertThat(bruker.fnr).isEmpty()
+    }
+
+    @Test
+    fun skalSeKode19BrukerMedKode6Tilgang() {
+        val bruker = sensurer(ikkeKonfidensiellBruker().apply { diskresjonskode = "19" }, BrukerinnsynTilganger(true, false, false))
         assertThat(bruker.fnr).isEqualTo("11111111111")
     }
 

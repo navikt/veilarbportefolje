@@ -13,16 +13,10 @@ public record BrukerinnsynTilganger(
     }
 
     public boolean harTilgangTilKonfidensiellInfo(String diskresjonskode, boolean egenAnsatt) {
-        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !tilgangTilAdressebeskyttelseStrengtFortrolig) {
-            return false;
-        }
-        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !tilgangTilAdressebeskyttelseFortrolig) {
-            return false;
-        }
-        return !egenAnsatt || tilgangTilSkjerming;
+        return harTilgangTilAdressebeskyttelse(diskresjonskode) && (!egenAnsatt || tilgangTilSkjerming);
     }
 
-    public boolean harTilgangTilBarn(String diskresjonskode) {
+    public boolean harTilgangTilAdressebeskyttelse(String diskresjonskode) {
         if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode)
                 || Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode.equals(diskresjonskode)) {
             return tilgangTilAdressebeskyttelseStrengtFortrolig;
