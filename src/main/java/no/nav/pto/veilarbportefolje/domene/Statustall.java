@@ -16,7 +16,6 @@ public class Statustall {
     private long iavtaltAktivitet;
     private long ikkeIavtaltAktivitet;
     private long utlopteAktiviteter;
-    private long erSykmeldtMedArbeidsgiver;
     private long moterMedNAVIdag;
     private long underVurdering;
     private long mineHuskelapper;
@@ -42,7 +41,6 @@ public class Statustall {
         this.iavtaltAktivitet = 0;
         this.ikkeIavtaltAktivitet = 0;
         this.utlopteAktiviteter = 0;
-        this.erSykmeldtMedArbeidsgiver = 0;
         this.moterMedNAVIdag = 0;
         this.underVurdering = 0;
         this.mineHuskelapper = 0;
@@ -69,7 +67,6 @@ public class Statustall {
         this.iavtaltAktivitet = buckets.getIavtaltAktivitet().getDoc_count();
         this.ikkeIavtaltAktivitet = buckets.getIkkeIavtaltAktivitet().getDoc_count();
         this.utlopteAktiviteter = buckets.getUtlopteAktiviteter().getDoc_count();
-        this.erSykmeldtMedArbeidsgiver = buckets.getErSykmeldtMedArbeidsgiver().getDoc_count();
         this.moterMedNAVIdag = buckets.getMoterMedNAVIdag().getDoc_count();
         this.underVurdering = buckets.getUnderVurdering().getDoc_count();
         this.mineHuskelapper = buckets.getMineHuskelapper().getDoc_count();

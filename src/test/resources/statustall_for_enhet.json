@@ -2,46 +2,6 @@
   "statustall": {
     "filters": {
       "filters": {
-        "erSykmeldtMedArbeidsgiver": {
-          "bool": {
-            "must": [
-              {
-                "bool": {
-                  "must": [
-                    {
-                      "term": {
-                        "enhet_id": {
-                          "value": "0000",
-                          "boost": 1.0
-                        }
-                      }
-                    }
-                  ],
-                  "adjust_pure_negative": true,
-                  "boost": 1.0
-                }
-              },
-              {
-                "term": {
-                  "er_sykmeldt_med_arbeidsgiver": {
-                    "value": true,
-                    "boost": 1.0
-                  }
-                }
-              }
-            ],
-            "must_not": [
-              {
-                "exists": {
-                  "field": "vedtak_status",
-                  "boost": 1.0
-                }
-              }
-            ],
-            "adjust_pure_negative": true,
-            "boost": 1.0
-          }
-        },
         "iavtaltAktivitet": {
           "bool": {
             "must": [

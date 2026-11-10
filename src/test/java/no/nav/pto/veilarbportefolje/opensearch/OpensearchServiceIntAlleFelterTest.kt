@@ -105,9 +105,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utdanning_godkjent = PortefoljebrukerOpensearchModell.UTDANNING_GODKJENT,
             utdanning_og_situasjon_sist_endret = PortefoljebrukerOpensearchModell.UTDANNING_OG_SITUASJON_SIST_ENDRET,
 
-            // Arbeidsforhold
-            er_sykmeldt_med_arbeidsgiver = PortefoljebrukerOpensearchModell.ER_SYKMELDT_MED_ARBEIDSGIVER,
-
             // Aktiviteter
             aktivitet_behandling_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_BEHANDLING_UTLOPSDATO,
             aktivitet_egen_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_EGEN_UTLOPSDATO,

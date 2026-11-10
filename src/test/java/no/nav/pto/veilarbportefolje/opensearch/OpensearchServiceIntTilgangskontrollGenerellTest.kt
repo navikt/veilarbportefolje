@@ -732,7 +732,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
         val statustall = opensearchService.hentStatustallForVeilederPortefolje(
             TEST_VEILEDER_0, TEST_ENHET
         )
-        assertThat(statustall.erSykmeldtMedArbeidsgiver).isZero()
         assertThat(statustall.iavtaltAktivitet).isEqualTo(1)
         assertThat(statustall.ikkeIavtaltAktivitet).isEqualTo(1)
         assertThat(statustall.nyeBrukereForVeileder).isEqualTo(1)
