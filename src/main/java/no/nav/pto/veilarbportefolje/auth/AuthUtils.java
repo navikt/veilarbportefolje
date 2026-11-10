@@ -47,10 +47,14 @@ public class AuthUtils {
     public static boolean erSystemkallFraAzureAd(AuthContextHolder authContextHolder) {
         UserRole role = authContextHolder.getRole()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return UserRole.SYSTEM.equals(role) && harAADRolleForSystemTilSystemTilgang(authContextHolder);
+        return UserRole.SYSTEM.equals(role) && harAADRolle(authContextHolder, "access_as_application");
     }
 
-    private static boolean harAADRolleForSystemTilSystemTilgang(AuthContextHolder authContextHolder) {
+    public static boolean erSystemkallFraAzureAdMedRolle(AuthContextHolder authContextHolder, String rolle) {
+        return erSystemkallFraAzureAd(authContextHolder) && harAADRolle(authContextHolder, rolle);
+    }
+
+    private static boolean harAADRolle(AuthContextHolder authContextHolder, String rolle) {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
                     try {
@@ -60,7 +64,7 @@ public class AuthUtils {
                     }
                 })
                 .orElse(emptyList())
-                .contains("access_as_application");
+                .contains(rolle);
     }
 
     public static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {

@@ -79,6 +79,9 @@ spec:
         - application: veilarbvedtaksstotte
           namespace: obo
           cluster: dev-gcp
+          permissions:
+            roles:
+              - "kvalitetssikring-14a-vedtak"
     outbound:
       rules:
         - application: kodeverk-api

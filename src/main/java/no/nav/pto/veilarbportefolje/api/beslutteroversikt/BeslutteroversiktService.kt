@@ -6,13 +6,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class BeslutteroversiktService(
-    private val opensearchService: OpensearchService,
+    private val opensearchService: OpensearchService
 ) {
 
-    fun hentEtiketter(fnrListe: List<String>): List<EtiketterForBruker> {
-        val brukere = opensearchService.hentBrukereMedFnr(fnrListe)
-
-        return brukere
+    fun hentEtiketter(fnrListe: List<String>): List<EtiketterForBruker> =
+        opensearchService.hentBrukereMedFnr(fnrListe)
             .mapNotNull { bruker ->
                 val fnr = bruker.fnr ?: return@mapNotNull null
 
@@ -21,12 +19,11 @@ class BeslutteroversiktService(
                     etiketter = EtiketterBeslutteroversikt(
                         erDoed = bruker.er_doed,
                         egenAnsatt = bruker.egen_ansatt,
-                        diskresjonskodeFortrolig = PortefoljebrukerFrontendModellMapper.mapAdressebeskyttelse(
+                        adressebeskyttelse = PortefoljebrukerFrontendModellMapper.mapAdressebeskyttelse(
                             bruker
                         ),
                         kandidatForUtmelding = PortefoljebrukerFrontendModellMapper.erKandidatForUtmelding(bruker)
                     )
                 )
             }
-    }
 }
