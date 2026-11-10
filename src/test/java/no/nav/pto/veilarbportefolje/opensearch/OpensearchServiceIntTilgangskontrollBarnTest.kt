@@ -505,10 +505,8 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         response.brukere.forEach { bruker ->
             when (bruker.fnr) {
                 bruker1.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
-                bruker2.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker3.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker4.fnr -> assertThat(bruker.barnUnder18AarData?.size).isZero()
-                bruker5.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker3.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker6.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
             }
         }
     }
@@ -566,9 +564,9 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         response.brukere.forEach { bruker ->
             when (bruker.fnr) {
                 bruker1BU.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
-                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(3)
-                bruker2B7U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker2BU7.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
+                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker2B7U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker2BU7.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
             }
         }
     }
@@ -637,10 +635,10 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         response.brukere.forEach { bruker ->
             when (bruker.fnr) {
                 bruker1BU.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
-                bruker2B67.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(3)
-                bruker2B7U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker2BU7.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
+                bruker2B67.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
+                bruker2B7U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker2BU7.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
                 bruker2B6.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
                 bruker2B7.fnr, brukerTomListe.fnr, brukerIngenListe.fnr ->
                     assertThat(bruker.barnUnder18AarData).isEqualTo(null)
@@ -714,8 +712,8 @@ class OpensearchServiceIntTilgangskontrollBarnTest @Autowired constructor(
         response.brukere.forEach { bruker ->
             when (bruker.fnr) {
                 bruker1BU.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
-                bruker2B67.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
-                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(3)
+                bruker2B67.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(1)
+                bruker3B67U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
                 bruker2B7U.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
                 bruker2BU7.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(2)
                 bruker2B6.fnr -> assertThat(bruker.barnUnder18AarData?.size).isEqualTo(null)
