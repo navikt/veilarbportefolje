@@ -76,7 +76,7 @@ spec:
         - application: inngar
           namespace: dab
           cluster: dev-gcp
-        - application: beslutteroversikt
+        - application: veilarbvedtaksstotte
           namespace: obo
           cluster: dev-gcp
     outbound:

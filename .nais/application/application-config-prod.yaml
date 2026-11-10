@@ -71,7 +71,7 @@ spec:
         - application: inngar
           namespace: dab
           cluster: prod-gcp
-        - application: beslutteroversikt
+        - application: veilarbvedtaksstotte
           namespace: obo
           cluster: prod-gcp
     outbound:

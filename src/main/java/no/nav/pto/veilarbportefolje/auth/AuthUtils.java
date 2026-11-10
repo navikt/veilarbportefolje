@@ -5,8 +5,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tolkebehov;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,30 +12,11 @@ import java.text.ParseException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 public class AuthUtils {
-
-    static PortefoljebrukerFrontendModell fjernKonfidensiellInfo(PortefoljebrukerFrontendModell bruker) {
-        bruker.setFnr("");
-        bruker.setEtternavn("");
-        bruker.setFornavn("");
-        bruker.setSkjermetTil(null);
-        bruker.setFoedeland(null);
-        bruker.setTolkebehov(Tolkebehov.of("", "", null));
-        bruker.setHovedStatsborgerskap(null);
-        bruker.getGeografiskBosted().setBostedBydel(null);
-        bruker.getGeografiskBosted().setBostedKommune(null);
-        bruker.getGeografiskBosted().setBostedKommuneUkjentEllerUtland("-");
-        bruker.getGeografiskBosted().setBostedSistOppdatert(null);
-        bruker.setFargekategori(null);
-        bruker.setHuskelapp(null);
-
-        return bruker;
-    }
 
     public static String getInnloggetBrukerToken() {
         return AuthContextHolderThreadLocal

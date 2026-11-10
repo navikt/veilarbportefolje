@@ -4,6 +4,7 @@ import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.common.auth.context.UserRole
 import no.nav.common.utils.fn.UnsafeSupplier
+import no.nav.pto.veilarbportefolje.api.beslutteroversikt.BeslutteroversiktService
 import no.nav.pto.veilarbportefolje.auth.AuthService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell

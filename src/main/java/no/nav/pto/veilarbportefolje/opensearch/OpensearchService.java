@@ -97,18 +97,20 @@ public class OpensearchService {
 
         searchSourceBuilder.query(boolQuery);
 
+        BrukerinnsynTilganger brukerinnsynTilganger = authService.hentVeilederBrukerInnsynTilganger();
+
         if (FeatureToggle.brukFilterForBrukerinnsynTilganger(defaultUnleash)) {
-            filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(boolQuery, authService.hentVeilederBrukerInnsynTilganger(), BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
+            filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(boolQuery, brukerinnsynTilganger, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, authService.hentVeilederBrukerInnsynTilganger());
+        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, brukerinnsynTilganger);
 
         OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg))
+                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger))
                 .collect(toList());
         return new BrukereMedAntall(totalHits, brukere);
     }
@@ -194,12 +196,14 @@ public class OpensearchService {
     private PortefoljebrukerFrontendModell mapPortefoljebrukerFraOpensearchModellTilFrontendModell(
             PortefoljebrukerOpensearchModell brukerOpensearchModell,
             List<String> aktiveVeilederePaEnhet,
-            Filtervalg filtervalg
+            Filtervalg filtervalg,
+            BrukerinnsynTilganger brukerinnsynTilganger
     ) {
-        return PortefoljebrukerFrontendModellMapper.INSTANCE.toPortefoljebrukerFrontendModell(
+        return PortefoljebrukerFrontendModellMapper.INSTANCE.toSensurertPortefoljebrukerFrontendModell(
                 brukerOpensearchModell,
                 erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet),
-                filtervalg
+                filtervalg,
+                brukerinnsynTilganger
         );
     }
 
