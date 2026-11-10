@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.Endring;
@@ -41,7 +40,6 @@ public class PostgresOpensearchMapper {
     private final KodeverkService kodeverkService;
 
     private final BarnUnder18AarService barnUnder18AarService;
-    private final ArbeidssoekerService arbeidssoekerService;
     private final TiltakshendelseRepository tiltakshendelseRepository;
     private final Gjeldende14aVedtakService gjeldende14aVedtakService;
 
@@ -179,35 +177,6 @@ public class PostgresOpensearchMapper {
             }
         });
         log.info("Indeksering – Brukere med tiltakshendelse: {}, brukere uten tiltakshendelse: {}", brukereMedTiltakshendelse, brukereUtenTiltakshendelse);
-    }
-
-    public void flettInnOpplysningerOmArbeidssoekerData(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
-        List<Fnr> fnrs = brukerOpensearchModellList.stream().map(PortefoljebrukerOpensearchModell::getFnr).map(Fnr::of).toList();
-        List<ArbeidssoekerData> arbeidssoekerDataList = arbeidssoekerService.hentArbeidssoekerData(fnrs);
-
-        brukerOpensearchModellList.forEach(bruker -> {
-            Optional<ArbeidssoekerData> arbeidssoekerData = arbeidssoekerDataList.stream()
-                    .filter(data -> data.getFnr().get().equals(bruker.getFnr()))
-                    .findFirst();
-
-            arbeidssoekerData.ifPresent(data -> {
-                OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker = data.getOpplysningerOmArbeidssoeker();
-                Profilering profilering = data.getProfilering();
-
-                if (opplysningerOmArbeidssoeker != null) {
-                    String utdanningBestatt = opplysningerOmArbeidssoeker.getUtdanningBestatt() != null ? opplysningerOmArbeidssoeker.getUtdanningBestatt().name() : null;
-                    String utdanningGodkjent = opplysningerOmArbeidssoeker.getUtdanningGodkjent() != null ? opplysningerOmArbeidssoeker.getUtdanningGodkjent().name() : null;
-                    bruker.setUtdanning(opplysningerOmArbeidssoeker.getUtdanning().name());
-                    bruker.setUtdanning_godkjent(utdanningGodkjent);
-                    bruker.setUtdanning_bestatt(utdanningBestatt);
-                    bruker.setBrukers_situasjoner(opplysningerOmArbeidssoeker.getJobbsituasjoner().stream().map(JobbSituasjonBeskrivelse::name).toList());
-                    bruker.setUtdanning_og_situasjon_sist_endret(opplysningerOmArbeidssoeker.getSendtInnTidspunkt().toLocalDate());
-                }
-                if (profilering != null) {
-                    bruker.setProfilering_resultat(profilering.getProfileringsresultat());
-                }
-            });
-        });
     }
 
     public void flettInnGjeldende14aVedtak(List<PortefoljebrukerOpensearchModell> brukerOpensearchModellList) {
