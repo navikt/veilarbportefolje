@@ -48,7 +48,6 @@ class ArbeidssoekerService(
     private val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     private val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     private val profileringRepository: ProfileringRepository,
-    private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt
 ) {
 
@@ -74,7 +73,7 @@ class ArbeidssoekerService(
             return
         }
 
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(fnr)
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
 
         hentAlleFnrOgSlettGamlePerioder(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
@@ -90,7 +89,7 @@ class ArbeidssoekerService(
             opplysningerOmArbeidssoeker
         )
         if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId,opplysningerOmArbeidssoeker)
+            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
         }
 
         secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
@@ -140,7 +139,7 @@ class ArbeidssoekerService(
             return
         }
 
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(fnr))
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr)
 
         val opplysningerOmArbeidssoeker =
             opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
@@ -182,7 +181,7 @@ class ArbeidssoekerService(
             )
             return
         }
-        val aktorId = pdlIdentRepository.hentAktorIdForAktivBruker(Fnr.of(fnr))
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr)
         val profileringEntity = kafkaMelding.toProfileringEntity()
 
         profileringRepository.insertProfilering(profileringEntity)
@@ -202,7 +201,7 @@ class ArbeidssoekerService(
      */
     @Transactional
     fun hentOgLagreArbeidssoekerdataForBruker(aktorId: AktorId) {
-        val fnr: Fnr? = pdlIdentRepository.hentFnrForAktivBruker(aktorId)
+        val fnr: Fnr? = pdlIdentRepository.hentAktivFnrForPerson(aktorId.toString())
         if (fnr == null) {
             secureLog.info("Fant ingen fødselsnummer for bruker med aktorId: $aktorId")
             throw RuntimeException("Fant ingen fødselsnummer for bruker")
@@ -252,31 +251,17 @@ class ArbeidssoekerService(
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
-    fun hentArbeidssoekerData(fnrList: List<Fnr>): List<ArbeidssoekerData> {
-        val opplysningerOmArbeidssoekerPaaBrukere = arbeidssoekerDataRepository.hentOpplysningerOmArbeidssoeker(fnrList)
-        val profileringPaaBrukere = arbeidssoekerDataRepository.hentProfileringsresultatListe(fnrList)
-
-        return opplysningerOmArbeidssoekerPaaBrukere.map { (fnr, opplysning) ->
-            ArbeidssoekerData(
-                fnr = Fnr.of(fnr),
-                opplysningerOmArbeidssoeker = opplysning,
-                profilering = profileringPaaBrukere[fnr]
-            )
-        }
-    }
-
-    fun slettArbeidssoekerData(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
-        if (maybeFnr.isEmpty) {
-            secureLog.warn(
-                "Kunne ikke slette oppfolgingsbruker med Aktør-ID ${aktorId.get()}. Årsak fødselsnummer-parameter var tom."
-            )
+    fun slettArbeidssoekerData(aktorId: AktorId) {
+        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(aktorId.get()).identer.map { Fnr.of(it) }
+        if (alleFnrForPerson.isEmpty()) {
+            secureLog.warn("Fant ingen fødselsnummer for bruker med aktorId: ${aktorId.get()}, kunne ikke slette arbeidssøkerdata.")
             return
         }
 
         try {
-            hentAlleFnrOgSlettGamlePerioder(maybeFnr.get())
+            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
         } catch (e: Exception) {
-            secureLog.error("Feil ved sletting av siste arbeidssøkerperiode for bruker med fnr: ${maybeFnr.get()}", e)
+            secureLog.error("Feil ved sletting av siste arbeidssøkerperiode for bruker med aktorId: ${aktorId.get()}", e)
             throw e
         }
     }
@@ -311,6 +296,6 @@ class ArbeidssoekerService(
 
     private fun hentAlleFnrOgSlettGamlePerioder(fnr: Fnr) {
         val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
-            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
+        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
     }
 }
