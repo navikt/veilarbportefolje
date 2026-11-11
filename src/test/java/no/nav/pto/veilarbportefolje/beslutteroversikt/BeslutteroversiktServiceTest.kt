@@ -21,7 +21,9 @@ class BeslutteroversiktServiceTest {
         val brukerSomIkkeFinnes = randomFnr().get()
         val fnrListe = listOf(egenAnsattBruker.fnr!!, kode7Bruker.fnr!!, brukerSomIkkeFinnes)
 
-        `when`(opensearchService.hentBrukereMedFnr(fnrListe)).thenReturn(listOf(egenAnsattBruker, kode7Bruker))
+        `when`(opensearchService.hentBrukereMedFnr(fnrListe)).thenReturn(
+            mapOf(egenAnsattBruker.fnr!! to egenAnsattBruker, kode7Bruker.fnr!! to kode7Bruker)
+        )
 
         val resultat = service.hentEtiketter(fnrListe).associateBy { it.fnr }
 

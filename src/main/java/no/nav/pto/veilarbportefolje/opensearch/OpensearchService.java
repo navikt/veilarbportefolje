@@ -15,6 +15,8 @@ import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFronte
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModellMapper;
 import no.nav.pto.veilarbportefolje.opensearch.domene.*;
 import no.nav.pto.veilarbportefolje.opensearch.domene.StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets;
+import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import org.apache.commons.lang3.StringUtils;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -24,8 +26,10 @@ import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
@@ -34,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.BrukerinnsynTilgangFilterType.BRUKERE_SOM_VEILEDER_IKKE_HAR_INNSYNSRETT_PÅ;
 import static no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS;
+import static no.nav.pto.veilarbportefolje.postgres.PostgresIdentPrioriteringKt.alleIdenter;
 import static org.opensearch.index.query.QueryBuilders.*;
 
 @Service
@@ -44,6 +49,7 @@ public class OpensearchService {
     private final VeilarbVeilederClient veilarbVeilederClient;
     private final DefaultUnleash defaultUnleash;
     private final AuthService authService;
+    private final PdlIdentRepository pdlIdentRepository;
     private final OpensearchFilterQueryBuilder filterQueryBuilder = new OpensearchFilterQueryBuilder();
     private final OpensearchSortQueryBuilder sortQueryBuilder = new OpensearchSortQueryBuilder();
 
@@ -164,13 +170,35 @@ public class OpensearchService {
         return new FacetResults(buckets);
     }
 
-    public List<PortefoljebrukerOpensearchModell> hentBrukereMedFnr(List<String> fnrListe) {
-        List<PortefoljebrukerOpensearchModell> brukere = new ArrayList<>();
+    // henter brukere fra opensearch basert på fnr, men sjekker også på alle fnr for en bruker. Om data finnes på flere identer, prioriteres aktivt fnr.
+    public Map<String, PortefoljebrukerOpensearchModell> hentBrukereMedFnr(List<String> fnrListe) {
+        List<String> etterspurteFnr = fnrListe.stream().distinct().toList();
+        Map<String, List<NorskIdentMedHistorikk>> fnrIdenterPerBruker = pdlIdentRepository.hentFnrIdenterForBrukere(etterspurteFnr);
+        Map<String, PortefoljebrukerOpensearchModell> opensearchBrukerPerIdent = hentBrukereFraIndeksMedFnr(alleIdenter(fnrIdenterPerBruker));
+
+        Map<String, PortefoljebrukerOpensearchModell> brukerPerEtterspurtFnr = new LinkedHashMap<>();
+        for (String etterspurtFnr : etterspurteFnr) {
+            List<NorskIdentMedHistorikk> identer = fnrIdenterPerBruker.getOrDefault(etterspurtFnr, emptyList());
+            List<NorskIdentMedHistorikk> identerMedData = identer.stream()
+                    .filter(it -> opensearchBrukerPerIdent.containsKey(it.getFnr()))
+                    .toList();
+
+            Optional<NorskIdentMedHistorikk> valgtIdent = identerMedData.stream()
+                    .filter(it -> !it.getHistorisk())
+                    .findFirst()
+                    .or(() -> identerMedData.stream().findFirst());
+
+            valgtIdent.ifPresent(ident -> brukerPerEtterspurtFnr.put(etterspurtFnr, opensearchBrukerPerIdent.get(ident.getFnr())));
+        }
+        return brukerPerEtterspurtFnr;
+    }
+
+    private Map<String, PortefoljebrukerOpensearchModell> hentBrukereFraIndeksMedFnr(List<String> fnrListe) {
+        Map<String, PortefoljebrukerOpensearchModell> brukerPerFnr = new HashMap<>();
         for (int fra = 0; fra < fnrListe.size(); fra += HENT_BRUKERE_MED_FNR_BATCH_STORRELSE) {
             List<String> batch = fnrListe.subList(fra, Math.min(fra + HENT_BRUKERE_MED_FNR_BATCH_STORRELSE, fnrListe.size()));
 
             BoolQueryBuilder boolQuery = boolQuery()
-                    .must(termQuery("oppfolging", true))
                     .filter(termsQuery("fnr.raw", batch));
 
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
@@ -178,9 +206,12 @@ public class OpensearchService {
                     .size(batch.size());
 
             OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
-            response.hits().getHits().stream().map(Hit::get_source).forEach(brukere::add);
+            response.hits().getHits().stream()
+                    .map(Hit::get_source)
+                    .filter(bruker -> bruker.getFnr() != null)
+                    .forEach(bruker -> brukerPerFnr.put(bruker.getFnr(), bruker));
         }
-        return brukere;
+        return brukerPerFnr;
     }
 
     @SneakyThrows

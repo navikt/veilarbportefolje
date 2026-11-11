@@ -11,9 +11,7 @@ class BeslutteroversiktService(
 
     fun hentEtiketter(fnrListe: List<String>): List<EtiketterForBruker> =
         opensearchService.hentBrukereMedFnr(fnrListe)
-            .mapNotNull { bruker ->
-                val fnr = bruker.fnr ?: return@mapNotNull null
-
+            .map { (fnr, bruker) ->
                 EtiketterForBruker(
                     fnr = fnr,
                     etiketter = EtiketterBeslutteroversikt(
