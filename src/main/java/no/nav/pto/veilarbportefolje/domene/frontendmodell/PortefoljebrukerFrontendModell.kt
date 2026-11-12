@@ -23,6 +23,7 @@ data class PortefoljebrukerFrontendModell(
     val tildeltTidspunkt: LocalDate?,
     val veilederId: String?,
 
+    // TODO: slett herfra etter at de er flyttet over til etiketter
     var egenAnsatt: Boolean,
     var skjermetTil: LocalDate?,
 

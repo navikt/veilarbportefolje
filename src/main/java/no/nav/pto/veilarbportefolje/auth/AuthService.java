@@ -10,19 +10,13 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.Adressebeskyttelse;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.stream.Collectors.toList;
 import static no.nav.common.client.utils.CacheUtils.tryCacheFirst;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetBrukerToken;
 import static no.nav.pto.veilarbportefolje.auth.AuthUtils.getInnloggetVeilederIdent;
@@ -82,40 +76,6 @@ public class AuthService {
         }
     }
 
-    public List<PortefoljebrukerFrontendModell> sensurerBrukere(List<PortefoljebrukerFrontendModell> brukere) {
-        return brukere.stream()
-                .map(this::fjernKonfidensiellInfoDersomIkkeTilgang)
-                .collect(toList());
-    }
-
-    public PortefoljebrukerFrontendModell fjernKonfidensiellInfoDersomIkkeTilgang(PortefoljebrukerFrontendModell bruker) {
-        if (bruker.getBarnUnder18AarData() != null) {
-            bruker.setBarnUnder18AarData(
-                    bruker.getBarnUnder18AarData().stream().filter(
-                            this::harVeilederTilgangTilBarn
-                    ).toList()
-            );
-        }
-
-        String diskresjonskode = bruker.getEtiketter().getDiskresjonskodeFortrolig();
-
-        boolean erKonfidensiell = StringUtils.isNotEmpty(diskresjonskode) || bruker.getEgenAnsatt();
-        if (!erKonfidensiell) {
-            return bruker;
-        }
-
-        if (Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode6()) {
-            return AuthUtils.fjernKonfidensiellInfo(bruker);
-        }
-        if (Adressebeskyttelse.FORTROLIG.diskresjonskode.equals(diskresjonskode) && !harVeilederTilgangTilKode7()) {
-            return AuthUtils.fjernKonfidensiellInfo(bruker);
-        }
-        if (bruker.getEgenAnsatt() && !harVeilederTilgangTilEgenAnsatt()) {
-            return AuthUtils.fjernKonfidensiellInfo(bruker);
-        }
-        return bruker;
-    }
-
     public boolean harVeilederTilgangTilKode6() {
         Decision decision = poaoTilgangWrapper.harVeilederTilgangTilKode6();
         return decision.isPermit();
@@ -144,17 +104,6 @@ public class AuthService {
 
     public String getM2MToken(String tokenScope) {
         return aadM2MTokenClient.createMachineToMachineToken(tokenScope);
-    }
-
-    public boolean harVeilederTilgangTilBarn(BarnUnder18AarData barn) {
-        if (barn.getDiskresjonskode() != null && (barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode)
-                || barn.getDiskresjonskode().equals(Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode))) {
-            return harVeilederTilgangTilKode6();
-        }
-        if (barn.getDiskresjonskode() != null && barn.getDiskresjonskode().equals(Adressebeskyttelse.FORTROLIG.diskresjonskode)) {
-            return harVeilederTilgangTilKode7();
-        }
-        return true;
     }
 
     @Data
