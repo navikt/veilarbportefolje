@@ -5,8 +5,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.Tolkebehov;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,30 +12,11 @@ import java.text.ParseException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 public class AuthUtils {
-
-    static PortefoljebrukerFrontendModell fjernKonfidensiellInfo(PortefoljebrukerFrontendModell bruker) {
-        bruker.setFnr("");
-        bruker.setEtternavn("");
-        bruker.setFornavn("");
-        bruker.setSkjermetTil(null);
-        bruker.setFoedeland(null);
-        bruker.setTolkebehov(Tolkebehov.of("", "", null));
-        bruker.setHovedStatsborgerskap(null);
-        bruker.getGeografiskBosted().setBostedBydel(null);
-        bruker.getGeografiskBosted().setBostedKommune(null);
-        bruker.getGeografiskBosted().setBostedKommuneUkjentEllerUtland("-");
-        bruker.getGeografiskBosted().setBostedSistOppdatert(null);
-        bruker.setFargekategori(null);
-        bruker.setHuskelapp(null);
-
-        return bruker;
-    }
 
     public static String getInnloggetBrukerToken() {
         return AuthContextHolderThreadLocal
@@ -68,10 +47,14 @@ public class AuthUtils {
     public static boolean erSystemkallFraAzureAd(AuthContextHolder authContextHolder) {
         UserRole role = authContextHolder.getRole()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return UserRole.SYSTEM.equals(role) && harAADRolleForSystemTilSystemTilgang(authContextHolder);
+        return UserRole.SYSTEM.equals(role) && harAADRolle(authContextHolder, "access_as_application");
     }
 
-    private static boolean harAADRolleForSystemTilSystemTilgang(AuthContextHolder authContextHolder) {
+    public static boolean erSystemkallFraAzureAdMedRolle(AuthContextHolder authContextHolder, String rolle) {
+        return erSystemkallFraAzureAd(authContextHolder) && harAADRolle(authContextHolder, rolle);
+    }
+
+    private static boolean harAADRolle(AuthContextHolder authContextHolder, String rolle) {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
                     try {
@@ -81,7 +64,7 @@ public class AuthUtils {
                     }
                 })
                 .orElse(emptyList())
-                .contains("access_as_application");
+                .contains(rolle);
     }
 
     public static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
