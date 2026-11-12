@@ -47,6 +47,7 @@ spec:
     sqlInstances:
       - type: POSTGRES_15
         tier: db-custom-8-53248
+        diskSize: 15
         flags:
           - name: "cloudsql.enable_pgaudit"
             value: "on"
