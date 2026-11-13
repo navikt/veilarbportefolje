@@ -9,7 +9,6 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
@@ -87,6 +86,7 @@ class ArbeidssoekerService(
         )
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
+        // todo - sjekk med paw om de håndterer alle identer, ellers bør vi sende inn fnr fra melding.
         val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
         if (aggregertPeriode == null || aggregertPeriode.id != periodeId) {
             secureLog.info("Fant ingen aggregert arbeidssøkerperiode med periodeId: $periodeId for bruker med fnr: $fnr")
@@ -107,7 +107,6 @@ class ArbeidssoekerService(
         if (aktorId != null) {
             opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
         }
-
         secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
 
         val profilering: ProfileringEntity? = aggregertPeriode.profilering
@@ -128,7 +127,6 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
-
         val arbeidssoekerPeriodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
 
@@ -176,7 +174,6 @@ class ArbeidssoekerService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
-
         secureLog.info("Behandler endring på profilering for bruker med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
 
         val sisteArbeidssoekerPeriode =
@@ -222,12 +219,13 @@ class ArbeidssoekerService(
             throw RuntimeException("Fant ingen fødselsnummer for bruker")
         }
 
-        secureLog.info("Henter arbeidssøkerperioder for bruker med fnr: $fnr")
-        val aktivArbeidssoekerperiode: ArbeidssokerperiodeResponse? =
-            oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())
-                ?.find { it.avsluttet == null }
+        //  tODO opensearch her??
 
-        if (aktivArbeidssoekerperiode == null) {
+        secureLog.info("Henter aggregert arbeidssøkerperiode for bruker med fnr: $fnr")
+        val aggregertPeriode: AggregertPeriodeResponse? =
+            oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
+
+        if (aggregertPeriode == null) {
             secureLog.info("Fant ingen aktiv arbeidssøkerperiode for bruker med fnr: $fnr")
             return
         }
@@ -235,39 +233,35 @@ class ArbeidssoekerService(
         hentAlleFnrOgSlettGamlePerioder(fnr)
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
             ArbeidssoekerPeriodeEntity(
-                aktivArbeidssoekerperiode.periodeId,
+                aggregertPeriode.id,
                 fnr.get()
             )
         )
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
-        val sisteOpplysningerOmArbeidssoeker =
-            hentSisteOpplysningerOmArbeidssoeker(fnr, aktivArbeidssoekerperiode.periodeId)
+        val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
+            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
 
-        secureLog.info("Henter opplysninger om arbeidssøker for bruker med fnr: $fnr")
         if (sisteOpplysningerOmArbeidssoeker == null) {
             secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
             return
         }
 
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            sisteOpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity()
+            sisteOpplysningerOmArbeidssoeker
         )
         secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
 
-        val sisteProfilering: ProfileringResponse? =
-            hentSisteProfilering(
-                fnr,
-                aktivArbeidssoekerperiode.periodeId,
-                sisteOpplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId
-            )
+        val sisteProfilering: ProfileringEntity? = aggregertPeriode.profilering
+            ?.takeIf { it.opplysningerOmArbeidssokerId == sisteOpplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
+            ?.toProfileringEntity(aggregertPeriode.id)
 
         if (sisteProfilering == null) {
             secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
             return
         }
 
-        profileringRepository.insertProfilering(sisteProfilering.toProfileringEntity())
+        profileringRepository.insertProfilering(sisteProfilering)
         secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
@@ -287,34 +281,6 @@ class ArbeidssoekerService(
             )
             throw e
         }
-    }
-
-    private fun hentSisteProfilering(
-        fnr: Fnr,
-        arbeidssoekerPeriodeId: UUID,
-        opplysningerOmArbeidssoekerId: UUID
-    ): ProfileringResponse? {
-        secureLog.info("Henter profilering for bruker med fnr: $fnr")
-        val sisteProfilering: ProfileringResponse? =
-            oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), arbeidssoekerPeriodeId)
-                ?.filter { it.opplysningerOmArbeidssoekerId == opplysningerOmArbeidssoekerId }
-                ?.maxByOrNull { it.sendtInnAv.tidspunkt }
-        return sisteProfilering
-    }
-
-    private fun hentSisteOpplysningerOmArbeidssoeker(
-        fnr: Fnr,
-        periodeId: UUID
-    ): OpplysningerOmArbeidssoekerResponse? {
-        val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerResponse>? =
-            oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(
-                fnr.get(),
-                periodeId
-            )
-        val sisteOpplysningerOmArbeidssoeker = opplysningerOmArbeidssoeker?.maxByOrNull {
-            it.sendtInnAv.tidspunkt
-        }
-        return sisteOpplysningerOmArbeidssoeker
     }
 
     private fun hentAlleFnrOgSlettGamlePerioder(fnr: Fnr) {

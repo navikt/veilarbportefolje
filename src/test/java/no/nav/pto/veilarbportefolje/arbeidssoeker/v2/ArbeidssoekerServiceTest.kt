@@ -48,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import tools.jackson.core.type.TypeReference
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
@@ -196,9 +195,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId)
-        mockHentProfileringResponse(fnr, periodeId)
+        mockHentAggregertPeriodeResponse(fnr, periodeId)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -320,15 +317,12 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, gammelPeriodeId)
-        mockHentProfileringResponse(fnr, gammelPeriodeId)
+        mockHentAggregertPeriodeResponse(fnr, gammelPeriodeId)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
-        mockHentArbeidssoekerPerioderResponse(fnr, nyPeriodeId)
         mockHentAggregertPeriodeResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
 
         val arbeidssoekerPeriodeMelding = Periode(
@@ -388,9 +382,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -446,9 +438,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -510,9 +500,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -559,9 +547,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -748,92 +734,21 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    private fun mockHentArbeidssoekerPerioderResponse(fnr: Fnr, periodeId: UUID? = null) {
-        val file = TestUtil.readFileAsJsonString("/arbeidssoekerperioder.json", javaClass)
-        val arbeidssoekerResponse: List<ArbeidssokerperiodeResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<ArbeidssokerperiodeResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(
-            arbeidssoekerResponse.map { it.copy(periodeId = periodeId ?: it.periodeId) }
-        )
-    }
-
-    private fun mockHentOpplysningerOmArbeidssoekerResponse(
-        fnr: Fnr,
-        periodeId: UUID,
-        nyOpplysningerOmArbeidssoekerId: UUID? = null
-    ) {
-        val file = TestUtil.readFileAsJsonString("/opplysningerOmArbeidssoeker.json", javaClass)
-        val opplysningerOmArbeidssoekerResponse: List<OpplysningerOmArbeidssoekerResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(
-            opplysningerOmArbeidssoekerResponse.map {
-                it.copy(
-                    periodeId = periodeId,
-                    opplysningerOmArbeidssoekerId = nyOpplysningerOmArbeidssoekerId ?: it.opplysningerOmArbeidssoekerId
-                )
-            }
-        )
-    }
-
     private fun mockHentAggregertPeriodeResponse(
         fnr: Fnr,
         periodeId: UUID,
-        opplysningerOmArbeidssoekerId: UUID = UUID.randomUUID()
+        opplysningerOmArbeidssoekerId: UUID? = null
     ) {
-        val tidspunkt = ZonedDateTime.now()
-        val metadata = MetadataV3Response(
-            tidspunkt = tidspunkt,
-            utfoertAv = BrukerV3Response(no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerType.SLUTTBRUKER, fnr.get(), null),
-            kilde = "paw-arbeidssoekerregisteret-inngang",
-            aarsak = "opplysning om arbeidssøker sendt inn",
-            tidspunktFraKilde = null
-        )
+        val file = TestUtil.readFileAsJsonString("/aggregertPeriode.json", javaClass)
+        val aggregertPeriode = JsonUtils.fromJson(file, AggregertPeriodeResponse::class.java)
+        val opplysningId = opplysningerOmArbeidssoekerId ?: aggregertPeriode.opplysning!!.id
         `when`(oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())).thenReturn(
-            AggregertPeriodeResponse(
+            aggregertPeriode.copy(
                 id = periodeId,
                 identitetsnummer = fnr.get(),
-                startet = PeriodeHendelseResponse(metadata, tidspunkt),
-                avsluttet = null,
-                opplysning = OpplysningerV3Response(
-                    id = opplysningerOmArbeidssoekerId,
-                    sendtInnAv = metadata,
-                    utdanning = UtdanningV3Response("3", JaNeiVetIkkeV3.JA, JaNeiVetIkkeV3.JA),
-                    helse = HelseV3Response(JaNeiVetIkkeV3.NEI),
-                    jobbsituasjon = JobbsituasjonV3Response(
-                        listOf(
-                            BeskrivelseMedDetaljerResponse(JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB, mapOf("prosent" to "25")),
-                            BeskrivelseMedDetaljerResponse(JobbSituasjonBeskrivelseResponse.ER_PERMITTERT, mapOf("prosent" to "75"))
-                        )
-                    ),
-                    annet = AnnetV3Response(JaNeiVetIkkeV3.NEI),
-                    tidspunkt = tidspunkt
-                ),
-                profilering = ProfileringV3Response(
-                    id = UUID.randomUUID(),
-                    opplysningerOmArbeidssokerId = opplysningerOmArbeidssoekerId,
-                    sendtInnAv = metadata,
-                    profilertTil = no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfilertTil.ANTATT_GODE_MULIGHETER,
-                    jobbetSammenhengendeSeksAvTolvSisteMnd = true,
-                    alder = 30,
-                    tidspunkt = tidspunkt
-                ),
-                egenvurdering = null,
-                bekreftelse = null
+                opplysning = aggregertPeriode.opplysning!!.copy(id = opplysningId),
+                profilering = aggregertPeriode.profilering!!.copy(opplysningerOmArbeidssokerId = opplysningId)
             )
-        )
-    }
-
-    private fun mockHentProfileringResponse(fnr: Fnr, periodeId: UUID, opplysningerOmArbeidssoekerId: UUID? = null) {
-        val file = TestUtil.readFileAsJsonString("/profilering.json", javaClass)
-        val profileringResponse: List<ProfileringResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<ProfileringResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(
-            profileringResponse.map {
-                it.copy(
-                    periodeId = periodeId,
-                    opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId ?: it.opplysningerOmArbeidssoekerId
-                )
-            }
         )
     }
 
