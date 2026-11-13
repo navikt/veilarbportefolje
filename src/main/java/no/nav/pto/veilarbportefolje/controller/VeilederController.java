@@ -13,7 +13,6 @@ import no.nav.pto.veilarbportefolje.controller.dto.VeilederPortefoljeStatustallR
 import no.nav.pto.veilarbportefolje.domene.*;
 import no.nav.pto.veilarbportefolje.domene.BrukereMedAntall;
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg;
-import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell;
 import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchService;
 import no.nav.pto.veilarbportefolje.util.PortefoljeUtils;
@@ -52,10 +51,9 @@ public class VeilederController {
         authService.innloggetVeilederHarTilgangTilEnhet(enhet);
 
         BrukereMedAntall brukereMedAntall = opensearchService.hentBrukere(enhet, Optional.of(veilederIdent), validertSorteringsrekkefolge, validertSorteringsfelt, filtervalg, fra, antall);
-        List<PortefoljebrukerFrontendModell> sensurerteBrukereSublist = authService.sensurerBrukere(brukereMedAntall.getBrukere());
 
         return PortefoljeUtils.buildPortefolje(brukereMedAntall.getAntall(),
-                sensurerteBrukereSublist,
+                brukereMedAntall.getBrukere(),
                 enhet,
                 Optional.ofNullable(fra).orElse(0));
     }

@@ -47,6 +47,16 @@ spec:
     sqlInstances:
       - type: POSTGRES_15
         tier: db-custom-8-53248
+        diskSize: 15
+        flags:
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
+          - name: "pgaudit.log"
+            value: "write,ddl,role"
+          - name: "pgaudit.log_parameter"
+            value: "on"
+          - name: "pgaudit.log_relation"
+            value: "on"
         databases:
           - name: veilarbportefolje
             envVarPrefix: DB
@@ -71,6 +81,12 @@ spec:
         - application: inngar
           namespace: dab
           cluster: prod-gcp
+        - application: veilarbvedtaksstotte
+          namespace: obo
+          cluster: prod-gcp
+          permissions:
+            roles:
+              - "kvalitetssikring-14a-vedtak"
     outbound:
       rules:
         - application: kodeverk-api

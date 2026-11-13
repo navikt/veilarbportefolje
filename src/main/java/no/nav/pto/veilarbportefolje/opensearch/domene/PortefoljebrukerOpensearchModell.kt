@@ -81,9 +81,6 @@ data class PortefoljebrukerOpensearchModell(
     var utdanning_godkjent: String? = null,
     var utdanning_og_situasjon_sist_endret: LocalDate? = null,
 
-    // Arbeidsforhold
-    var er_sykmeldt_med_arbeidsgiver: Boolean = false,
-
     // Aktiviteter
     var aktivitet_behandling_utlopsdato: String? = getFarInTheFutureDate(),
     var aktivitet_egen_utlopsdato: String? = getFarInTheFutureDate(),

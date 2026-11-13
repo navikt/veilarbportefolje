@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
+import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
@@ -20,7 +21,44 @@ import java.time.temporal.ChronoUnit
 
 object PortefoljebrukerFrontendModellMapper {
 
-    fun toPortefoljebrukerFrontendModell(
+    fun toSensurertPortefoljebrukerFrontendModell(
+        opensearchBruker: PortefoljebrukerOpensearchModell,
+        ufordelt: Boolean,
+        filtervalg: Filtervalg,
+        brukerinnsynTilganger: BrukerinnsynTilganger
+    ): PortefoljebrukerFrontendModell {
+        val bruker = toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg)
+        bruker.barnUnder18AarData = bruker.barnUnder18AarData
+            ?.filter { brukerinnsynTilganger.harTilgangTilAdressebeskyttelse(it.diskresjonskode) }
+
+        val harTilgang = brukerinnsynTilganger.harTilgangTilKonfidensiellInfo(
+            opensearchBruker.diskresjonskode,
+            opensearchBruker.egen_ansatt
+        )
+        return if (harTilgang) bruker else fjernKonfidensiellInfo(bruker)
+    }
+
+    private fun fjernKonfidensiellInfo(bruker: PortefoljebrukerFrontendModell): PortefoljebrukerFrontendModell =
+        bruker.copy(
+            fnr = "",
+            fornavn = "",
+            etternavn = "",
+            skjermetTil = null,
+            etiketter = bruker.etiketter.copy(skjermetTil = null),
+            foedeland = null,
+            tolkebehov = Tolkebehov.of("", "", null),
+            hovedStatsborgerskap = null,
+            geografiskBosted = GeografiskBostedForBruker(
+                bostedKommune = null,
+                bostedKommuneUkjentEllerUtland = "-",
+                bostedBydel = null,
+                bostedSistOppdatert = null
+            ),
+            fargekategori = null,
+            huskelapp = null
+        )
+
+    internal fun toPortefoljebrukerFrontendModell(
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
         filtervalg: Filtervalg
@@ -32,10 +70,6 @@ object PortefoljebrukerFrontendModellMapper {
 
         val trengerOppfolgingsvedtak = opensearchBruker.gjeldendeVedtak14a == null
         val harUtenlandskAdresse = opensearchBruker.utenlandskAdresse != null
-        val diskresjonskodeFortrolig =
-            if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-                || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
-            ) opensearchBruker.diskresjonskode else null
 
         val bostedKommuneUkjentEllerUtland = if (harUtenlandskAdresse) {
             "Utland"
@@ -54,9 +88,12 @@ object PortefoljebrukerFrontendModellMapper {
                 nyForVeileder = opensearchBruker.ny_for_veileder,
                 nyForEnhet = ufordelt,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
-                diskresjonskodeFortrolig = diskresjonskodeFortrolig,
+                diskresjonskodeFortrolig = mapDiskresjonskodeFortrolig(opensearchBruker), // fjernes etter vi bytter til adressebeskyttelse
+                adressebeskyttelse = mapAdressebeskyttelse(opensearchBruker),
+                egenAnsatt = opensearchBruker.egen_ansatt,
+                skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
                 profileringResultat = profileringResultat,
-                kandidatForUtmelding = opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null,
+                kandidatForUtmelding = erKandidatForUtmelding(opensearchBruker),
                 sykmeldtMedArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == true,
                 sykmeldtUtenArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == false,
             ),
@@ -85,8 +122,8 @@ object PortefoljebrukerFrontendModellMapper {
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
             veilederId = opensearchBruker.veileder_id,
-            egenAnsatt = opensearchBruker.egen_ansatt,
-            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
+            egenAnsatt = opensearchBruker.egen_ansatt, //fjernes etter vi bytter til etiketter
+            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til), //fjernes etter vi bytter til etiketter
             tiltakshendelse = opensearchBruker.tiltakshendelse?.let {
                 TiltakshendelseForBruker(
                     id = it.id,
@@ -150,6 +187,22 @@ object PortefoljebrukerFrontendModellMapper {
 
         return frontendbruker
     }
+
+    fun mapDiskresjonskodeFortrolig(opensearchBruker: PortefoljebrukerOpensearchModell): String? =
+        if (Adressebeskyttelse.FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+            || Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode == opensearchBruker.diskresjonskode
+        ) opensearchBruker.diskresjonskode else null
+
+    fun mapAdressebeskyttelse(opensearchBruker: PortefoljebrukerOpensearchModell): String? =
+        when (opensearchBruker.diskresjonskode) {
+            Adressebeskyttelse.FORTROLIG.diskresjonskode -> "Fortrolig"
+            Adressebeskyttelse.STRENGT_FORTROLIG.diskresjonskode -> "Strengt fortrolig"
+            Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND.diskresjonskode -> "Strengt fortrolig utland"
+            else -> null
+        }
+
+    fun erKandidatForUtmelding(opensearchBruker: PortefoljebrukerOpensearchModell): Boolean =
+        opensearchBruker.hendelser?.get(Kategori.KANDIDAT_FOR_UTMELDING) != null
 
 
     private fun mapTiltakspenger(opensearchBruker: PortefoljebrukerOpensearchModell): Tiltakspenger? {
