@@ -330,7 +330,6 @@ class ArbeidssoekerServiceTest(
 
         mockHentArbeidssoekerPerioderResponse(fnr, nyPeriodeId)
         mockHentAggregertPeriodeResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
-        mockHentProfileringResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
 
         val arbeidssoekerPeriodeMelding = Periode(
             nyPeriodeId,
@@ -809,7 +808,15 @@ class ArbeidssoekerServiceTest(
                     annet = AnnetV3Response(JaNeiVetIkkeV3.NEI),
                     tidspunkt = tidspunkt
                 ),
-                profilering = null,
+                profilering = ProfileringV3Response(
+                    id = UUID.randomUUID(),
+                    opplysningerOmArbeidssokerId = opplysningerOmArbeidssoekerId,
+                    sendtInnAv = metadata,
+                    profilertTil = no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfilertTil.ANTATT_GODE_MULIGHETER,
+                    jobbetSammenhengendeSeksAvTolvSisteMnd = true,
+                    alder = 30,
+                    tidspunkt = tidspunkt
+                ),
                 egenvurdering = null,
                 bekreftelse = null
             )

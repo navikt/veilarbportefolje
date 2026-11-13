@@ -75,6 +75,12 @@ fun ProfileringResponse.toProfileringEntity(): ProfileringEntity {
     )
 }
 
+fun ProfileringV3Response.toProfileringEntity(periodeId: UUID) = ProfileringEntity(
+    periodeId = periodeId,
+    profileringsresultat = this.profilertTil.name,
+    sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt)
+)
+
 fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() = ProfileringEntity(
     periodeId = this.periodeId,
     profileringsresultat = this.profilertTil.name,

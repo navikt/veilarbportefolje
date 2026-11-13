@@ -63,7 +63,10 @@ class ArbeidssoekerService(
         secureLog.info("Behandler endring på arbeidssøkerperiode for bruker med fnr: $fnrIMelding, periodeId: $periodeId")
 
         if (!pdlIdentRepository.erBrukerUnderOppfolging(fnrIMelding.get())) {
-            secureLog.info("Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}", fnrIMelding.get())
+            secureLog.info(
+                "Bruker er ikke under oppfølging, ignorerer endring for arbeidssøkerregisterdata på bruker med fnr: {}",
+                fnrIMelding.get()
+            )
             return
         }
 
@@ -76,17 +79,24 @@ class ArbeidssoekerService(
         val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
 
         hentAlleFnrOgSlettGamlePerioder(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(
+                periodeId,
+                fnr.get()
+            )
+        )
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
         val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
         if (aggregertPeriode == null || aggregertPeriode.id != periodeId) {
             secureLog.info("Fant ingen aggregert arbeidssøkerperiode med periodeId: $periodeId for bruker med fnr: $fnr")
+            // TODO bør vi gjøre noe mer her? retry på fetch om data ikke finnes eller har samme periodeID? data er alt slettet på dette punktet
             return
         }
 
         val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
             aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
+
         if (opplysningerOmArbeidssoeker == null) {
             secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
             return
@@ -100,12 +110,9 @@ class ArbeidssoekerService(
 
         secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
 
-
-        val profilering: ProfileringEntity? = hentSisteProfilering(
-            fnr,
-            periodeId,
-            opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId
-        )?.toProfileringEntity()
+        val profilering: ProfileringEntity? = aggregertPeriode.profilering
+            ?.takeIf { it.opplysningerOmArbeidssokerId == opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
+            ?.toProfileringEntity(aggregertPeriode.id)
 
         if (profilering == null) {
             secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
@@ -156,7 +163,9 @@ class ArbeidssoekerService(
 
         val opplysningerOmArbeidssoekerEntity = opplysninger.toOpplysningerOmArbeidssoekerEntity()
         opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerEntity)
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+            opplysningerOmArbeidssoekerEntity
+        )
 
         if (aktorId != null) {
             opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
@@ -224,7 +233,12 @@ class ArbeidssoekerService(
         }
 
         hentAlleFnrOgSlettGamlePerioder(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(aktivArbeidssoekerperiode.periodeId, fnr.get()))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(
+                aktivArbeidssoekerperiode.periodeId,
+                fnr.get()
+            )
+        )
         secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
 
         val sisteOpplysningerOmArbeidssoeker =
@@ -267,7 +281,10 @@ class ArbeidssoekerService(
         try {
             sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
         } catch (e: Exception) {
-            secureLog.error("Feil ved sletting av siste arbeidssøkerperiode for bruker med aktorId: ${aktorId.get()}", e)
+            secureLog.error(
+                "Feil ved sletting av siste arbeidssøkerperiode for bruker med aktorId: ${aktorId.get()}",
+                e
+            )
             throw e
         }
     }
