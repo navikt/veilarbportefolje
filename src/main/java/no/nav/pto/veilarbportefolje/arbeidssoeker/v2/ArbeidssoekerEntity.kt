@@ -30,38 +30,35 @@ data class ProfileringEntity(
     val sendtInnTidspunkt: Timestamp
 )
 
-
-fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoekerEntity() = OpplysningerOmArbeidssoekerEntity(
-    opplysningerOmArbeidssoekerId = this.opplysningerOmArbeidssoekerId,
-    periodeId = this.periodeId,
+fun OpplysningerResponse.toOpplysningerOmArbeidssoekerEntity(periodeId: UUID) = OpplysningerOmArbeidssoekerEntity(
+    opplysningerOmArbeidssoekerId = this.id,
+    periodeId = periodeId,
     sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt),
     utdanningNusKode = this.utdanning?.nus,
     utdanningBestatt = this.utdanning?.bestaatt?.name,
     utdanningGodkjent = this.utdanning?.godkjent?.name,
     opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-        this.opplysningerOmArbeidssoekerId,
-        this.jobbsituasjon.map { it.beskrivelse.name })
+        this.id,
+        this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name } ?: emptyList())
 )
 
 fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() = OpplysningerOmArbeidssoekerEntity(
-    opplysningerOmArbeidssoekerId = this.id,
-    periodeId = this.periodeId,
-    sendtInnTidspunkt = Timestamp.from(this.sendtInnAv.tidspunkt),
-    utdanningNusKode = this.utdanning?.nus.toString(),
-    utdanningBestatt = this.utdanning?.bestaatt?.name,
-    utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-        this.id,
-        this.jobbsituasjon.beskrivelser.map { it.beskrivelse.name })
-)
-
-fun ProfileringResponse.toProfileringEntity(): ProfileringEntity {
-    return ProfileringEntity(
+        opplysningerOmArbeidssoekerId = this.id,
         periodeId = this.periodeId,
-        profileringsresultat = this.profilertTil.name,
-        sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt)
+        sendtInnTidspunkt = Timestamp.from(this.sendtInnAv.tidspunkt),
+        utdanningNusKode = this.utdanning?.nus.toString(),
+        utdanningBestatt = this.utdanning?.bestaatt?.name,
+        utdanningGodkjent = this.utdanning?.godkjent?.name,
+        opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
+            this.id,
+            this.jobbsituasjon.beskrivelser.map { it.beskrivelse.name })
     )
-}
+
+fun ProfileringResponse.toProfileringEntity(periodeId: UUID) = ProfileringEntity(
+    periodeId = periodeId,
+    profileringsresultat = this.profilertTil.name,
+    sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt)
+)
 
 fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() = ProfileringEntity(
     periodeId = this.periodeId,

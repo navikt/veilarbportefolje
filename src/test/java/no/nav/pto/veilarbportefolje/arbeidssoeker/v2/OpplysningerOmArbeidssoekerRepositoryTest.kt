@@ -1,6 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
 
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
+import no.nav.pto.veilarbportefolje.util.DateUtils
 import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer
 import no.nav.pto.veilarbportefolje.util.TestDataClient
 import org.assertj.core.api.Assertions.assertThat
@@ -27,39 +28,22 @@ class OpplysningerOmArbeidssoekerRepositoryTest {
             UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
             "12345671231"
         )
-        val opplysningerOmArbeidssoekerObjekt = OpplysningerOmArbeidssoekerResponse(
-            opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
+        val opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd")
+        val opplysningerOmArbeidssoekerObjekt = OpplysningerOmArbeidssoekerEntity(
+            opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId,
             periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
-            sendtInnAv = MetadataResponse(
-                tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-                utfoertAv = BrukerResponse(
-                    type = BrukerType.SLUTTBRUKER
-                ),
-                kilde = "paw-arbeidssoekerregisteret-inngang",
-                aarsak = "opplysning om arbeidssøker sendt inn"
-            ),
-            jobbsituasjon = listOf(
-                BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
-                    detaljer = mapOf(Pair("prosent", "25"))
-                ),
-                BeskrivelseMedDetaljerResponse(
-                    beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
-                    detaljer = mapOf(Pair("prosent", "75"))
+            sendtInnTidspunkt = DateUtils.toTimestamp(ZonedDateTime.parse("2024-04-23T13:22:58.089Z")),
+            utdanningNusKode = "3",
+            utdanningBestatt = "JA",
+            utdanningGodkjent = "JA",
+            opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
+                opplysningerOmArbeidssoekerId,
+                listOf(
+                    JobbSituasjonBeskrivelseResponse.ER_PERMITTERT.name,
+                    JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB.name
                 )
-            ),
-            utdanning = UtdanningResponse(
-                nus = "3",
-                bestaatt = JaNeiVetIkke.JA,
-                godkjent = JaNeiVetIkke.JA
-            ),
-            helse = HelseResponse(
-                helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
-            ),
-            annet = AnnetResponse(
-                andreForholdHindrerArbeid = JaNeiVetIkke.NEI
             )
-        ).toOpplysningerOmArbeidssoekerEntity()
+        )
         opplysningerOmArbeidssoeker.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(opplysningerOmArbeidssoekerObjekt)
 
 

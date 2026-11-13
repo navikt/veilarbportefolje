@@ -48,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import tools.jackson.core.type.TypeReference
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
@@ -196,9 +195,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId)
-        mockHentProfileringResponse(fnr, periodeId)
+        mockHentAggregertPeriodeResponse(fnr, periodeId)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -320,17 +317,13 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, gammelPeriodeId)
-        mockHentProfileringResponse(fnr, gammelPeriodeId)
+        mockHentAggregertPeriodeResponse(fnr, gammelPeriodeId)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
-        mockHentArbeidssoekerPerioderResponse(fnr, nyPeriodeId)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
-        mockHentProfileringResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
+        mockHentAggregertPeriodeResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
 
         val arbeidssoekerPeriodeMelding = Periode(
             nyPeriodeId,
@@ -389,9 +382,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -447,9 +438,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -511,9 +500,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -560,9 +547,7 @@ class ArbeidssoekerServiceTest(
         mockPdlPersonRespons(fnr)
         mockPdlPersonBarnRespons()
         mockHentOppfolgingsbrukerResponse(fnr)
-        mockHentArbeidssoekerPerioderResponse(fnr)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeIdVedOppfolgingStartet)
-        mockHentProfileringResponse(fnr, periodeIdVedOppfolgingStartet)
+        mockHentAggregertPeriodeResponse(fnr, periodeIdVedOppfolgingStartet)
         mockHentAapResponse(fnr)
         mockHentDagpengerResponse(fnr)
 
@@ -608,7 +593,7 @@ class ArbeidssoekerServiceTest(
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
             ArbeidssoekerPeriodeEntity(gammelPeriodeId, historiskFnr.get())
         )
-        mockHentOpplysningerOmArbeidssoekerResponse(aktivtFnr, nyPeriodeId)
+        mockHentAggregertPeriodeResponse(aktivtFnr, nyPeriodeId)
 
         arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(nyPeriodeId, historiskFnr))
 
@@ -749,44 +734,21 @@ class ArbeidssoekerServiceTest(
         )
     }
 
-    private fun mockHentArbeidssoekerPerioderResponse(fnr: Fnr, periodeId: UUID? = null) {
-        val file = TestUtil.readFileAsJsonString("/arbeidssoekerperioder.json", javaClass)
-        val arbeidssoekerResponse: List<ArbeidssokerperiodeResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<ArbeidssokerperiodeResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(
-            arbeidssoekerResponse.map { it.copy(periodeId = periodeId ?: it.periodeId) }
-        )
-    }
-
-    private fun mockHentOpplysningerOmArbeidssoekerResponse(
+    private fun mockHentAggregertPeriodeResponse(
         fnr: Fnr,
         periodeId: UUID,
-        nyOpplysningerOmArbeidssoekerId: UUID? = null
+        opplysningerOmArbeidssoekerId: UUID? = null
     ) {
-        val file = TestUtil.readFileAsJsonString("/opplysningerOmArbeidssoeker.json", javaClass)
-        val opplysningerOmArbeidssoekerResponse: List<OpplysningerOmArbeidssoekerResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<OpplysningerOmArbeidssoekerResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(
-            opplysningerOmArbeidssoekerResponse.map {
-                it.copy(
-                    periodeId = periodeId,
-                    opplysningerOmArbeidssoekerId = nyOpplysningerOmArbeidssoekerId ?: it.opplysningerOmArbeidssoekerId
-                )
-            }
-        )
-    }
-
-    private fun mockHentProfileringResponse(fnr: Fnr, periodeId: UUID, opplysningerOmArbeidssoekerId: UUID? = null) {
-        val file = TestUtil.readFileAsJsonString("/profilering.json", javaClass)
-        val profileringResponse: List<ProfileringResponse> =
-            JsonUtils.fromJson(file, object : TypeReference<List<ProfileringResponse>>() {})
-        `when`(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(
-            profileringResponse.map {
-                it.copy(
-                    periodeId = periodeId,
-                    opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId ?: it.opplysningerOmArbeidssoekerId
-                )
-            }
+        val file = TestUtil.readFileAsJsonString("/aggregertPeriode.json", javaClass)
+        val aggregertPeriode = JsonUtils.fromJson(file, AggregertPeriodeResponse::class.java)
+        val opplysningId = opplysningerOmArbeidssoekerId ?: aggregertPeriode.opplysning!!.id
+        `when`(oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())).thenReturn(
+            aggregertPeriode.copy(
+                id = periodeId,
+                identitetsnummer = fnr.get(),
+                opplysning = aggregertPeriode.opplysning!!.copy(id = opplysningId),
+                profilering = aggregertPeriode.profilering!!.copy(opplysningerOmArbeidssokerId = opplysningId)
+            )
         )
     }
 
@@ -815,37 +777,19 @@ fun genererRandomOpplysningerOmArbeidssoekerEntity(
     periodeId: UUID,
     opplysningerOmArbeidssoekerId: UUID
 ): OpplysningerOmArbeidssoekerEntity {
-    return OpplysningerOmArbeidssoekerResponse(
-        periodeId = periodeId,
+    return OpplysningerOmArbeidssoekerEntity(
         opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId,
-        sendtInnAv = MetadataResponse(
-            tidspunkt = ZonedDateTime.now(),
-            utfoertAv = BrukerResponse(
-                type = no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerType.SLUTTBRUKER
-            ),
-            kilde = "paw-arbeidssoekerregisteret-inngang",
-            aarsak = "opplysning om arbeidssøker sendt inn"
-        ),
-        jobbsituasjon = listOf(
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
-                detaljer = mapOf(Pair("prosent", "25"))
-            ),
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
-                detaljer = mapOf(Pair("prosent", "75"))
+        periodeId = periodeId,
+        sendtInnTidspunkt = DateUtils.toTimestamp(ZonedDateTime.now()),
+        utdanningNusKode = "3",
+        utdanningBestatt = "JA",
+        utdanningGodkjent = "JA",
+        opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
+            opplysningerOmArbeidssoekerId,
+            listOf(
+                JobbSituasjonBeskrivelseResponse.ER_PERMITTERT.name,
+                JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB.name
             )
-        ),
-        annet = AnnetResponse(
-            andreForholdHindrerArbeid = JaNeiVetIkke.NEI
-        ),
-        utdanning = UtdanningResponse(
-            nus = "3",
-            bestaatt = JaNeiVetIkke.JA,
-            godkjent = JaNeiVetIkke.JA
-        ),
-        helse = HelseResponse(
-            helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
         )
-    ).toOpplysningerOmArbeidssoekerEntity()
+    )
 }

@@ -46,7 +46,6 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import tools.jackson.core.type.TypeReference;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -333,9 +332,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         mockPdlPersonBarnRespons(fnr);
         mockSiste14aVedtakResponse(fnr);
         mockHentOppfolgingsbrukerResponse(fnr);
-        mockHentArbeidssoekerPerioderResponse(fnr);
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, periodeId);
-        mockHentProfileringResponse(fnr, periodeId);
+        mockHentAggregertPeriodeResponse(fnr);
         mockHentAapResponse(fnr);
         mockHentTiltakspengerResponse(fnr);
         mockHentDagpengerResponse(fnr);
@@ -406,8 +403,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     void nar_oppfolging_avsluttes_skal_arbeidsokerdata_slettes() {
         when(aktorClient.hentFnr(aktorId)).thenReturn(fnr);
         when(aktorClient.hentAktorId(fnr)).thenReturn(aktorId);
-        mockHentArbeidssoekerPerioderResponse(fnr);
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"));
+        mockHentAggregertPeriodeResponse(fnr);
 
         ZonedDateTime oppfolgingStartDato = tilfeldigDatoTilbakeITid();
         UUID oppfolgingsperiodeId = UUID.randomUUID();
@@ -618,25 +614,10 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         when(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(oppfolgingsbrukerDTO));
     }
 
-    private void mockHentArbeidssoekerPerioderResponse(Fnr fnr) {
-        String file = readFileAsJsonString("/arbeidssoekerperioder.json", getClass());
-        List<ArbeidssokerperiodeResponse> arbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {
-        });
-        when(oppslagArbeidssoekerregisteretClient.hentArbeidssokerPerioder(fnr.get())).thenReturn(arbeidssoekerResponse);
-    }
-
-    private void mockHentOpplysningerOmArbeidssoekerResponse(Fnr fnr, UUID periodeId) {
-        String file = readFileAsJsonString("/opplysningerOmArbeidssoeker.json", getClass());
-        List<OpplysningerOmArbeidssoekerResponse> opplysningerOmArbeidssoekerResponse = JsonUtils.fromJson(file, new TypeReference<>() {
-        });
-        when(oppslagArbeidssoekerregisteretClient.hentOpplysningerOmArbeidssoeker(fnr.get(), periodeId)).thenReturn(opplysningerOmArbeidssoekerResponse);
-    }
-
-    private void mockHentProfileringResponse(Fnr fnr, UUID periodeId) {
-        String file = readFileAsJsonString("/profilering.json", getClass());
-        List<ProfileringResponse> profileringResponse = JsonUtils.fromJson(file, new TypeReference<>() {
-        });
-        when(oppslagArbeidssoekerregisteretClient.hentProfilering(fnr.get(), periodeId)).thenReturn(profileringResponse);
+    private void mockHentAggregertPeriodeResponse(Fnr fnr) {
+        String file = readFileAsJsonString("/aggregertPeriode.json", getClass());
+        AggregertPeriodeResponse aggregertPeriode = JsonUtils.fromJson(file, AggregertPeriodeResponse.class);
+        when(oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())).thenReturn(aggregertPeriode);
     }
 
     private void mockHentAapResponse(Fnr fnr) {
