@@ -329,7 +329,7 @@ class ArbeidssoekerServiceTest(
         oppfolgingPeriodeService.behandleKafkaMeldingLogikk(genererStartetOppfolgingsperiode(aktorId))
 
         mockHentArbeidssoekerPerioderResponse(fnr, nyPeriodeId)
-        mockHentOpplysningerOmArbeidssoekerResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
+        mockHentAggregertPeriodeResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
         mockHentProfileringResponse(fnr, nyPeriodeId, nyOpplysningerOmArbeidssoekerId)
 
         val arbeidssoekerPeriodeMelding = Periode(
@@ -608,7 +608,7 @@ class ArbeidssoekerServiceTest(
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
             ArbeidssoekerPeriodeEntity(gammelPeriodeId, historiskFnr.get())
         )
-        mockHentOpplysningerOmArbeidssoekerResponse(aktivtFnr, nyPeriodeId)
+        mockHentAggregertPeriodeResponse(aktivtFnr, nyPeriodeId)
 
         arbeidssoekerService.behandleKafkaMeldingLogikk(periodeMelding(nyPeriodeId, historiskFnr))
 
@@ -773,6 +773,46 @@ class ArbeidssoekerServiceTest(
                     opplysningerOmArbeidssoekerId = nyOpplysningerOmArbeidssoekerId ?: it.opplysningerOmArbeidssoekerId
                 )
             }
+        )
+    }
+
+    private fun mockHentAggregertPeriodeResponse(
+        fnr: Fnr,
+        periodeId: UUID,
+        opplysningerOmArbeidssoekerId: UUID = UUID.randomUUID()
+    ) {
+        val tidspunkt = ZonedDateTime.now()
+        val metadata = MetadataV3Response(
+            tidspunkt = tidspunkt,
+            utfoertAv = BrukerV3Response(no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerType.SLUTTBRUKER, fnr.get(), null),
+            kilde = "paw-arbeidssoekerregisteret-inngang",
+            aarsak = "opplysning om arbeidssøker sendt inn",
+            tidspunktFraKilde = null
+        )
+        `when`(oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())).thenReturn(
+            AggregertPeriodeResponse(
+                id = periodeId,
+                identitetsnummer = fnr.get(),
+                startet = PeriodeHendelseResponse(metadata, tidspunkt),
+                avsluttet = null,
+                opplysning = OpplysningerV3Response(
+                    id = opplysningerOmArbeidssoekerId,
+                    sendtInnAv = metadata,
+                    utdanning = UtdanningV3Response("3", JaNeiVetIkkeV3.JA, JaNeiVetIkkeV3.JA),
+                    helse = HelseV3Response(JaNeiVetIkkeV3.NEI),
+                    jobbsituasjon = JobbsituasjonV3Response(
+                        listOf(
+                            BeskrivelseMedDetaljerResponse(JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB, mapOf("prosent" to "25")),
+                            BeskrivelseMedDetaljerResponse(JobbSituasjonBeskrivelseResponse.ER_PERMITTERT, mapOf("prosent" to "75"))
+                        )
+                    ),
+                    annet = AnnetV3Response(JaNeiVetIkkeV3.NEI),
+                    tidspunkt = tidspunkt
+                ),
+                profilering = null,
+                egenvurdering = null,
+                bekreftelse = null
+            )
         )
     }
 

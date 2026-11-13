@@ -34,6 +34,7 @@ class SisteArbeidssoekerPeriodeRepository(
         }
     }
 
+    // sletter også OPPLYSNINGER_OM_ARBEIDSSOEKER, OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON, og PROFILERING gjennom cascade
     fun slettSisteArbeidssoekerPeriode(fnrs: List<Fnr>) {
         val fnrArray = fnrs.joinToString(",", "{", "}") { it.get() }
         db.update("DELETE FROM $TABLE_NAME WHERE $FNR = any (?::varchar[])", fnrArray)

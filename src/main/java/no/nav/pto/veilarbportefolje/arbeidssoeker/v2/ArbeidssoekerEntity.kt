@@ -43,6 +43,18 @@ fun OpplysningerOmArbeidssoekerResponse.toOpplysningerOmArbeidssoekerEntity() = 
         this.jobbsituasjon.map { it.beskrivelse.name })
 )
 
+fun OpplysningerV3Response.toOpplysningerOmArbeidssoekerEntity(periodeId: UUID) = OpplysningerOmArbeidssoekerEntity(
+    opplysningerOmArbeidssoekerId = this.id,
+    periodeId = periodeId,
+    sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt),
+    utdanningNusKode = this.utdanning?.nus,
+    utdanningBestatt = this.utdanning?.bestaatt?.name,
+    utdanningGodkjent = this.utdanning?.godkjent?.name,
+    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
+        this.id,
+        this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name } ?: emptyList())
+)
+
 fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() = OpplysningerOmArbeidssoekerEntity(
     opplysningerOmArbeidssoekerId = this.id,
     periodeId = this.periodeId,

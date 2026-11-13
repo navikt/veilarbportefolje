@@ -78,6 +78,7 @@ class OppslagArbeidssoekerregisteretClient(
         }
     }
 
+    // Henter siste aktive periode
     fun hentAggregertPeriode(identitetsnummer: String): AggregertPeriodeResponse? {
         val request: Request = Request.Builder()
             .url(UrlUtils.joinPaths(url, "/api/v3/snapshot"))

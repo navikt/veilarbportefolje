@@ -79,8 +79,14 @@ class ArbeidssoekerService(
         sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, fnr.get()))
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
+        val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
+        if (aggregertPeriode == null || aggregertPeriode.id != periodeId) {
+            secureLog.info("Fant ingen aggregert arbeidssøkerperiode med periodeId: $periodeId for bruker med fnr: $fnr")
+            return
+        }
+
         val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
-            hentSisteOpplysningerOmArbeidssoeker(fnr, periodeId)?.toOpplysningerOmArbeidssoekerEntity()
+            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
         if (opplysningerOmArbeidssoeker == null) {
             secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
             return
