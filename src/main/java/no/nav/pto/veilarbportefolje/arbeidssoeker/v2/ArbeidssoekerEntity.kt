@@ -42,8 +42,7 @@ fun OpplysningerResponse.toOpplysningerOmArbeidssoekerEntity(periodeId: UUID) = 
         this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name } ?: emptyList())
 )
 
-fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() =
-    OpplysningerOmArbeidssoekerEntity(
+fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() = OpplysningerOmArbeidssoekerEntity(
         opplysningerOmArbeidssoekerId = this.id,
         periodeId = this.periodeId,
         sendtInnTidspunkt = Timestamp.from(this.sendtInnAv.tidspunkt),
