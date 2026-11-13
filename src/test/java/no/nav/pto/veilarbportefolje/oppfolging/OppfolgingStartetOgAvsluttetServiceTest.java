@@ -617,7 +617,7 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     private void mockHentAggregertPeriodeResponse(Fnr fnr) {
         String file = readFileAsJsonString("/aggregertPeriode.json", getClass());
         AggregertPeriodeResponse aggregertPeriode = JsonUtils.fromJson(file, AggregertPeriodeResponse.class);
-        when(oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())).thenReturn(aggregertPeriode);
+        when(oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())).thenReturn(aggregertPeriode);
     }
 
     private void mockHentAapResponse(Fnr fnr) {

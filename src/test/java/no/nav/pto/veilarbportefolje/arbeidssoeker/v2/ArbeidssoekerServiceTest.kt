@@ -742,7 +742,7 @@ class ArbeidssoekerServiceTest(
         val file = TestUtil.readFileAsJsonString("/aggregertPeriode.json", javaClass)
         val aggregertPeriode = JsonUtils.fromJson(file, AggregertPeriodeResponse::class.java)
         val opplysningId = opplysningerOmArbeidssoekerId ?: aggregertPeriode.opplysning!!.id
-        `when`(oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())).thenReturn(
+        `when`(oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())).thenReturn(
             aggregertPeriode.copy(
                 id = periodeId,
                 identitetsnummer = fnr.get(),
@@ -777,37 +777,19 @@ fun genererRandomOpplysningerOmArbeidssoekerEntity(
     periodeId: UUID,
     opplysningerOmArbeidssoekerId: UUID
 ): OpplysningerOmArbeidssoekerEntity {
-    return OpplysningerOmArbeidssoekerResponse(
-        periodeId = periodeId,
+    return OpplysningerOmArbeidssoekerEntity(
         opplysningerOmArbeidssoekerId = opplysningerOmArbeidssoekerId,
-        sendtInnAv = MetadataResponse(
-            tidspunkt = ZonedDateTime.now(),
-            utfoertAv = BrukerResponse(
-                type = no.nav.pto.veilarbportefolje.arbeidssoeker.v2.BrukerType.SLUTTBRUKER
-            ),
-            kilde = "paw-arbeidssoekerregisteret-inngang",
-            aarsak = "opplysning om arbeidssøker sendt inn"
-        ),
-        jobbsituasjon = listOf(
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelseResponse.ER_PERMITTERT,
-                detaljer = mapOf(Pair("prosent", "25"))
-            ),
-            BeskrivelseMedDetaljerResponse(
-                beskrivelse = JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB,
-                detaljer = mapOf(Pair("prosent", "75"))
+        periodeId = periodeId,
+        sendtInnTidspunkt = DateUtils.toTimestamp(ZonedDateTime.now()),
+        utdanningNusKode = "3",
+        utdanningBestatt = "JA",
+        utdanningGodkjent = "JA",
+        opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
+            opplysningerOmArbeidssoekerId,
+            listOf(
+                JobbSituasjonBeskrivelseResponse.ER_PERMITTERT.name,
+                JobbSituasjonBeskrivelseResponse.MIDLERTIDIG_JOBB.name
             )
-        ),
-        annet = AnnetResponse(
-            andreForholdHindrerArbeid = JaNeiVetIkke.NEI
-        ),
-        utdanning = UtdanningResponse(
-            nus = "3",
-            bestaatt = JaNeiVetIkke.JA,
-            godkjent = JaNeiVetIkke.JA
-        ),
-        helse = HelseResponse(
-            helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
         )
-    ).toOpplysningerOmArbeidssoekerEntity()
+    )
 }

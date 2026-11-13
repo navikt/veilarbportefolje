@@ -14,223 +14,7 @@ import java.util.*
 class OppslagArbeidssoekerregisteretClientTest {
 
     @Test
-    fun hentArbeidssoekerperioder_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
-        val fnr = Fnr.of("123")
-
-        val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRuntimeInfo.httpPort,
-            { "TOKEN" },
-            RestClient.baseClient(),
-            "veilarbportefolje"
-        )
-
-        val responseBody = """
-                    [
-                      {
-                        "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
-                        "startet": {
-                          "tidspunkt": "2024-04-23T13:04:40.739Z",
-                          "utfoertAv": {
-                            "type": "SLUTTBRUKER"
-                          },
-                          "kilde": "europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-arbeidssokerregisteret-api-inngang:24.04.23.118-1",
-                          "aarsak": "Er over 18 år, er bosatt i Norge i hendhold Folkeregisterloven"
-                        },
-                        "avsluttet": null
-                      }
-                    ]
-                """.trimIndent()
-
-        WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v1/veileder/arbeidssoekerperioder")).withRequestBody(
-                WireMock.equalToJson(
-                    "{\"identitetsnummer\":\"${fnr.get()}\"}"
-                )
-            ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
-        )
-
-        val response: List<ArbeidssokerperiodeResponse>? = client.hentArbeidssokerPerioder(fnr.get())
-
-        val forventet: List<ArbeidssokerperiodeResponse>? = listOf(
-            ArbeidssokerperiodeResponse(
-                periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
-                startet = MetadataResponse(
-                    tidspunkt = ZonedDateTime.parse("2024-04-23T13:04:40.739Z"),
-                    utfoertAv = BrukerResponse(
-                        type = BrukerType.SLUTTBRUKER
-                    ),
-                    kilde = "europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-arbeidssokerregisteret-api-inngang:24.04.23.118-1",
-                    aarsak = "Er over 18 år, er bosatt i Norge i hendhold Folkeregisterloven"
-                ),
-                avsluttet = null
-            )
-        )
-
-        Assertions.assertThat(response).isEqualTo(forventet)
-    }
-
-    @Test
-    fun hentOpplysningerOmArbeidssoeker_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger(
-        wireMockRuntimeInfo: WireMockRuntimeInfo
-    ) {
-        val fnr = Fnr.of("123")
-
-        val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRuntimeInfo.httpPort,
-            { "TOKEN" },
-            RestClient.baseClient(),
-            "veilarbportefolje"
-        )
-
-        val responseBody = """
-                    [
-                      {
-                        "opplysningerOmArbeidssoekerId": "913161a3-dde9-4448-abf8-2a01a043f8cd",
-                        "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
-                        "sendtInnAv": {
-                          "tidspunkt": "2024-04-23T13:22:58.089Z",
-                          "utfoertAv": {
-                            "type": "SLUTTBRUKER"
-                          },
-                          "kilde": "paw-arbeidssoekerregisteret-inngang",
-                          "aarsak": "opplysning om arbeidssøker sendt inn"
-                        },
-                        "jobbsituasjon": [
-                          {
-                            "beskrivelse": "ALDRI_HATT_JOBB",
-                            "detaljer": {}
-                          }
-                        ],
-                        "utdanning": {
-                          "nus": "3",
-                          "bestaatt": "JA",
-                          "godkjent": "JA"
-                        },
-                        "helse": {
-                          "helsetilstandHindrerArbeid": "NEI"
-                        },
-                        "annet": {
-                          "andreForholdHindrerArbeid": "NEI"
-                        }
-                      }
-                    ]
-                """.trimIndent()
-
-        WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v1/veileder/opplysninger-om-arbeidssoeker")).withRequestBody(
-                WireMock.equalToJson(
-                    "{\"identitetsnummer\":\"${fnr.get()}\",\"periodeId\":\"ea0ad984-8b99-4fff-afd6-07737ab19d16\"}"
-                )
-            ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
-        )
-
-        val response: List<OpplysningerOmArbeidssoekerResponse>? =
-            client.hentOpplysningerOmArbeidssoeker(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
-
-        val forventet: List<OpplysningerOmArbeidssoekerResponse>? = listOf(
-            OpplysningerOmArbeidssoekerResponse(
-                opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
-                periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
-                sendtInnAv = MetadataResponse(
-                    tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-                    utfoertAv = BrukerResponse(
-                        type = BrukerType.SLUTTBRUKER
-                    ),
-                    kilde = "paw-arbeidssoekerregisteret-inngang",
-                    aarsak = "opplysning om arbeidssøker sendt inn"
-                ),
-                jobbsituasjon = listOf(
-                    BeskrivelseMedDetaljerResponse(
-                        beskrivelse = JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB,
-                        detaljer = emptyMap()
-                    )
-                ),
-                utdanning = UtdanningResponse(
-                    nus = "3",
-                    bestaatt = JaNeiVetIkke.JA,
-                    godkjent = JaNeiVetIkke.JA
-                ),
-                helse = HelseResponse(
-                    helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
-                ),
-                annet = AnnetResponse(
-                    andreForholdHindrerArbeid = JaNeiVetIkke.NEI
-                )
-            )
-        )
-
-        Assertions.assertThat(response).isEqualTo(forventet)
-    }
-
-    @Test
-    fun hentProfilering_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode_og_har_registrert_opplysninger_og_har_profilering(
-        wireMockRuntimeInfo: WireMockRuntimeInfo
-    ) {
-        val fnr = Fnr.of("123")
-
-        val client = OppslagArbeidssoekerregisteretClient(
-            "http://localhost:" + wireMockRuntimeInfo.httpPort,
-            { "TOKEN" },
-            RestClient.baseClient(),
-            "veilarbportefolje"
-        )
-
-        val responseBody = """
-                    [
-                      {
-                        "profileringId": "e8f17be2-8b4d-41d5-b86f-acfc51f511c6",
-                        "periodeId": "ea0ad984-8b99-4fff-afd6-07737ab19d16",
-                        "opplysningerOmArbeidssoekerId": "913161a3-dde9-4448-abf8-2a01a043f8cd",
-                        "sendtInnAv": {
-                          "tidspunkt": "2024-04-23T13:22:58.668Z",
-                          "utfoertAv": {
-                            "type": "SYSTEM"
-                          },
-                          "kilde": "null-null",
-                          "aarsak": "opplysninger-mottatt"
-                        },
-                        "profilertTil": "ANTATT_BEHOV_FOR_VEILEDNING",
-                        "jobbetSammenhengendeSeksAvTolvSisteManeder": false,
-                        "alder": 42
-                      }
-                    ]
-                """.trimIndent()
-
-        WireMock.givenThat(
-            WireMock.post(WireMock.urlEqualTo("/api/v1/veileder/profilering")).withRequestBody(
-                WireMock.equalToJson(
-                    """{"identitetsnummer":"${fnr.get()}","periodeId":"ea0ad984-8b99-4fff-afd6-07737ab19d16"}"""
-                )
-            ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
-        )
-
-        val response: List<ProfileringResponse>? =
-            client.hentProfilering(fnr.get(), UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"))
-
-        val forventet: List<ProfileringResponse>? = listOf(
-            ProfileringResponse(
-                profileringId = UUID.fromString("e8f17be2-8b4d-41d5-b86f-acfc51f511c6"),
-                periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
-                opplysningerOmArbeidssoekerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
-                sendtInnAv = MetadataResponse(
-                    tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.668Z"),
-                    utfoertAv = BrukerResponse(
-                        type = BrukerType.SYSTEM
-                    ),
-                    kilde = "null-null",
-                    aarsak = "opplysninger-mottatt"
-                ),
-                profilertTil = ProfilertTil.ANTATT_BEHOV_FOR_VEILEDNING,
-                jobbetSammenhengendeSeksAvTolvSisteManeder = false,
-                alder = 42
-            )
-        )
-
-        Assertions.assertThat(response).isEqualTo(forventet)
-    }
-
-    @Test
-    fun hentAggregertPeriode_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
+    fun hentAggregertArbeidssokerPeriode_gir_forventet_respons_naar_bruker_har_aktiv_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val fnr = Fnr.of("01017012345")
 
         val client = OppslagArbeidssoekerregisteretClient(
@@ -337,15 +121,15 @@ class OppslagArbeidssoekerregisteretClientTest {
                 ).willReturn(WireMock.aResponse().withStatus(200).withBody(responseBody))
         )
 
-        val response: AggregertPeriodeResponse? = client.hentAggregertPeriode(fnr.get())
+        val response: AggregertPeriodeResponse? = client.hentAggregertArbeidssokerPeriode(fnr.get())
 
         val forventet = AggregertPeriodeResponse(
             id = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
             identitetsnummer = "01017012345",
             startet = PeriodeHendelseResponse(
-                sendtInnAv = MetadataV3Response(
+                sendtInnAv = MetadataResponse(
                     tidspunkt = ZonedDateTime.parse("2024-04-23T13:04:40.739Z"),
-                    utfoertAv = BrukerV3Response(BrukerType.SLUTTBRUKER, "01017012345", "idporten-loa-high"),
+                    utfoertAv = BrukerResponse(BrukerType.SLUTTBRUKER, "01017012345", "idporten-loa-high"),
                     kilde = "paw-arbeidssokerregisteret-api-inngang",
                     aarsak = "Er over 18 år",
                     tidspunktFraKilde = null
@@ -353,11 +137,11 @@ class OppslagArbeidssoekerregisteretClientTest {
                 tidspunkt = ZonedDateTime.parse("2024-04-23T13:04:40.739Z")
             ),
             avsluttet = null,
-            opplysning = OpplysningerV3Response(
+            opplysning = OpplysningerResponse(
                 id = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
-                sendtInnAv = MetadataV3Response(
+                sendtInnAv = MetadataResponse(
                     tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-                    utfoertAv = BrukerV3Response(BrukerType.VEILEDER, "Z123456", null),
+                    utfoertAv = BrukerResponse(BrukerType.VEILEDER, "Z123456", null),
                     kilde = "paw-arbeidssokerregisteret-api-inngang",
                     aarsak = "opplysning om arbeidssøker sendt inn",
                     tidspunktFraKilde = TidspunktFraKildeResponse(
@@ -365,9 +149,9 @@ class OppslagArbeidssoekerregisteretClientTest {
                         avviksType = AvviksType.FORSINKELSE
                     )
                 ),
-                utdanning = UtdanningV3Response("3", JaNeiVetIkkeV3.JA, JaNeiVetIkkeV3.UKJENT_VERDI),
-                helse = HelseV3Response(JaNeiVetIkkeV3.NEI),
-                jobbsituasjon = JobbsituasjonV3Response(
+                utdanning = UtdanningResponse("3", JaNeiVetIkke.JA, JaNeiVetIkke.UKJENT_VERDI),
+                helse = HelseResponse(JaNeiVetIkke.NEI),
+                jobbsituasjon = JobbsituasjonResponse(
                     listOf(
                         BeskrivelseMedDetaljerResponse(
                             beskrivelse = JobbSituasjonBeskrivelseResponse.HAR_BLITT_SAGT_OPP,
@@ -375,15 +159,15 @@ class OppslagArbeidssoekerregisteretClientTest {
                         )
                     )
                 ),
-                annet = AnnetV3Response(JaNeiVetIkkeV3.VET_IKKE),
+                annet = AnnetResponse(JaNeiVetIkke.VET_IKKE),
                 tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z")
             ),
-            profilering = ProfileringV3Response(
+            profilering = ProfileringResponse(
                 id = UUID.fromString("c4f8b2a1-1111-4c3e-9b1a-2a01a043f8cd"),
                 opplysningerOmArbeidssokerId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
-                sendtInnAv = MetadataV3Response(
+                sendtInnAv = MetadataResponse(
                     tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-                    utfoertAv = BrukerV3Response(BrukerType.SYSTEM, "paw-profilering", null),
+                    utfoertAv = BrukerResponse(BrukerType.SYSTEM, "paw-profilering", null),
                     kilde = "null-null",
                     aarsak = "opplysninger-mottatt",
                     tidspunktFraKilde = null
@@ -393,12 +177,12 @@ class OppslagArbeidssoekerregisteretClientTest {
                 alder = 42,
                 tidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z")
             ),
-            egenvurdering = EgenvurderingV3Response(
+            egenvurdering = EgenvurderingResponse(
                 id = UUID.fromString("d5a9c3b2-2222-4c3e-9b1a-2a01a043f8cd"),
                 profileringId = UUID.fromString("c4f8b2a1-1111-4c3e-9b1a-2a01a043f8cd"),
-                sendtInnAv = MetadataV3Response(
+                sendtInnAv = MetadataResponse(
                     tidspunkt = ZonedDateTime.parse("2024-04-24T08:00:00Z"),
-                    utfoertAv = BrukerV3Response(BrukerType.SLUTTBRUKER, "01017012345", null),
+                    utfoertAv = BrukerResponse(BrukerType.SLUTTBRUKER, "01017012345", null),
                     kilde = "paw-arbeidssoekerregisteret-api-egenvurdering",
                     aarsak = "egenvurdering sendt inn",
                     tidspunktFraKilde = null
@@ -407,14 +191,14 @@ class OppslagArbeidssoekerregisteretClientTest {
                 egenvurdering = ProfilertTil.ANTATT_GODE_MULIGHETER,
                 tidspunkt = ZonedDateTime.parse("2024-04-24T08:00:00Z")
             ),
-            bekreftelse = BekreftelseV3Response(
+            bekreftelse = BekreftelseResponse(
                 id = UUID.fromString("e6b0d4c3-3333-4c3e-9b1a-2a01a043f8cd"),
                 bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                 status = BekreftelseStatus.GYLDIG,
                 svar = BekreftelseSvarResponse(
-                    sendtInnAv = MetadataV3Response(
+                    sendtInnAv = MetadataResponse(
                         tidspunkt = ZonedDateTime.parse("2024-05-07T10:00:00Z"),
-                        utfoertAv = BrukerV3Response(BrukerType.SLUTTBRUKER, "01017012345", null),
+                        utfoertAv = BrukerResponse(BrukerType.SLUTTBRUKER, "01017012345", null),
                         kilde = "paw-arbeidssoekerregisteret-bekreftelse",
                         aarsak = "bekreftelse levert",
                         tidspunktFraKilde = null
@@ -432,7 +216,7 @@ class OppslagArbeidssoekerregisteretClientTest {
     }
 
     @Test
-    fun hentAggregertPeriode_gir_null_naar_bruker_ikke_har_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
+    fun hentAggregertArbeidssokerPeriode_gir_null_naar_bruker_ikke_har_arbeidssoekerperiode(wireMockRuntimeInfo: WireMockRuntimeInfo) {
         val client = OppslagArbeidssoekerregisteretClient(
             "http://localhost:" + wireMockRuntimeInfo.httpPort,
             { "TOKEN" },
@@ -445,6 +229,6 @@ class OppslagArbeidssoekerregisteretClientTest {
                 .willReturn(WireMock.aResponse().withStatus(404))
         )
 
-        Assertions.assertThat(client.hentAggregertPeriode("01017012345")).isNull()
+        Assertions.assertThat(client.hentAggregertArbeidssokerPeriode("01017012345")).isNull()
     }
 }

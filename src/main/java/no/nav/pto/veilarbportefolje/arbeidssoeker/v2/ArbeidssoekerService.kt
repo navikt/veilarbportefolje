@@ -87,7 +87,7 @@ class ArbeidssoekerService(
         secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
 
         // todo - sjekk med paw om de håndterer alle identer, ellers bør vi sende inn fnr fra melding.
-        val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
+        val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())
         if (aggregertPeriode == null || aggregertPeriode.id != periodeId) {
             secureLog.info("Fant ingen aggregert arbeidssøkerperiode med periodeId: $periodeId for bruker med fnr: $fnr")
             // TODO bør vi gjøre noe mer her? retry på fetch om data ikke finnes eller har samme periodeID? data er alt slettet på dette punktet
@@ -223,7 +223,7 @@ class ArbeidssoekerService(
 
         secureLog.info("Henter aggregert arbeidssøkerperiode for bruker med fnr: $fnr")
         val aggregertPeriode: AggregertPeriodeResponse? =
-            oppslagArbeidssoekerregisteretClient.hentAggregertPeriode(fnr.get())
+            oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())
 
         if (aggregertPeriode == null) {
             secureLog.info("Fant ingen aktiv arbeidssøkerperiode for bruker med fnr: $fnr")
