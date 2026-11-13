@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
@@ -40,6 +41,23 @@ class ArbeidssoekerProfileringKafkaMeldingService(
     }
 }
 
+/**
+ * Håndterer arbeidssøkerdata fra arbeidssøkerregisteret for brukere under oppfølging.
+ *
+ * Arbeidssøkerdata består av:
+ * - Siste arbeidssøkerperiode (SISTE_ARBEIDSSOEKER_PERIODE)
+ * - Siste opplysninger om arbeidssøker, inkl. jobbsituasjon (OPPLYSNINGER_OM_ARBEIDSSOEKER, OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON)
+ * - Siste profilering (PROFILERING)
+ *
+ * Dataflyt:
+ * - Kafka: Tar imot meldinger fra tre topics (periode, opplysninger om arbeidssøker og profilering).
+ * - Start oppfølging: Henter og lagrer arbeidssøkerdata fra API-et (oppslag-api, ett aggregert endepunkt `/api/v3/snapshot`).
+ *   Ved ny periode på Kafka hentes opplysninger og profilering fra samme endepunkt.
+ * - Avslutt oppfølging: Sletter arbeidssøkerdata. Opplysninger og profilering slettes via cascade fra SISTE_ARBEIDSSOEKER_PERIODE.
+ *
+ * Gamle tabeller fra veilarbregistrering (BRUKER_REGISTRERING, BRUKER_PROFILERING og ENDRING_I_REGISTRERING)
+ * oppdateres ikke lenger. De leses kun fra (i BrukerRepositoryV2) og supplerer dataene over.
+ */
 @Service
 class ArbeidssoekerService(
     private val oppslagArbeidssoekerregisteretClient: OppslagArbeidssoekerregisteretClient,
@@ -52,7 +70,6 @@ class ArbeidssoekerService(
 
     @Transactional(rollbackFor = [Exception::class])
     fun behandleKafkaMeldingLogikk(kafkaMelding: Periode) {
-
         val periodeId = kafkaMelding.id
         val identitetsnummer = kafkaMelding.identitetsnummer
 
@@ -77,52 +94,12 @@ class ArbeidssoekerService(
 
         val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
 
-        hentAlleFnrOgSlettGamlePerioder(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-            ArbeidssoekerPeriodeEntity(
-                periodeId,
-                fnr.get()
-            )
-        )
-        secureLog.info("Lagret siste arbeidssøkerperiode fra topic for bruker med fnr: $fnr")
-
-        // todo - sjekk med paw om de håndterer alle identer, ellers bør vi sende inn fnr fra melding.
-        val aggregertPeriode = oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())
-        if (aggregertPeriode == null || aggregertPeriode.id != periodeId) {
-            secureLog.info("Fant ingen aggregert arbeidssøkerperiode med periodeId: $periodeId for bruker med fnr: $fnr")
-            // TODO bør vi gjøre noe mer her? retry på fetch om data ikke finnes eller har samme periodeID? data er alt slettet på dette punktet
-            return
+        val bleLagret = hentOgLagreAggregertPeriode(fnr, aktorId, forventetPeriodeId = periodeId)
+        // Fall-back om api-et ikke fant noe på periodeId.
+        // TODO: Hva bør vi gjøre om apiet ikke er oppdatert enda? Vi risikerer å miste info om profilering og bruker.
+        if (!bleLagret) {
+            erstattSisteArbeidssoekerPeriode(fnr, periodeId)
         }
-
-        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
-            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
-
-        if (opplysningerOmArbeidssoeker == null) {
-            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
-            return
-        }
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            opplysningerOmArbeidssoeker
-        )
-        if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
-        }
-        secureLog.info("Lagret opplysninger om arbeidssøker fra topic for bruker med fnr: $fnr")
-
-        val profilering: ProfileringEntity? = aggregertPeriode.profilering
-            ?.takeIf { it.opplysningerOmArbeidssokerId == opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
-            ?.toProfileringEntity(aggregertPeriode.id)
-
-        if (profilering == null) {
-            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
-            return
-        }
-
-        profileringRepository.insertProfilering(profilering)
-        if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profilering)
-        }
-        secureLog.info("Lagret profilering fra topic for bruker med fnr: $fnr")
     }
 
     @Transactional
@@ -219,50 +196,7 @@ class ArbeidssoekerService(
             throw RuntimeException("Fant ingen fødselsnummer for bruker")
         }
 
-        //  tODO opensearch her??
-
-        secureLog.info("Henter aggregert arbeidssøkerperiode for bruker med fnr: $fnr")
-        val aggregertPeriode: AggregertPeriodeResponse? =
-            oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())
-
-        if (aggregertPeriode == null) {
-            secureLog.info("Fant ingen aktiv arbeidssøkerperiode for bruker med fnr: $fnr")
-            return
-        }
-
-        hentAlleFnrOgSlettGamlePerioder(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-            ArbeidssoekerPeriodeEntity(
-                aggregertPeriode.id,
-                fnr.get()
-            )
-        )
-        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
-
-        val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
-            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
-
-        if (sisteOpplysningerOmArbeidssoeker == null) {
-            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
-            return
-        }
-
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            sisteOpplysningerOmArbeidssoeker
-        )
-        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
-
-        val sisteProfilering: ProfileringEntity? = aggregertPeriode.profilering
-            ?.takeIf { it.opplysningerOmArbeidssokerId == sisteOpplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
-            ?.toProfileringEntity(aggregertPeriode.id)
-
-        if (sisteProfilering == null) {
-            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
-            return
-        }
-
-        profileringRepository.insertProfilering(sisteProfilering)
-        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
+        hentOgLagreAggregertPeriode(fnr, aktorId)
     }
 
     fun slettArbeidssoekerData(aktorId: AktorId) {
@@ -281,6 +215,68 @@ class ArbeidssoekerService(
             )
             throw e
         }
+    }
+
+    /**
+     * Henter aggregert periode fra snapshot-endepunktet og lagrer periode, opplysninger og profilering.
+     * Returnerer false uten å endre noe dersom ingen periode finnes, eller perioden ikke er [forventetPeriodeId].
+     */
+    private fun hentOgLagreAggregertPeriode(fnr: Fnr, aktorId: AktorId?, forventetPeriodeId: UUID? = null): Boolean {
+        secureLog.info("Henter aggregert arbeidssøkerperiode for bruker med fnr: $fnr")
+        val aggregertPeriode: AggregertPeriodeResponse? =
+            oppslagArbeidssoekerregisteretClient.hentAggregertArbeidssokerPeriode(fnr.get())
+
+        if (aggregertPeriode == null || (forventetPeriodeId != null && aggregertPeriode.id != forventetPeriodeId)) {
+            secureLog.info("Fant ingen aggregert arbeidssøkerperiode for bruker med fnr: $fnr, forventet periodeId: $forventetPeriodeId")
+            return false
+        }
+
+        erstattSisteArbeidssoekerPeriode(fnr, aggregertPeriode.id)
+        lagreOpplysningerOgProfilering(aggregertPeriode, fnr, aktorId)
+        return true
+    }
+
+    private fun erstattSisteArbeidssoekerPeriode(fnr: Fnr, periodeId: UUID) {
+        hentAlleFnrOgSlettGamlePerioder(fnr)
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(periodeId, fnr.get())
+        )
+        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
+    }
+
+    private fun lagreOpplysningerOgProfilering(
+        aggregertPeriode: AggregertPeriodeResponse,
+        fnr: Fnr,
+        aktorId: AktorId?
+    ) {
+        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
+            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
+
+        if (opplysningerOmArbeidssoeker == null) {
+            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
+            return
+        }
+        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+            opplysningerOmArbeidssoeker
+        )
+        if (aktorId != null) {
+            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
+        }
+        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+
+        val profilering: ProfileringEntity? = aggregertPeriode.profilering
+            ?.takeIf { it.opplysningerOmArbeidssokerId == opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
+            ?.toProfileringEntity(aggregertPeriode.id)
+
+        if (profilering == null) {
+            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
+            return
+        }
+        profileringRepository.insertProfilering(profilering)
+        if (aktorId != null) {
+            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profilering)
+        }
+        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
     private fun hentAlleFnrOgSlettGamlePerioder(fnr: Fnr) {
