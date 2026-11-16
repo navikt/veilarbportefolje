@@ -80,6 +80,7 @@ data class PortefoljebrukerOpensearchModell(
     var utdanning_bestatt: String? = null,
     var utdanning_godkjent: String? = null,
     var utdanning_og_situasjon_sist_endret: LocalDate? = null,
+    var er_registrert_i_arbeidssokerregisteret: Boolean = false,
 
     // Aktiviteter
     var aktivitet_behandling_utlopsdato: String? = getFarInTheFutureDate(),

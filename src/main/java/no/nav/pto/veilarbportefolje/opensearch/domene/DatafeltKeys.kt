@@ -73,13 +73,13 @@ object DatafeltKeys {
 
     object Arbeidssoeker {
         val BRUKERS_SITUASJONER = PortefoljebrukerOpensearchModell::brukers_situasjoner.name
-        val BRUKERS_SITUASJON_SIST_ENDRET = PortefoljebrukerOpensearchModell::brukers_situasjon_sist_endret.name
         val PROFILERING_RESULTAT = PortefoljebrukerOpensearchModell::profilering_resultat.name
         val UTDANNING = PortefoljebrukerOpensearchModell::utdanning.name
         val UTDANNING_BESTATT = PortefoljebrukerOpensearchModell::utdanning_bestatt.name
         val UTDANNING_GODKJENT = PortefoljebrukerOpensearchModell::utdanning_godkjent.name
         val UTDANNING_OG_SITUASJON_SIST_ENDRET =
             PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
+        val ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET = PortefoljebrukerOpensearchModell::er_registrert_i_arbeidssokerregisteret.name
     }
 
     object Aktiviteter {

@@ -23,6 +23,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT
@@ -518,6 +519,20 @@ class OpensearchFilterQueryBuilder {
 
                     Sykmeldt.IKKE_SYKMELDT ->
                         subQuery.should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(SYKMELDT)))
+                }
+            }
+            queryBuilder.must(subQuery)
+        }
+
+        if (filtervalg.harArbeidssokerregisteretFilter()) {
+            val subQuery = QueryBuilders.boolQuery()
+            filtervalg.arbeidssokerregisteret.forEach { arbeidssokerregisteret ->
+                when (arbeidssokerregisteret) {
+                    Arbeidssokerregisteret.ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET ->
+                        subQuery.should(QueryBuilders.termQuery(ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET, true))
+
+                    Arbeidssokerregisteret.ER_IKKE_REGISTRERT_I_ARBEIDSSOKERREGISTERET ->
+                        subQuery.should(QueryBuilders.termQuery(ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET, false))
                 }
             }
             queryBuilder.must(subQuery)

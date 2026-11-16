@@ -73,6 +73,18 @@ class OpensearchIndexerPaDatafelt(
         update(aktoerId, content, "Oppdater opplysninger om arbeidssøker")
     }
 
+    fun updateHarAktivArbeidssokerperiode(aktoerId: AktorId, harAktivArbeidssokerperiode: Boolean) {
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .field(
+                DatafeltKeys.Arbeidssoeker.ER_REGISTRERT_I_ARBEIDSSOKERREGISTERET,
+                harAktivArbeidssokerperiode
+            )
+            .endObject()
+
+        update(aktoerId, content, "Oppdaterer om bruker er registrert i arbeidssøkerregisteret")
+    }
+
     fun updateProfilering(aktoerId: AktorId, profileringEntity: ProfileringEntity) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
