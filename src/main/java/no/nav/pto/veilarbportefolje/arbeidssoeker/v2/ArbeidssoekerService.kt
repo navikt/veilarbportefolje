@@ -9,7 +9,7 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 
@@ -51,12 +51,12 @@ class ArbeidssoekerProfileringKafkaMeldingService(
  *
  * Dataflyt:
  * - Kafka: Tar imot meldinger fra tre topics (periode, opplysninger om arbeidssøker og profilering).
- * - Start oppfølging: Henter og lagrer arbeidssøkerdata fra API-et (oppslag-api, ett aggregert endepunkt `/api/v3/snapshot`).
- *   Ved ny periode på Kafka hentes opplysninger og profilering fra samme endepunkt.
+ * - Start oppfølging og admin-endepunkt: Henter og lagrer arbeidssøkerdata fra API-et (oppslag-api, ett aggregert endepunkt `/api/v3/snapshot`).
+ *   Ved ny periode på Kafka hentes opplysninger og profilering fra samme endepunkt. Endepunktet har kun aktive perioder, dvs de er ikke avsluttet.
  * - Avslutt oppfølging: Sletter arbeidssøkerdata. Opplysninger og profilering slettes via cascade fra SISTE_ARBEIDSSOEKER_PERIODE.
  *
  * Gamle tabeller fra veilarbregistrering (BRUKER_REGISTRERING, BRUKER_PROFILERING og ENDRING_I_REGISTRERING)
- * oppdateres ikke lenger. De leses kun fra (i BrukerRepositoryV2) og supplerer dataene over.
+ * oppdateres ikke lenger. De leses kun fra og supplerer dataene over ved indeksering til opensearch.
  */
 @Service
 class ArbeidssoekerService(
