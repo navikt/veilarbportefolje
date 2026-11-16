@@ -9,7 +9,6 @@ data class Etiketter(
     val nyForVeileder: Boolean,
     val nyForEnhet: Boolean,
     val harSikkerhetstiltak: Boolean,
-    var diskresjonskodeFortrolig: String?, // fjernes etter vi bytter til adressebeskyttelse
     val adressebeskyttelse: String?,
     val egenAnsatt: Boolean,
     val skjermetTil: LocalDate?,

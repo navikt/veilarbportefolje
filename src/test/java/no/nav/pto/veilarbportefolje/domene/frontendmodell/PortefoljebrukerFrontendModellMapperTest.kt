@@ -39,6 +39,8 @@ class PortefoljebrukerFrontendModellMapperTest {
             ny_for_veileder = true,
             gjeldendeVedtak14a = null,
             profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER,
+            egen_ansatt = false,
+            skjermet_til = LocalDateTime.of(2020, 1, 1, 10, 0),
         )
 
         // when
@@ -56,11 +58,12 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(true, etiketter.trengerOppfolgingsvedtak)
         Assertions.assertEquals(true, etiketter.nyForEnhet)
         Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, etiketter.profileringResultat)
-
+        Assertions.assertEquals(false, etiketter.egenAnsatt)
+        Assertions.assertEquals(LocalDate.of(2020, 1, 1), etiketter.skjermetTil)
     }
 
     @Test
-    fun `etiketter for diskresjonskodeFortrolig skal settes riktig`() {
+    fun `etiketter for adressebeskyttelse skal settes riktig`() {
         // fortrolig
         val frontendBrukerMedFortrolig = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
             opensearchBruker = PortefoljebrukerOpensearchModell(diskresjonskode = Adressebeskyttelse.FORTROLIG.diskresjonskode),
@@ -85,9 +88,9 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val etiketterUtenSikkerhetstiltak = frontendBrukerUgradert.etiketter
 
-        Assertions.assertEquals("7", etiketterMedFortrolig.diskresjonskodeFortrolig)
-        Assertions.assertEquals("6", etiketterMedStrengtFortrolig.diskresjonskodeFortrolig)
-        Assertions.assertEquals(null, etiketterUtenSikkerhetstiltak.diskresjonskodeFortrolig)
+        Assertions.assertEquals("Fortrolig", etiketterMedFortrolig.adressebeskyttelse)
+        Assertions.assertEquals("Streng fortrolig", etiketterMedStrengtFortrolig.adressebeskyttelse)
+        Assertions.assertEquals(null, etiketterUtenSikkerhetstiltak.adressebeskyttelse)
     }
 
     @Test
@@ -183,8 +186,6 @@ class PortefoljebrukerFrontendModellMapperTest {
             etternavn = "Nordmann",
             foedelandFulltNavn = "NOR",
             barn_under_18_aar = listOf(BarnUnder18AarData(8, null)),
-            egen_ansatt = false,
-            skjermet_til = LocalDateTime.of(2020, 1, 1, 10, 0),
             utdanning_og_situasjon_sist_endret = LocalDate.of(2024, 1, 1),
             neste_svarfrist_stilling_fra_nav = LocalDate.of(2024, 5, 1),
         )
@@ -200,8 +201,6 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("Nordmann", frontendBruker.etternavn)
         Assertions.assertEquals("NOR", frontendBruker.foedeland)
         Assertions.assertEquals(listOf(BarnUnder18AarData(8, null)), frontendBruker.barnUnder18AarData)
-        Assertions.assertEquals(false, frontendBruker.egenAnsatt)
-        Assertions.assertEquals(LocalDate.of(2020, 1, 1), frontendBruker.skjermetTil)
         Assertions.assertEquals(LocalDate.of(2024, 1, 1), frontendBruker.utdanningOgSituasjonSistEndret)
         Assertions.assertEquals(LocalDate.of(2024, 5, 1), frontendBruker.nesteSvarfristCvStillingFraNav)
 
