@@ -89,7 +89,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         val etiketterUtenSikkerhetstiltak = frontendBrukerUgradert.etiketter
 
         Assertions.assertEquals("Fortrolig", etiketterMedFortrolig.adressebeskyttelse)
-        Assertions.assertEquals("Streng fortrolig", etiketterMedStrengtFortrolig.adressebeskyttelse)
+        Assertions.assertEquals("Strengt fortrolig", etiketterMedStrengtFortrolig.adressebeskyttelse)
         Assertions.assertEquals(null, etiketterUtenSikkerhetstiltak.adressebeskyttelse)
     }
 
