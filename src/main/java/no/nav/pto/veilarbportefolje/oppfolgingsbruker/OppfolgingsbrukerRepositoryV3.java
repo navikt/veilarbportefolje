@@ -126,15 +126,28 @@ public class OppfolgingsbrukerRepositoryV3 {
         params.addValue("tilgangTilAdressebeskyttelseFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
 
         return dbNamed.queryForList("""
-                SELECT oa.fodselsnr from oppfolgingsbruker_arena_v2 oa
-                left join nom_skjerming ns on  ns.fodselsnr = oa.fodselsnr
-                left join bruker_data bd on  bd.freg_ident = oa.fodselsnr
-                where oa.fodselsnr = ANY (:fnrListe::varchar[])
-                AND (
-                                    (bd.diskresjonkode = '6' AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
-                                    OR (bd.diskresjonkode = '7' AND NOT :tilgangTilAdressebeskyttelseFortrolig::boolean)
-                                    OR (ns.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
+                with innsendt as (
+                    select unnest(:fnrListe::varchar[]) as fnr
+                ),
+                identer as (
+                    select innsendt.fnr, alle_fnr.ident, alle_fnr.historisk
+                    from innsendt
+                    inner join bruker_identer oppslag on oppslag.ident = innsendt.fnr
+                    inner join bruker_identer alle_fnr on alle_fnr.person = oppslag.person and alle_fnr.gruppe = 'FOLKEREGISTERIDENT'
+                ),
+                skjerming as (
+                    select distinct on (identer.fnr) identer.fnr, ns.er_skjermet
+                    from identer
+                    inner join nom_skjerming ns on ns.fodselsnr = identer.ident
+                    order by identer.fnr, identer.historisk, ns.skjermet_fra desc nulls last
                 )
+                select innsendt.fnr
+                from innsendt
+                left join skjerming on skjerming.fnr = innsendt.fnr
+                left join bruker_data bd on bd.freg_ident = innsendt.fnr
+                where (bd.diskresjonkode = '6' AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
+                   OR (bd.diskresjonkode = '7' AND NOT :tilgangTilAdressebeskyttelseFortrolig::boolean)
+                   OR (skjerming.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
                 """, params, String.class);
     }
 

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -122,7 +123,55 @@ public class OppfolginsbrukerRepositoryV3Test {
         assertThat(utenTilgang.stream().anyMatch(x -> x.equals(sperretAnsattFnr))).isTrue();
     }
 
+    @Test
+    public void skjerming_skal_finne_skjerming_pa_historisk_fnr() {
+        String aktivFnr = randomFnr().get();
+        String historiskFnr = randomFnr().get();
+        pdlIdentRepository.upsertIdenter(
+                List.of(
+                        new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                        new PDLIdent(aktivFnr, false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                        new PDLIdent(historiskFnr, true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+                )
+        );
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(aktivFnr, null, null, "0000", null, null, null, now()),
+                new NavKontor("0000"),
+                aktorId);
+        skjermingRepository.settSkjerming(Fnr.of(historiskFnr), true);
+
+        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(aktivFnr),
+                new BrukerinnsynTilganger(false, false, false));
+
+        assertThat(utenTilgang).isEqualTo(List.of(aktivFnr));
+    }
+
+    @Test
+    public void skjerming_skal_prioritere_aktivt_fnr() {
+        String aktivFnr = randomFnr().get();
+        String historiskFnr = randomFnr().get();
+        pdlIdentRepository.upsertIdenter(
+                List.of(
+                        new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
+                        new PDLIdent(aktivFnr, false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
+                        new PDLIdent(historiskFnr, true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+                )
+        );
+        oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
+                new OppfolgingsbrukerEntity(aktivFnr, null, null, "0000", null, null, null, now()),
+                new NavKontor("0000"),
+                aktorId);
+        skjermingRepository.settSkjerming(Fnr.of(aktivFnr), false);
+        skjermingRepository.settSkjerming(Fnr.of(historiskFnr), true);
+
+        List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(aktivFnr),
+                new BrukerinnsynTilganger(false, false, false));
+
+        assertThat(utenTilgang.size()).isEqualTo(0);
+    }
+
     private void settSperretAnsatt(String fnr, boolean sperret) {
+        lagreIdenter(fnr);
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
                 new OppfolgingsbrukerEntity(fnr, null, null, "0000", null, null,
                         null,
@@ -130,5 +179,14 @@ public class OppfolginsbrukerRepositoryV3Test {
                 new NavKontor("0000"),
                 aktorId);
         skjermingRepository.settSkjerming(Fnr.of(fnr), sperret);
+    }
+
+    private void lagreIdenter(String fnr) {
+        pdlIdentRepository.upsertIdenter(
+                List.of(
+                        new PDLIdent(randomAktorId().get(), false, PDLIdent.Gruppe.AKTORID),
+                        new PDLIdent(fnr, false, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
+                )
+        );
     }
 }

@@ -25,10 +25,6 @@ public class PostgresTable {
         // AO_KONTOR
         public static final String AO_KONTOR_KONTOR_ID = "AO_KONTOR_KONTOR_ID";
 
-        // NOM_SKJERMING
-        public static final String NOM_SKJERMING_ER_SKJERMET = "NOM_SKJERMING_ER_SKJERMET";
-        public static final String NOM_SKJERMING_SKJERMET_TIL = "NOM_SKJERMING_SKJERMET_TIL";
-
         // BRUKER_DATA
         public static final String BRUKER_DATA_FOEDSELSDATO = "BRUKER_DATA_FOEDSELSDATO";
         public static final String BRUKER_DATA_FORNAVN = "BRUKER_DATA_FORNAVN";
