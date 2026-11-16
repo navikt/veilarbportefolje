@@ -43,7 +43,6 @@ object PortefoljebrukerFrontendModellMapper {
             fnr = "",
             fornavn = "",
             etternavn = "",
-            skjermetTil = null,
             etiketter = bruker.etiketter.copy(skjermetTil = null),
             foedeland = null,
             tolkebehov = Tolkebehov.of("", "", null),
@@ -88,7 +87,6 @@ object PortefoljebrukerFrontendModellMapper {
                 nyForVeileder = opensearchBruker.ny_for_veileder,
                 nyForEnhet = ufordelt,
                 harSikkerhetstiltak = opensearchBruker.sikkerhetstiltak != null,
-                diskresjonskodeFortrolig = mapDiskresjonskodeFortrolig(opensearchBruker), // fjernes etter vi bytter til adressebeskyttelse
                 adressebeskyttelse = mapAdressebeskyttelse(opensearchBruker),
                 egenAnsatt = opensearchBruker.egen_ansatt,
                 skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
@@ -122,8 +120,6 @@ object PortefoljebrukerFrontendModellMapper {
             oppfolgingStartdato = fromIsoUtcToLocalDateOrNull(opensearchBruker.oppfolging_startdato),
             tildeltTidspunkt = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.tildelt_tidspunkt),
             veilederId = opensearchBruker.veileder_id,
-            egenAnsatt = opensearchBruker.egen_ansatt, //fjernes etter vi bytter til etiketter
-            skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til), //fjernes etter vi bytter til etiketter
             tiltakshendelse = opensearchBruker.tiltakshendelse?.let {
                 TiltakshendelseForBruker(
                     id = it.id,

@@ -56,7 +56,6 @@ class SensurerBrukerTest {
         assertThat(bruker.fnr).isEqualTo("11111111111")
         assertThat(bruker.fornavn).isEqualTo("fornavnKodeEgenAnsatt")
         assertThat(bruker.etternavn).isEqualTo("etternanvEgenAnsatt")
-        assertThat(bruker.skjermetTil).isNotNull()
         assertThat(bruker.etiketter.skjermetTil).isNotNull()
     }
 
@@ -76,7 +75,10 @@ class SensurerBrukerTest {
 
     @Test
     fun skalSeKode19BrukerMedKode6Tilgang() {
-        val bruker = sensurer(ikkeKonfidensiellBruker().apply { diskresjonskode = "19" }, BrukerinnsynTilganger(true, false, false))
+        val bruker = sensurer(
+            ikkeKonfidensiellBruker().apply { diskresjonskode = "19" },
+            BrukerinnsynTilganger(true, false, false)
+        )
         assertThat(bruker.fnr).isEqualTo("11111111111")
     }
 
@@ -128,7 +130,6 @@ class SensurerBrukerTest {
         assertThat(bruker.fnr).isEqualTo("")
         assertThat(bruker.etternavn).isEqualTo("")
         assertThat(bruker.fornavn).isEqualTo("")
-        assertThat(bruker.skjermetTil).isNull()
         assertThat(bruker.etiketter.skjermetTil).isNull()
         assertThat(bruker.foedeland).isNull()
         assertThat(bruker.tolkebehov.talespraaktolk).isEqualTo("")
@@ -171,10 +172,12 @@ class SensurerBrukerTest {
     }
 
     private fun brukerMedKode19Barn() = bruker().apply {
-        barn_under_18_aar = listOf(BarnUnder18AarData(15, "19"), BarnUnder18AarData(12, null), BarnUnder18AarData(3, null))
+        barn_under_18_aar =
+            listOf(BarnUnder18AarData(15, "19"), BarnUnder18AarData(12, null), BarnUnder18AarData(3, null))
     }
 
     private fun brukerMedKode6og7Barn() = bruker().apply {
-        barn_under_18_aar = listOf(BarnUnder18AarData(11, "6"), BarnUnder18AarData(15, "7"), BarnUnder18AarData(3, null))
+        barn_under_18_aar =
+            listOf(BarnUnder18AarData(11, "6"), BarnUnder18AarData(15, "7"), BarnUnder18AarData(3, null))
     }
 }
