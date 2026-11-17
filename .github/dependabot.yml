@@ -16,7 +16,6 @@ updates:
         patterns:
           - "*"
 
-
   - package-ecosystem: "maven" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
