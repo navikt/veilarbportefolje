@@ -21,7 +21,7 @@ import java.util.Set;
 import static no.nav.pto.veilarbportefolje.util.DateUtils.now;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomAktorId;
 import static no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 public class OppfolginsbrukerRepositoryV3Test {
@@ -166,7 +166,7 @@ public class OppfolginsbrukerRepositoryV3Test {
         List<String> utenTilgang = oppfolgingsbrukerRepository.finnSkjulteBrukere(List.of(aktivFnr),
                 new BrukerinnsynTilganger(false, false, false));
 
-        assertThat(utenTilgang.isEmpty());
+        assertThat(utenTilgang).isEmpty();
     }
 
     private void settSperretAnsatt(String fnr, boolean sperret) {
