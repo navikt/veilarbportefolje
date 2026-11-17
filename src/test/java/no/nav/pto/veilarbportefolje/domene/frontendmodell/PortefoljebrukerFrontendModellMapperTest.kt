@@ -58,7 +58,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(true, etiketter.trengerOppfolgingsvedtak)
         Assertions.assertEquals(true, etiketter.nyForEnhet)
         Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, etiketter.profileringResultat)
-        Assertions.assertEquals(false, etiketter.egenAnsatt)
+        Assertions.assertEquals(false, etiketter.skjermet)
         Assertions.assertEquals(LocalDate.of(2020, 1, 1), etiketter.skjermetTil)
     }
 
@@ -138,8 +138,8 @@ class PortefoljebrukerFrontendModellMapperTest {
         )
         val etiketterIkkeKandidat = frontendBrukerIkkeKandidat.etiketter
 
-        Assertions.assertEquals(true, etiketter.kandidatForUtmelding)
-        Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForUtmelding)
+        Assertions.assertEquals(true, etiketter.kandidatForAvslutning)
+        Assertions.assertEquals(false, etiketterIkkeKandidat.kandidatForAvslutning)
     }
 
     @Test
