@@ -28,7 +28,7 @@ class BeslutteroversiktServiceTest {
         val resultat = service.hentEtiketter(fnrListe).associateBy { it.fnr }
 
         assertThat(resultat.keys).containsExactlyInAnyOrder(egenAnsattBruker.fnr, kode7Bruker.fnr)
-        assertThat(resultat.getValue(egenAnsattBruker.fnr!!).etiketter.egenAnsatt).isTrue()
+        assertThat(resultat.getValue(egenAnsattBruker.fnr!!).etiketter.skjermet).isTrue()
         assertThat(resultat.getValue(kode7Bruker.fnr!!).etiketter.adressebeskyttelse).isEqualTo("Fortrolig")
     }
 }

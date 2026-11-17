@@ -16,11 +16,11 @@ class BeslutteroversiktService(
                     fnr = fnr,
                     etiketter = EtiketterBeslutteroversikt(
                         erDoed = bruker.er_doed,
-                        egenAnsatt = bruker.egen_ansatt,
+                        skjermet = bruker.egen_ansatt,
                         adressebeskyttelse = PortefoljebrukerFrontendModellMapper.mapAdressebeskyttelse(
                             bruker
                         ),
-                        kandidatForUtmelding = PortefoljebrukerFrontendModellMapper.erKandidatForUtmelding(bruker)
+                        kandidatForAvslutning = PortefoljebrukerFrontendModellMapper.erKandidatForUtmelding(bruker)
                     )
                 )
             }
