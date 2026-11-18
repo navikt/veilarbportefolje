@@ -111,7 +111,7 @@ class ArbeidssoekerregisterService(
         }
 
         slettArbeidssoekerregisterData(fnr)
-        secureLog.info("Fant nyere arbeidssøkerdata i api for bruker med fnr: $fnr. Lagrer periode etter evt sletting av eksisternede.")
+        secureLog.info("Fant nyere arbeidssøkerdata i api for bruker med fnr: $fnr. Lagrer periode etter evt sletting av eksisterende.")
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
     }
 
