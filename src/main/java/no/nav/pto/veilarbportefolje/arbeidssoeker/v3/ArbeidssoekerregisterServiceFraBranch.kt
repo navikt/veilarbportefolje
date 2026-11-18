@@ -59,6 +59,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as O
  * oppdateres ikke lenger. De leses kun fra og supplerer dataene over ved indeksering til opensearch. De slettes også ved
  * avslutt oppfølging.
  */
+
+
 @Service
 class ArbeidssoekerregisterServiceFraBranch(
     private val arbeidssoekerregisterClient: ArbeidssoekerregisterClient,
@@ -100,54 +102,54 @@ class ArbeidssoekerregisterServiceFraBranch(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
-        val arbeidssoekerPeriodeId = opplysninger.periodeId
-        val opplysningerOmArbeidssoekerId = opplysninger.id
-
-        secureLog.info("Behandler endring på opplysninger om arbeidssøker for bruker med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId, opplysningerOmArbeidssoekerId: $opplysningerOmArbeidssoekerId")
-
-        val sisteArbeidssoekerPeriode =
-            sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
-
-        if (sisteArbeidssoekerPeriode == null) {
-            secureLog.info("Ingen arbeidssøkerperiode lagret med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId")
-            return
-        }
-
-        val fnr = sisteArbeidssoekerPeriode.fnr
-        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
-            secureLog.info(
-                "Bruker med fnr $fnr er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
-                        "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
-                        "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
-            )
-            return
-        }
-
-        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr)
-
-        val opplysningerOmArbeidssoeker =
-            opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
-        if (opplysningerOmArbeidssoeker) {
-            secureLog.info("Opplysninger om arbeidssøker allerede lagret for bruker med fnr: $fnr")
-            return
-        }
-
-        val opplysningerOmArbeidssoekerEntity = opplysninger.toOpplysningerOmArbeidssoekerEntity()
-        opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            opplysningerOmArbeidssoekerEntity
-        )
-
-        if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
-        }
-
-        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")*/
+//        val arbeidssoekerPeriodeId = opplysninger.periodeId
+//        val opplysningerOmArbeidssoekerId = opplysninger.id
+//
+//        secureLog.info("Behandler endring på opplysninger om arbeidssøker for bruker med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId, opplysningerOmArbeidssoekerId: $opplysningerOmArbeidssoekerId")
+//
+//        val sisteArbeidssoekerPeriode =
+//            sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(arbeidssoekerPeriodeId)
+//
+//        if (sisteArbeidssoekerPeriode == null) {
+//            secureLog.info("Ingen arbeidssøkerperiode lagret med arbeidssoekerPeriodeId: $arbeidssoekerPeriodeId")
+//            return
+//        }
+//
+//        val fnr = sisteArbeidssoekerPeriode.fnr
+//        if (!pdlIdentRepository.erBrukerUnderOppfolging(fnr)) {
+//            secureLog.info(
+//                "Bruker med fnr $fnr er ikke under oppfølging, men har arbeidssøkerpeiode lagret. " +
+//                        "Dette betyr at arbeidssøkerdata ikke har blitt slettet riktig når bruker gikk ut av oppfølging. " +
+//                        "Ignorer melding, data må slettes manuelt og slettelogikk ved utgang av oppfølging bør kontrollsjekkes for feil."
+//            )
+//            return
+//        }
+//
+//        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr)
+//
+//        val opplysningerOmArbeidssoeker =
+//            opplysningerOmArbeidssoekerRepository.harSisteOpplysningerOmArbeidssoeker(opplysningerOmArbeidssoekerId)
+//        if (opplysningerOmArbeidssoeker) {
+//            secureLog.info("Opplysninger om arbeidssøker allerede lagret for bruker med fnr: $fnr")
+//            return
+//        }
+//
+//        val opplysningerOmArbeidssoekerEntity = opplysninger.toOpplysningerOmArbeidssoekerEntity()
+//        opplysningerOmArbeidssoekerRepository.slettOpplysningerOmArbeidssoeker(sisteArbeidssoekerPeriode.arbeidssoekerperiodeId)
+//        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+//            opplysningerOmArbeidssoekerEntity
+//        )
+//
+//        if (aktorId != null) {
+//            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoekerEntity)
+//        }
+//
+//        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
     }
 
     @Transactional
     fun behandleKafkaMeldingLogikk(kafkaMelding: ProfileringKafkaMelding) {
-        secureLog.info("Behandler endring på profilering for bruker med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
+/*        secureLog.info("Behandler endring på profilering for bruker med arbeidssoekerPeriodeId: ${kafkaMelding.periodeId}")
 
         val sisteArbeidssoekerPeriode =
             sisteArbeidssoekerPeriodeRepository.hentSisteArbeidssoekerPeriode(kafkaMelding.periodeId)
@@ -196,21 +198,21 @@ class ArbeidssoekerregisterServiceFraBranch(
     }
 
     fun slettArbeidssoekerData(aktorId: AktorId) {
-        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(aktorId.get()).identer.map { Fnr.of(it) }
-        if (alleFnrForPerson.isEmpty()) {
-            secureLog.warn("Fant ingen fødselsnummer for bruker med aktorId: ${aktorId.get()}, kunne ikke slette arbeidssøkerdata.")
-            return
-        }
-
-        try {
-            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
-        } catch (e: Exception) {
-            secureLog.error(
-                "Feil ved sletting av siste arbeidssøkerperiode for bruker med aktorId: ${aktorId.get()}",
-                e
-            )
-            throw e
-        }
+//        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(aktorId.get()).identer.map { Fnr.of(it) }
+//        if (alleFnrForPerson.isEmpty()) {
+//            secureLog.warn("Fant ingen fødselsnummer for bruker med aktorId: ${aktorId.get()}, kunne ikke slette arbeidssøkerdata.")
+//            return
+//        }
+//
+//        try {
+//            sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
+//        } catch (e: Exception) {
+//            secureLog.error(
+//                "Feil ved sletting av siste arbeidssøkerperiode for bruker med aktorId: ${aktorId.get()}",
+//                e
+//            )
+//            throw e
+//        }
     }
 
     /**
@@ -233,11 +235,11 @@ class ArbeidssoekerregisterServiceFraBranch(
     }
 
     private fun erstattSisteArbeidssoekerPeriode(fnr: Fnr, periodeId: UUID) {
-        hentAlleFnrOgSlettGamlePerioder(fnr)
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-            ArbeidssoekerPeriodeEntity(periodeId, fnr.get())
-        )
-        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
+//        hentAlleFnrOgSlettGamlePerioder(fnr)
+//        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+//            ArbeidssoekerPeriodeEntity(periodeId, fnr.get())
+//        )
+//        secureLog.info("Lagret siste arbeidssøkerperiode for bruker med fnr: $fnr")
     }
 
     private fun lagreOpplysningerOgProfilering(
@@ -245,38 +247,38 @@ class ArbeidssoekerregisterServiceFraBranch(
         fnr: Fnr,
         aktorId: AktorId?
     ) {
-        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
-            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
-
-        if (opplysningerOmArbeidssoeker == null) {
-            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
-            return
-        }
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            opplysningerOmArbeidssoeker
-        )
-        if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
-        }
-        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
-
-        val profilering: ProfileringEntity? = aggregertPeriode.profilering
-            ?.takeIf { it.opplysningerOmArbeidssokerId == opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
-            ?.toProfileringEntity(aggregertPeriode.id)
-
-        if (profilering == null) {
-            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
-            return
-        }
-        profileringRepository.insertProfilering(profilering)
-        if (aktorId != null) {
-            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profilering)
-        }
-        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
+//        val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity? =
+//            aggregertPeriode.opplysning?.toOpplysningerOmArbeidssoekerEntity(aggregertPeriode.id)
+//
+//        if (opplysningerOmArbeidssoeker == null) {
+//            secureLog.info("Fant ingen opplysninger om arbeidssøker for bruker med fnr: $fnr")
+//            return
+//        }
+//        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
+//            opplysningerOmArbeidssoeker
+//        )
+//        if (aktorId != null) {
+//            opensearchIndexerPaDatafelt.updateOpplysningerOmArbeidssoeker(aktorId, opplysningerOmArbeidssoeker)
+//        }
+//        secureLog.info("Lagret opplysninger om arbeidssøker for bruker med fnr: $fnr")
+//
+//        val profilering: ProfileringEntity? = aggregertPeriode.profilering
+//            ?.takeIf { it.opplysningerOmArbeidssokerId == opplysningerOmArbeidssoeker.opplysningerOmArbeidssoekerId }
+//            ?.toProfileringEntity(aggregertPeriode.id)
+//
+//        if (profilering == null) {
+//            secureLog.info("Fant ingen profilering for bruker med fnr: $fnr")
+//            return
+//        }
+//        profileringRepository.insertProfilering(profilering)
+//        if (aktorId != null) {
+//            opensearchIndexerPaDatafelt.updateProfilering(aktorId, profilering)
+//        }
+//        secureLog.info("Lagret profilering for bruker med fnr: $fnr")
     }
 
     private fun hentAlleFnrOgSlettGamlePerioder(fnr: Fnr) {
-        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
-        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
+//        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
+//        sisteArbeidssoekerPeriodeRepository.slettSisteArbeidssoekerPeriode(alleFnrForPerson)
     }
 }
