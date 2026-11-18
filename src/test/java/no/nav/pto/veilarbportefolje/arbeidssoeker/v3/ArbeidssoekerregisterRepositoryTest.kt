@@ -2,21 +2,24 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
+import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
-import no.nav.pto.veilarbportefolje.util.SingletonPostgresContainer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class ArbeidssoekerregisterRepositoryTest {
-    private val db: JdbcTemplate = SingletonPostgresContainer.init().createJdbcTemplate()
-    private val repository = ArbeidssoekerregisterRepository(db)
-
+@SpringBootTest(classes = [ApplicationConfigTest::class])
+class ArbeidssoekerregisterRepositoryTest(
+    @param:Autowired val jdbcTemplate: JdbcTemplate,
+    @param:Autowired val repository: ArbeidssoekerregisterRepository
+) {
     private val fnr = Fnr.of("23916795505")
 
     private val aggregertPeriode = AggregertPeriodeEntity(
@@ -40,7 +43,7 @@ class ArbeidssoekerregisterRepositoryTest {
 
     @BeforeEach
     fun reset() {
-        db.update("TRUNCATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}")
+        jdbcTemplate.update("TRUNCATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}")
     }
 
     @Test

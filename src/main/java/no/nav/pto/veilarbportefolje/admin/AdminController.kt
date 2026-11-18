@@ -286,7 +286,7 @@ class AdminController(
                         }
 
                         AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
-                            arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId)
+                            arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(aktorId)
                         }
 
                         AdminDataType.UFORETRYGD_DATA -> {
@@ -374,7 +374,7 @@ class AdminController(
 
                     AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
                         secureLog.info("Starter datahenting for arbeidssøker v3 for aktorId {}", request.aktorId)
-                        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(request.aktorId)
+                        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(request.aktorId)
                     }
 
                     AdminDataType.UFORETRYGD_DATA -> {
