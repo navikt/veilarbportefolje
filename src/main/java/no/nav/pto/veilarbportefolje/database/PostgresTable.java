@@ -248,6 +248,31 @@ public class PostgresTable {
         public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
     }
 
+    public static final class ARBEIDSSOEKERREGISTER_DATA {
+        private ARBEIDSSOEKERREGISTER_DATA() { /* no-op */ }
+
+        public static final String TABLE_NAME = "ARBEIDSSOEKERREGISTER_DATA";
+        public static final String IDENTITETSNUMMER = "IDENTITETSNUMMER";
+        public static final String PERIODE_ID = "PERIODE_ID";
+        public static final String PERIODE_START_TIDSPUNKT = "PERIODE_START_TIDSPUNKT";
+        public static final String PERIODE_AVSLUTTET_TIDSPUNKT = "PERIODE_AVSLUTTET_TIDSPUNKT";
+        public static final String PERIODE_RAD_SIST_ENDRET = "PERIODE_RAD_SIST_ENDRET";
+        public static final String OPPLYSNING_ID = "OPPLYSNING_ID";
+        public static final String OPPLYSNING_JOBBSITUASJON_BESKRIVELSE = "OPPLYSNING_JOBBSITUASJON_BESKRIVELSE";
+        public static final String OPPLYSNING_UTDANNING_NUS_KODE = "OPPLYSNING_UTDANNING_NUS_KODE";
+        public static final String OPPLYSNING_UTDANNING_BESTATT = "OPPLYSNING_UTDANNING_BESTATT";
+        public static final String OPPLYSNING_UTDANNING_GODKJENT = "OPPLYSNING_UTDANNING_GODKJENT";
+        public static final String OPPLYSNING_SENDT_INN_TIDSPUNKT = "OPPLYSNING_SENDT_INN_TIDSPUNKT";
+        public static final String OPPLYSNING_RAD_SIST_ENDRET = "OPPLYSNING_RAD_SIST_ENDRET";
+        public static final String PROFILERING_ID = "PROFILERING_ID";
+        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
+        public static final String PROFILERING_SENDT_INN_TIDSPUNKT = "PROFILERING_SENDT_INN_TIDSPUNKT";
+        public static final String PROFILERING_RAD_SIST_ENDRET = "PROFILERING_RAD_SIST_ENDRET";
+        public static final String SYNKRONISERING_STATUS = "SYNKRONISERING_STATUS";
+        public static final String RAD_OPPRETTET = "RAD_OPPRETTET";
+        public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
+    }
+
     public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER {
         private OPPLYSNINGER_OM_ARBEIDSSOEKER() { /* no-op */ }
 

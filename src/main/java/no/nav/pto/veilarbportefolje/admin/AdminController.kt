@@ -12,6 +12,7 @@ import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.*
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
 import no.nav.pto.veilarbportefolje.client.AktorClient
@@ -62,6 +63,7 @@ class AdminController(
     private val dagpengerService: DagpengerService,
     private val tiltakspengerService: TiltakspengerService,
     private val arbeidssoekerService: ArbeidssoekerService,
+    private val arbeidssoekerregisterService: ArbeidssoekerregisterService,
     private val defaultUnleash: DefaultUnleash
 ) {
     private val POAO_ADMIN = DownstreamApi(
@@ -283,6 +285,10 @@ class AdminController(
                             arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId)
                         }
 
+                        AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
+                            arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId)
+                        }
+
                         AdminDataType.UFORETRYGD_DATA -> {
                             uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(aktorId)
                         }
@@ -364,6 +370,11 @@ class AdminController(
                     AdminDataType.ARBEIDSSOKER_DATA -> {
                         secureLog.info("Starter datahenting for arbeidssøker for aktorId {}", request.aktorId)
                         arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(request.aktorId)
+                    }
+
+                    AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
+                        secureLog.info("Starter datahenting for arbeidssøker v3 for aktorId {}", request.aktorId)
+                        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(request.aktorId)
                     }
 
                     AdminDataType.UFORETRYGD_DATA -> {
