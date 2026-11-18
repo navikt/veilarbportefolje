@@ -10,6 +10,7 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterClient;
 import no.nav.pto.veilarbportefolje.auth.AuthService;
 import no.nav.pto.veilarbportefolje.auth.PoaoTilgangWrapper;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
@@ -177,6 +178,21 @@ public class ClientConfig {
         Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getOppslagArbeidssoekerregisteretScope());
 
         return new OppslagArbeidssoekerregisteretClient(
+                environmentProperties.getOppslagArbeidssoekerregisteretUrl(),
+                tokenSupplier,
+                RestClient.baseClient(),
+                APPLICATION_NAME
+        );
+    }
+
+    @Bean
+    public ArbeidssoekerregisterClient arbeidssokerregisterClient(
+            AuthService authService,
+            EnvironmentProperties environmentProperties
+    ) {
+        Supplier<String> tokenSupplier = () -> authService.getM2MToken(environmentProperties.getOppslagArbeidssoekerregisteretScope());
+
+        return new ArbeidssoekerregisterClient(
                 environmentProperties.getOppslagArbeidssoekerregisteretUrl(),
                 tokenSupplier,
                 RestClient.baseClient(),
