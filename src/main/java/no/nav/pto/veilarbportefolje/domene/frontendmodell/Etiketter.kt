@@ -10,10 +10,10 @@ data class Etiketter(
     val nyForEnhet: Boolean,
     val harSikkerhetstiltak: Boolean,
     val adressebeskyttelse: String?,
-    val egenAnsatt: Boolean,
+    val skjermet: Boolean,
     val skjermetTil: LocalDate?,
     val profileringResultat: Profileringsresultat?,
-    val kandidatForUtmelding: Boolean,
+    val kandidatForAvslutning: Boolean,
     val sykmeldtMedArbeidsgiver: Boolean,
     val sykmeldtUtenArbeidsgiver: Boolean,
 )
