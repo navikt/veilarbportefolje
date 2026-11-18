@@ -50,7 +50,7 @@ data class EtiketterForBruker(
 
 data class EtiketterBeslutteroversikt(
     val erDoed: Boolean,
-    val egenAnsatt: Boolean,
+    val skjermet: Boolean,
     val adressebeskyttelse: String?,
-    val kandidatForUtmelding: Boolean,
+    val kandidatForAvslutning: Boolean,
 )

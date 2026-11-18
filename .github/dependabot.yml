@@ -9,6 +9,8 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 4
     groups:
       github-actions:
         patterns:
@@ -20,7 +22,7 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     cooldown:
-      default-days: 7
+      default-days: 4
     groups:
       minor-and-patch:
         update-types:
