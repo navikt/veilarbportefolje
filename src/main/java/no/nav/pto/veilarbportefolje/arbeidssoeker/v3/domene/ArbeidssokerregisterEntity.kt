@@ -1,73 +1,45 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering
-import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringResponse
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.OpplysningerResponse
-
-
-import no.nav.pto.veilarbportefolje.util.DateUtils
-import java.sql.Timestamp
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.AggregertPeriodeResponse
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.SynkroniseringStatus
+import java.time.ZonedDateTime
 import java.util.*
 
-data class OpplysningerOmArbeidssoekerEntity(
-    val opplysningerOmArbeidssoekerId: UUID,
+data class AggregertPeriodeEntity(
+    val identitetsnummer: String,
     val periodeId: UUID,
-    val sendtInnTidspunkt: Timestamp,
-    val utdanningNusKode: String?,
-    val utdanningBestatt: String?,
-    val utdanningGodkjent: String?,
-    val opplysningerOmJobbsituasjon: OpplysningerOmArbeidssoekerJobbsituasjonEntity
+    val periodeStartTidspunkt: ZonedDateTime,
+    val periodeAvsluttetTidspunkt: ZonedDateTime?,
+    val opplysningId: UUID?,
+    val opplysningJobbsituasjonBeskrivelse: List<String>?,
+    val opplysningUtdanningNusKode: Int?,
+    val opplysningUtdanningBestatt: String?,
+    val opplysningUtdanningGodkjent: String?,
+    val opplysningSendtInnTidspunkt: ZonedDateTime?,
+    val profileringId: UUID?,
+    val profileringResultat: String?,
+    val profileringSendtInnTidspunkt: ZonedDateTime?
 )
 
-data class OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-    val opplysningerOmArbeidssoekerId: UUID,
-    val jobbsituasjon: List<String>
+fun AggregertPeriodeResponse.toAggregertPeriodeEntity() = AggregertPeriodeEntity(
+    identitetsnummer = identitetsnummer,
+    periodeId = id,
+    periodeStartTidspunkt = startet.tidspunkt,
+    periodeAvsluttetTidspunkt = avsluttet?.tidspunkt,
+    opplysningId = opplysning?.id,
+    opplysningJobbsituasjonBeskrivelse = opplysning?.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name },
+    opplysningUtdanningNusKode = opplysning?.utdanning?.nus?.toIntOrNull(),
+    opplysningUtdanningBestatt = opplysning?.utdanning?.bestaatt?.name,
+    opplysningUtdanningGodkjent = opplysning?.utdanning?.godkjent?.name,
+    opplysningSendtInnTidspunkt = opplysning?.sendtInnAv?.tidspunkt,
+    profileringId = profilering?.id,
+    profileringResultat = profilering?.profilertTil?.name,
+    profileringSendtInnTidspunkt = profilering?.sendtInnAv?.tidspunkt
 )
 
-data class ArbeidssoekerPeriodeEntity(
-    val arbeidssoekerperiodeId: UUID,
-    val fnr: String
-)
-
-data class ProfileringEntity(
-    val periodeId: UUID,
-    val profileringsresultat: String,
-    val sendtInnTidspunkt: Timestamp
-)
-
-fun OpplysningerResponse.toOpplysningerOmArbeidssoekerEntity(periodeId: UUID) = OpplysningerOmArbeidssoekerEntity(
-    opplysningerOmArbeidssoekerId = this.id,
-    periodeId = periodeId,
-    sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt),
-    utdanningNusKode = this.utdanning?.nus,
-    utdanningBestatt = this.utdanning?.bestaatt?.name,
-    utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-        this.id,
-        this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name } ?: emptyList())
-)
-
-fun OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() = OpplysningerOmArbeidssoekerEntity(
-    opplysningerOmArbeidssoekerId = this.id,
-    periodeId = this.periodeId,
-    sendtInnTidspunkt = Timestamp.from(this.sendtInnAv.tidspunkt),
-    utdanningNusKode = this.utdanning?.nus.toString(),
-    utdanningBestatt = this.utdanning?.bestaatt?.name,
-    utdanningGodkjent = this.utdanning?.godkjent?.name,
-    opplysningerOmJobbsituasjon = OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-        this.id,
-        this.jobbsituasjon.beskrivelser.map { it.beskrivelse.name })
-)
-
-fun ProfileringResponse.toProfileringEntity(periodeId: UUID) = ProfileringEntity(
-    periodeId = periodeId,
-    profileringsresultat = this.profilertTil.name,
-    sendtInnTidspunkt = DateUtils.toTimestamp(this.sendtInnAv.tidspunkt)
-)
-
-fun Profilering.toProfileringEntity() = ProfileringEntity(
-    periodeId = this.periodeId,
-    profileringsresultat = this.profilertTil.name,
-    sendtInnTidspunkt = Timestamp.from(this.sendtInnAv.tidspunkt)
+data class ArbeidssoekerregisterDataEntity(
+    val identitetsnummer: String,
+    val aggregertPeriode: AggregertPeriodeEntity?,
+    val synkroniseringStatus: SynkroniseringStatus,
+    val radOpprettet: ZonedDateTime
 )
