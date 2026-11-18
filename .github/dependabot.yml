@@ -9,6 +9,8 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 4
     groups:
       github-actions:
         patterns:
