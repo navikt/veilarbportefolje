@@ -158,7 +158,7 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         db.update(sql, fnr.get(), SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA.name)
     }
 
-    fun lagrePeriodeFraKafka(periode: PeriodeEntity) {
+    fun lagrePeriodeFraKafka(periode: PeriodeEntity, synkroniseringStatus: SynkroniseringStatus) {
         val sql = """
             INSERT INTO ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} (
                 ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER},
@@ -175,6 +175,7 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
                 ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT} = excluded.${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT},
                 ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT} = excluded.${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT},
                 ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP,
+                ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = excluded.${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS},
                 ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
         """.trimIndent()
 
@@ -183,20 +184,26 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
             ps.setObject(2, periode.periodeId)
             ps.setTimestamp(3, Timestamp.from(periode.periodeStartTidspunkt))
             ps.setTimestamp(4, periode.periodeAvsluttetTidspunkt?.let { Timestamp.from(it) })
-            ps.setString(5, SynkroniseringStatus.SYNKRONISERT.name)
+            ps.setString(5, synkroniseringStatus.name)
         }
     }
 
-    fun oppdaterSynkroniseringStatus(fnr: Fnr, synkroniseringStatus: SynkroniseringStatus) {
+    fun oppdaterPeriode(periode: PeriodeEntity) {
         val sql = """
             UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
             SET
-                ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP,
                 ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
-            WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = ?
         """.trimIndent()
 
-        db.update(sql, synkroniseringStatus.name, fnr.get())
+        db.update(sql) { ps ->
+            ps.setTimestamp(1, Timestamp.from(periode.periodeStartTidspunkt))
+            ps.setTimestamp(2, periode.periodeAvsluttetTidspunkt?.let { Timestamp.from(it) })
+            ps.setObject(3, periode.periodeId)
+        }
     }
 
     @TestOnly
