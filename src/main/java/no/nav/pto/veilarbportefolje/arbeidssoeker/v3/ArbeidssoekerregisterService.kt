@@ -12,8 +12,8 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
@@ -88,6 +88,21 @@ class ArbeidssoekerregisterService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(opplysninger: OpplysningerOmArbeidssoekerKafkaMelding) {
+        secureLog.info("Mottok kafkamelding med opplysninger om arbeidssøker med id: ${opplysninger.id} for periodeId: ${opplysninger.periodeId}")
+        val periodeId = opplysninger.periodeId
+        val opplysningerOmArbeidssoekerId = opplysninger.id
+
+        // val eksisterendePeriode: AggregertPeriodeEntity? = arbeidssoekerregisterRepository.hentPeriodeForPeriodeId(periodeId)
+//        if (eksisterendePeriode == null) {
+//            secureLog.info(
+//                "Fant ingen eksisterende periode for periodeId: $periodeId. " +
+//                        "Ignorerer opplysninger om arbeidssøker med id: $opplysningerOmArbeidssoekerId"
+//            )
+//            return
+//        }
+//
+//        val sendtInnTispunktKafka = opplysninger.sendtInnAv.tidspunkt
+//        val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysningSendtInnTidspunkt
 
     }
 
@@ -107,19 +122,38 @@ class ArbeidssoekerregisterService(
     fun hentOgLagreArbeidssoekerdataVedAdminJobb(aktorId: AktorId) {
         val fnr = hentAktivFnr(aktorId)
         val sistePeriodeFraApi = hentSistePeriodeIOppfolgingsperiode(aktorId, fnr)
-        if (sistePeriodeFraApi == null ) {
+        if (sistePeriodeFraApi == null) {
             secureLog.info("Fant ingen arbeidssøkerdata i api for bruker med fnr: $fnr. Gjør ingen endringer.")
             return
         }
 
         val nyesteEksisterendePeriode = hentNyesteEksisterendePeriode(fnr)
-        if (!apiDataErNyereEnnEksisterende(sistePeriodeFraApi, nyesteEksisterendePeriode)) {
-            secureLog.info("Arbeidssøkerdata fra api er ikke nyere enn eksisterende data for bruker med fnr: $fnr. Gjør ingen endringer.")
+        if (nyesteEksisterendePeriode == null) {
+            secureLog.info("Fant ingen eksisterende arbeidssøkerdata for bruker med fnr: $fnr. Lagrer periode fra api.")
+            arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
             return
         }
 
+        val sammePeriodeId = sistePeriodeFraApi.periodeId == nyesteEksisterendePeriode.periodeId
+        val ulikPeriodeOgApiErNyest = !sammePeriodeId &&
+                sistePeriodeFraApi.periodeStartTidspunkt.isAfter(nyesteEksisterendePeriode.periodeStartTidspunkt)
+
+        if (ulikPeriodeOgApiErNyest) {
+            secureLog.info("Fant nyere periode med arbeidssøkerdata i api for bruker med fnr: $fnr. Sletter eksisterende og lagrer periode fra api.")
+            slettArbeidssoekerregisterData(fnr)
+            arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
+            return
+        }
+
+        val sammePeriodeOgApiErNyest =
+            sammePeriodeId && apiDataErNyereEnnEksisterende(sistePeriodeFraApi, nyesteEksisterendePeriode)
+        if (!sammePeriodeOgApiErNyest) {
+            secureLog.info("Arbeidssøkerdata med samme periode fra api er ikke nyere enn eksisterende periode for bruker med fnr: $fnr. Gjør ingen endringer.")
+            return
+        }
+
+        secureLog.info("Fant nyere data i samme arbeidssøkeperiode i api for bruker med fnr: $fnr. Sletter eksisterende og lagrer periode fra api.")
         slettArbeidssoekerregisterData(fnr)
-        secureLog.info("Fant nyere arbeidssøkerdata i api for bruker med fnr: $fnr. Lagrer periode etter evt sletting av eksisterende.")
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
     }
 
@@ -140,16 +174,19 @@ class ArbeidssoekerregisterService(
 
     private fun apiDataErNyereEnnEksisterende(
         periodeFraApi: AggregertPeriodeEntity,
-        nyesteEksisterende: AggregertPeriodeEntity?
+        nyesteEksisterende: AggregertPeriodeEntity
     ): Boolean {
-        if (nyesteEksisterende == null) {
-            return true
-        }
-        if (periodeFraApi.periodeId == nyesteEksisterende.periodeId) {
-            return periodeFraApi.tidspunkter().zip(nyesteEksisterende.tidspunkter())
-                .any { (fraApi, eksisterende) -> fraApi != null && (eksisterende == null || fraApi.isAfter(eksisterende)) }
-        }
-        return periodeFraApi.periodeStartTidspunkt.isAfter(nyesteEksisterende.periodeStartTidspunkt)
+        val erAvsluttetTidspunktNyere =
+            periodeFraApi.periodeAvsluttetTidspunkt?.isAfter(nyesteEksisterende.periodeAvsluttetTidspunkt) ?: false
+        val erOpplsyningerTidspunktNyere =
+            periodeFraApi.opplysningSendtInnTidspunkt?.isAfter(nyesteEksisterende.opplysningSendtInnTidspunkt)
+                ?: false
+        val erProfileringTidspunktNyere =
+            periodeFraApi.profileringSendtInnTidspunkt?.isAfter(nyesteEksisterende.profileringSendtInnTidspunkt)
+                ?: false
+
+        return erAvsluttetTidspunktNyere || erOpplsyningerTidspunktNyere || erProfileringTidspunktNyere
+
     }
 
     // Postgres lagrer med mikrosekund-presisjon, så tidspunkt må trunkeres før sammenligning
@@ -160,7 +197,6 @@ class ArbeidssoekerregisterService(
             opplysningSendtInnTidspunkt,
             profileringSendtInnTidspunkt
         ).map { it?.toInstant()?.truncatedTo(ChronoUnit.MICROS) }
-
 
 
     private fun hentAktivFnr(aktorId: AktorId): Fnr {
@@ -220,6 +256,16 @@ class ArbeidssoekerregisterService(
             return null
         }
         return aggregertPeriode
+    }
+
+    fun erUnderOppfolging(fnr: Fnr): Boolean {
+        val erUnderOppfolging = pdlIdentRepository.erBrukerUnderOppfolging(fnr.get())
+
+        if (!erUnderOppfolging) {
+            secureLog.info("Bruker {} er ikke under oppfølging, ignorerer arbeidssøkerregister melding.", fnr.get())
+            return false
+        }
+        return true
     }
 
     fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
