@@ -12,8 +12,8 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
@@ -177,27 +177,22 @@ class ArbeidssoekerregisterService(
         nyesteEksisterende: AggregertPeriodeEntity
     ): Boolean {
         val erAvsluttetTidspunktNyere =
-            periodeFraApi.periodeAvsluttetTidspunkt?.isAfter(nyesteEksisterende.periodeAvsluttetTidspunkt) ?: false
-        val erOpplsyningerTidspunktNyere =
-            periodeFraApi.opplysningSendtInnTidspunkt?.isAfter(nyesteEksisterende.opplysningSendtInnTidspunkt)
-                ?: false
+            erNyere(periodeFraApi.periodeAvsluttetTidspunkt, nyesteEksisterende.periodeAvsluttetTidspunkt)
+        val erOpplysningerTidspunktNyere =
+            erNyere(periodeFraApi.opplysningSendtInnTidspunkt, nyesteEksisterende.opplysningSendtInnTidspunkt)
         val erProfileringTidspunktNyere =
-            periodeFraApi.profileringSendtInnTidspunkt?.isAfter(nyesteEksisterende.profileringSendtInnTidspunkt)
-                ?: false
+            erNyere(periodeFraApi.profileringSendtInnTidspunkt, nyesteEksisterende.profileringSendtInnTidspunkt)
 
-        return erAvsluttetTidspunktNyere || erOpplsyningerTidspunktNyere || erProfileringTidspunktNyere
-
+        return erAvsluttetTidspunktNyere || erOpplysningerTidspunktNyere || erProfileringTidspunktNyere
     }
 
     // Postgres lagrer med mikrosekund-presisjon, så tidspunkt må trunkeres før sammenligning
-    private fun AggregertPeriodeEntity.tidspunkter(): List<Instant?> =
-        listOf(
-            periodeStartTidspunkt,
-            periodeAvsluttetTidspunkt,
-            opplysningSendtInnTidspunkt,
-            profileringSendtInnTidspunkt
-        ).map { it?.toInstant()?.truncatedTo(ChronoUnit.MICROS) }
-
+    private fun erNyere(fraApi: ZonedDateTime?, eksisterende: ZonedDateTime?): Boolean = when {
+        fraApi == null -> false
+        eksisterende == null -> true
+        else -> fraApi.toInstant().truncatedTo(ChronoUnit.MICROS)
+            .isAfter(eksisterende.toInstant().truncatedTo(ChronoUnit.MICROS))
+    }
 
     private fun hentAktivFnr(aktorId: AktorId): Fnr {
         val fnr: Fnr? = pdlIdentRepository.hentAktivFnrForPerson(aktorId.toString())
