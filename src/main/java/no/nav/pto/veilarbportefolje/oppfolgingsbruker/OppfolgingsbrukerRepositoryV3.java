@@ -125,6 +125,8 @@ public class OppfolgingsbrukerRepositoryV3 {
         params.addValue("tilgangTilAdressebeskyttelseStrengtFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseStrengtFortrolig());
         params.addValue("tilgangTilAdressebeskyttelseFortrolig", brukerInnsynTilganger.tilgangTilAdressebeskyttelseFortrolig());
 
+        // Sjekker skjerming også på historiske identer, om det finnes flere prioriteres data på aktiv ident, deretter på skjermet_fra dato.
+        // Bruker_data blir alltid oppdatert til aktivt fnr så her sjekker vi ikke på historiske identer.
         return dbNamed.queryForList("""
                 with innsendt as (
                     select unnest(:fnrListe::varchar[]) as fnr
