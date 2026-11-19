@@ -50,15 +50,23 @@ class ArbeidssoekerregisterProfileringKafkaMeldingService(
  * Håndterer arbeidssøkerdata fra arbeidssøkerregisteret for brukere under oppfølging.
  *
  * Arbeidssøkerdata består av:
- * - Siste arbeidssøkerperiode (SISTE_ARBEIDSSOEKER_PERIODE)
- * - Siste opplysninger om arbeidssøker, inkl. jobbsituasjon (OPPLYSNINGER_OM_ARBEIDSSOEKER, OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON)
- * - Siste profilering (PROFILERING)
+ * - Siste arbeidssøkerperiode
+ * - Siste opplysninger om arbeidssøker, inkl. jobbsituasjon og utdanning
+ * - Siste profilering
  *
  * Dataflyt:
  * - Kafka: Tar imot meldinger fra tre topics (periode, opplysninger om arbeidssøker og profilering).
  * - Start oppfølging og admin-endepunkt: Henter og lagrer arbeidssøkerdata fra API-et (oppslag-api, ett aggregert endepunkt `/api/v3/snapshot`).
  *   Ved ny periode på Kafka hentes opplysninger og profilering fra samme endepunkt.
  * - Avslutt oppfølging: Sletter arbeidssøkerdata.
+ *
+ * Data:
+ * - Data fra arbeidssøkerregisteret (Team PAW) sitt API er kun en sammenstilling av kafka-meldinger, ikke en database med masterdata.
+ * Dette betyr at apiet kan være ute av sync, og at vi har rukket å få meldinger før de har konsumert sine egne. Pga dette
+ * har vi en egen "synkronisering_status" der vi er usikre, som trigger henting på et senere tidspunkt.
+ * - Identer - Kafka-meldinger har kun tilknytning til identen på det tidspunktet de ble sendt. Dvs, oppslag på ny aktiv
+ * ident vil ikke finne treff selv om det er data på historisk ident. Håndteres i api-oppslag.
+ * - Vi tar kun vare på siste arebeidssøkerperiode som er innenfor oppfølgingsperioden.
  *
  * Gamle tabeller fra veilarbregistrering (BRUKER_REGISTRERING, BRUKER_PROFILERING og ENDRING_I_REGISTRERING)
  * oppdateres ikke lenger. De leses kun fra og supplerer dataene over ved indeksering til opensearch. De slettes også ved
