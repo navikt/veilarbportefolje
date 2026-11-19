@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
@@ -19,6 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZonedDateTime
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as BrukerTypeKafka
+import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeKafka
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning as UtdanningKafka
 
 class ArbeidssoekerregisterServiceTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
@@ -203,7 +209,6 @@ class ArbeidssoekerregisterServiceTest(
         assertThat(lagret!!.aggregertPeriode).isEqualTo(nyPeriode.toAggregertPeriodeEntity())
     }
 
-
     @Test
     fun `ved admin jobb med eldre data pa historisk fnr skal gammel rad slettes og ny lagres pa aktivt fnr`() {
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(
@@ -218,6 +223,81 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(nyereRespons.toAggregertPeriodeEntity())
     }
+
+    // behandleKafkaMeldingLogikk - opplysninger om arbeidssøker
+
+    @Test
+    fun `opplysninger pa kafka for ukjent periode skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagOpplysningerKafkaMelding(periodeId = UUID.randomUUID(), sendtInn = opplysningTidspunkt.plusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
+    fun `nyere opplysninger pa kafka skal lagres pa eksisterende periode`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        val melding = lagOpplysningerKafkaMelding(sendtInn = opplysningTidspunkt.plusDays(1))
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(melding)
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(
+            eksisterende.copy(
+                opplysningId = melding.id,
+                opplysningJobbsituasjonBeskrivelse = listOf(Beskrivelse.HAR_SAGT_OPP.name),
+                opplysningUtdanningNusKode = 6,
+                opplysningUtdanningBestatt = JaNeiVetIkkeKafka.NEI.name,
+                opplysningUtdanningGodkjent = JaNeiVetIkkeKafka.VET_IKKE.name,
+                opplysningSendtInnTidspunkt = opplysningTidspunkt.plusDays(1)
+            )
+        )
+    }
+
+    @Test
+    fun `eldre opplysninger pa kafka skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagOpplysningerKafkaMelding(sendtInn = opplysningTidspunkt.minusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
+    fun `opplysninger pa kafka med samme tidspunkt som eksisterende skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagOpplysningerKafkaMelding(sendtInn = opplysningTidspunkt.plusNanos(500))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    private fun lagOpplysningerKafkaMelding(
+        periodeId: UUID = this.periodeId,
+        sendtInn: ZonedDateTime
+    ) = OpplysningerOmArbeidssoekerKafkaMelding(
+        UUID.randomUUID(),
+        periodeId,
+        Metadata(sendtInn.toInstant(), Bruker(BrukerTypeKafka.SLUTTBRUKER, fnr.get()), "test", "test"),
+        UtdanningKafka("6", JaNeiVetIkkeKafka.NEI, JaNeiVetIkkeKafka.VET_IKKE),
+        Helse(JaNeiVetIkkeKafka.NEI),
+        Jobbsituasjon(listOf(BeskrivelseMedDetaljer(Beskrivelse.HAR_SAGT_OPP, emptyMap()))),
+        Annet(JaNeiVetIkkeKafka.NEI)
+    )
 
     private fun mockApiRespons(respons: AggregertPeriodeResponse?) {
         `when`(arbeidssoekerregisterClient.hentAggregertArbeidssokerPeriode(fnr.get())).thenReturn(respons)
