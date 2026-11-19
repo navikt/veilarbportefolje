@@ -145,7 +145,7 @@ public class OppfolgingsbrukerRepositoryV3 {
                 from innsendt
                 left join skjerming on skjerming.fnr = innsendt.fnr
                 left join bruker_data bd on bd.freg_ident = innsendt.fnr
-                where (bd.diskresjonkode = '6' AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
+                where (bd.diskresjonkode in ('6', '19') AND NOT :tilgangTilAdressebeskyttelseStrengtFortrolig::boolean)
                    OR (bd.diskresjonkode = '7' AND NOT :tilgangTilAdressebeskyttelseFortrolig::boolean)
                    OR (skjerming.er_skjermet AND NOT :tilgangTilEgenAnsatt::boolean)
                 """, params, String.class);
