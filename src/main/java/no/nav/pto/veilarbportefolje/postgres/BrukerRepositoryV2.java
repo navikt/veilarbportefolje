@@ -57,8 +57,6 @@ public class BrukerRepositoryV2 {
                        AO_KONTOR.KONTOR_ID                                      as AO_KONTOR_KONTOR_ID,
                        OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                        OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO                   as OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO,
-                       NOM_SKJERMING.ER_SKJERMET                                as NOM_SKJERMING_ER_SKJERMET,
-                       NOM_SKJERMING.SKJERMET_TIL                               as NOM_SKJERMING_SKJERMET_TIL,
                        BRUKER_DATA.FOEDSELSDATO                                 as BRUKER_DATA_FOEDSELSDATO,
                        BRUKER_DATA.FORNAVN                                      as BRUKER_DATA_FORNAVN,
                        BRUKER_DATA.ETTERNAVN                                    as BRUKER_DATA_ETTERNAVN,
@@ -104,7 +102,6 @@ public class BrukerRepositoryV2 {
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
-                         left join NOM_SKJERMING                                on NOM_SKJERMING.FODSELSNR = AKTIVE_IDENTER.FNR
                          left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
                          left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
@@ -211,8 +208,6 @@ public class BrukerRepositoryV2 {
         } else if (isDevelopment().orElse(false)) {
             brukerOpensearchModell.setFnr(null); // Midlertidig forsikring for at brukere i q1 aldri har ekte data. Fjernes sammen med toggles, og bruk av inner join for brukerdata
         }
-        brukerOpensearchModell.setEgen_ansatt(rs.getBoolean(NOM_SKJERMING_ER_SKJERMET));
-        brukerOpensearchModell.setSkjermet_til(toLocalDateTimeOrNull(rs.getTimestamp(NOM_SKJERMING_SKJERMET_TIL)));
 
         return brukerOpensearchModell;
     }

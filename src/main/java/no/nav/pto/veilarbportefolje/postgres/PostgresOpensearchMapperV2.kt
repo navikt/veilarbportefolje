@@ -15,6 +15,7 @@ import no.nav.pto.veilarbportefolje.huskelapp.HuskelappRepository
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk
+import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository
 import no.nav.pto.veilarbportefolje.sykmeldt.domene.SykmeldtEntity
 import org.springframework.stereotype.Service
@@ -33,6 +34,7 @@ class PostgresOpensearchMapperV2(
     private val pdlIdentRepository: PdlIdentRepository,
     private val sykmeldtRepository: SykmeldtRepository,
     private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
+    private val skjermingRepository: SkjermingRepository,
 ) {
 
     fun flettInnData(brukere: List<PortefoljebrukerOpensearchModell>) {
@@ -42,6 +44,28 @@ class PostgresOpensearchMapperV2(
         flettInnEldsteHendelsePerKategori(brukere, fnrIdenterPerBruker)
         flettInnSykmeldt(brukere, fnrIdenterPerBruker)
         flettInnArbeidssoekerData(brukere, fnrIdenterPerBruker)
+        flettInnSkjerming(brukere, fnrIdenterPerBruker)
+    }
+
+    private fun flettInnSkjerming(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val skjermingPerIdent = skjermingRepository.hentSkjermingPerIdent(alleIdenter(fnrIdenterPerBruker))
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val skjerming = velgDataForPrioritertIdent(
+                "skjerming",
+                bruker.fnr,
+                identer,
+                skjermingPerIdent,
+                { it.skjermetFra?.toLocalDateTime() ?: LocalDateTime.MIN }
+            )
+
+            bruker.egen_ansatt = skjerming?.erSkjermet ?: false
+            bruker.skjermet_til = skjerming?.skjermetTil?.toLocalDateTime()
+        }
     }
 
     private fun flettInnArbeidssoekerData(
