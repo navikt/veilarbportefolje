@@ -1,13 +1,7 @@
 package no.nav.pto.veilarbportefolje.postgres
 
 import no.nav.common.types.identer.NorskIdent
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerRepository
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringRepository
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.SisteArbeidssoekerPeriodeRepository
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.genererRandomOpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
@@ -52,6 +46,7 @@ class PostgresOpensearchMapperV2Test(
         jdbcTemplate.update("TRUNCATE TABLE huskelapp")
         jdbcTemplate.update("TRUNCATE TABLE fargekategori")
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
+        jdbcTemplate.update("TRUNCATE TABLE nom_skjerming")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
     }
@@ -199,12 +194,21 @@ class PostgresOpensearchMapperV2Test(
         val historiskFnr = randomFnr().get()
         val periodeId = UUID.randomUUID()
         lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(ArbeidssoekerPeriodeEntity(periodeId, historiskFnr))
+        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
+            ArbeidssoekerPeriodeEntity(
+                periodeId,
+                historiskFnr
+            )
+        )
         opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
             genererRandomOpplysningerOmArbeidssoekerEntity(periodeId, UUID.randomUUID())
         )
         profileringRepository.insertProfilering(
-            ProfileringEntity(periodeId, Profileringsresultat.OPPGITT_HINDRINGER.name, Timestamp.valueOf(LocalDateTime.now()))
+            ProfileringEntity(
+                periodeId,
+                Profileringsresultat.OPPGITT_HINDRINGER.name,
+                Timestamp.valueOf(LocalDateTime.now())
+            )
         )
 
         val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
@@ -213,6 +217,33 @@ class PostgresOpensearchMapperV2Test(
         assertThat(bruker.utdanning).isNotNull()
         assertThat(bruker.brukers_situasjoner).isNotEmpty()
         assertThat(bruker.profilering_resultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+    }
+
+    @Test
+    fun `flettInnSkjerming skal finne skjerming lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        val skjermetTil = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.MINUTES)
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        lagreSkjerming(historiskFnr, true, LocalDateTime.now().minusDays(1), skjermetTil)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        assertThat(bruker.egen_ansatt).isTrue()
+        assertThat(bruker.skjermet_til).isEqualTo(skjermetTil)
+    }
+
+    private fun lagreSkjerming(
+        fnr: String,
+        erSkjermet: Boolean,
+        skjermetFra: LocalDateTime?,
+        skjermetTil: LocalDateTime?
+    ) {
+        jdbcTemplate.update(
+            "INSERT INTO nom_skjerming (fodselsnr, er_skjermet, skjermet_fra, skjermet_til) VALUES (?, ?, ?, ?)",
+            fnr, erSkjermet, skjermetFra?.let(Timestamp::valueOf), skjermetTil?.let(Timestamp::valueOf)
+        )
     }
 
     private fun lagreIdenter(fnr: String, historisk: List<String> = emptyList()) {

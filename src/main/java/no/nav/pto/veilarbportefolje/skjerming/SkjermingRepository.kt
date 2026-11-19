@@ -43,6 +43,25 @@ class SkjermingRepository(private val db: JdbcTemplate) {
         )
     }
 
+    fun hentSkjermingPerIdent(fnrs: List<String>): Map<String, SkjermingData> {
+        if (fnrs.isEmpty()) return emptyMap()
+
+        return db.query(
+            """
+                SELECT FODSELSNR, ER_SKJERMET, SKJERMET_FRA, SKJERMET_TIL FROM NOM_SKJERMING WHERE FODSELSNR = ANY (?::varchar[])
+                """.trimIndent(),
+            { rs: ResultSet, _: Int ->
+                SkjermingData(
+                    Fnr.of(rs.getString(NOM_SKJERMING.FNR)),
+                    rs.getBoolean(NOM_SKJERMING.ER_SKJERMET),
+                    rs.getTimestamp(NOM_SKJERMING.SKJERMET_FRA),
+                    rs.getTimestamp(NOM_SKJERMING.SKJERMET_TIL)
+                )
+            },
+            fnrs.joinToString(",", "{", "}")
+        ).associateBy { it.fnr.get() }
+    }
+
     @TestOnly
     fun hentSkjermingData(fnr: Fnr): Optional<SkjermingData> {
         return Optional.ofNullable(
