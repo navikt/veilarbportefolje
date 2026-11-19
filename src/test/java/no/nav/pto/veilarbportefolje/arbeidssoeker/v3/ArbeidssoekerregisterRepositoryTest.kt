@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import org.assertj.core.api.Assertions.assertThat
@@ -160,4 +161,25 @@ class ArbeidssoekerregisterRepositoryTest(
         assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
     }
 
+    @Test
+    fun `lagreProfileringForPeriode skal overskrive profilering og beholde periode og opplysninger`() {
+        repository.lagreSisteArbeidssoekerPeriode(fnr, aggregertPeriode)
+        val nyProfilering = ProfileringEntity(
+            profileringId = UUID.randomUUID(),
+            profileringResultat = ProfilertTil.ANTATT_GODE_MULIGHETER.name,
+            profileringSendtInnTidspunkt = Instant.parse("2024-05-01T10:00:00.123456Z")
+        )
+
+        repository.lagreProfileringForPeriode(aggregertPeriode.periodeId, nyProfilering)
+
+        val resultat = repository.hentArbeidssoekerregisterData(fnr)
+        assertThat(resultat!!.aggregertPeriode).isEqualTo(
+            aggregertPeriode.copy(
+                profileringId = nyProfilering.profileringId,
+                profileringResultat = nyProfilering.profileringResultat,
+                profileringSendtInnTidspunkt = ZonedDateTime.parse("2024-05-01T10:00:00.123456Z")
+            )
+        )
+        assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
 }

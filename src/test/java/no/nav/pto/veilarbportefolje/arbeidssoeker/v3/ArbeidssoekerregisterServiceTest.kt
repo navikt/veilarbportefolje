@@ -23,6 +23,8 @@ import java.time.ZonedDateTime
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as BrukerTypeKafka
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeKafka
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
+import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil as ProfilertTilKafka
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning as UtdanningKafka
 
@@ -285,6 +287,78 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
     }
+
+    // behandleKafkaMeldingLogikk - profilering
+
+    @Test
+    fun `profilering pa kafka for ukjent periode skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagProfileringKafkaMelding(periodeId = UUID.randomUUID(), sendtInn = profileringTidspunkt.plusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
+    fun `nyere profilering pa kafka skal lagres pa eksisterende periode`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        val melding = lagProfileringKafkaMelding(sendtInn = profileringTidspunkt.plusDays(1))
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(melding)
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(
+            eksisterende.copy(
+                profileringId = melding.id,
+                profileringResultat = ProfilertTilKafka.ANTATT_GODE_MULIGHETER.name,
+                profileringSendtInnTidspunkt = profileringTidspunkt.plusDays(1)
+            )
+        )
+    }
+
+    @Test
+    fun `eldre profilering pa kafka skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagProfileringKafkaMelding(sendtInn = profileringTidspunkt.minusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
+    fun `profilering pa kafka med samme tidspunkt som eksisterende skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagProfileringKafkaMelding(sendtInn = profileringTidspunkt.plusNanos(500))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    private fun lagProfileringKafkaMelding(
+        periodeId: UUID = this.periodeId,
+        sendtInn: ZonedDateTime
+    ) = ProfileringKafkaMelding(
+        UUID.randomUUID(),
+        periodeId,
+        UUID.randomUUID(),
+        Metadata(sendtInn.toInstant(), Bruker(BrukerTypeKafka.SYSTEM, "test"), "test", "test"),
+        ProfilertTilKafka.ANTATT_GODE_MULIGHETER,
+        true,
+        30
+    )
 
     private fun lagOpplysningerKafkaMelding(
         periodeId: UUID = this.periodeId,

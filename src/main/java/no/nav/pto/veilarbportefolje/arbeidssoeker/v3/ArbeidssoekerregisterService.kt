@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toOpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toProfileringEntity
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -127,7 +128,38 @@ class ArbeidssoekerregisterService(
 
     @Transactional
     fun behandleKafkaMeldingLogikk(profilering: ProfileringKafkaMelding) {
+        secureLog.info("Mottok kafkamelding med profilering med id: ${profilering.id} for periodeId: ${profilering.periodeId}")
+        val periodeId = profilering.periodeId
+        val profileringId = profilering.id
 
+        val eksisterendePeriode: AggregertPeriodeEntity? =
+            arbeidssoekerregisterRepository.hentArbeidssoekerregisterDataForPeriodeid(periodeId)
+        if (eksisterendePeriode == null) {
+            secureLog.info(
+                "Fant ingen eksisterende periode for periodeId: $periodeId. " +
+                        "Ignorerer profilering med id: $profileringId"
+            )
+            return
+        }
+
+        val sendtInnTidspunktKafka = profilering.sendtInnAv.tidspunkt
+        val sendtInnTidspunktEksisterende = eksisterendePeriode.profileringSendtInnTidspunkt?.toInstant()
+        val kafkaErNyere = erNyere(sendtInnTidspunktKafka, sendtInnTidspunktEksisterende)
+        if (!kafkaErNyere) {
+            secureLog.info(
+                "Profilering med id: $profileringId er ikke nyere enn eksisterende profilering. " +
+                        "Ignorerer profilering for bruker med fnr: ${eksisterendePeriode.identitetsnummer}."
+            )
+            return
+        }
+        secureLog.info(
+            "Profilering med id: $profileringId er nyere enn eksisterende profilering. " +
+                    "Lagrer profilering for bruker med fnr: ${eksisterendePeriode.identitetsnummer}."
+        )
+        arbeidssoekerregisterRepository.lagreProfileringForPeriode(
+            eksisterendePeriode.periodeId,
+            profilering.toProfileringEntity()
+        )
     }
 
     @Transactional

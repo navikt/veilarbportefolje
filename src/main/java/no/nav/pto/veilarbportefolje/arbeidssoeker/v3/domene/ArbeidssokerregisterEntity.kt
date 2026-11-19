@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.AggregertPeriodeResponse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.SynkroniseringStatus
-import no.nav.pto.veilarbportefolje.util.DateUtils
-import java.sql.Timestamp
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
@@ -58,6 +56,19 @@ fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpply
         opplysningUtdanningBestatt = this.utdanning?.bestaatt?.name,
         opplysningUtdanningGodkjent = this.utdanning?.godkjent?.name,
         opplysningJobbsituasjonBeskrivelse = this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name }
+    )
+
+data class ProfileringEntity(
+    val profileringId: UUID?,
+    val profileringResultat: String?,
+    val profileringSendtInnTidspunkt: Instant?
+)
+
+fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() =
+    ProfileringEntity(
+        profileringId = this.id,
+        profileringResultat = this.profilertTil?.name,
+        profileringSendtInnTidspunkt = this.sendtInnAv.tidspunkt
     )
 
 data class ArbeidssoekerregisterDataEntity(

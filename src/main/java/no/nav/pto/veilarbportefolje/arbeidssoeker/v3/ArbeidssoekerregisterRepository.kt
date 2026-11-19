@@ -4,6 +4,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ArbeidssoekerregisterDataEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
@@ -107,7 +108,8 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
                 ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_BESTATT} = ?,
                 ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_GODKJENT} = ?,
                 ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_SENDT_INN_TIDSPUNKT} = ?,
-                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP,
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
             WHERE ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = ?
         """.trimIndent()
 
@@ -124,6 +126,26 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
             ps.setString(5, opplysningerOmArbeidssoeker?.opplysningUtdanningGodkjent)
             ps.setTimestamp(6, opplysningerOmArbeidssoeker?.opplysningSendtInnTidspunkt?.let { Timestamp.from(it) })
             ps.setObject(7, periodeId)
+        }
+    }
+
+    fun lagreProfileringForPeriode(periodeId: UUID, profilering: ProfileringEntity?) {
+        val sql = """
+            UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
+            SET
+                ${ARBEIDSSOEKERREGISTER_DATA.PROFILERING_ID} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PROFILERING_RESULTAT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PROFILERING_SENDT_INN_TIDSPUNKT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.PROFILERING_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP,
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = ?
+        """.trimIndent()
+
+        db.update(sql) { ps ->
+            ps.setObject(1, profilering?.profileringId)
+            ps.setString(2, profilering?.profileringResultat)
+            ps.setTimestamp(3, profilering?.profileringSendtInnTidspunkt?.let { Timestamp.from(it) })
+            ps.setObject(4, periodeId)
         }
     }
 
