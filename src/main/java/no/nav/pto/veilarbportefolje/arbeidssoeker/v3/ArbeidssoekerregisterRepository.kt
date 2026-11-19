@@ -111,35 +111,57 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
     fun hentArbeidssoekerregisterData(fnr: Fnr): ArbeidssoekerregisterDataEntity? {
         val sql = "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?"
         return try {
-            db.queryForObject(sql, { rs, _ ->
-                val periodeId = rs.getObject(ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID, UUID::class.java)
-                ArbeidssoekerregisterDataEntity(
-                    identitetsnummer = rs.getString(ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER),
-                    aggregertPeriode = periodeId?.let {
-                        AggregertPeriodeEntity(
-                            identitetsnummer = rs.getString(ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER),
-                            periodeId = it,
-                            periodeStartTidspunkt = rs.getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT)!!,
-                            periodeAvsluttetTidspunkt = rs.getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT),
-                            opplysningId = rs.getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_ID, UUID::class.java),
-                            opplysningJobbsituasjonBeskrivelse = rs.getArray(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_JOBBSITUASJON_BESKRIVELSE)
-                                ?.let { array -> (array.array as Array<*>).map { beskrivelse -> beskrivelse as String } },
-                            opplysningUtdanningNusKode = rs.getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_NUS_KODE, Int::class.javaObjectType),
-                            opplysningUtdanningBestatt = rs.getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_BESTATT),
-                            opplysningUtdanningGodkjent = rs.getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_GODKJENT),
-                            opplysningSendtInnTidspunkt = rs.getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_SENDT_INN_TIDSPUNKT),
-                            profileringId = rs.getObject(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_ID, UUID::class.java),
-                            profileringResultat = rs.getString(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_RESULTAT),
-                            profileringSendtInnTidspunkt = rs.getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_SENDT_INN_TIDSPUNKT)
-                        )
-                    },
-                    synkroniseringStatus = SynkroniseringStatus.valueOf(rs.getString(ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS)),
-                    radOpprettet = rs.getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET)!!
-                )
-            }, fnr.get())
+            db.queryForObject(sql, { rs, _ -> rs.toArbeidssoekerregisterDataEntity() }, fnr.get())
         } catch (ex: EmptyResultDataAccessException) {
             null
         }
+    }
+
+    fun hentArbeidssoekerregisterData(fnrs: List<Fnr>): List<ArbeidssoekerregisterDataEntity> {
+        if (fnrs.isEmpty()) {
+            return emptyList()
+        }
+        val sql = "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
+        return db.query(
+            sql,
+            { rs, _ -> rs.toArbeidssoekerregisterDataEntity() },
+            fnrs.joinToString(",", "{", "}") { it.get() }
+        )
+    }
+
+    fun slettArbeidssoekerregisterData(fnrs: List<Fnr>): Int {
+        if (fnrs.isEmpty()) {
+            return 0
+        }
+        val sql = "DELETE FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
+        return db.update(sql, fnrs.joinToString(",", "{", "}") { it.get() })
+    }
+
+    private fun ResultSet.toArbeidssoekerregisterDataEntity(): ArbeidssoekerregisterDataEntity {
+        val periodeId = getObject(ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID, UUID::class.java)
+        return ArbeidssoekerregisterDataEntity(
+            identitetsnummer = getString(ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER),
+            aggregertPeriode = periodeId?.let {
+                AggregertPeriodeEntity(
+                    identitetsnummer = getString(ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER),
+                    periodeId = it,
+                    periodeStartTidspunkt = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT)!!,
+                    periodeAvsluttetTidspunkt = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT),
+                    opplysningId = getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_ID, UUID::class.java),
+                    opplysningJobbsituasjonBeskrivelse = getArray(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_JOBBSITUASJON_BESKRIVELSE)
+                        ?.let { array -> (array.array as Array<*>).map { beskrivelse -> beskrivelse as String } },
+                    opplysningUtdanningNusKode = getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_NUS_KODE, Int::class.javaObjectType),
+                    opplysningUtdanningBestatt = getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_BESTATT),
+                    opplysningUtdanningGodkjent = getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_GODKJENT),
+                    opplysningSendtInnTidspunkt = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_SENDT_INN_TIDSPUNKT),
+                    profileringId = getObject(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_ID, UUID::class.java),
+                    profileringResultat = getString(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_RESULTAT),
+                    profileringSendtInnTidspunkt = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.PROFILERING_SENDT_INN_TIDSPUNKT)
+                )
+            },
+            synkroniseringStatus = SynkroniseringStatus.valueOf(getString(ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS)),
+            radOpprettet = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET)!!
+        )
     }
 
     private fun ResultSet.getZonedDateTime(kolonne: String): ZonedDateTime? =

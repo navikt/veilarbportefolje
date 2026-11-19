@@ -18,6 +18,9 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.PortefoljeAktivitetKafkaMeldingRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterClient;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
@@ -192,6 +195,8 @@ import static org.mockito.Mockito.when;
         SisteArbeidssoekerPeriodeRepository.class,
         ProfileringRepository.class,
         ArbeidssoekerDataRepository.class,
+        ArbeidssoekerregisterService.class,
+        ArbeidssoekerregisterRepository.class,
         TiltakshendelseRepository.class,
         TiltakshendelseService.class,
         HendelseRepository.class,
@@ -401,6 +406,11 @@ public class ApplicationConfigTest {
     @Bean
     public AapClient aapClient() {
         return mock(AapClient.class);
+    }
+
+    @Bean
+    public ArbeidssoekerregisterClient arbeidssoekerregisterClient() {
+        return mock(ArbeidssoekerregisterClient.class);
     }
 
     @Bean
