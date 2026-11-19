@@ -2,6 +2,8 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import org.assertj.core.api.Assertions.assertThat
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -115,5 +118,68 @@ class ArbeidssoekerregisterRepositoryTest(
     @Test
     fun `hentArbeidssoekerregisterData med ikke-eksisterende bruker skal returnere null`() {
         assertThat(repository.hentArbeidssoekerregisterData(fnr)).isNull()
+    }
+
+    @Test
+    fun `hentArbeidssoekerregisterDataForPeriodeid skal returnere periode med matchende periodeId`() {
+        repository.lagreSisteArbeidssoekerPeriode(fnr, aggregertPeriode)
+        repository.lagreSisteArbeidssoekerPeriode(
+            Fnr.of("01010112345"),
+            aggregertPeriode.copy(identitetsnummer = "01010112345", periodeId = UUID.randomUUID())
+        )
+
+        val resultat = repository.hentArbeidssoekerregisterDataForPeriodeid(aggregertPeriode.periodeId)
+
+        assertThat(resultat).isEqualTo(aggregertPeriode)
+    }
+
+    @Test
+    fun `lagreOpplysningerForPeriode skal overskrive opplysninger og beholde periode og profilering`() {
+        repository.lagreSisteArbeidssoekerPeriode(fnr, aggregertPeriode)
+        val nyeOpplysninger = OpplysningerOmArbeidssoekerEntity(
+            opplysningId = UUID.randomUUID(),
+            opplysningJobbsituasjonBeskrivelse = listOf(JobbSituasjonBeskrivelseResponse.HAR_SAGT_OPP.name),
+            opplysningUtdanningNusKode = 6,
+            opplysningUtdanningBestatt = JaNeiVetIkke.NEI.name,
+            opplysningUtdanningGodkjent = JaNeiVetIkke.JA.name,
+            opplysningSendtInnTidspunkt = Instant.parse("2024-05-01T10:00:00.123456Z")
+        )
+
+        repository.lagreOpplysningerForPeriode(aggregertPeriode.periodeId, nyeOpplysninger)
+
+        val resultat = repository.hentArbeidssoekerregisterData(fnr)
+        assertThat(resultat!!.aggregertPeriode).isEqualTo(
+            aggregertPeriode.copy(
+                opplysningId = nyeOpplysninger.opplysningId,
+                opplysningJobbsituasjonBeskrivelse = nyeOpplysninger.opplysningJobbsituasjonBeskrivelse,
+                opplysningUtdanningNusKode = nyeOpplysninger.opplysningUtdanningNusKode,
+                opplysningUtdanningBestatt = nyeOpplysninger.opplysningUtdanningBestatt,
+                opplysningUtdanningGodkjent = nyeOpplysninger.opplysningUtdanningGodkjent,
+                opplysningSendtInnTidspunkt = ZonedDateTime.parse("2024-05-01T10:00:00.123456Z")
+            )
+        )
+        assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
+    @Test
+    fun `lagreProfileringForPeriode skal overskrive profilering og beholde periode og opplysninger`() {
+        repository.lagreSisteArbeidssoekerPeriode(fnr, aggregertPeriode)
+        val nyProfilering = ProfileringEntity(
+            profileringId = UUID.randomUUID(),
+            profileringResultat = ProfilertTil.ANTATT_GODE_MULIGHETER.name,
+            profileringSendtInnTidspunkt = Instant.parse("2024-05-01T10:00:00.123456Z")
+        )
+
+        repository.lagreProfileringForPeriode(aggregertPeriode.periodeId, nyProfilering)
+
+        val resultat = repository.hentArbeidssoekerregisterData(fnr)
+        assertThat(resultat!!.aggregertPeriode).isEqualTo(
+            aggregertPeriode.copy(
+                profileringId = nyProfilering.profileringId,
+                profileringResultat = nyProfilering.profileringResultat,
+                profileringSendtInnTidspunkt = ZonedDateTime.parse("2024-05-01T10:00:00.123456Z")
+            )
+        )
+        assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
     }
 }

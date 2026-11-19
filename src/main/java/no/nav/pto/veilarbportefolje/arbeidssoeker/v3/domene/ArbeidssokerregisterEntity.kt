@@ -2,8 +2,10 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.AggregertPeriodeResponse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.SynkroniseringStatus
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
+
 
 data class AggregertPeriodeEntity(
     val identitetsnummer: String,
@@ -36,6 +38,38 @@ fun AggregertPeriodeResponse.toAggregertPeriodeEntity() = AggregertPeriodeEntity
     profileringResultat = profilering?.profilertTil?.name,
     profileringSendtInnTidspunkt = profilering?.sendtInnAv?.tidspunkt
 )
+
+data class OpplysningerOmArbeidssoekerEntity(
+    val opplysningId: UUID?,
+    val opplysningJobbsituasjonBeskrivelse: List<String>?,
+    val opplysningUtdanningNusKode: Int?,
+    val opplysningUtdanningBestatt: String?,
+    val opplysningUtdanningGodkjent: String?,
+    val opplysningSendtInnTidspunkt: Instant?
+)
+
+fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() =
+    OpplysningerOmArbeidssoekerEntity(
+        opplysningId = this.id,
+        opplysningSendtInnTidspunkt = this.sendtInnAv.tidspunkt,
+        opplysningUtdanningNusKode = this.utdanning?.nus?.toString()?.toIntOrNull(),
+        opplysningUtdanningBestatt = this.utdanning?.bestaatt?.name,
+        opplysningUtdanningGodkjent = this.utdanning?.godkjent?.name,
+        opplysningJobbsituasjonBeskrivelse = this.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name }
+    )
+
+data class ProfileringEntity(
+    val profileringId: UUID?,
+    val profileringResultat: String?,
+    val profileringSendtInnTidspunkt: Instant?
+)
+
+fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() =
+    ProfileringEntity(
+        profileringId = this.id,
+        profileringResultat = this.profilertTil?.name,
+        profileringSendtInnTidspunkt = this.sendtInnAv.tidspunkt
+    )
 
 data class ArbeidssoekerregisterDataEntity(
     val identitetsnummer: String,
