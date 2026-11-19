@@ -3,6 +3,7 @@ package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ArbeidssoekerregisterDataEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
@@ -11,6 +12,7 @@ import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
+import java.sql.Timestamp
 import java.sql.Types
 import java.time.ZonedDateTime
 import java.util.*
@@ -95,6 +97,36 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         }
     }
 
+    fun lagreOpplysningerForPeriode(periodeId: UUID, opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity?) {
+        val sql = """
+            UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
+            SET
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_ID} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_JOBBSITUASJON_BESKRIVELSE} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_NUS_KODE} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_BESTATT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_GODKJENT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_SENDT_INN_TIDSPUNKT} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = ?
+        """.trimIndent()
+
+        db.update(sql) { ps ->
+            ps.setObject(1, opplysningerOmArbeidssoeker?.opplysningId)
+            ps.setArray(
+                2,
+                opplysningerOmArbeidssoeker?.opplysningJobbsituasjonBeskrivelse?.let {
+                    ps.connection.createArrayOf("text", it.toTypedArray())
+                }
+            )
+            ps.setObject(3, opplysningerOmArbeidssoeker?.opplysningUtdanningNusKode, Types.INTEGER)
+            ps.setString(4, opplysningerOmArbeidssoeker?.opplysningUtdanningBestatt)
+            ps.setString(5, opplysningerOmArbeidssoeker?.opplysningUtdanningGodkjent)
+            ps.setTimestamp(6, opplysningerOmArbeidssoeker?.opplysningSendtInnTidspunkt?.let { Timestamp.from(it) })
+            ps.setObject(7, periodeId)
+        }
+    }
+
     fun lagreBrukerMedSynkroniseringStatusUsikker(fnr: Fnr) {
         val sql = """
             INSERT INTO ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} (${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER}, ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS}, ${ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET})
@@ -109,7 +141,8 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
 
     @TestOnly
     fun hentArbeidssoekerregisterData(fnr: Fnr): ArbeidssoekerregisterDataEntity? {
-        val sql = "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?"
+        val sql =
+            "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?"
         return try {
             db.queryForObject(sql, { rs, _ -> rs.toArbeidssoekerregisterDataEntity() }, fnr.get())
         } catch (ex: EmptyResultDataAccessException) {
@@ -121,7 +154,8 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         if (fnrs.isEmpty()) {
             return emptyList()
         }
-        val sql = "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
+        val sql =
+            "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
         return db.query(
             sql,
             { rs, _ -> rs.toArbeidssoekerregisterDataEntity() },
@@ -129,11 +163,22 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         )
     }
 
+    fun hentArbeidssoekerregisterDataForPeriodeid(periodeId: UUID): AggregertPeriodeEntity? {
+        val sql =
+            "SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = ?"
+        return try {
+            db.queryForObject(sql, { rs, _ -> rs.toArbeidssoekerregisterDataEntity().aggregertPeriode }, periodeId)
+        } catch (ex: EmptyResultDataAccessException) {
+            null
+        }
+    }
+
     fun slettArbeidssoekerregisterData(fnrs: List<Fnr>): Int {
         if (fnrs.isEmpty()) {
             return 0
         }
-        val sql = "DELETE FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
+        val sql =
+            "DELETE FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ANY (?::varchar[])"
         return db.update(sql, fnrs.joinToString(",", "{", "}") { it.get() })
     }
 
@@ -150,7 +195,10 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
                     opplysningId = getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_ID, UUID::class.java),
                     opplysningJobbsituasjonBeskrivelse = getArray(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_JOBBSITUASJON_BESKRIVELSE)
                         ?.let { array -> (array.array as Array<*>).map { beskrivelse -> beskrivelse as String } },
-                    opplysningUtdanningNusKode = getObject(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_NUS_KODE, Int::class.javaObjectType),
+                    opplysningUtdanningNusKode = getObject(
+                        ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_NUS_KODE,
+                        Int::class.javaObjectType
+                    ),
                     opplysningUtdanningBestatt = getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_BESTATT),
                     opplysningUtdanningGodkjent = getString(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_UTDANNING_GODKJENT),
                     opplysningSendtInnTidspunkt = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.OPPLYSNING_SENDT_INN_TIDSPUNKT),

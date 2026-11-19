@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toOpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -12,8 +13,8 @@ import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDate
-import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
@@ -92,17 +93,35 @@ class ArbeidssoekerregisterService(
         val periodeId = opplysninger.periodeId
         val opplysningerOmArbeidssoekerId = opplysninger.id
 
-        // val eksisterendePeriode: AggregertPeriodeEntity? = arbeidssoekerregisterRepository.hentPeriodeForPeriodeId(periodeId)
-//        if (eksisterendePeriode == null) {
-//            secureLog.info(
-//                "Fant ingen eksisterende periode for periodeId: $periodeId. " +
-//                        "Ignorerer opplysninger om arbeidssøker med id: $opplysningerOmArbeidssoekerId"
-//            )
-//            return
-//        }
-//
-//        val sendtInnTispunktKafka = opplysninger.sendtInnAv.tidspunkt
-//        val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysningSendtInnTidspunkt
+        val eksisterendePeriode: AggregertPeriodeEntity? =
+            arbeidssoekerregisterRepository.hentArbeidssoekerregisterDataForPeriodeid(periodeId)
+        if (eksisterendePeriode == null) {
+            secureLog.info(
+                "Fant ingen eksisterende periode for periodeId: $periodeId. " +
+                        "Ignorerer opplysninger om arbeidssøker med id: $opplysningerOmArbeidssoekerId"
+            )
+            return
+        }
+
+        val sendtInnTidspunktKafka = opplysninger.sendtInnAv.tidspunkt
+        val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysningSendtInnTidspunkt?.toInstant()
+        val kafkaErNyere = erNyere(sendtInnTidspunktKafka, sendtInnTidspunktEksisterende)
+        if (!kafkaErNyere) {
+            secureLog.info(
+                "Opplysninger om arbeidssøker med id: $opplysningerOmArbeidssoekerId er ikke nyere enn eksisterende opplysninger. " +
+                        "Ignorerer opplysninger om arbeidssøker for bruker med fnr: ${eksisterendePeriode.identitetsnummer}."
+            )
+            return
+        }
+        secureLog.info(
+            "Opplysninger om arbeidssøker med id: $opplysningerOmArbeidssoekerId er nyere enn eksisterende opplysninger. " +
+                    "Lagrer opplysninger om arbeidssøker for bruker med fnr: ${eksisterendePeriode.identitetsnummer}."
+        )
+        val opplysningerOmArbeidssoekerEntity = opplysninger.toOpplysningerOmArbeidssoekerEntity()
+        arbeidssoekerregisterRepository.lagreOpplysningerForPeriode(
+            eksisterendePeriode.periodeId,
+            opplysningerOmArbeidssoekerEntity
+        )
 
     }
 
@@ -176,22 +195,28 @@ class ArbeidssoekerregisterService(
         periodeFraApi: AggregertPeriodeEntity,
         nyesteEksisterende: AggregertPeriodeEntity
     ): Boolean {
-        val erAvsluttetTidspunktNyere =
-            erNyere(periodeFraApi.periodeAvsluttetTidspunkt, nyesteEksisterende.periodeAvsluttetTidspunkt)
-        val erOpplysningerTidspunktNyere =
-            erNyere(periodeFraApi.opplysningSendtInnTidspunkt, nyesteEksisterende.opplysningSendtInnTidspunkt)
-        val erProfileringTidspunktNyere =
-            erNyere(periodeFraApi.profileringSendtInnTidspunkt, nyesteEksisterende.profileringSendtInnTidspunkt)
+        val erAvsluttetTidspunktNyere = erNyere(
+            periodeFraApi.periodeAvsluttetTidspunkt?.toInstant(),
+            nyesteEksisterende.periodeAvsluttetTidspunkt?.toInstant()
+        )
+        val erOpplysningerTidspunktNyere = erNyere(
+            periodeFraApi.opplysningSendtInnTidspunkt?.toInstant(),
+            nyesteEksisterende.opplysningSendtInnTidspunkt?.toInstant()
+        )
+        val erProfileringTidspunktNyere = erNyere(
+            periodeFraApi.profileringSendtInnTidspunkt?.toInstant(),
+            nyesteEksisterende.profileringSendtInnTidspunkt?.toInstant()
+        )
 
         return erAvsluttetTidspunktNyere || erOpplysningerTidspunktNyere || erProfileringTidspunktNyere
     }
 
     // Postgres lagrer med mikrosekund-presisjon, så tidspunkt må trunkeres før sammenligning
-    private fun erNyere(fraApi: ZonedDateTime?, eksisterende: ZonedDateTime?): Boolean = when {
-        fraApi == null -> false
-        eksisterende == null -> true
-        else -> fraApi.toInstant().truncatedTo(ChronoUnit.MICROS)
-            .isAfter(eksisterende.toInstant().truncatedTo(ChronoUnit.MICROS))
+    private fun erNyere(tidspunkt: Instant?, sammenlignetMed: Instant?): Boolean = when {
+        tidspunkt == null -> false
+        sammenlignetMed == null -> true
+        else -> tidspunkt.truncatedTo(ChronoUnit.MICROS)
+            .isAfter(sammenlignetMed.truncatedTo(ChronoUnit.MICROS))
     }
 
     private fun hentAktivFnr(aktorId: AktorId): Fnr {
