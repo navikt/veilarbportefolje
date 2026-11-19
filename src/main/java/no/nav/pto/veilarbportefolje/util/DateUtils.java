@@ -197,6 +197,13 @@ public class DateUtils {
         return date.toLocalDate();
     }
 
+    public static LocalDate toLocalDateOrNull(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return instant.atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
     public static LocalDate fromZonedDateTimeToLocalDateOrNull(ZonedDateTime zonedDateTime) {
         if (zonedDateTime == null) {
             return null;

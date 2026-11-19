@@ -1,10 +1,7 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ArbeidssoekerregisterDataEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.*
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.util.DateUtils.toTimestamp
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
@@ -159,6 +156,47 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         """.trimIndent()
 
         db.update(sql, fnr.get(), SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA.name)
+    }
+
+    fun lagrePeriodeFraKafka(periode: PeriodeEntity) {
+        val sql = """
+            INSERT INTO ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} (
+                ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_RAD_SIST_ENDRET},
+                ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS},
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET}
+            )
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT (${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER}) DO UPDATE SET
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID} = excluded.${ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT} = excluded.${ARBEIDSSOEKERREGISTER_DATA.PERIODE_START_TIDSPUNKT},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT} = excluded.${ARBEIDSSOEKERREGISTER_DATA.PERIODE_AVSLUTTET_TIDSPUNKT},
+                ${ARBEIDSSOEKERREGISTER_DATA.PERIODE_RAD_SIST_ENDRET} = CURRENT_TIMESTAMP,
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+        """.trimIndent()
+
+        db.update(sql) { ps ->
+            ps.setString(1, periode.identitetsnummer)
+            ps.setObject(2, periode.periodeId)
+            ps.setTimestamp(3, Timestamp.from(periode.periodeStartTidspunkt))
+            ps.setTimestamp(4, periode.periodeAvsluttetTidspunkt?.let { Timestamp.from(it) })
+            ps.setString(5, SynkroniseringStatus.SYNKRONISERT.name)
+        }
+    }
+
+    fun oppdaterSynkroniseringStatus(fnr: Fnr, synkroniseringStatus: SynkroniseringStatus) {
+        val sql = """
+            UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
+            SET
+                ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?
+        """.trimIndent()
+
+        db.update(sql, synkroniseringStatus.name, fnr.get())
     }
 
     @TestOnly

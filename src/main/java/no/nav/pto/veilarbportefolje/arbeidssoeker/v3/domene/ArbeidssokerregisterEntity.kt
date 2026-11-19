@@ -39,6 +39,21 @@ fun AggregertPeriodeResponse.toAggregertPeriodeEntity() = AggregertPeriodeEntity
     profileringSendtInnTidspunkt = profilering?.sendtInnAv?.tidspunkt
 )
 
+data class PeriodeEntity(
+    val periodeId: UUID,
+    val identitetsnummer: String,
+    val periodeStartTidspunkt: Instant,
+    val periodeAvsluttetTidspunkt: Instant?
+)
+
+fun no.nav.paw.arbeidssokerregisteret.api.v1.Periode.toPeriodeEntity() =
+    PeriodeEntity(
+        periodeId = this.id,
+        identitetsnummer = this.identitetsnummer.toString(),
+        periodeStartTidspunkt = this.startet.tidspunkt,
+        periodeAvsluttetTidspunkt = this.avsluttet?.tidspunkt
+    )
+
 data class OpplysningerOmArbeidssoekerEntity(
     val opplysningId: UUID?,
     val opplysningJobbsituasjonBeskrivelse: List<String>?,
@@ -70,6 +85,27 @@ fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() =
         profileringResultat = this.profilertTil?.name,
         profileringSendtInnTidspunkt = this.sendtInnAv.tidspunkt
     )
+
+fun AggregertPeriodeEntity.toOpplysningerOmArbeidssoekerEntity(): OpplysningerOmArbeidssoekerEntity? =
+    opplysningId?.let {
+        OpplysningerOmArbeidssoekerEntity(
+            opplysningId = it,
+            opplysningJobbsituasjonBeskrivelse = opplysningJobbsituasjonBeskrivelse,
+            opplysningUtdanningNusKode = opplysningUtdanningNusKode,
+            opplysningUtdanningBestatt = opplysningUtdanningBestatt,
+            opplysningUtdanningGodkjent = opplysningUtdanningGodkjent,
+            opplysningSendtInnTidspunkt = opplysningSendtInnTidspunkt?.toInstant()
+        )
+    }
+
+fun AggregertPeriodeEntity.toProfileringEntity(): ProfileringEntity? =
+    profileringId?.let {
+        ProfileringEntity(
+            profileringId = it,
+            profileringResultat = profileringResultat,
+            profileringSendtInnTidspunkt = profileringSendtInnTidspunkt?.toInstant()
+        )
+    }
 
 data class ArbeidssoekerregisterDataEntity(
     val identitetsnummer: String,
