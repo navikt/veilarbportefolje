@@ -4,6 +4,8 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
@@ -13,16 +15,23 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent.Gruppe
 import no.nav.pto.veilarbportefolje.util.EndToEndTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.transaction.PlatformTransactionManager
 import java.time.ZonedDateTime
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as BrukerTypeKafka
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as JaNeiVetIkkeKafka
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil as ProfilertTilKafka
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
@@ -33,7 +42,8 @@ class ArbeidssoekerregisterServiceTest(
     @param:Autowired private val pdlIdentRepository: PdlIdentRepository,
     @param:Autowired private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     @param:Autowired private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
-    @param:Autowired private val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository
+    @param:Autowired private val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
+    @param:Autowired private val transactionManager: PlatformTransactionManager
 ) : EndToEndTest() {
     private lateinit var arbeidssoekerregisterService: ArbeidssoekerregisterService
     private val arbeidssoekerregisterClient: ArbeidssoekerregisterClient = mock()
@@ -63,7 +73,8 @@ class ArbeidssoekerregisterServiceTest(
             pdlIdentRepository,
             oppfolgingRepositoryV2,
             arbeidssoekerregisterRepository,
-            opensearchIndexerPaDatafelt
+            opensearchIndexerPaDatafelt,
+            transactionManager
         )
 
         pdlIdentRepository.upsertIdenter(identerBruker)
@@ -226,6 +237,163 @@ class ArbeidssoekerregisterServiceTest(
         assertThat(lagret!!.aggregertPeriode).isEqualTo(nyereRespons.toAggregertPeriodeEntity())
     }
 
+    // behandleKafkaMeldingLogikk - periode
+
+    @Test
+    fun `ny periode pa kafka med api i synk skal lagres med opplysninger og profilering fra api`() {
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
+    @Test
+    fun `ny periode pa kafka med api ute av synk skal lagres uten opplysninger og profilering`() {
+        mockApiRespons(null)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
+        assertThat(lagret.aggregertPeriode.opplysninger).isNull()
+        assertThat(lagret.aggregertPeriode.profilering).isNull()
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_UTE_AV_SYNC)
+    }
+
+    @Test
+    fun `avsluttet samme periode pa kafka skal beholde opplysninger og profilering uten kall mot api`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        val avsluttet = ZonedDateTime.parse("2024-06-01T10:00:00Z")
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding(avsluttet = avsluttet))
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende.copy(periodeAvsluttetTidspunkt = avsluttet))
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+    @Test
+    fun `eldre periode pa kafka skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagPeriodeKafkaMelding(periodeId = UUID.randomUUID(), startet = periodeStart.minusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+    @Test
+    fun `ny periode pa kafka skal slette eksisterende rader pa alle identer`() {
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(
+            fnr, lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        )
+        arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(historiskFnr)
+        val nyPeriodeId = UUID.randomUUID()
+        val nyStart = periodeStart.plusMonths(2)
+        val respons = lagAggregertPeriodeResponse(
+            periodeId = nyPeriodeId,
+            startet = nyStart,
+            opplysningTidspunkt = nyStart,
+            profileringTidspunkt = nyStart
+        )
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagPeriodeKafkaMelding(periodeId = nyPeriodeId, startet = nyStart)
+        )
+
+        assertThat(arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(historiskFnr)).isNull()
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
+    @Test
+    fun `periode pa kafka for bruker som ikke er under oppfolging skal ignoreres`() {
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        assertThat(arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)).isNull()
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+    @Test
+    fun `periode pa kafka avsluttet for oppfolgingsstart skal ignoreres`() {
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagPeriodeKafkaMelding(
+                startet = oppfolgingStart.minusMonths(2),
+                avsluttet = oppfolgingStart.minusDays(1)
+            )
+        )
+
+        assertThat(arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)).isNull()
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+    @Test
+    fun `duplikat av samme periode pa kafka skal ignoreres`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+
+    @Test
+    fun `ny periode pa kafka med annen periode i api skal lagres med status api ute av synk`() {
+        mockApiRespons(lagAggregertPeriodeResponse(periodeId = UUID.randomUUID()))
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
+        assertThat(lagret.aggregertPeriode.opplysninger).isNull()
+        assertThat(lagret.aggregertPeriode.profilering).isNull()
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_UTE_AV_SYNC)
+    }
+
+    @Test
+    fun `feil ved lagring av ny periode skal rulle tilbake sletting av eksisterende data`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        val nyPeriodeId = UUID.randomUUID()
+        val nyStart = periodeStart.plusMonths(2)
+        mockApiRespons(lagAggregertPeriodeResponse(periodeId = nyPeriodeId, startet = nyStart))
+
+        val repositorySpy = spy(arbeidssoekerregisterRepository)
+        doThrow(RuntimeException("feil")).`when`(repositorySpy).lagreSisteArbeidssoekerPeriode(anyNonNull(), anyNonNull())
+        val service = ArbeidssoekerregisterService(
+            arbeidssoekerregisterClient,
+            pdlIdentRepository,
+            oppfolgingRepositoryV2,
+            repositorySpy,
+            opensearchIndexerPaDatafelt,
+            transactionManager
+        )
+
+        assertThatThrownBy {
+            service.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding(periodeId = nyPeriodeId, startet = nyStart))
+        }.isInstanceOf(RuntimeException::class.java)
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
     // behandleKafkaMeldingLogikk - opplysninger om arbeidssøker
 
     @Test
@@ -252,12 +420,14 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(
             eksisterende.copy(
-                opplysningId = melding.id,
-                opplysningJobbsituasjonBeskrivelse = listOf(Beskrivelse.HAR_SAGT_OPP.name),
-                opplysningUtdanningNusKode = 6,
-                opplysningUtdanningBestatt = JaNeiVetIkkeKafka.NEI.name,
-                opplysningUtdanningGodkjent = JaNeiVetIkkeKafka.VET_IKKE.name,
-                opplysningSendtInnTidspunkt = opplysningTidspunkt.plusDays(1)
+                opplysninger = OpplysningerOmArbeidssoekerEntity(
+                    opplysningId = melding.id,
+                    opplysningJobbsituasjonBeskrivelse = listOf(Beskrivelse.HAR_SAGT_OPP.name),
+                    opplysningUtdanningNusKode = 6,
+                    opplysningUtdanningBestatt = JaNeiVetIkkeKafka.NEI.name,
+                    opplysningUtdanningGodkjent = JaNeiVetIkkeKafka.VET_IKKE.name,
+                    opplysningSendtInnTidspunkt = opplysningTidspunkt.plusDays(1).toInstant()
+                )
             )
         )
     }
@@ -314,9 +484,11 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(
             eksisterende.copy(
-                profileringId = melding.id,
-                profileringResultat = ProfilertTilKafka.ANTATT_GODE_MULIGHETER.name,
-                profileringSendtInnTidspunkt = profileringTidspunkt.plusDays(1)
+                profilering = ProfileringEntity(
+                    profileringId = melding.id,
+                    profileringResultat = ProfilertTilKafka.ANTATT_GODE_MULIGHETER.name,
+                    profileringSendtInnTidspunkt = profileringTidspunkt.plusDays(1).toInstant()
+                )
             )
         )
     }
@@ -346,6 +518,23 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> anyNonNull(): T {
+        any<T>()
+        return null as T
+    }
+
+    private fun lagPeriodeKafkaMelding(
+        periodeId: UUID = this.periodeId,
+        startet: ZonedDateTime = periodeStart,
+        avsluttet: ZonedDateTime? = null
+    ) = PeriodeKafkaMelding(
+        periodeId,
+        fnr.get(),
+        Metadata(startet.toInstant(), Bruker(BrukerTypeKafka.SYSTEM, "test"), "test", "test"),
+        avsluttet?.let { Metadata(it.toInstant(), Bruker(BrukerTypeKafka.SYSTEM, "test"), "test", "test") }
+    )
 
     private fun lagProfileringKafkaMelding(
         periodeId: UUID = this.periodeId,

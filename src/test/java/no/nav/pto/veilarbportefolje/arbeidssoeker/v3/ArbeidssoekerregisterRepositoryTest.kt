@@ -30,18 +30,22 @@ class ArbeidssoekerregisterRepositoryTest(
         periodeId = UUID.fromString("ea0ad984-8b99-4fff-afd6-07737ab19d16"),
         periodeStartTidspunkt = ZonedDateTime.parse("2024-04-23T13:04:40.739Z"),
         periodeAvsluttetTidspunkt = null,
-        opplysningId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
-        opplysningJobbsituasjonBeskrivelse = listOf(
-            JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB.name,
-            JobbSituasjonBeskrivelseResponse.ER_PERMITTERT.name
+        opplysninger = OpplysningerOmArbeidssoekerEntity(
+            opplysningId = UUID.fromString("913161a3-dde9-4448-abf8-2a01a043f8cd"),
+            opplysningJobbsituasjonBeskrivelse = listOf(
+                JobbSituasjonBeskrivelseResponse.ALDRI_HATT_JOBB.name,
+                JobbSituasjonBeskrivelseResponse.ER_PERMITTERT.name
+            ),
+            opplysningUtdanningNusKode = 3,
+            opplysningUtdanningBestatt = JaNeiVetIkke.JA.name,
+            opplysningUtdanningGodkjent = JaNeiVetIkke.VET_IKKE.name,
+            opplysningSendtInnTidspunkt = Instant.parse("2024-04-23T13:22:58.089Z")
         ),
-        opplysningUtdanningNusKode = 3,
-        opplysningUtdanningBestatt = JaNeiVetIkke.JA.name,
-        opplysningUtdanningGodkjent = JaNeiVetIkke.VET_IKKE.name,
-        opplysningSendtInnTidspunkt = ZonedDateTime.parse("2024-04-23T13:22:58.089Z"),
-        profileringId = UUID.fromString("7c9a2feb-0b31-4101-825a-0c4a3d465e01"),
-        profileringResultat = ProfilertTil.OPPGITT_HINDRINGER.name,
-        profileringSendtInnTidspunkt = ZonedDateTime.parse("2024-04-25T08:19:53.612Z")
+        profilering = ProfileringEntity(
+            profileringId = UUID.fromString("7c9a2feb-0b31-4101-825a-0c4a3d465e01"),
+            profileringResultat = ProfilertTil.OPPGITT_HINDRINGER.name,
+            profileringSendtInnTidspunkt = Instant.parse("2024-04-25T08:19:53.612Z")
+        )
     )
 
     @BeforeEach
@@ -70,15 +74,8 @@ class ArbeidssoekerregisterRepositoryTest(
         val oppdatertPeriode = aggregertPeriode.copy(
             periodeId = UUID.randomUUID(),
             periodeAvsluttetTidspunkt = ZonedDateTime.parse("2024-06-01T10:00:00Z"),
-            opplysningId = null,
-            opplysningJobbsituasjonBeskrivelse = null,
-            opplysningUtdanningNusKode = null,
-            opplysningUtdanningBestatt = null,
-            opplysningUtdanningGodkjent = null,
-            opplysningSendtInnTidspunkt = null,
-            profileringId = null,
-            profileringResultat = null,
-            profileringSendtInnTidspunkt = null
+            opplysninger = null,
+            profilering = null
         )
         repository.lagreSisteArbeidssoekerPeriode(fnr, oppdatertPeriode)
 
@@ -149,14 +146,7 @@ class ArbeidssoekerregisterRepositoryTest(
 
         val resultat = repository.hentArbeidssoekerregisterData(fnr)
         assertThat(resultat!!.aggregertPeriode).isEqualTo(
-            aggregertPeriode.copy(
-                opplysningId = nyeOpplysninger.opplysningId,
-                opplysningJobbsituasjonBeskrivelse = nyeOpplysninger.opplysningJobbsituasjonBeskrivelse,
-                opplysningUtdanningNusKode = nyeOpplysninger.opplysningUtdanningNusKode,
-                opplysningUtdanningBestatt = nyeOpplysninger.opplysningUtdanningBestatt,
-                opplysningUtdanningGodkjent = nyeOpplysninger.opplysningUtdanningGodkjent,
-                opplysningSendtInnTidspunkt = ZonedDateTime.parse("2024-05-01T10:00:00.123456Z")
-            )
+            aggregertPeriode.copy(opplysninger = nyeOpplysninger)
         )
         assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
     }
@@ -174,11 +164,7 @@ class ArbeidssoekerregisterRepositoryTest(
 
         val resultat = repository.hentArbeidssoekerregisterData(fnr)
         assertThat(resultat!!.aggregertPeriode).isEqualTo(
-            aggregertPeriode.copy(
-                profileringId = nyProfilering.profileringId,
-                profileringResultat = nyProfilering.profileringResultat,
-                profileringSendtInnTidspunkt = ZonedDateTime.parse("2024-05-01T10:00:00.123456Z")
-            )
+            aggregertPeriode.copy(profilering = nyProfilering)
         )
         assertThat(resultat.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
     }
