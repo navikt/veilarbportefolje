@@ -13,15 +13,7 @@ data class AggregertPeriodeEntity(
     val periodeStartTidspunkt: ZonedDateTime,
     val periodeAvsluttetTidspunkt: ZonedDateTime?,
     val opplysninger: OpplysningerOmArbeidssoekerEntity?,
-    val opplysningId: UUID?,
-    val opplysningJobbsituasjonBeskrivelse: List<String>?,
-    val opplysningUtdanningNusKode: Int?,
-    val opplysningUtdanningBestatt: String?,
-    val opplysningUtdanningGodkjent: String?,
-    val opplysningSendtInnTidspunkt: ZonedDateTime?,
-    val profileringId: UUID?,
-    val profileringResultat: String?,
-    val profileringSendtInnTidspunkt: ZonedDateTime?
+    val profilering: ProfileringEntity?,
 )
 
 fun AggregertPeriodeResponse.toAggregertPeriodeEntity() = AggregertPeriodeEntity(
@@ -29,15 +21,23 @@ fun AggregertPeriodeResponse.toAggregertPeriodeEntity() = AggregertPeriodeEntity
     periodeId = id,
     periodeStartTidspunkt = startet.tidspunkt,
     periodeAvsluttetTidspunkt = avsluttet?.tidspunkt,
-    opplysningId = opplysning?.id,
-    opplysningJobbsituasjonBeskrivelse = opplysning?.jobbsituasjon?.beskrivelser?.map { it.beskrivelse.name },
-    opplysningUtdanningNusKode = opplysning?.utdanning?.nus?.toIntOrNull(),
-    opplysningUtdanningBestatt = opplysning?.utdanning?.bestaatt?.name,
-    opplysningUtdanningGodkjent = opplysning?.utdanning?.godkjent?.name,
-    opplysningSendtInnTidspunkt = opplysning?.sendtInnAv?.tidspunkt,
-    profileringId = profilering?.id,
-    profileringResultat = profilering?.profilertTil?.name,
-    profileringSendtInnTidspunkt = profilering?.sendtInnAv?.tidspunkt
+    opplysninger = opplysning?.let {
+        OpplysningerOmArbeidssoekerEntity(
+            opplysningId = it.id,
+            opplysningJobbsituasjonBeskrivelse = it.jobbsituasjon?.beskrivelser?.map { b -> b.beskrivelse.name },
+            opplysningUtdanningNusKode = it.utdanning?.nus?.toIntOrNull(),
+            opplysningUtdanningBestatt = it.utdanning?.bestaatt?.name,
+            opplysningUtdanningGodkjent = it.utdanning?.godkjent?.name,
+            opplysningSendtInnTidspunkt = it.sendtInnAv.tidspunkt.toInstant()
+        )
+    },
+    profilering = profilering?.let {
+        ProfileringEntity(
+            profileringId = it.id,
+            profileringResultat = it.profilertTil.name,
+            profileringSendtInnTidspunkt = it.sendtInnAv.tidspunkt.toInstant()
+        )
+    }
 )
 
 data class PeriodeEntity(
@@ -75,15 +75,15 @@ fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpply
     )
 
 data class ProfileringEntity(
-    val profileringId: UUID?,
-    val profileringResultat: String?,
-    val profileringSendtInnTidspunkt: Instant?
+    val profileringId: UUID,
+    val profileringResultat: String,
+    val profileringSendtInnTidspunkt: Instant
 )
 
 fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() =
     ProfileringEntity(
         profileringId = this.id,
-        profileringResultat = this.profilertTil?.name,
+        profileringResultat = this.profilertTil.name,
         profileringSendtInnTidspunkt = this.sendtInnAv.tidspunkt
     )
 

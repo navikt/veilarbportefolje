@@ -4,6 +4,8 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
@@ -257,8 +259,8 @@ class ArbeidssoekerregisterServiceTest(
 
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
-        assertThat(lagret.aggregertPeriode.opplysningId).isNull()
-        assertThat(lagret.aggregertPeriode.profileringId).isNull()
+        assertThat(lagret.aggregertPeriode.opplysninger).isNull()
+        assertThat(lagret.aggregertPeriode.profilering).isNull()
         assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_UTE_AV_SYNC)
     }
 
@@ -360,8 +362,8 @@ class ArbeidssoekerregisterServiceTest(
 
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
-        assertThat(lagret.aggregertPeriode.opplysningId).isNull()
-        assertThat(lagret.aggregertPeriode.profileringId).isNull()
+        assertThat(lagret.aggregertPeriode.opplysninger).isNull()
+        assertThat(lagret.aggregertPeriode.profilering).isNull()
         assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_UTE_AV_SYNC)
     }
 
@@ -418,12 +420,14 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(
             eksisterende.copy(
-                opplysningId = melding.id,
-                opplysningJobbsituasjonBeskrivelse = listOf(Beskrivelse.HAR_SAGT_OPP.name),
-                opplysningUtdanningNusKode = 6,
-                opplysningUtdanningBestatt = JaNeiVetIkkeKafka.NEI.name,
-                opplysningUtdanningGodkjent = JaNeiVetIkkeKafka.VET_IKKE.name,
-                opplysningSendtInnTidspunkt = opplysningTidspunkt.plusDays(1)
+                opplysninger = OpplysningerOmArbeidssoekerEntity(
+                    opplysningId = melding.id,
+                    opplysningJobbsituasjonBeskrivelse = listOf(Beskrivelse.HAR_SAGT_OPP.name),
+                    opplysningUtdanningNusKode = 6,
+                    opplysningUtdanningBestatt = JaNeiVetIkkeKafka.NEI.name,
+                    opplysningUtdanningGodkjent = JaNeiVetIkkeKafka.VET_IKKE.name,
+                    opplysningSendtInnTidspunkt = opplysningTidspunkt.plusDays(1).toInstant()
+                )
             )
         )
     }
@@ -480,9 +484,11 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isEqualTo(
             eksisterende.copy(
-                profileringId = melding.id,
-                profileringResultat = ProfilertTilKafka.ANTATT_GODE_MULIGHETER.name,
-                profileringSendtInnTidspunkt = profileringTidspunkt.plusDays(1)
+                profilering = ProfileringEntity(
+                    profileringId = melding.id,
+                    profileringResultat = ProfilertTilKafka.ANTATT_GODE_MULIGHETER.name,
+                    profileringSendtInnTidspunkt = profileringTidspunkt.plusDays(1).toInstant()
+                )
             )
         )
     }

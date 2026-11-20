@@ -177,7 +177,7 @@ class ArbeidssoekerregisterService(
         }
 
         val sendtInnTidspunktKafka = opplysninger.sendtInnAv.tidspunkt
-        val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysningSendtInnTidspunkt?.toInstant()
+        val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysninger?.opplysningSendtInnTidspunkt
         val kafkaErNyere = erNyere(sendtInnTidspunktKafka, sendtInnTidspunktEksisterende)
         if (!kafkaErNyere) {
             secureLog.info(
@@ -215,7 +215,7 @@ class ArbeidssoekerregisterService(
         }
 
         val sendtInnTidspunktKafka = profilering.sendtInnAv.tidspunkt
-        val sendtInnTidspunktEksisterende = eksisterendePeriode.profileringSendtInnTidspunkt?.toInstant()
+        val sendtInnTidspunktEksisterende = eksisterendePeriode.profilering?.profileringSendtInnTidspunkt
         val kafkaErNyere = erNyere(sendtInnTidspunktKafka, sendtInnTidspunktEksisterende)
         if (!kafkaErNyere) {
             secureLog.info(
@@ -305,12 +305,12 @@ class ArbeidssoekerregisterService(
             nyesteEksisterende.periodeAvsluttetTidspunkt?.toInstant()
         )
         val erOpplysningerTidspunktNyere = erNyere(
-            periodeFraApi.opplysningSendtInnTidspunkt?.toInstant(),
-            nyesteEksisterende.opplysningSendtInnTidspunkt?.toInstant()
+            periodeFraApi.opplysninger?.opplysningSendtInnTidspunkt,
+            nyesteEksisterende.opplysninger?.opplysningSendtInnTidspunkt
         )
         val erProfileringTidspunktNyere = erNyere(
-            periodeFraApi.profileringSendtInnTidspunkt?.toInstant(),
-            nyesteEksisterende.profileringSendtInnTidspunkt?.toInstant()
+            periodeFraApi.profilering?.profileringSendtInnTidspunkt,
+            nyesteEksisterende.profilering?.profileringSendtInnTidspunkt
         )
 
         return erAvsluttetTidspunktNyere || erOpplysningerTidspunktNyere || erProfileringTidspunktNyere
