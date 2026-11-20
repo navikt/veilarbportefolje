@@ -86,27 +86,6 @@ fun no.nav.paw.arbeidssokerregisteret.api.v1.Profilering.toProfileringEntity() =
         profileringSendtInnTidspunkt = this.sendtInnAv.tidspunkt
     )
 
-fun AggregertPeriodeEntity.toOpplysningerOmArbeidssoekerEntity(): OpplysningerOmArbeidssoekerEntity? =
-    opplysningId?.let {
-        OpplysningerOmArbeidssoekerEntity(
-            opplysningId = it,
-            opplysningJobbsituasjonBeskrivelse = opplysningJobbsituasjonBeskrivelse,
-            opplysningUtdanningNusKode = opplysningUtdanningNusKode,
-            opplysningUtdanningBestatt = opplysningUtdanningBestatt,
-            opplysningUtdanningGodkjent = opplysningUtdanningGodkjent,
-            opplysningSendtInnTidspunkt = opplysningSendtInnTidspunkt?.toInstant()
-        )
-    }
-
-fun AggregertPeriodeEntity.toProfileringEntity(): ProfileringEntity? =
-    profileringId?.let {
-        ProfileringEntity(
-            profileringId = it,
-            profileringResultat = profileringResultat,
-            profileringSendtInnTidspunkt = profileringSendtInnTidspunkt?.toInstant()
-        )
-    }
-
 data class ArbeidssoekerregisterDataEntity(
     val identitetsnummer: String,
     val aggregertPeriode: AggregertPeriodeEntity?,
