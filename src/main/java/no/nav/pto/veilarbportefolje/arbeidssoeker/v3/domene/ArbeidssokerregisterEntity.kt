@@ -12,6 +12,7 @@ data class AggregertPeriodeEntity(
     val periodeId: UUID,
     val periodeStartTidspunkt: ZonedDateTime,
     val periodeAvsluttetTidspunkt: ZonedDateTime?,
+    val opplysninger: OpplysningerOmArbeidssoekerEntity?,
     val opplysningId: UUID?,
     val opplysningJobbsituasjonBeskrivelse: List<String>?,
     val opplysningUtdanningNusKode: Int?,
@@ -55,12 +56,12 @@ fun no.nav.paw.arbeidssokerregisteret.api.v1.Periode.toPeriodeEntity() =
     )
 
 data class OpplysningerOmArbeidssoekerEntity(
-    val opplysningId: UUID?,
+    val opplysningId: UUID,
     val opplysningJobbsituasjonBeskrivelse: List<String>?,
     val opplysningUtdanningNusKode: Int?,
     val opplysningUtdanningBestatt: String?,
     val opplysningUtdanningGodkjent: String?,
-    val opplysningSendtInnTidspunkt: Instant?
+    val opplysningSendtInnTidspunkt: Instant
 )
 
 fun no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker.toOpplysningerOmArbeidssoekerEntity() =

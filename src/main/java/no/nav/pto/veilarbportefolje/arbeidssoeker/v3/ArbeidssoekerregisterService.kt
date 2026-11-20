@@ -7,7 +7,6 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.util.DateUtils.toLocalDateOrNull
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
@@ -15,7 +14,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
-import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
@@ -89,11 +87,11 @@ class ArbeidssoekerregisterService(
         val fnr: Fnr = Fnr.ofValidFnr(periode.identitetsnummer.toString())
         if (!erUnderOppfolging(fnr)) return
         val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
-        val oppfolgingStartdato = hentOppfolgingStartdato(aktorId)
+        val oppfolgingStarttidspunkt = hentOppfolgingStarttidspunkt(aktorId)
         val periodeEntity = periode.toPeriodeEntity()
 
-        val sluttDatoArbeidssoekerperiode = toLocalDateOrNull(periodeEntity.periodeAvsluttetTidspunkt)
-        if (sluttDatoArbeidssoekerperiode?.isBefore(oppfolgingStartdato) == true) {
+        val sluttDatoArbeidssoekerperiode = periodeEntity.periodeAvsluttetTidspunkt
+        if (sluttDatoArbeidssoekerperiode?.isBefore(oppfolgingStarttidspunkt) == true) {
             secureLog.info(
                 "Periode med id: ${periode.id} er ikke innenfor oppfølgingsperioden for bruker med fnr: ${fnr.get()}. " +
                         "Ignorerer kafkamelding for periode for bruker."
@@ -135,7 +133,7 @@ class ArbeidssoekerregisterService(
         val sistePeriodeFraApi = filtrerArbeidssøkerPerioderIOppfolgingsperiode(
             fnr,
             hentAggregertPeriodeFraApi(fnr),
-            oppfolgingStartdato
+            oppfolgingStarttidspunkt
         )
 
         transactionTemplate.executeWithoutResult {
@@ -336,9 +334,9 @@ class ArbeidssoekerregisterService(
     }
 
     private fun hentSistePeriodeIOppfolgingsperiode(aktorId: AktorId, fnr: Fnr): AggregertPeriodeEntity? {
-        val oppfolgingStartdato = hentOppfolgingStartdato(aktorId)
+        val oppfolgingStarttidspunkt = hentOppfolgingStarttidspunkt(aktorId)
         val sistePeriodeFraApi = hentAggregertPeriodeFraApi(fnr)
-        return filtrerArbeidssøkerPerioderIOppfolgingsperiode(fnr, sistePeriodeFraApi, oppfolgingStartdato)
+        return filtrerArbeidssøkerPerioderIOppfolgingsperiode(fnr, sistePeriodeFraApi, oppfolgingStarttidspunkt)
     }
 
     private fun lagreSistePeriodeEllerMarkerUsikker(fnr: Fnr, periode: AggregertPeriodeEntity?) {
@@ -367,17 +365,17 @@ class ArbeidssoekerregisterService(
     private fun filtrerArbeidssøkerPerioderIOppfolgingsperiode(
         fnr: Fnr,
         aggregertPeriode: AggregertPeriodeEntity?,
-        oppfolgingStartdato: LocalDate
+        oppfolgingStarttidspunkt: Instant
     ): AggregertPeriodeEntity? {
         if (aggregertPeriode == null) {
             return null
         }
-        val sluttDatoArbeissøkerperiode = toLocalDateOrNull(aggregertPeriode.periodeAvsluttetTidspunkt?.toInstant())
+        val sluttDatoArbeissøkerperiode = aggregertPeriode.periodeAvsluttetTidspunkt?.toInstant()
 
-        if (sluttDatoArbeissøkerperiode != null && sluttDatoArbeissøkerperiode.isBefore(oppfolgingStartdato)) {
+        if (sluttDatoArbeissøkerperiode != null && sluttDatoArbeissøkerperiode.isBefore(oppfolgingStarttidspunkt)) {
             secureLog.info(
-                "Arbeidssøkerperiode for bruker med fnr: $fnr er avsluttet før oppfølgingstartdato. " +
-                        "SluttDatoArbeidssøkerperiode: $sluttDatoArbeissøkerperiode, OppfolgingStartdato: $oppfolgingStartdato." +
+                "Arbeidssøkerperiode for bruker med fnr: $fnr er avsluttet før oppfølgingstarttidspunkt. " +
+                        "SluttDatoArbeidssøkerperiode: $sluttDatoArbeissøkerperiode, OppfolgingStarttidspunkt: $oppfolgingStarttidspunkt." +
                         "Lagrer ikke periode for bruker."
             )
             return null
@@ -395,12 +393,12 @@ class ArbeidssoekerregisterService(
         return true
     }
 
-    fun hentOppfolgingStartdato(aktorId: AktorId): LocalDate {
+    fun hentOppfolgingStarttidspunkt(aktorId: AktorId): Instant {
         val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
             .orElseThrow { IllegalStateException("Ingen oppfølgingsdata funnet") }
 
         if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return toLocalDateOrNull(oppfolgingsdata.startDato)
+            return oppfolgingsdata.startDato.toInstant()
         }
 
         secureLog.info("Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
