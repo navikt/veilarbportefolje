@@ -170,9 +170,7 @@ class ArbeidssoekerregisterService(
                 periodeEntity.toArbeidssoekerregisteretForOpensearch()
             }
         }
-        lagretArbeidssoekerregisteret?.let {
-            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(aktorId, it)
-        }
+        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(aktorId, lagretArbeidssoekerregisteret)
     }
 
     @Transactional
