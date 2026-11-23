@@ -103,6 +103,7 @@ class ArbeidssoekerregisterService(
         val eksisterendePeriode = hentNyesteEksisterendePeriode(alleFnrForPerson)
         val erSammePeriode = eksisterendePeriode?.periodeId == periodeEntity.periodeId
 
+        // Hvis det finnes en eksisterende periode, sjekker vi om kafka-meldingen er nyere enn den eksisterende perioden
         if (eksisterendePeriode != null) {
             val kafkaErNyere = if (erSammePeriode) {
                 erNyere(
@@ -121,6 +122,7 @@ class ArbeidssoekerregisterService(
             }
         }
 
+        // Hvis eksisterende periode er samme periode som i kafka-meldingen, oppdaterer vi kun periodedata
         if (eksisterendePeriode != null && erSammePeriode) {
             secureLog.info(
                 "Periode med id: ${periode.id} er oppdatert for bruker med fnr: ${fnr.get()}. " +
@@ -137,6 +139,7 @@ class ArbeidssoekerregisterService(
             return
         }
 
+        // Hvis det er ulike perioder, må vi hente opplysninger og profilering fra API-et for å lagre den nye perioden
         val sistePeriodeFraApi = filtrerArbeidssøkerPerioderIOppfolgingsperiode(
             fnr,
             hentAggregertPeriodeFraApi(fnr),
@@ -146,6 +149,8 @@ class ArbeidssoekerregisterService(
         val lagretArbeidssoekerregisteret = transactionTemplate.execute {
             slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
 
+            // Er periode fra api lik kafka, lagrer vi oppdatert periodedata med tilhørende opplysninger.
+            // Finnes ikke perioden i apiet, lagrer vi kun periodedata med status "ute av sync".
             if (sistePeriodeFraApi?.periodeId == periodeEntity.periodeId) {
                 val periodeSomLagres = sistePeriodeFraApi.copy(
                     periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
