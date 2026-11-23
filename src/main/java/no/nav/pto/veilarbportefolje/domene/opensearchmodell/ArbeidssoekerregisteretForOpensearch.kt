@@ -16,9 +16,9 @@ data class OpplysningerOmArbeidssoekerForOpensearch(
     val utdanning: Utdanning? = null,
     val utdanningBestatt: String? = null,
     val utdanningGodkjent: String? = null,
-    val sendtInnDato: LocalDate,
+    val opplysningerSistSendtInnDato: LocalDate,
 )
 
 data class ProfileringForOpensearch(
-    val profileringResultat: Profileringsresultat,
+    val profileringsResultat: Profileringsresultat,
 )

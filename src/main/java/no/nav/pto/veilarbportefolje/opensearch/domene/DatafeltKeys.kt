@@ -94,9 +94,9 @@ object DatafeltKeys {
         val OPPLYSNINGER_UTDANNING = OpplysningerOmArbeidssoekerForOpensearch::utdanning.name
         val OPPLYSNINGER_UTDANNING_BESTATT = OpplysningerOmArbeidssoekerForOpensearch::utdanningBestatt.name
         val OPPLYSNINGER_UTDANNING_GODKJENT = OpplysningerOmArbeidssoekerForOpensearch::utdanningGodkjent.name
-        val OPPLYSNINGER_SENDT_INN_DATO = OpplysningerOmArbeidssoekerForOpensearch::sendtInnDato.name
+        val OPPLYSNINGER_SENDT_INN_DATO = OpplysningerOmArbeidssoekerForOpensearch::opplysningerSistSendtInnDato.name
         val PROFILERING = ArbeidssoekerregisteretForOpensearch::profilering.name
-        val PROFILERING_RESULTAT = ProfileringForOpensearch::profileringResultat.name
+        val PROFILERING_RESULTAT = ProfileringForOpensearch::profileringsResultat.name
     }
 
     object Aktiviteter {

@@ -8,6 +8,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.VeilederId
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
@@ -507,6 +508,40 @@ class OpensearchIndexerPaDatafelt(
             .endObject()
 
         update(aktorId, content, "Slettet sykmeldt for aktorId: $aktorId")
+    }
+
+    fun oppdaterArbeidssoekerregisteret(aktorId: AktorId, arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch) {
+        val opplysninger = arbeidssoekerregisteret.opplysninger
+        val profilering = arbeidssoekerregisteret.profilering
+        val content = XContentFactory.jsonBuilder()
+            .startObject()
+            .startObject(DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET)
+            .field(DatafeltKeys.Arbeidssoekerregisteret.PERIODE_START_DATO, arbeidssoekerregisteret.periodeStartDato)
+            .field(DatafeltKeys.Arbeidssoekerregisteret.PERIODE_AVSLUTTET_DATO, arbeidssoekerregisteret.periodeAvsluttetDato)
+
+        if (opplysninger == null) {
+            content.nullField(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER)
+        } else {
+            content.startObject(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_BRUKERS_SITUASJONER, opplysninger.brukersSituasjoner)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING, opplysninger.utdanning)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_BESTATT, opplysninger.utdanningBestatt)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_GODKJENT, opplysninger.utdanningGodkjent)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_SENDT_INN_DATO, opplysninger.opplysningerSistSendtInnDato)
+                .endObject()
+        }
+
+        if (profilering == null) {
+            content.nullField(DatafeltKeys.Arbeidssoekerregisteret.PROFILERING)
+        } else {
+            content.startObject(DatafeltKeys.Arbeidssoekerregisteret.PROFILERING)
+                .field(DatafeltKeys.Arbeidssoekerregisteret.PROFILERING_RESULTAT, profilering.profileringsResultat)
+                .endObject()
+        }
+
+        content.endObject().endObject()
+
+        update(aktorId, content, "Oppdatert arbeidssøkerregisteret for aktorId: $aktorId")
     }
 
     private fun updateWithScript(aktoerId: AktorId, script: Script?, logInfo: String?) {

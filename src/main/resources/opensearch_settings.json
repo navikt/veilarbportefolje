@@ -412,14 +412,14 @@
               "utdanningGodkjent": {
                 "type": "keyword"
               },
-              "sendtInnDato": {
+              "opplysningerSistSendtInnDato": {
                 "type": "date"
               }
             }
           },
           "profilering": {
             "properties": {
-              "profileringResultat": {
+              "profileringsResultat": {
                 "type": "keyword"
               }
             }
