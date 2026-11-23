@@ -5,6 +5,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
@@ -73,13 +74,15 @@ data class PortefoljebrukerOpensearchModell(
     var veileder_id: String? = null,
 
     // Arbeidssøker
-    var brukers_situasjon_sist_endret: LocalDate? = null,
+    var brukers_situasjon_sist_endret: LocalDate? = null, // TODO: denne skrives til kun fra gamle tabeller og brukes ikke videre, tipper det er en glipp når man bytta til utdanning_og_situasjon_sist_endret
     var brukers_situasjoner: List<String>? = null,
     var profilering_resultat: Profileringsresultat? = null,
     var utdanning: String? = null,
     var utdanning_bestatt: String? = null,
     var utdanning_godkjent: String? = null,
     var utdanning_og_situasjon_sist_endret: LocalDate? = null,
+
+    var arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch? = null,
 
     // Aktiviteter
     var aktivitet_behandling_utlopsdato: String? = getFarInTheFutureDate(),

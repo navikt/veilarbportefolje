@@ -1,8 +1,15 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.AggregertPeriodeResponse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.SynkroniseringStatus
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ProfileringForOpensearch
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -93,3 +100,33 @@ data class ArbeidssoekerregisterDataEntity(
     val synkroniseringStatus: SynkroniseringStatus,
     val radOpprettet: ZonedDateTime
 )
+
+// Mapping fra database til opensearch modell
+fun AggregertPeriodeEntity.toArbeidssoekerregisteretForOpensearch() = ArbeidssoekerregisteretForOpensearch(
+    periodeStartDato = periodeStartTidspunkt.toInstant().toLocalDate(),
+    periodeAvsluttetDato = periodeAvsluttetTidspunkt?.toInstant()?.toLocalDate(),
+    opplysninger = opplysninger?.toOpplysningerOmArbeidssoekerForOpensearch(),
+    profilering = profilering?.toProfileringForOpensearch()
+)
+
+fun PeriodeEntity.toArbeidssoekerregisteretForOpensearch() = ArbeidssoekerregisteretForOpensearch(
+    periodeStartDato = periodeStartTidspunkt.toLocalDate(),
+    periodeAvsluttetDato = periodeAvsluttetTidspunkt?.toLocalDate()
+)
+
+private fun OpplysningerOmArbeidssoekerEntity.toOpplysningerOmArbeidssoekerForOpensearch() =
+    OpplysningerOmArbeidssoekerForOpensearch(
+        brukersSituasjoner = opplysningJobbsituasjonBeskrivelse,
+        utdanning = mapTilUtdanning(opplysningUtdanningNusKode?.toString()),
+        utdanningBestatt = opplysningUtdanningBestatt,
+        utdanningGodkjent = opplysningUtdanningGodkjent,
+        opplysningerSistSendtInnDato = opplysningSendtInnTidspunkt.toLocalDate()
+    )
+
+private fun ProfileringEntity.toProfileringForOpensearch() = ProfileringForOpensearch(
+    profileringsResultat = Profileringsresultat.valueOf(profileringResultat)
+)
+
+private fun Instant.toLocalDate(): LocalDate = LocalDate.ofInstant(this, ZoneId.systemDefault())
+
+

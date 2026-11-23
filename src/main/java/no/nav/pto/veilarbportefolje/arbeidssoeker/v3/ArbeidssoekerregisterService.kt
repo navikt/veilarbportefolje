@@ -103,6 +103,7 @@ class ArbeidssoekerregisterService(
         val eksisterendePeriode = hentNyesteEksisterendePeriode(alleFnrForPerson)
         val erSammePeriode = eksisterendePeriode?.periodeId == periodeEntity.periodeId
 
+        // Hvis det finnes en eksisterende periode, sjekker vi om kafka-meldingen er nyere enn den eksisterende perioden
         if (eksisterendePeriode != null) {
             val kafkaErNyere = if (erSammePeriode) {
                 erNyere(
@@ -121,32 +122,42 @@ class ArbeidssoekerregisterService(
             }
         }
 
-        if (erSammePeriode) {
+        // Hvis eksisterende periode er samme periode som i kafka-meldingen, oppdaterer vi kun periodedata
+        if (eksisterendePeriode != null && erSammePeriode) {
             secureLog.info(
                 "Periode med id: ${periode.id} er oppdatert for bruker med fnr: ${fnr.get()}. " +
                         "Oppdaterer periode og beholder opplysninger og profilering."
             )
             arbeidssoekerregisterRepository.oppdaterPeriode(periodeEntity)
+            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+                aktorId,
+                eksisterendePeriode.copy(
+                    periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
+                    periodeAvsluttetTidspunkt = toZonedDateTime(periodeEntity.periodeAvsluttetTidspunkt)
+                ).toArbeidssoekerregisteretForOpensearch()
+            )
             return
         }
 
+        // Hvis det er ulike perioder, må vi hente opplysninger og profilering fra API-et for å lagre den nye perioden
         val sistePeriodeFraApi = filtrerArbeidssøkerPerioderIOppfolgingsperiode(
             fnr,
             hentAggregertPeriodeFraApi(fnr),
             oppfolgingStarttidspunkt
         )
 
-        transactionTemplate.executeWithoutResult {
+        val lagretArbeidssoekerregisteret = transactionTemplate.execute {
             slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
 
+            // Er periode fra api lik kafka, lagrer vi oppdatert periodedata med tilhørende opplysninger.
+            // Finnes ikke perioden i apiet, lagrer vi kun periodedata med status "ute av sync".
             if (sistePeriodeFraApi?.periodeId == periodeEntity.periodeId) {
-                arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(
-                    fnr,
-                    sistePeriodeFraApi.copy(
-                        periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
-                        periodeAvsluttetTidspunkt = toZonedDateTime(periodeEntity.periodeAvsluttetTidspunkt)
-                    )
+                val periodeSomLagres = sistePeriodeFraApi.copy(
+                    periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
+                    periodeAvsluttetTidspunkt = toZonedDateTime(periodeEntity.periodeAvsluttetTidspunkt)
                 )
+                arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, periodeSomLagres)
+                periodeSomLagres.toArbeidssoekerregisteretForOpensearch()
             } else {
                 secureLog.info(
                     "Fant ingen aggregert periode med id: ${periode.id} for bruker med fnr: ${fnr.get()}. " +
@@ -156,8 +167,10 @@ class ArbeidssoekerregisterService(
                     periodeEntity,
                     SynkroniseringStatus.API_UTE_AV_SYNC
                 )
+                periodeEntity.toArbeidssoekerregisteretForOpensearch()
             }
         }
+        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(aktorId, lagretArbeidssoekerregisteret)
     }
 
     @Transactional
@@ -195,7 +208,11 @@ class ArbeidssoekerregisterService(
             eksisterendePeriode.periodeId,
             opplysningerOmArbeidssoekerEntity
         )
-
+        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
+            eksisterendePeriode.copy(opplysninger = opplysningerOmArbeidssoekerEntity)
+                .toArbeidssoekerregisteretForOpensearch()
+        )
     }
 
     @Transactional
@@ -228,9 +245,14 @@ class ArbeidssoekerregisterService(
             "Profilering med id: $profileringId er nyere enn eksisterende profilering. " +
                     "Lagrer profilering for bruker med fnr: ${eksisterendePeriode.identitetsnummer}."
         )
+        val profileringEntity = profilering.toProfileringEntity()
         arbeidssoekerregisterRepository.lagreProfileringForPeriode(
             eksisterendePeriode.periodeId,
-            profilering.toProfileringEntity()
+            profileringEntity
+        )
+        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
+            eksisterendePeriode.copy(profilering = profileringEntity).toArbeidssoekerregisteretForOpensearch()
         )
     }
 
@@ -238,7 +260,11 @@ class ArbeidssoekerregisterService(
     fun hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId: AktorId) {
         val fnr = hentAktivFnr(aktorId)
         val sistePeriodeIOppfolgingsperiode = hentSistePeriodeIOppfolgingsperiode(aktorId, fnr)
-        lagreSistePeriodeEllerMarkerUsikker(fnr, sistePeriodeIOppfolgingsperiode)
+        if (sistePeriodeIOppfolgingsperiode == null) {
+            arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(fnr)
+            return
+        }
+        lagreSistePeriode(aktorId, fnr, sistePeriodeIOppfolgingsperiode)
     }
 
     @Transactional
@@ -254,7 +280,7 @@ class ArbeidssoekerregisterService(
         val nyesteEksisterendePeriode = hentNyesteEksisterendePeriode(alleFnrForPerson)
         if (nyesteEksisterendePeriode == null) {
             secureLog.info("Fant ingen eksisterende arbeidssøkerdata for bruker med fnr: $fnr. Lagrer periode fra api.")
-            arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
+            lagreSistePeriode(aktorId, fnr, sistePeriodeFraApi)
             return
         }
 
@@ -265,7 +291,7 @@ class ArbeidssoekerregisterService(
         if (ulikPeriodeOgApiErNyest) {
             secureLog.info("Fant nyere periode med arbeidssøkerdata i api for bruker med fnr: $fnr. Sletter eksisterende og lagrer periode fra api.")
             slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
-            arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
+            lagreSistePeriode(aktorId, fnr, sistePeriodeFraApi)
             return
         }
 
@@ -278,7 +304,7 @@ class ArbeidssoekerregisterService(
 
         secureLog.info("Fant nyere data i samme arbeidssøkeperiode i api for bruker med fnr: $fnr. Sletter eksisterende og lagrer periode fra api.")
         slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
-        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, sistePeriodeFraApi)
+        lagreSistePeriode(aktorId, fnr, sistePeriodeFraApi)
     }
 
     private fun hentAlleFnrForPerson(fnr: Fnr): List<Fnr> =
@@ -339,12 +365,12 @@ class ArbeidssoekerregisterService(
         return filtrerArbeidssøkerPerioderIOppfolgingsperiode(fnr, sistePeriodeFraApi, oppfolgingStarttidspunkt)
     }
 
-    private fun lagreSistePeriodeEllerMarkerUsikker(fnr: Fnr, periode: AggregertPeriodeEntity?) {
-        if (periode == null) {
-            arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(fnr)
-            return
-        }
+    private fun lagreSistePeriode(aktorId: AktorId, fnr: Fnr, periode: AggregertPeriodeEntity) {
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, periode)
+        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+            aktorId,
+            periode.toArbeidssoekerregisteretForOpensearch()
+        )
     }
 
     private fun hentAggregertPeriodeFraApi(
