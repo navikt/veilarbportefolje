@@ -389,6 +389,42 @@
             "type": "boolean"
           }
         }
+      },
+      "arbeidssoekerregisteret": {
+        "properties": {
+          "periodeStartDato": {
+            "type": "date"
+          },
+          "periodeAvsluttetDato": {
+            "type": "date"
+          },
+          "opplysninger": {
+            "properties": {
+              "brukersSituasjoner": {
+                "type": "keyword"
+              },
+              "utdanning": {
+                "type": "keyword"
+              },
+              "utdanningBestatt": {
+                "type": "keyword"
+              },
+              "utdanningGodkjent": {
+                "type": "keyword"
+              },
+              "sendtInnDato": {
+                "type": "date"
+              }
+            }
+          },
+          "profilering": {
+            "properties": {
+              "profileringResultat": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -2,7 +2,10 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ProfileringForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
@@ -80,6 +83,20 @@ object DatafeltKeys {
         val UTDANNING_GODKJENT = PortefoljebrukerOpensearchModell::utdanning_godkjent.name
         val UTDANNING_OG_SITUASJON_SIST_ENDRET =
             PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
+    }
+
+    object Arbeidssoekerregisteret {
+        val ARBEIDSSOEKERREGISTERET = PortefoljebrukerOpensearchModell::arbeidssoekerregisteret.name
+        val PERIODE_START_DATO = ArbeidssoekerregisteretForOpensearch::periodeStartDato.name
+        val PERIODE_AVSLUTTET_DATO = ArbeidssoekerregisteretForOpensearch::periodeAvsluttetDato.name
+        val OPPLYSNINGER = ArbeidssoekerregisteretForOpensearch::opplysninger.name
+        val OPPLYSNINGER_BRUKERS_SITUASJONER = OpplysningerOmArbeidssoekerForOpensearch::brukersSituasjoner.name
+        val OPPLYSNINGER_UTDANNING = OpplysningerOmArbeidssoekerForOpensearch::utdanning.name
+        val OPPLYSNINGER_UTDANNING_BESTATT = OpplysningerOmArbeidssoekerForOpensearch::utdanningBestatt.name
+        val OPPLYSNINGER_UTDANNING_GODKJENT = OpplysningerOmArbeidssoekerForOpensearch::utdanningGodkjent.name
+        val OPPLYSNINGER_SENDT_INN_DATO = OpplysningerOmArbeidssoekerForOpensearch::sendtInnDato.name
+        val PROFILERING = ArbeidssoekerregisteretForOpensearch::profilering.name
+        val PROFILERING_RESULTAT = ProfileringForOpensearch::profileringResultat.name
     }
 
     object Aktiviteter {
