@@ -16,6 +16,7 @@ public class FeatureToggle {
     public static final String BRUK_TILTAKSAKTIVITET_FRA_AKTIVITETSPLAN = "veilarbportefolje.bruk_tiltaksaktivitet_fra_aktivitetsplan";
     public static final String STOPP_LAGRING_AV_MINE_FILTER = "veilarbportefolje.stopp_lagring_av_mine_filter";
     public static final String STOPP_KJOERENDE_BATCHJOBBER = "veilarbportefolje.stopp_kjoerende_batchjobber";
+    public static final String BRUK_V3_AV_ARBEIDSSOEKERREGISTERET = "veilarbportefolje.bruk_v3_av_arbeidssoekerregisteret";
 
     public static boolean brukAvAliasIndeksering(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.ALIAS_INDEKSERING);
@@ -31,5 +32,9 @@ public class FeatureToggle {
 
     public static boolean stoppKjoerendeBatchjobber(DefaultUnleash defaultUnleash) {
         return defaultUnleash.isEnabled(FeatureToggle.STOPP_KJOERENDE_BATCHJOBBER);
+    }
+
+    public static boolean brukV3AvArbeidssoekerregisteret(DefaultUnleash defaultUnleash) {
+        return defaultUnleash.isEnabled(FeatureToggle.BRUK_V3_AV_ARBEIDSSOEKERREGISTERET);
     }
 }

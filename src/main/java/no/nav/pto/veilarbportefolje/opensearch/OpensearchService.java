@@ -114,9 +114,10 @@ public class OpensearchService {
         OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
+        boolean brukV3AvArbeidssoekerregisteret = FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash);
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger))
+                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger, brukV3AvArbeidssoekerregisteret))
                 .collect(toList());
         return new BrukereMedAntall(totalHits, brukere);
     }
@@ -228,13 +229,15 @@ public class OpensearchService {
             PortefoljebrukerOpensearchModell brukerOpensearchModell,
             List<String> aktiveVeilederePaEnhet,
             Filtervalg filtervalg,
-            BrukerinnsynTilganger brukerinnsynTilganger
+            BrukerinnsynTilganger brukerinnsynTilganger,
+            boolean brukV3AvArbeidssoekerregisteret
     ) {
         return PortefoljebrukerFrontendModellMapper.INSTANCE.toSensurertPortefoljebrukerFrontendModell(
                 brukerOpensearchModell,
                 erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet),
                 filtervalg,
-                brukerinnsynTilganger
+                brukerinnsynTilganger,
+                brukV3AvArbeidssoekerregisteret
         );
     }
 

@@ -26,9 +26,10 @@ object PortefoljebrukerFrontendModellMapper {
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
         filtervalg: Filtervalg,
-        brukerinnsynTilganger: BrukerinnsynTilganger
+        brukerinnsynTilganger: BrukerinnsynTilganger,
+        brukV3AvArbeidssoekerregisteret: Boolean = false
     ): PortefoljebrukerFrontendModell {
-        val bruker = toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg)
+        val bruker = toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg, brukV3AvArbeidssoekerregisteret)
         bruker.barnUnder18AarData = bruker.barnUnder18AarData
             ?.filter { brukerinnsynTilganger.harTilgangTilAdressebeskyttelse(it.diskresjonskode) }
 
@@ -61,9 +62,15 @@ object PortefoljebrukerFrontendModellMapper {
     internal fun toPortefoljebrukerFrontendModell(
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
-        filtervalg: Filtervalg
+        filtervalg: Filtervalg,
+        brukV3AvArbeidssoekerregisteret: Boolean = false
     ): PortefoljebrukerFrontendModell {
-        val profileringResultat = opensearchBruker.profilering_resultat
+
+        val profileringResultat = if (brukV3AvArbeidssoekerregisteret) {
+            opensearchBruker.arbeidssoekerregisteret?.profilering?.profileringsResultat
+        } else {
+            opensearchBruker.profilering_resultat
+        }
         // Det gjøres kun en sjekk på BATT i frontend, forenkler derfor til å kunne sjekke denne.
         val innsatsgruppe =
             if (opensearchBruker.kvalifiseringsgruppekode == "BATT") opensearchBruker.kvalifiseringsgruppekode else null
