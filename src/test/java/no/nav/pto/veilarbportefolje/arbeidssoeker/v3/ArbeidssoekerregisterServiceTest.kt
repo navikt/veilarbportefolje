@@ -1,5 +1,6 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
+import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
@@ -7,6 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v2.Annet
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toAggregertPeriodeEntity
+import no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API
 import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -47,6 +49,7 @@ class ArbeidssoekerregisterServiceTest(
 ) : EndToEndTest() {
     private lateinit var arbeidssoekerregisterService: ArbeidssoekerregisterService
     private val arbeidssoekerregisterClient: ArbeidssoekerregisterClient = mock()
+    private val defaultUnleash: DefaultUnleash = mock()
 
     private val fnr = Fnr.ofValidFnr("10108000000")
     private val historiskFnr = Fnr.ofValidFnr("01010112345")
@@ -74,6 +77,7 @@ class ArbeidssoekerregisterServiceTest(
             oppfolgingRepositoryV2,
             arbeidssoekerregisterRepository,
             opensearchIndexerPaDatafelt,
+            defaultUnleash,
             transactionManager
         )
 
@@ -368,6 +372,20 @@ class ArbeidssoekerregisterServiceTest(
     }
 
     @Test
+    fun `ny periode pa kafka nar henting fra api er skrudd av skal lagre periode uten api-kall`() {
+        `when`(defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API)).thenReturn(true)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
+        assertThat(lagret.aggregertPeriode.opplysninger).isNull()
+        assertThat(lagret.aggregertPeriode.profilering).isNull()
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+        verifyNoInteractions(arbeidssoekerregisterClient)
+    }
+
+    @Test
     fun `feil ved lagring av ny periode skal rulle tilbake sletting av eksisterende data`() {
         val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
@@ -383,6 +401,7 @@ class ArbeidssoekerregisterServiceTest(
             oppfolgingRepositoryV2,
             repositorySpy,
             opensearchIndexerPaDatafelt,
+            defaultUnleash,
             transactionManager
         )
 

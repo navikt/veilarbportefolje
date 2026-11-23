@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
+import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.*
+import no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -80,6 +82,7 @@ class ArbeidssoekerregisterService(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
+    private val defaultUnleash: DefaultUnleash,
     transactionManager: PlatformTransactionManager
 ) {
     private val transactionTemplate = TransactionTemplate(transactionManager)
@@ -136,6 +139,25 @@ class ArbeidssoekerregisterService(
                     periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
                     periodeAvsluttetTidspunkt = toZonedDateTime(periodeEntity.periodeAvsluttetTidspunkt)
                 ).toArbeidssoekerregisteretForOpensearch()
+            )
+            return
+        }
+
+        if (defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API)) {
+            secureLog.info(
+                "Henting fra api er skrudd av ved konsumering av periode med id: ${periode.id} for bruker med fnr: ${fnr.get()}. " +
+                        "Lagrer periode fra kafka med synkroniseringsstatus synkronisert."
+            )
+            transactionTemplate.executeWithoutResult {
+                slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
+                arbeidssoekerregisterRepository.lagrePeriodeFraKafka(
+                    periodeEntity,
+                    SynkroniseringStatus.SYNKRONISERT
+                )
+            }
+            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+                aktorId,
+                periodeEntity.toArbeidssoekerregisteretForOpensearch()
             )
             return
         }
