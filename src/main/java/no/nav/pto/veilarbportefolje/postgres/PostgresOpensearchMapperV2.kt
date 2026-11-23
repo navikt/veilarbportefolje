@@ -4,6 +4,8 @@ import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerData
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerDataRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.toArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriRepository
@@ -34,6 +36,7 @@ class PostgresOpensearchMapperV2(
     private val pdlIdentRepository: PdlIdentRepository,
     private val sykmeldtRepository: SykmeldtRepository,
     private val arbeidssoekerDataRepository: ArbeidssoekerDataRepository,
+    private val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
     private val skjermingRepository: SkjermingRepository,
 ) {
 
@@ -44,7 +47,31 @@ class PostgresOpensearchMapperV2(
         flettInnEldsteHendelsePerKategori(brukere, fnrIdenterPerBruker)
         flettInnSykmeldt(brukere, fnrIdenterPerBruker)
         flettInnArbeidssoekerData(brukere, fnrIdenterPerBruker)
+        flettInnArbeidssoekerregisteret(brukere, fnrIdenterPerBruker)
         flettInnSkjerming(brukere, fnrIdenterPerBruker)
+    }
+
+    private fun flettInnArbeidssoekerregisteret(
+        brukere: List<PortefoljebrukerOpensearchModell>,
+        fnrIdenterPerBruker: Map<NorskIdent, List<NorskIdentMedHistorikk>>
+    ) {
+        val fnrs = alleIdenter(fnrIdenterPerBruker).map { Fnr.of(it) }
+        val periodePerIdent = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnrs)
+            .mapNotNull { data -> data.aggregertPeriode?.let { data.identitetsnummer to it } }
+            .toMap()
+
+        brukere.forEach { bruker ->
+            val identer = bruker.fnr?.let { fnrIdenterPerBruker[it] } ?: emptyList()
+            val periode = velgDataForPrioritertIdent(
+                "arbeidssøkerregisteret",
+                bruker.fnr,
+                identer,
+                periodePerIdent,
+                { it.periodeStartTidspunkt.toLocalDateTime() }
+            )
+
+            bruker.arbeidssoekerregisteret = periode?.toArbeidssoekerregisteretForOpensearch()
+        }
     }
 
     private fun flettInnSkjerming(
