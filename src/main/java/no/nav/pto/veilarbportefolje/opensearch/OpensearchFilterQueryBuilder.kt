@@ -26,6 +26,12 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_BRUKERS_SITUASJONER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_BESTATT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_GODKJENT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.CV_EKSISTERE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.NESTE_CV_KAN_DELES_STATUS
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_BRUKER
@@ -262,7 +268,22 @@ class OpensearchFilterQueryBuilder {
     }
 
 
-    fun leggTilManuelleFilter(queryBuilder: BoolQueryBuilder, filtervalg: Filtervalg) {
+    fun leggTilManuelleFilter(
+        queryBuilder: BoolQueryBuilder,
+        filtervalg: Filtervalg,
+        brukV3AvArbeidssoekerregisteret: Boolean = false
+    ) {
+        fun opplysningerFelt(felt: String): String = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$felt"
+
+        val brukersSituasjonerFelt =
+            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_BRUKERS_SITUASJONER) else BRUKERS_SITUASJONER
+        val utdanningFelt =
+            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING) else UTDANNING
+        val utdanningBestattFelt =
+            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING_BESTATT) else UTDANNING_BESTATT
+        val utdanningGodkjentFelt =
+            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING_GODKJENT) else UTDANNING_GODKJENT
+
         if (filtervalg.alder.isNotEmpty()) {
             val subQuery = QueryBuilders.boolQuery()
             filtervalg.alder.forEach(Consumer { alder: String -> byggAlderQuery(alder, subQuery) })
@@ -720,14 +741,14 @@ class OpensearchFilterQueryBuilder {
             filtervalg.registreringstype.forEach(Consumer { jobbSituasjonBeskrivelse: JobbSituasjonBeskrivelse ->
                 if (jobbSituasjonBeskrivelse == JobbSituasjonBeskrivelse.INGEN_DATA) {
                     brukerensSituasjonSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(BRUKERS_SITUASJONER))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(brukersSituasjonerFelt))
                     )
                 } else {
                     inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering(jobbSituasjonBeskrivelse).forEach(
                         Consumer { sokerOrd: String? ->
                             brukerensSituasjonSubQuery.should(
                                 QueryBuilders.matchQuery(
-                                    BRUKERS_SITUASJONER,
+                                    brukersSituasjonerFelt,
                                     sokerOrd
                                 )
                             )
@@ -743,11 +764,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanning.forEach(Consumer { utdanningSvar: UtdanningSvar ->
                 if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(utdanningFelt))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING, "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningFelt, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING, utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningFelt, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)
@@ -758,11 +779,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanningBestatt.forEach(Consumer { utdanningSvar: UtdanningBestattSvar ->
                 if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING_BESTATT))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(utdanningBestattFelt))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_BESTATT, "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningBestattFelt, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_BESTATT, utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningBestattFelt, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)
@@ -773,11 +794,11 @@ class OpensearchFilterQueryBuilder {
             filtervalg.utdanningGodkjent.forEach(Consumer { utdanningSvar: UtdanningGodkjentSvar ->
                 if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
                     brukerensUtdanningSubQuery.should(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(UTDANNING_GODKJENT))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(utdanningGodkjentFelt))
                     )
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_GODKJENT, "INGEN_SVAR"))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningGodkjentFelt, "INGEN_SVAR"))
                 } else {
-                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(UTDANNING_GODKJENT, utdanningSvar))
+                    brukerensUtdanningSubQuery.should(QueryBuilders.matchQuery(utdanningGodkjentFelt, utdanningSvar))
                 }
             })
             queryBuilder.must(brukerensUtdanningSubQuery)

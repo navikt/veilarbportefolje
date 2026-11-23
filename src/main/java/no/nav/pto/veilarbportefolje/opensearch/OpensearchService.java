@@ -87,7 +87,7 @@ public class OpensearchService {
                     filter -> boolQuery.filter(filterQueryBuilder.leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
             );
 
-            filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg);
+            filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg, FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash));
         }
 
         if (filtervalg.harBarnUnder18AarFilter()) {
