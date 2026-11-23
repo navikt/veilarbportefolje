@@ -7,6 +7,7 @@ import no.nav.pto.veilarbportefolje.domene.YtelseMapping
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -148,6 +149,7 @@ object PortefoljebrukerFrontendModellMapper {
             moteMedNavIDag = mapMoteMedNavIDag(opensearchBruker),
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
             utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            arbeidssoekerregisteret = mapArbeidssoekerregisteret(opensearchBruker.arbeidssoekerregisteret),
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             vedtak14a = mapVedtak14a(opensearchBruker),
             ytelser = YtelserForBruker(
@@ -295,6 +297,17 @@ object PortefoljebrukerFrontendModellMapper {
             avtaltMedNav = erAvtaltMedNav,
             klokkeslett = klokkeslett,
             varighetMinutter = varighet
+        )
+    }
+
+    private fun mapArbeidssoekerregisteret(
+        arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch?
+    ): Arbeidssoekerregisteret? {
+        if (arbeidssoekerregisteret == null) return null
+        return Arbeidssoekerregisteret(
+            arbeidssoekerPeriodeStartdato = arbeidssoekerregisteret.periodeStartDato,
+            arbeidssoekerPeriodeAvsluttetdato = arbeidssoekerregisteret.periodeAvsluttetDato,
+            utdanningOgSituasjonSistEndret = arbeidssoekerregisteret.opplysninger?.opplysningerSistSendtInnDato
         )
     }
 

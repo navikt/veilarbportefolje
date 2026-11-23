@@ -6,7 +6,9 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
@@ -285,6 +287,37 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("FR", tolkebehov.talespraaktolk)
         Assertions.assertEquals("EN", tolkebehov.tegnspraaktolk)
         Assertions.assertEquals(sistOppdatert, tolkebehov.sistOppdatert)
+    }
+
+    @Test
+    fun `arbeidssoekerregisteret skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        Assertions.assertNull(frontendBrukerUtenData.arbeidssoekerregisteret)
+
+        val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker.copy(
+                arbeidssoekerregisteret = ArbeidssoekerregisteretForOpensearch(
+                    periodeStartDato = LocalDate.of(2025, 1, 10),
+                    periodeAvsluttetDato = LocalDate.of(2025, 6, 1),
+                    opplysninger = OpplysningerOmArbeidssoekerForOpensearch(
+                        opplysningerSistSendtInnDato = LocalDate.of(2025, 2, 3)
+                    )
+                )
+            ),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val arbeidssoekerregisteret = frontendBrukerMedData.arbeidssoekerregisteret!!
+
+        Assertions.assertEquals(LocalDate.of(2025, 1, 10), arbeidssoekerregisteret.arbeidssoekerPeriodeStartdato)
+        Assertions.assertEquals(LocalDate.of(2025, 6, 1), arbeidssoekerregisteret.arbeidssoekerPeriodeAvsluttetdato)
+        Assertions.assertEquals(LocalDate.of(2025, 2, 3), arbeidssoekerregisteret.utdanningOgSituasjonSistEndret)
     }
 
     @Test
