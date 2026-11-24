@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService;
@@ -56,6 +57,7 @@ public class OppfolgingAvsluttetService {
     private final UngdomsprogramService ungdomsprogramService;
     private final UforetrygdService uforetrygdService;
     private final SykmeldtService sykmeldtService;
+    private final ArbeidssoekerregisterService arbeidssoekerregisterService;
 
     public void avsluttOppfolging(AktorId aktorId, ZonedDateTime avsluttetDato) {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
@@ -98,6 +100,7 @@ public class OppfolgingAvsluttetService {
         uforetrygdService.slettUforetrygdData(aktorId, maybeFnr);
         sykmeldtService.slettSykmeldtData(aktorId, maybeFnr);
         cvServiceV2.slettCvData(aktorId, maybeFnr);
+        arbeidssoekerregisterService.slettArbeidssoekerregisterDataVedAvsluttOppfolging(aktorId, maybeFnr);
         opensearchIndexer.slettDokumenter(List.of(aktorId));
         secureLog.info("Bruker: {} har avsluttet oppfølging og er slettet", aktorId);
     }

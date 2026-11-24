@@ -7,6 +7,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.domene.NavKontor;
@@ -58,6 +59,7 @@ public class OppfolgingStartetService {
     private final HuskelappService huskelappService;
     private final FargekategoriService fargekategoriService;
     private final PlatformTransactionManager transactionManager;
+    private final ArbeidssoekerregisterService arbeidssoekerregisterService;
 
     public void behandleOppfolgingStartetEllerKontorEndret(Fnr fnr, AktorId aktorId, ZonedDateTime oppfolgingStartetDate, NavKontor navKontor, UUID oppfolgingsperiodeUuid) {
         Optional<OppfolgingData> oppfolgingsbruker = oppfolgingRepositoryV2.hentOppfolgingData(aktorId);
@@ -111,6 +113,8 @@ public class OppfolgingStartetService {
             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
             uforetrygdService.hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId);
             sykmeldtService.hentOgLagreSykmeldtperiodeForBrukerVedOppfolgingStart(aktorId);
+            // TODO: kobles på når data er lest inn
+            //arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId);
         });
 
         opensearchIndexer.indekser(aktorId);

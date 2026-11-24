@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
@@ -314,6 +315,16 @@ class ArbeidssoekerregisterService(
         arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(alleFnrForPerson)
             .mapNotNull { it.aggregertPeriode }
             .maxByOrNull { it.periodeStartTidspunkt }
+
+    fun slettArbeidssoekerregisterDataVedAvsluttOppfolging(aktorId: AktorId, maybeFnr: Optional<Fnr>) {
+        val alleFnrForPerson = pdlIdentRepository.hentFnrIdenterForBruker(aktorId.get()).identer.map { Fnr.of(it) }
+        if (alleFnrForPerson.isEmpty()) {
+            secureLog.warn("Fant ingen fødselsnummer for bruker med aktorId: ${aktorId.get()}, kunne ikke slette arbeidssøkerdata.")
+            return
+        }
+
+        slettArbeidssoekerregisterData(maybeFnr.orElse(alleFnrForPerson[0]), alleFnrForPerson)
+    }
 
     private fun slettArbeidssoekerregisterData(fnr: Fnr, alleFnrForPerson: List<Fnr>) {
         val antallSlettet = arbeidssoekerregisterRepository.slettArbeidssoekerregisterData(alleFnrForPerson)
