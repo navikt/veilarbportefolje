@@ -84,6 +84,16 @@ public class PdlIdentRepository {
         return new IdenterForBruker(identer);
     }
 
+    public IdenterForBruker hentAktorIdenterForBruker(String brukerId) {
+        List<String> identer = db.queryForList("""
+                select bi2.ident
+                from bruker_identer bi1
+                inner join bruker_identer bi2 on bi2.person = bi1.person
+                where bi2.gruppe = 'AKTORID' and bi1.ident = ?
+                """, String.class, brukerId);
+        return new IdenterForBruker(identer);
+    }
+
     public Map<String, List<NorskIdentMedHistorikk>> hentFnrIdenterForBrukere(List<String> brukerIder) {
         if (brukerIder.isEmpty()) {
             return Map.of();

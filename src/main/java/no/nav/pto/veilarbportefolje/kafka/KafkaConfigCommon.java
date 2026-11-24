@@ -23,6 +23,9 @@ import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerProfileringKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterOpplysningerOmArbeidssoekerKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterPeriodeKafkaMeldingService;
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterProfileringKafkaMeldingService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.arenaDTO.GruppeAktivitetDTO;
@@ -80,6 +83,9 @@ import java.util.stream.Collectors;
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_OPPLYSNINGER_V3_START_KONSUMERING;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_PERIODE_V3_START_KONSUMERING;
+import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_PROFILERING_V3_START_KONSUMERING;
 import static no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_SISTE_14A_STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 
@@ -88,6 +94,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 public class KafkaConfigCommon {
     public final static String CLIENT_ID_CONFIG = "veilarbportefolje-consumer";
     public final static String CV_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-cv-endret-3";
+    public final static String ARBEIDSSOEKER_V3_CLIENT_ID_CONFIG = "veilarbportefolje-consumer-arbeidssoeker-v3";
 
     public enum Topic {
         VEDTAK_STATUS_ENDRING_TOPIC("pto.vedtak-14a-statusendring-v1"),
@@ -160,6 +167,9 @@ public class KafkaConfigCommon {
     private final List<KafkaConsumerClient> consumerClientAiven;
     private final KafkaConsumerClient consumerClientAivenSiste14a; // Midlertidig adskilt for egen toggle
     private final KafkaConsumerClient consumerClientAivenCv; // Midlertidig adskilt for egen toggle
+    private final KafkaConsumerClient consumerClientAivenArbeidssoekerPeriodeV3;
+    private final KafkaConsumerClient consumerClientAivenArbeidssoekerOpplysningerV3;
+    private final KafkaConsumerClient consumerClientAivenArbeidssoekerProfileringV3;
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
     public KafkaConfigCommon(
@@ -167,6 +177,9 @@ public class KafkaConfigCommon {
             ArbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService,
             ArbeidssoekerPeriodeKafkaMeldingService arbeidssoekerPeriodeKafkaMeldingService,
             ArbeidssoekerProfileringKafkaMeldingService arbeidssoekerProfileringKafkaMeldingService,
+            ArbeidssoekerregisterOpplysningerOmArbeidssoekerKafkaMeldingService arbeidssoekerregisterOpplysningerOmArbeidssoekerKafkaMeldingService,
+            ArbeidssoekerregisterPeriodeKafkaMeldingService arbeidssoekerregisterPeriodeKafkaMeldingService,
+            ArbeidssoekerregisterProfileringKafkaMeldingService arbeidssoekerregisterProfileringKafkaMeldingService,
             CVServiceV2 cvServiceV2,
             DefaultUnleash defaultUnleash,
             DialogService dialogService,
@@ -524,6 +537,60 @@ public class KafkaConfigCommon {
                 .withToggle(kafkaAivenUnleash)
                 .build();
 
+        Properties aivenArbeidssoekerV3ConsumerProperties = aivenDefaultConsumerProperties(ARBEIDSSOEKER_V3_CLIENT_ID_CONFIG);
+        aivenArbeidssoekerV3ConsumerProperties.setProperty(AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        KafkaConsumerClientBuilder.TopicConfig<Long, Periode> arbeidssoekerPeriodeV3TopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<Long, Periode>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withConsumerConfig(
+                                Topic.ARBEIDSSOKERPERIODER_TOPIC.topicName,
+                                Deserializers.longDeserializer(),
+                                new AivenAvroDeserializer<Periode>().getDeserializer(),
+                                arbeidssoekerregisterPeriodeKafkaMeldingService::behandleKafkaRecordMedLongKey
+                        );
+
+        consumerClientAivenArbeidssoekerPeriodeV3 = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenArbeidssoekerV3ConsumerProperties)
+                .withTopicConfig(arbeidssoekerPeriodeV3TopicConfig)
+                .withToggle(() -> !defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_PERIODE_V3_START_KONSUMERING) || kafkaAivenUnleash.get())
+                .build();
+
+        KafkaConsumerClientBuilder.TopicConfig<Long, OpplysningerOmArbeidssoeker> arbeidssoekerOpplysningerV3TopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<Long, OpplysningerOmArbeidssoeker>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withConsumerConfig(
+                                Topic.OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC.topicName,
+                                Deserializers.longDeserializer(),
+                                new AivenAvroDeserializer<OpplysningerOmArbeidssoeker>().getDeserializer(),
+                                arbeidssoekerregisterOpplysningerOmArbeidssoekerKafkaMeldingService::behandleKafkaRecordMedLongKey
+                        );
+
+        consumerClientAivenArbeidssoekerOpplysningerV3 = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenArbeidssoekerV3ConsumerProperties)
+                .withTopicConfig(arbeidssoekerOpplysningerV3TopicConfig)
+                .withToggle(() -> !defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_OPPLYSNINGER_V3_START_KONSUMERING) || kafkaAivenUnleash.get())
+                .build();
+
+        KafkaConsumerClientBuilder.TopicConfig<Long, Profilering> arbeidssoekerProfileringV3TopicConfig =
+                new KafkaConsumerClientBuilder.TopicConfig<Long, Profilering>()
+                        .withLogging()
+                        .withMetrics(prometheusMeterRegistry)
+                        .withConsumerConfig(
+                                Topic.ARBEIDSSOEKER_PROFILERING_TOPIC.topicName,
+                                Deserializers.longDeserializer(),
+                                new AivenAvroDeserializer<Profilering>().getDeserializer(),
+                                arbeidssoekerregisterProfileringKafkaMeldingService::behandleKafkaRecordMedLongKey
+                        );
+
+        consumerClientAivenArbeidssoekerProfileringV3 = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenArbeidssoekerV3ConsumerProperties)
+                .withTopicConfig(arbeidssoekerProfileringV3TopicConfig)
+                .withToggle(() -> !defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_PROFILERING_V3_START_KONSUMERING) || kafkaAivenUnleash.get())
+                .build();
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> allTopicConfigs = new java.util.ArrayList<>();
         allTopicConfigs.addAll(topicConfigsAiven);
         allTopicConfigs.add(siste14aTopicConfig);
@@ -545,6 +612,9 @@ public class KafkaConfigCommon {
         consumerClientAiven.forEach(KafkaConsumerClient::start);
         consumerClientAivenSiste14a.start();
         consumerClientAivenCv.start();
+        consumerClientAivenArbeidssoekerPeriodeV3.start();
+        consumerClientAivenArbeidssoekerOpplysningerV3.start();
+        consumerClientAivenArbeidssoekerProfileringV3.start();
     }
 
 
