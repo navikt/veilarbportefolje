@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,7 +123,7 @@ public class PdlIdentRepository {
                 .setGruppe(PDLIdent.Gruppe.valueOf((String) rs.get("gruppe")));
     }
 
-    public String hentPerson(String lookUpIdent) {
+    public @Nullable String hentPerson(String lookUpIdent) {
         return queryForObjectOrNull(() -> db.queryForObject("select person from bruker_identer where ident = ?",
                 (rs, row) -> rs.getString("person"), lookUpIdent));
     }
@@ -140,7 +141,7 @@ public class PdlIdentRepository {
      * @param bruker {@code AktorId} for brukeren
      * @return {@code Fnr} for brukeren, eller {@code null} hvis brukeren ikke er aktiv
      */
-    public Fnr hentFnrForAktivBruker(AktorId bruker) {
+    public @Nullable Fnr hentFnrForAktivBruker(AktorId bruker) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select fnr from aktive_identer where aktorid = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("fnr")).map(Fnr::of).orElse(null),
@@ -155,7 +156,7 @@ public class PdlIdentRepository {
      * @param bruker {@code Fnr} for brukeren
      * @return {@code AktorId} for brukeren, eller {@code null} hvis brukeren ikke er aktiv
      */
-    public AktorId hentAktorIdForAktivBruker(Fnr bruker) {
+    public @Nullable AktorId hentAktorIdForAktivBruker(Fnr bruker) {
         return queryForObjectOrNull(
                 () -> db.queryForObject("select aktorid from aktive_identer where fnr = ?",
                         (rs, i) -> Optional.ofNullable(rs.getString("aktorid")).map(AktorId::of).orElse(null),
@@ -170,7 +171,7 @@ public class PdlIdentRepository {
      * @param ident fnr eller aktørId, aktiv eller historisk
      * @return aktivt {@code Fnr}, eller {@code null} hvis personen ikke har et aktivt fnr
      */
-    public Fnr hentAktivFnrForPerson(String ident) {
+    public @Nullable Fnr hentAktivFnrForPerson(String ident) {
         return queryForObjectOrNull(() -> db.queryForObject("""
               select bi2.ident
               from bruker_identer bi1
@@ -188,7 +189,7 @@ public class PdlIdentRepository {
      * @param ident fnr eller aktørId, aktiv eller historisk
      * @return aktiv {@code AktorId}, eller {@code null} hvis personen ikke har en aktiv aktørId
      */
-    public AktorId hentAktivAktorIdForPerson(String ident) {
+    public @Nullable AktorId hentAktivAktorIdForPerson(String ident) {
         return queryForObjectOrNull(() -> db.queryForObject("""
               select bi2.ident
               from bruker_identer bi1

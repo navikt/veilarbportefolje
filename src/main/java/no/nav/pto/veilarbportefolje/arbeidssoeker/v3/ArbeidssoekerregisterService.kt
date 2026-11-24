@@ -91,6 +91,10 @@ class ArbeidssoekerregisterService(
         val fnr: Fnr = Fnr.ofValidFnr(periode.identitetsnummer.toString())
         if (!erUnderOppfolging(fnr)) return
         val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
+        if (aktorId == null) {
+            secureLog.warn("Arbeidssøkerdata: Fant ingen aktiv aktorId for bruker med fnr: ${fnr.get()}. Ignorerer kafkamelding for periode med id: ${periode.id}.")
+            return
+        }
         val oppfolgingStarttidspunkt = hentOppfolgingStarttidspunkt(aktorId)
         val periodeEntity = periode.toPeriodeEntity()
 
@@ -211,6 +215,7 @@ class ArbeidssoekerregisterService(
             )
             return
         }
+        if (!erUnderOppfolging(Fnr.of(eksisterendePeriode.identitetsnummer))) return
 
         val sendtInnTidspunktKafka = opplysninger.sendtInnAv.tidspunkt
         val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysninger?.opplysningSendtInnTidspunkt
@@ -231,11 +236,16 @@ class ArbeidssoekerregisterService(
             eksisterendePeriode.periodeId,
             opplysningerOmArbeidssoekerEntity
         )
-        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
-            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
-            eksisterendePeriode.copy(opplysninger = opplysningerOmArbeidssoekerEntity)
-                .toArbeidssoekerregisteretForOpensearch()
-        )
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer)
+        if (aktorId != null) {
+            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+                aktorId,
+                eksisterendePeriode.copy(opplysninger = opplysningerOmArbeidssoekerEntity)
+                    .toArbeidssoekerregisteretForOpensearch()
+            )
+        } else {
+            secureLog.warn("Arbeidssøkerdata: Fant ingen aktiv aktorId for bruker med fnr: ${eksisterendePeriode.identitetsnummer}. Oppdaterer ikke OpenSearch.")
+        }
     }
 
     @Transactional
@@ -253,6 +263,7 @@ class ArbeidssoekerregisterService(
             )
             return
         }
+        if (!erUnderOppfolging(Fnr.of(eksisterendePeriode.identitetsnummer))) return
 
         val sendtInnTidspunktKafka = profilering.sendtInnAv.tidspunkt
         val sendtInnTidspunktEksisterende = eksisterendePeriode.profilering?.profileringSendtInnTidspunkt
@@ -273,10 +284,15 @@ class ArbeidssoekerregisterService(
             eksisterendePeriode.periodeId,
             profileringEntity
         )
-        opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
-            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
-            eksisterendePeriode.copy(profilering = profileringEntity).toArbeidssoekerregisteretForOpensearch()
-        )
+        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer)
+        if (aktorId != null) {
+            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+                aktorId,
+                eksisterendePeriode.copy(profilering = profileringEntity).toArbeidssoekerregisteretForOpensearch()
+            )
+        } else {
+            secureLog.warn("Arbeidssøkerdata: Fant ingen aktiv aktorId for bruker med fnr: ${eksisterendePeriode.identitetsnummer}. Oppdaterer ikke OpenSearch.")
+        }
     }
 
     @Transactional
