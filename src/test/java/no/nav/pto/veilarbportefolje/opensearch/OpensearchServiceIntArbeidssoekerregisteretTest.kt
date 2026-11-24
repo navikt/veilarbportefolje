@@ -57,6 +57,51 @@ class OpensearchServiceIntArbeidssoekerregisteretTest @Autowired constructor(
         assertThat(alle).containsExactlyInAnyOrder(aktivPeriode.fnr, avsluttetPeriode.fnr, ingenPeriode.fnr)
     }
 
+    @Test
+    fun skal_sortere_paa_periode_startdato() {
+        val tidligst = lagBruker(ArbeidssoekerregisteretForOpensearch(periodeStartDato = LocalDate.now().minusMonths(4)))
+        val senest = lagBruker(ArbeidssoekerregisteretForOpensearch(periodeStartDato = LocalDate.now().minusMonths(1)))
+        val ingenPeriode = lagBruker(null)
+        skrivOgVent(listOf(senest, ingenPeriode, tidligst))
+
+        val stigende = hentBrukere(
+            sorteringsfelt = Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_STARTDATO,
+            rekkefolge = Sorteringsrekkefolge.STIGENDE
+        )
+        val synkende = hentBrukere(
+            sorteringsfelt = Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_STARTDATO,
+            rekkefolge = Sorteringsrekkefolge.SYNKENDE
+        )
+
+        assertThat(stigende).containsExactly(tidligst.fnr, senest.fnr, ingenPeriode.fnr)
+        assertThat(synkende).containsExactly(ingenPeriode.fnr, senest.fnr, tidligst.fnr)
+    }
+
+    @Test
+    fun skal_sortere_paa_periode_avsluttetdato() {
+        val start = LocalDate.now().minusYears(1)
+        val tidligst = lagBruker(
+            ArbeidssoekerregisteretForOpensearch(start, periodeAvsluttetDato = LocalDate.now().minusMonths(4))
+        )
+        val senest = lagBruker(
+            ArbeidssoekerregisteretForOpensearch(start, periodeAvsluttetDato = LocalDate.now().minusMonths(1))
+        )
+        val aktiv = lagBruker(ArbeidssoekerregisteretForOpensearch(start))
+        skrivOgVent(listOf(senest, aktiv, tidligst))
+
+        val stigende = hentBrukere(
+            sorteringsfelt = Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_AVSLUTTETDATO,
+            rekkefolge = Sorteringsrekkefolge.STIGENDE
+        )
+        val synkende = hentBrukere(
+            sorteringsfelt = Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_AVSLUTTETDATO,
+            rekkefolge = Sorteringsrekkefolge.SYNKENDE
+        )
+
+        assertThat(stigende).containsExactly(tidligst.fnr, senest.fnr, aktiv.fnr)
+        assertThat(synkende).containsExactly(aktiv.fnr, senest.fnr, tidligst.fnr)
+    }
+
     private fun lagBruker(arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch?) =
         PortefoljebrukerOpensearchModell(
             aktoer_id = randomAktorId().get(),
@@ -72,12 +117,16 @@ class OpensearchServiceIntArbeidssoekerregisteretTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
     }
 
-    private fun hentBrukere(filter: List<ArbeidssokerregisteretFilter>): List<String?> =
+    private fun hentBrukere(
+        filter: List<ArbeidssokerregisteretFilter> = emptyList(),
+        sorteringsfelt: Sorteringsfelt = Sorteringsfelt.IKKE_SATT,
+        rekkefolge: Sorteringsrekkefolge = Sorteringsrekkefolge.IKKE_SATT
+    ): List<String?> =
         opensearchService.hentBrukere(
             TEST_ENHET,
             Optional.of(TEST_VEILEDER_0),
-            Sorteringsrekkefolge.IKKE_SATT,
-            Sorteringsfelt.IKKE_SATT,
+            rekkefolge,
+            sorteringsfelt,
             getFiltervalgDefaults().copy(arbeidssoekerregisteret = filter),
             null,
             null
