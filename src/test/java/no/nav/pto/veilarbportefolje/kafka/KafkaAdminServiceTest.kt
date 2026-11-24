@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.util.Optional
@@ -62,6 +63,13 @@ class KafkaAdminServiceTest {
         assertThat(topics)
             .containsExactlyElementsOf(KafkaConfigCommon.Topic.entries.map { it.topicName })
             .contains(periodeTopic, annetTopic)
+    }
+
+    @Test
+    fun `Spring skal kunne opprette KafkaAdminService via parameterlos konstruktor`() {
+        AnnotationConfigApplicationContext(KafkaAdminService::class.java).use { context ->
+            assertThat(context.getBean(KafkaAdminService::class.java)).isNotNull
+        }
     }
 
     @Test

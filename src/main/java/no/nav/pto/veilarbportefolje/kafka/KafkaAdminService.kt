@@ -10,7 +10,6 @@ import org.apache.kafka.common.errors.GroupNotEmptyException
 import org.apache.kafka.common.errors.RebalanceInProgressException
 import org.apache.kafka.common.errors.UnknownMemberIdException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -20,7 +19,6 @@ import java.util.function.Supplier
 
 @Service
 class KafkaAdminService(private val adminClientSupplier: Supplier<AdminClient>) {
-    @Autowired
     constructor() : this(Supplier { AdminClient.create(aivenDefaultConsumerProperties(KafkaConfigCommon.CLIENT_ID_CONFIG)) })
 
     private val log = LoggerFactory.getLogger(KafkaAdminService::class.java)
