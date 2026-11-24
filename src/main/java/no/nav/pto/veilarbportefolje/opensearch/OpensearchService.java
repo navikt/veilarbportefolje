@@ -109,12 +109,12 @@ public class OpensearchService {
             filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(boolQuery, brukerinnsynTilganger, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, brukerinnsynTilganger);
+        boolean brukV3AvArbeidssoekerregisteret = FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash);
+        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, brukerinnsynTilganger, brukV3AvArbeidssoekerregisteret);
 
         OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
-        boolean brukV3AvArbeidssoekerregisteret = FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash);
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
                 .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger, brukV3AvArbeidssoekerregisteret))
