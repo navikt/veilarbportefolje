@@ -32,6 +32,7 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_BESTATT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_GODKJENT
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.PERIODE_AVSLUTTET_DATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.CV_EKSISTERE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.CV.NESTE_CV_KAN_DELES_STATUS
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Dialog.VENTER_PA_SVAR_FRA_BRUKER
@@ -542,6 +543,25 @@ class OpensearchFilterQueryBuilder {
                 }
             }
             queryBuilder.must(subQuery)
+        }
+
+        if (filtervalg.harArbeidssoekerregisteretFilter()) {
+            val periodeAvsluttetDatoFelt = "$ARBEIDSSOEKERREGISTERET.$PERIODE_AVSLUTTET_DATO"
+            when (filtervalg.arbeidssoekerregisteret!!) {
+                ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
+                    queryBuilder.must(
+                        QueryBuilders.boolQuery()
+                            .must(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET))
+                            .mustNot(QueryBuilders.existsQuery(periodeAvsluttetDatoFelt))
+                    )
+
+                ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
+                    queryBuilder.must(
+                        QueryBuilders.boolQuery()
+                            .should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET)))
+                            .should(QueryBuilders.rangeQuery(periodeAvsluttetDatoFelt).lt("now"))
+                    )
+            }
         }
 
         if (filtervalg.harKjonnfilter()) {

@@ -47,6 +47,7 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     ytelseUforetrygd = emptyList(),
     ingenYtelser = emptyList(),
     sykmeldt = emptyList(),
+    arbeidssoekerregisteret = null,
     visGeografiskBosted = emptyList()
 )
 

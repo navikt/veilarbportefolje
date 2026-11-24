@@ -31,6 +31,11 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKS
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_SENDT_INN_DATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.PERIODE_AVSLUTTET_DATO
+import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.PERIODE_START_DATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_FATTET_DATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Oppfolging.GJELDENDE_VEDTAK_14A_HOVEDMAL
@@ -123,7 +128,8 @@ class OpensearchSortQueryBuilder {
         sorteringsfelt: Sorteringsfelt,
         searchSourceBuilder: SearchSourceBuilder,
         filtervalg: Filtervalg,
-        brukerinnsynTilganger: BrukerinnsynTilganger
+        brukerinnsynTilganger: BrukerinnsynTilganger,
+        brukV3AvArbeidssoekerregisteret: Boolean = false
     ): SearchSourceBuilder {
         val sorteringsrekkefolgeOpenSearch =
             if (Sorteringsrekkefolge.STIGENDE == sorteringsrekkefolge) SortOrder.ASC else SortOrder.DESC
@@ -272,7 +278,12 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET -> {
-                searchSourceBuilder.sort(UTDANNING_OG_SITUASJON_SIST_ENDRET, sorteringsrekkefolgeOpenSearch)
+                val felt = if (brukV3AvArbeidssoekerregisteret) {
+                    "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_SENDT_INN_DATO"
+                } else {
+                    UTDANNING_OG_SITUASJON_SIST_ENDRET
+                }
+                searchSourceBuilder.sort(felt, sorteringsrekkefolgeOpenSearch)
                 searchSourceBuilder
             }
 
@@ -399,6 +410,24 @@ class OpensearchSortQueryBuilder {
 
             Sorteringsfelt.SYKMELDT_HAR_ARBEIDSGIVER -> {
                 searchSourceBuilder.sort("$SYKMELDT.$SYKMELDT_HAR_ARBEIDSGIVER", sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_STARTDATO -> {
+                sorterPaDato(
+                    searchSourceBuilder,
+                    sorteringsrekkefolgeOpenSearch,
+                    "$ARBEIDSSOEKERREGISTERET.$PERIODE_START_DATO"
+                )
+                searchSourceBuilder
+            }
+
+            Sorteringsfelt.ARBEIDSSOEKERREGISTERET_PERIODE_AVSLUTTETDATO -> {
+                sorterPaDato(
+                    searchSourceBuilder,
+                    sorteringsrekkefolgeOpenSearch,
+                    "$ARBEIDSSOEKERREGISTERET.$PERIODE_AVSLUTTET_DATO"
+                )
                 searchSourceBuilder
             }
 
@@ -856,6 +885,22 @@ class OpensearchSortQueryBuilder {
         val expression = """
                     if (doc.containsKey('$SYKMELDT.$SYKMELDT_SLUTTDATO') && !doc['$SYKMELDT.$SYKMELDT_SLUTTDATO'].empty) {
                         return doc['$SYKMELDT.$SYKMELDT_SLUTTDATO'].value.toInstant().toEpochMilli();
+                    } else {
+                        return 33064243200001.0;
+                    }
+                    
+                    """.trimIndent()
+
+        val script = Script(expression)
+        val scriptBuilder = ScriptSortBuilder(script, ScriptSortType.NUMBER)
+        scriptBuilder.order(order)
+        builder.sort(scriptBuilder)
+    }
+
+    private fun sorterPaDato(builder: SearchSourceBuilder, order: SortOrder, felt: String) {
+        val expression = """
+                    if (doc.containsKey('$felt') && !doc['$felt'].empty) {
+                        return doc['$felt'].value.toInstant().toEpochMilli();
                     } else {
                         return 33064243200001.0;
                     }

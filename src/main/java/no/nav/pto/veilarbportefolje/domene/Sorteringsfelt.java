@@ -101,6 +101,8 @@ public enum Sorteringsfelt {
 
     BARN_UNDER_18_AR("barn_under_18_aar"),
 
+    ARBEIDSSOEKERREGISTERET_PERIODE_STARTDATO("arbeidssoekerregisteret_periode_startdato"),
+    ARBEIDSSOEKERREGISTERET_PERIODE_AVSLUTTETDATO("arbeidssoekerregisteret_periode_avsluttetdato"),
     UTDANNING_OG_SITUASJON_SIST_ENDRET("utdanningOgSituasjonSistEndret"),
 
     HUSKELAPP_KOMMENTAR("huskelapp_kommentar"),
