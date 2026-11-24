@@ -1,8 +1,12 @@
 package no.nav.pto.veilarbportefolje.postgres
 
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
+import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
 import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository
@@ -23,11 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Timestamp
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.OpplysningerOmArbeidssoekerEntity as OpplysningerOmArbeidssoekerEntityV3
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.ProfileringEntity as ProfileringEntityV3
 
 @SpringBootTest(classes = [ApplicationConfigTest::class])
 class PostgresOpensearchMapperV2Test(
@@ -39,6 +46,7 @@ class PostgresOpensearchMapperV2Test(
     @param:Autowired val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
     @param:Autowired val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
     @param:Autowired val profileringRepository: ProfileringRepository,
+    @param:Autowired val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
 ) {
 
     @BeforeEach
@@ -49,6 +57,7 @@ class PostgresOpensearchMapperV2Test(
         jdbcTemplate.update("TRUNCATE TABLE nom_skjerming")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
         jdbcTemplate.update("TRUNCATE TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
+        jdbcTemplate.update("TRUNCATE TABLE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}")
     }
 
     @Test
@@ -217,6 +226,58 @@ class PostgresOpensearchMapperV2Test(
         assertThat(bruker.utdanning).isNotNull()
         assertThat(bruker.brukers_situasjoner).isNotEmpty()
         assertThat(bruker.profilering_resultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+    }
+
+    @Test
+    fun `flettInnArbeidssoekerregisteret skal finne data lagret på historisk fnr`() {
+        val fnr = randomFnr().get()
+        val historiskFnr = randomFnr().get()
+        lagreIdenter(fnr, historisk = listOf(historiskFnr))
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(
+            Fnr.of(historiskFnr),
+            AggregertPeriodeEntity(
+                identitetsnummer = historiskFnr,
+                periodeId = UUID.randomUUID(),
+                periodeStartTidspunkt = ZonedDateTime.parse("2024-04-23T12:00:00Z"),
+                periodeAvsluttetTidspunkt = null,
+                opplysninger = OpplysningerOmArbeidssoekerEntityV3(
+                    opplysningId = UUID.randomUUID(),
+                    opplysningJobbsituasjonBeskrivelse = listOf("ER_PERMITTERT"),
+                    opplysningUtdanningNusKode = 3,
+                    opplysningUtdanningBestatt = "JA",
+                    opplysningUtdanningGodkjent = "VET_IKKE",
+                    opplysningSendtInnTidspunkt = Instant.parse("2024-04-24T12:00:00Z")
+                ),
+                profilering = ProfileringEntityV3(
+                    profileringId = UUID.randomUUID(),
+                    profileringResultat = Profileringsresultat.OPPGITT_HINDRINGER.name,
+                    profileringSendtInnTidspunkt = Instant.parse("2024-04-25T12:00:00Z")
+                )
+            )
+        )
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        val arbeidssoekerregisteret = bruker.arbeidssoekerregisteret
+        assertThat(arbeidssoekerregisteret).isNotNull()
+        assertThat(arbeidssoekerregisteret!!.periodeStartDato).isEqualTo(LocalDate.of(2024, 4, 23))
+        assertThat(arbeidssoekerregisteret.periodeAvsluttetDato).isNull()
+        assertThat(arbeidssoekerregisteret.opplysninger?.brukersSituasjoner).containsExactly("ER_PERMITTERT")
+        assertThat(arbeidssoekerregisteret.opplysninger?.utdanning).isEqualTo(Utdanning.VIDEREGAENDE_GRUNNUTDANNING)
+        assertThat(arbeidssoekerregisteret.opplysninger?.opplysningerSistSendtInnDato).isEqualTo(LocalDate.of(2024, 4, 24))
+        assertThat(arbeidssoekerregisteret.profilering?.profileringsResultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
+    }
+
+    @Test
+    fun `flettInnArbeidssoekerregisteret skal sette null når bruker ikke har data`() {
+        val fnr = randomFnr().get()
+        lagreIdenter(fnr)
+
+        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
+        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
+
+        assertThat(bruker.arbeidssoekerregisteret).isNull()
     }
 
     @Test

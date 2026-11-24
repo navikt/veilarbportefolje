@@ -32,6 +32,7 @@ data class PortefoljebrukerFrontendModell(
 
     val sisteEndringAvBruker: SisteEndringAvBruker?,
     val utdanningOgSituasjonSistEndret: LocalDate?,
+    val arbeidssoekerregisteret: Arbeidssoekerregisteret?,
     val nesteSvarfristCvStillingFraNav: LocalDate?,
 
     val ytelser: YtelserForBruker,

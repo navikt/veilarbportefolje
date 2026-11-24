@@ -18,17 +18,6 @@ import java.util.*
 
 @Repository
 class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
-//    fun hentOpplysningerOmArbeidssoeker(fnrs: List<Fnr>): Map<String, OpplysningerOmArbeidssoeker> {
-//
-//    }
-//
-//    fun hentProfileringsresultat(fnrs: List<Fnr>): Map<String, Profilering> {
-//
-//    }
-//
-//    fun hentPeriode(fnrs: List<Fnr>): Map<String, Periode> {
-//
-//    }
 
     fun lagreSisteArbeidssoekerPeriode(fnr: Fnr, periode: AggregertPeriodeEntity) {
         val sql = """

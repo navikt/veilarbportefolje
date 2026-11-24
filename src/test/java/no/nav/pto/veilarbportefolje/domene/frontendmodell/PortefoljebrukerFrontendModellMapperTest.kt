@@ -6,7 +6,10 @@ import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.*
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ProfileringForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
@@ -60,6 +63,33 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, etiketter.profileringResultat)
         Assertions.assertEquals(false, etiketter.skjermet)
         Assertions.assertEquals(LocalDate.of(2020, 1, 1), etiketter.skjermetTil)
+    }
+
+    @Test
+    fun `profileringResultat skal hentes fra v3 når toggle er på`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell(
+            profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER,
+            arbeidssoekerregisteret = ArbeidssoekerregisteretForOpensearch(
+                periodeStartDato = LocalDate.of(2025, 1, 10),
+                profilering = ProfileringForOpensearch(Profileringsresultat.ANTATT_GODE_MULIGHETER)
+            )
+        )
+
+        val medToggle = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults(),
+            brukV3AvArbeidssoekerregisteret = true
+        )
+        val utenToggle = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults(),
+            brukV3AvArbeidssoekerregisteret = false
+        )
+
+        Assertions.assertEquals(Profileringsresultat.ANTATT_GODE_MULIGHETER, medToggle.etiketter.profileringResultat)
+        Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, utenToggle.etiketter.profileringResultat)
     }
 
     @Test
@@ -285,6 +315,37 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("FR", tolkebehov.talespraaktolk)
         Assertions.assertEquals("EN", tolkebehov.tegnspraaktolk)
         Assertions.assertEquals(sistOppdatert, tolkebehov.sistOppdatert)
+    }
+
+    @Test
+    fun `arbeidssoekerregisteret skal mappes riktig`() {
+        val opensearchBruker = PortefoljebrukerOpensearchModell()
+
+        val frontendBrukerUtenData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker,
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        Assertions.assertNull(frontendBrukerUtenData.arbeidssoekerregisteret)
+
+        val frontendBrukerMedData = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+            opensearchBruker = opensearchBruker.copy(
+                arbeidssoekerregisteret = ArbeidssoekerregisteretForOpensearch(
+                    periodeStartDato = LocalDate.of(2025, 1, 10),
+                    periodeAvsluttetDato = LocalDate.of(2025, 6, 1),
+                    opplysninger = OpplysningerOmArbeidssoekerForOpensearch(
+                        opplysningerSistSendtInnDato = LocalDate.of(2025, 2, 3)
+                    )
+                )
+            ),
+            ufordelt = true,
+            filtervalg = getFiltervalgDefaults()
+        )
+        val arbeidssoekerregisteret = frontendBrukerMedData.arbeidssoekerregisteret!!
+
+        Assertions.assertEquals(LocalDate.of(2025, 1, 10), arbeidssoekerregisteret.arbeidssoekerPeriodeStartdato)
+        Assertions.assertEquals(LocalDate.of(2025, 6, 1), arbeidssoekerregisteret.arbeidssoekerPeriodeAvsluttetdato)
+        Assertions.assertEquals(LocalDate.of(2025, 2, 3), arbeidssoekerregisteret.utdanningOgSituasjonSistEndret)
     }
 
     @Test
