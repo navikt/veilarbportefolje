@@ -47,10 +47,9 @@ class OpensearchServiceIntArbeidssoekerregisteretTest @Autowired constructor(
         val ingenPeriode = lagBruker(null)
         skrivOgVent(listOf(aktivPeriode, avsluttetPeriode, ingenPeriode))
 
-        val harAktiv = hentBrukere(listOf(ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET))
-        val harIkkeAktiv =
-            hentBrukere(listOf(ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET))
-        val alle = hentBrukere(ArbeidssokerregisteretFilter.entries)
+        val harAktiv = hentBrukere(ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET)
+        val harIkkeAktiv = hentBrukere(ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET)
+        val alle = hentBrukere()
 
         assertThat(harAktiv).containsExactly(aktivPeriode.fnr)
         assertThat(harIkkeAktiv).containsExactlyInAnyOrder(avsluttetPeriode.fnr, ingenPeriode.fnr)
@@ -118,7 +117,7 @@ class OpensearchServiceIntArbeidssoekerregisteretTest @Autowired constructor(
     }
 
     private fun hentBrukere(
-        filter: List<ArbeidssokerregisteretFilter> = emptyList(),
+        filter: ArbeidssokerregisteretFilter? = null,
         sorteringsfelt: Sorteringsfelt = Sorteringsfelt.IKKE_SATT,
         rekkefolge: Sorteringsrekkefolge = Sorteringsrekkefolge.IKKE_SATT
     ): List<String?> =

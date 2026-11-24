@@ -48,7 +48,7 @@ data class Filtervalg(
     val ytelseUforetrygd: List<YtelseUforetrygd>,
     val ingenYtelser: List<IngenYtelser>,
     val sykmeldt: List<Sykmeldt>,
-    val arbeidssoekerregisteret: List<ArbeidssokerregisteretFilter>,
+    val arbeidssoekerregisteret: ArbeidssokerregisteretFilter?,
     val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
@@ -145,7 +145,7 @@ data class Filtervalg(
         sykmeldt.isNotEmpty()
 
     fun harArbeidssoekerregisteretFilter(): Boolean =
-        arbeidssoekerregisteret.isNotEmpty()
+        arbeidssoekerregisteret != null
 
     fun harKjonnfilter(): Boolean =
         kjonn != null

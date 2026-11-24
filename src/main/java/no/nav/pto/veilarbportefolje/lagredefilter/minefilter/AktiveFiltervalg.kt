@@ -55,7 +55,7 @@ data class AktiveFiltervalg(
     val ytelseUforetrygd: List<YtelseUforetrygd> = emptyList(),
     val ingenYtelser: List<IngenYtelser> = emptyList(),
     val sykmeldt: List<Sykmeldt> = emptyList(),
-    val arbeidssoekerregisteret: List<ArbeidssokerregisteretFilter> = emptyList(),
+    val arbeidssoekerregisteret: ArbeidssokerregisteretFilter? = null,
     val visGeografiskBosted: List<String> = emptyList()
 )
 

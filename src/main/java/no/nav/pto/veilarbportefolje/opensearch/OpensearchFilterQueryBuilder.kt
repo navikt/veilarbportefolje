@@ -547,25 +547,21 @@ class OpensearchFilterQueryBuilder {
 
         if (filtervalg.harArbeidssoekerregisteretFilter()) {
             val periodeAvsluttetDatoFelt = "$ARBEIDSSOEKERREGISTERET.$PERIODE_AVSLUTTET_DATO"
-            val subQuery = QueryBuilders.boolQuery()
-            filtervalg.arbeidssoekerregisteret.forEach { filter ->
-                when (filter) {
-                    ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
-                        subQuery.should(
-                            QueryBuilders.boolQuery()
-                                .must(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET))
-                                .mustNot(QueryBuilders.existsQuery(periodeAvsluttetDatoFelt))
-                        )
+            when (filtervalg.arbeidssoekerregisteret!!) {
+                ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
+                    queryBuilder.must(
+                        QueryBuilders.boolQuery()
+                            .must(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET))
+                            .mustNot(QueryBuilders.existsQuery(periodeAvsluttetDatoFelt))
+                    )
 
-                    ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
-                        subQuery.should(
-                            QueryBuilders.boolQuery()
-                                .should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET)))
-                                .should(QueryBuilders.rangeQuery(periodeAvsluttetDatoFelt).lt("now"))
-                        )
-                }
+                ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
+                    queryBuilder.must(
+                        QueryBuilders.boolQuery()
+                            .should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET)))
+                            .should(QueryBuilders.rangeQuery(periodeAvsluttetDatoFelt).lt("now"))
+                    )
             }
-            queryBuilder.must(subQuery)
         }
 
         if (filtervalg.harKjonnfilter()) {
