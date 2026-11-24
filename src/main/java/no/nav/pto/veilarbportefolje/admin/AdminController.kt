@@ -19,6 +19,7 @@ import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.config.FeatureToggle.stoppKjoerendeBatchjobber
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
 import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
+import no.nav.pto.veilarbportefolje.kafka.KafkaAdminService
 import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
@@ -64,8 +65,14 @@ class AdminController(
     private val tiltakspengerService: TiltakspengerService,
     private val arbeidssoekerService: ArbeidssoekerService,
     private val arbeidssoekerregisterService: ArbeidssoekerregisterService,
-    private val defaultUnleash: DefaultUnleash
+    private val defaultUnleash: DefaultUnleash,
+    private val kafkaAdminService: KafkaAdminService
 ) {
+    companion object {
+        const val TEAM_OBO_PROD_GROUP_ID = "3bee8c85-8370-4a2e-a3a0-45632613a0ee"
+        const val AZURE_TOKEN_GENERATOR_DEV = "dev-gcp:nais:azure-token-generator"
+    }
+
     private val POAO_ADMIN = DownstreamApi(
         if (EnvironmentUtils.isProduction().orElse(false)) "prod-gcp" else "dev-gcp", "poao", "poao-admin"
     ).toString()
@@ -404,6 +411,72 @@ class AdminController(
             ResponseEntity.internalServerError().body("Feil ved: ${feiledeValg.joinToString(", ")}")
         }
     }
+
+    // KAFKA ADMIN
+    @GetMapping("/kafka/topics")
+    @Operation(
+        summary = "Hent alle Kafka-topics applikasjonen konsumerer fra",
+        description = "Returnerer en liste over alle Kafka-topics applikasjonen konsumerer fra."
+    )
+    fun hentKonsumerteKafkaTopics(): ResponseEntity<List<String>> {
+        sjekkTilgangTilKafkaAdmin()
+        return ResponseEntity.ok(kafkaAdminService.hentKonsumerteTopics())
+    }
+
+    @GetMapping("/kafka/offsets")
+    @Operation(
+        summary = "Hent siste commitede offset per partisjon for et topic",
+        description = "Returnerer siste commitede offset per partisjon på tvers av applikasjonens consumer groups for angitt topic."
+    )
+    fun hentKafkaOffsets(@RequestParam topic: String): ResponseEntity<List<KafkaPartitionOffsetDto>> {
+        sjekkTilgangTilKafkaAdmin()
+        log.info("Henter Kafka-offsets for topic={} (utførtAv={})", topic, hentNavIdentEllerUkjent())
+        return ResponseEntity.ok(kafkaAdminService.hentCommitedeOffsets(topic))
+    }
+
+    @PostMapping("/kafka/resetOffset")
+    @Operation(
+        summary = "Resett Kafka-offsets for en consumer group og et topic",
+        description = "Setter ny offset per partisjon for angitt consumer group og topic. Konsumenten må være stoppet først."
+    )
+    fun resetKafkaOffset(@RequestBody request: KafkaResetOffsetRequest): ResponseEntity<String> {
+        sjekkTilgangTilKafkaAdmin()
+        kafkaAdminService.resetOffsets(request, hentNavIdentEllerUkjent())
+        return ResponseEntity.ok("Offsets oppdatert")
+    }
+
+    internal fun sjekkTilgangTilKafkaAdmin() {
+        val erInternBrukerFraAzure = authContextHolder.erInternBruker()
+        val applikasjon = hentApplikasjonFraContex(authContextHolder)
+        val erPoaoAdmin = POAO_ADMIN == applikasjon
+        val harTeamOboGruppe = harAdGruppe(TEAM_OBO_PROD_GROUP_ID)
+        val erDevGcp = EnvironmentUtils.getOptionalProperty("NAIS_CLUSTER_NAME").orElse("") == "dev-gcp"
+        val erTokenGeneratorIDev = erDevGcp && AZURE_TOKEN_GENERATOR_DEV == applikasjon
+
+        if (erInternBrukerFraAzure && (harTeamOboGruppe || erPoaoAdmin || erTokenGeneratorIDev)) return
+
+        log.warn(
+            "Avvist tilgang til Kafka-admin for ident={}, azp_name={}",
+            hentNavIdentEllerUkjent(),
+            applikasjon
+        )
+        throw ResponseStatusException(HttpStatus.FORBIDDEN)
+    }
+
+    private fun harAdGruppe(gruppeId: String): Boolean =
+        authContextHolder.idTokenClaims
+            .flatMap { claims ->
+                try {
+                    Optional.ofNullable(claims.getStringListClaim("groups"))
+                } catch (e: Exception) {
+                    Optional.empty()
+                }
+            }
+            .orElse(emptyList())
+            .contains(gruppeId)
+
+    private fun hentNavIdentEllerUkjent(): String =
+        authContextHolder.navIdent.map { it.get() }.orElse("ukjent")
 
     private fun sjekkTilgangTilAdmin() {
         val erInternBrukerFraAzure = authContextHolder.erInternBruker()

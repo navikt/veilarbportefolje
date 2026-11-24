@@ -68,6 +68,8 @@ spec:
         extra:
           - NAVident
           - azp_name
+        groups:
+          - id: 3bee8c85-8370-4a2e-a3a0-45632613a0ee
   accessPolicy:
     inbound:
       rules:
