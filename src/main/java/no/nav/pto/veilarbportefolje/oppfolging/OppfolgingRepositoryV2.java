@@ -65,6 +65,17 @@ public class OppfolgingRepositoryV2 {
         ));
     }
 
+    public List<OppfolgingData> hentOppfolgingData(List<AktorId> aktoerIder) {
+        if (aktoerIder.isEmpty()) {
+            return List.of();
+        }
+        return db.query(
+                "SELECT * FROM oppfolging_data WHERE aktoerid = ANY (?::varchar[])",
+                this::mapToBrukerOppdatertInformasjon,
+                listParam(aktoerIder.stream().map(AktorId::get).toList())
+        );
+    }
+
     public UUID hentOppfolgingsperiodeId(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("SELECT oppfolgingsperiode_id FROM oppfolging_data WHERE aktoerid = ?", (rs, i) -> rs.getString(OPPFOLGINGSPERIODE_ID), aktoerId.get())
@@ -111,6 +122,15 @@ public class OppfolgingRepositoryV2 {
                         data.getOppfolging(),
                         data.getStartDato()
                 ));
+    }
+
+    public List<OppfolgingMedStartdato> hentOppfolgingMedStartdato(List<AktorId> aktoerIder) {
+        return hentOppfolgingData(aktoerIder).stream()
+                .map(data -> new OppfolgingMedStartdato(
+                        data.getOppfolging(),
+                        data.getStartDato()
+                ))
+                .toList();
     }
 
     @SneakyThrows

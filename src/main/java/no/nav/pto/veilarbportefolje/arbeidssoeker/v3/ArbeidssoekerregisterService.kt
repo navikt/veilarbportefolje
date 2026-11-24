@@ -1,8 +1,10 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3
 
+import io.getunleash.DefaultUnleash
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.*
+import no.nav.pto.veilarbportefolje.config.FeatureToggle.KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API
 import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
@@ -80,6 +82,7 @@ class ArbeidssoekerregisterService(
     private val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     private val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
     private val opensearchIndexerPaDatafelt: OpensearchIndexerPaDatafelt,
+    private val defaultUnleash: DefaultUnleash,
     transactionManager: PlatformTransactionManager
 ) {
     private val transactionTemplate = TransactionTemplate(transactionManager)
@@ -136,6 +139,25 @@ class ArbeidssoekerregisterService(
                     periodeStartTidspunkt = toZonedDateTime(periodeEntity.periodeStartTidspunkt),
                     periodeAvsluttetTidspunkt = toZonedDateTime(periodeEntity.periodeAvsluttetTidspunkt)
                 ).toArbeidssoekerregisteretForOpensearch()
+            )
+            return
+        }
+
+        if (defaultUnleash.isEnabled(KAFKA_ARBEIDSSOEKER_PERIODE_V3_STOPP_HENTING_FRA_API)) {
+            secureLog.info(
+                "Henting fra api er skrudd av ved konsumering av periode med id: ${periode.id} for bruker med fnr: ${fnr.get()}. " +
+                        "Lagrer periode fra kafka med synkroniseringsstatus synkronisert."
+            )
+            transactionTemplate.executeWithoutResult {
+                slettArbeidssoekerregisterData(fnr, alleFnrForPerson)
+                arbeidssoekerregisterRepository.lagrePeriodeFraKafka(
+                    periodeEntity,
+                    SynkroniseringStatus.SYNKRONISERT
+                )
+            }
+            opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
+                aktorId,
+                periodeEntity.toArbeidssoekerregisteretForOpensearch()
             )
             return
         }
@@ -311,6 +333,9 @@ class ArbeidssoekerregisterService(
     private fun hentAlleFnrForPerson(fnr: Fnr): List<Fnr> =
         pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
 
+    private fun hentAlleAktorIdForPerson(aktorId: AktorId): List<AktorId> =
+        pdlIdentRepository.hentAktorIdenterForBruker(aktorId.get()).identer.map { AktorId.of(it) }
+
     private fun hentNyesteEksisterendePeriode(alleFnrForPerson: List<Fnr>): AggregertPeriodeEntity? =
         arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(alleFnrForPerson)
             .mapNotNull { it.aggregertPeriode }
@@ -434,11 +459,20 @@ class ArbeidssoekerregisterService(
     }
 
     fun hentOppfolgingStarttidspunkt(aktorId: AktorId): Instant {
-        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
-            .orElseThrow { IllegalStateException("Arbeidssøkerdata: Ingen oppfølgingsdata funnet") }
+        val alleAktorIdForPerson = hentAlleAktorIdForPerson(aktorId)
+        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(alleAktorIdForPerson)
 
-        if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return oppfolgingsdata.startDato.toInstant()
+        if (oppfolgingsdata.isEmpty()) {
+            throw IllegalStateException("Arbeidssøkerdata: Ingen oppfølgingsdata funnet")
+        }
+
+        val starttidspunkt = oppfolgingsdata
+            .filter { it.oppfolging }
+            .mapNotNull { it.startDato?.toInstant() }
+            .maxOrNull()
+
+        if (starttidspunkt != null) {
+            return starttidspunkt
         }
 
         secureLog.info("Arbeidssøkerdata: Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
