@@ -54,8 +54,10 @@ class ArbeidssoekerregisterServiceTest(
     private val fnr = Fnr.ofValidFnr("10108000000")
     private val historiskFnr = Fnr.ofValidFnr("01010112345")
     private val aktorId = AktorId.of("12345")
+    private val historiskAktorId = AktorId.of("54321")
     private val identerBruker = listOf(
         PDLIdent(aktorId.get(), false, Gruppe.AKTORID),
+        PDLIdent(historiskAktorId.get(), true, Gruppe.AKTORID),
         PDLIdent(fnr.get(), false, Gruppe.FOLKEREGISTERIDENT),
         PDLIdent(historiskFnr.get(), true, Gruppe.FOLKEREGISTERIDENT)
     )
@@ -119,6 +121,20 @@ class ArbeidssoekerregisterServiceTest(
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
         assertThat(lagret!!.aggregertPeriode).isNull()
         assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA)
+    }
+
+    @Test
+    fun `ved oppfolging start nar oppfolging ligger pa historisk aktorId skal periode fra api lagres`() {
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+        oppfolgingRepositoryV2.settUnderOppfolging(historiskAktorId, oppfolgingStart, UUID.randomUUID())
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId)
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
     }
 
     // hentOgLagreArbeidssoekerdataVedAdminJobb
@@ -241,7 +257,35 @@ class ArbeidssoekerregisterServiceTest(
         assertThat(lagret!!.aggregertPeriode).isEqualTo(nyereRespons.toAggregertPeriodeEntity())
     }
 
+    @Test
+    fun `ved admin jobb nar oppfolging ligger pa historisk aktorId skal periode fra api lagres`() {
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+        oppfolgingRepositoryV2.settUnderOppfolging(historiskAktorId, oppfolgingStart, UUID.randomUUID())
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(aktorId)
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
     // behandleKafkaMeldingLogikk - periode
+
+    @Test
+    fun `ny periode pa kafka nar oppfolging ligger pa historisk aktorId skal lagres`() {
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+        oppfolgingRepositoryV2.settUnderOppfolging(historiskAktorId, oppfolgingStart, UUID.randomUUID())
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
 
     @Test
     fun `ny periode pa kafka med api i synk skal lagres med opplysninger og profilering fra api`() {

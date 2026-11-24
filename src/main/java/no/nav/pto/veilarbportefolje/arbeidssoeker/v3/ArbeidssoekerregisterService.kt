@@ -333,6 +333,9 @@ class ArbeidssoekerregisterService(
     private fun hentAlleFnrForPerson(fnr: Fnr): List<Fnr> =
         pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
 
+    private fun hentAlleAktorIdForPerson(aktorId: AktorId): List<AktorId> =
+        pdlIdentRepository.hentAktorIdenterForBruker(aktorId.get()).identer.map { AktorId.of(it) }
+
     private fun hentNyesteEksisterendePeriode(alleFnrForPerson: List<Fnr>): AggregertPeriodeEntity? =
         arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(alleFnrForPerson)
             .mapNotNull { it.aggregertPeriode }
@@ -456,11 +459,20 @@ class ArbeidssoekerregisterService(
     }
 
     fun hentOppfolgingStarttidspunkt(aktorId: AktorId): Instant {
-        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(aktorId)
-            .orElseThrow { IllegalStateException("Arbeidssøkerdata: Ingen oppfølgingsdata funnet") }
+        val alleAktorIdForPerson = hentAlleAktorIdForPerson(aktorId)
+        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(alleAktorIdForPerson)
 
-        if (oppfolgingsdata.oppfolging && oppfolgingsdata.startDato != null) {
-            return oppfolgingsdata.startDato.toInstant()
+        if (oppfolgingsdata.isEmpty()) {
+            throw IllegalStateException("Arbeidssøkerdata: Ingen oppfølgingsdata funnet")
+        }
+
+        val starttidspunkt = oppfolgingsdata
+            .filter { it.oppfolging }
+            .mapNotNull { it.startDato?.toInstant() }
+            .maxOrNull()
+
+        if (starttidspunkt != null) {
+            return starttidspunkt
         }
 
         secureLog.info("Arbeidssøkerdata: Fant ikke oppfolgingsdata for bruker med aktorId {}", aktorId)
