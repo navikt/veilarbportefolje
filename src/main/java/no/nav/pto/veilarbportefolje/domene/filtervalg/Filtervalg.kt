@@ -47,7 +47,8 @@ data class Filtervalg(
     val ytelseUngdomsprogram: List<YtelseUngdomsprogram>,
     val ytelseUforetrygd: List<YtelseUforetrygd>,
     val ingenYtelser: List<IngenYtelser>,
-    val sykmeldt: List<Sykmeldt> = emptyList(), // default fjernes etter frontend har lagt til filtervalget
+    val sykmeldt: List<Sykmeldt>,
+    val arbeidssoekerregisteret: List<ArbeidssokerregisteretFilter>,
     val visGeografiskBosted: List<String>, // brukes kun for kolonnevisning i frontend
 ) {
 
@@ -92,6 +93,7 @@ data class Filtervalg(
                 harYtelseUforetrygdFilter() ||
                 harIngenYtelserFilter() ||
                 harSykmeldtFilter() ||
+                harArbeidssoekerregisteretFilter() ||
                 harVisGeografiskBosted()
 
     fun harGjeldendeVedtak14aFilter(): Boolean =
@@ -141,6 +143,9 @@ data class Filtervalg(
 
     fun harSykmeldtFilter(): Boolean =
         sykmeldt.isNotEmpty()
+
+    fun harArbeidssoekerregisteretFilter(): Boolean =
+        arbeidssoekerregisteret.isNotEmpty()
 
     fun harKjonnfilter(): Boolean =
         kjonn != null
