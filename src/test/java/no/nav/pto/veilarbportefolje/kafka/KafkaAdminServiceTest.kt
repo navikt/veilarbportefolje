@@ -1,27 +1,10 @@
 package no.nav.pto.veilarbportefolje.kafka
 
 import com.nimbusds.jwt.JWTClaimsSet
-import io.getunleash.DefaultUnleash
 import no.nav.common.auth.context.AuthContextHolder
-import no.nav.pto.veilarbportefolje.aap.AapService
-import no.nav.pto.veilarbportefolje.admin.AdminController
+import no.nav.pto.veilarbportefolje.admin.KafkaAdminController
 import no.nav.pto.veilarbportefolje.admin.dto.KafkaPartitionOffsetDto
 import no.nav.pto.veilarbportefolje.admin.dto.KafkaResetOffsetRequest
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService
-import no.nav.pto.veilarbportefolje.client.AktorClient
-import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
-import no.nav.pto.veilarbportefolje.ensligforsorger.EnsligeForsorgereService
-import no.nav.pto.veilarbportefolje.opensearch.HovedIndekserer
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchAdminService
-import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexer
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingClient
-import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
-import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
-import no.nav.pto.veilarbportefolje.persononinfo.PdlService
-import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
-import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AlterConsumerGroupOffsetsResult
 import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult
@@ -207,14 +190,14 @@ class KafkaAdminServiceTest {
         `when`(authContextHolder.idTokenClaims).thenReturn(
             Optional.of(
                 JWTClaimsSet.Builder()
-                    .claim("groups", listOf(AdminController.TEAM_OBO_PROD_GROUP_ID))
+                    .claim("groups", listOf(KafkaAdminController.TEAM_OBO_PROD_GROUP_ID))
                     .claim("azp_name", "prod-gcp:obo:annen-app")
                     .build()
             )
         )
         `when`(authContextHolder.navIdent).thenReturn(Optional.empty())
 
-        val controller = lagAdminController(authContextHolder)
+        val controller = KafkaAdminController(authContextHolder, kafkaAdminService)
 
         controller.sjekkTilgangTilKafkaAdmin()
     }
@@ -232,7 +215,7 @@ class KafkaAdminServiceTest {
         )
         `when`(authContextHolder.navIdent).thenReturn(Optional.empty())
 
-        val controller = lagAdminController(authContextHolder)
+        val controller = KafkaAdminController(authContextHolder, kafkaAdminService)
 
         controller.sjekkTilgangTilKafkaAdmin()
     }
@@ -251,7 +234,7 @@ class KafkaAdminServiceTest {
         )
         `when`(authContextHolder.navIdent).thenReturn(Optional.empty())
 
-        val controller = lagAdminController(authContextHolder)
+        val controller = KafkaAdminController(authContextHolder, kafkaAdminService)
 
         assertThatThrownBy { controller.sjekkTilgangTilKafkaAdmin() }
             .isInstanceOf(ResponseStatusException::class.java)
@@ -266,13 +249,13 @@ class KafkaAdminServiceTest {
         `when`(authContextHolder.idTokenClaims).thenReturn(
             Optional.of(
                 JWTClaimsSet.Builder()
-                    .claim("azp_name", AdminController.AZURE_TOKEN_GENERATOR_DEV)
+                    .claim("azp_name", KafkaAdminController.AZURE_TOKEN_GENERATOR_DEV)
                     .build()
             )
         )
         `when`(authContextHolder.navIdent).thenReturn(Optional.empty())
 
-        val controller = lagAdminController(authContextHolder)
+        val controller = KafkaAdminController(authContextHolder, kafkaAdminService)
 
         assertThatThrownBy { controller.sjekkTilgangTilKafkaAdmin() }
             .isInstanceOf(ResponseStatusException::class.java)
@@ -285,27 +268,4 @@ class KafkaAdminServiceTest {
         `when`(result.partitionsToOffsetAndMetadata()).thenReturn(KafkaFuture.completedFuture(offsets))
         `when`(adminClient.listConsumerGroupOffsets(group)).thenReturn(result)
     }
-
-    private fun lagAdminController(authContextHolder: AuthContextHolder): AdminController =
-        AdminController(
-            aktorClient = mock(AktorClient::class.java),
-            hovedIndekserer = mock(HovedIndekserer::class.java),
-            opensearchIndexer = mock(OpensearchIndexer::class.java),
-            authContextHolder = authContextHolder,
-            oppfolgingRepositoryV2 = mock(OppfolgingRepositoryV2::class.java),
-            opensearchAdminService = mock(OpensearchAdminService::class.java),
-            pdlService = mock(PdlService::class.java),
-            pdlIdentRepository = mock(PdlIdentRepository::class.java),
-            ensligForsorgerService = mock(EnsligeForsorgereService::class.java),
-            aapService = mock(AapService::class.java),
-            oppfolgingClient = mock(OppfolgingClient::class.java),
-            uforetrygdService = mock(UforetrygdService::class.java),
-            sykmeldtService = mock(SykmeldtService::class.java),
-            dagpengerService = mock(DagpengerService::class.java),
-            tiltakspengerService = mock(TiltakspengerService::class.java),
-            arbeidssoekerService = mock(ArbeidssoekerService::class.java),
-            arbeidssoekerregisterService = mock(ArbeidssoekerregisterService::class.java),
-            defaultUnleash = mock(DefaultUnleash::class.java),
-            kafkaAdminService = kafkaAdminService
-        )
 }
