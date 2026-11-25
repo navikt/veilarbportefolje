@@ -113,8 +113,7 @@ public class OppfolgingStartetService {
             dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(aktorId);
             uforetrygdService.hentOgLagreUføretrygdForBrukerVedOppfolgingStart(aktorId);
             sykmeldtService.hentOgLagreSykmeldtperiodeForBrukerVedOppfolgingStart(aktorId);
-            // TODO: kobles på når data er lest inn
-            //arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId);
+            arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedOppfolgingStart(aktorId);
         });
 
         opensearchIndexer.indekser(aktorId);
