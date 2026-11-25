@@ -299,7 +299,7 @@ class OpensearchFilterQueryBuilder {
         byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
-        byggManuellFilter(filtervalg.aktiviteterForenklet, queryBuilder, AKTIVITETER)
+        byggManuellFilter(filtervalg.aktiviteterForenklet.map { it.name.lowercase() }, queryBuilder, AKTIVITETER)
         byggManuellFilter(
             filtervalg.innsatsgruppeGjeldendeVedtak14a,
             queryBuilder,
@@ -855,14 +855,14 @@ class OpensearchFilterQueryBuilder {
                 val navnPaaAktivitet = entry.key
                 val valg = entry.value
                 if (AktivitetAvansertFilterverdier.JA == valg) {
-                    return@map queryBuilder.filter(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
+                    return@map queryBuilder.filter(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet.name.lowercase()))
                 } else if (AktivitetAvansertFilterverdier.NEI == valg && AktivitetFilterverdier.TILTAK == navnPaaAktivitet) {
                     return@map queryBuilder.filter(
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(TILTAK))
                     )
                 } else if (AktivitetAvansertFilterverdier.NEI == valg) {
                     return@map queryBuilder.filter(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
+                        QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet.name.lowercase()))
                     )
                 } else {
                     return@map queryBuilder
