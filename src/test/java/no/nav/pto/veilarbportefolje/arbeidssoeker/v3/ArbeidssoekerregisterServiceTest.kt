@@ -616,6 +616,97 @@ class ArbeidssoekerregisterServiceTest(
         assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
     }
 
+    // synkroniserBrukereMedUsikkerStatus
+
+    @Test
+    fun `synkronisering av status usikker skal lagre periode nar api har data`() {
+        arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(fnr)
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
+    @Test
+    fun `synkronisering av status usikker uten data i api skal ikke endre rad innen tidsfristen`() {
+        arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(fnr)
+        mockApiRespons(null)
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.synkroniseringStatus).isEqualTo(SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA)
+    }
+
+    @Test
+    fun `synkronisering av status usikker uten data i api skal slette rad etter tidsfristen`() {
+        arbeidssoekerregisterRepository.lagreBrukerMedSynkroniseringStatusUsikker(fnr)
+        settRadSistEndret(ZonedDateTime.now().minusHours(3))
+        mockApiRespons(null)
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        assertThat(arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)).isNull()
+    }
+
+    @Test
+    fun `synkronisering av status api ute av synk skal lagre periode nar api er i synk`() {
+        mockApiRespons(null)
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+        val respons = lagAggregertPeriodeResponse()
+        mockApiRespons(respons)
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(respons.toAggregertPeriodeEntity())
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.SYNKRONISERT)
+    }
+
+    @Test
+    fun `synkronisering av status api ute av synk skal ikke lagre eldre periode fra api`() {
+        mockApiRespons(null)
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+        mockApiRespons(lagAggregertPeriodeResponse(periodeId = UUID.randomUUID(), startet = periodeStart.minusDays(10)))
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_UTE_AV_SYNC)
+    }
+
+    @Test
+    fun `synkronisering av status api ute av synk uten data i api skal sette status kunne ikke synkroniseres etter tidsfristen`() {
+        mockApiRespons(null)
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(lagPeriodeKafkaMelding())
+        settRadSistEndret(ZonedDateTime.now().minusHours(3))
+
+        arbeidssoekerregisterService.synkroniserBrukereMedUsikkerStatus()
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode!!.periodeId).isEqualTo(periodeId)
+        assertThat(lagret.synkroniseringStatus).isEqualTo(SynkroniseringStatus.API_KUNNE_IKKE_SYNKRONISERES)
+        val radSistEndret = jdbcTemplate.queryForObject(
+            "SELECT rad_sist_endret FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} WHERE identitetsnummer = ?",
+            java.sql.Timestamp::class.java,
+            fnr.get()
+        )
+        assertThat(radSistEndret!!.toInstant()).isAfter(ZonedDateTime.now().minusMinutes(1).toInstant())
+    }
+
+    private fun settRadSistEndret(tidspunkt: ZonedDateTime) {
+        jdbcTemplate.update(
+            "UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME} SET rad_sist_endret = ? WHERE identitetsnummer = ?",
+            java.sql.Timestamp.from(tidspunkt.toInstant()),
+            fnr.get()
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun <T> anyNonNull(): T {
         any<T>()

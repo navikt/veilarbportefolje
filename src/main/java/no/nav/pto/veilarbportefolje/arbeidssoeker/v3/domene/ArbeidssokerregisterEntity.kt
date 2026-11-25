@@ -98,7 +98,8 @@ data class ArbeidssoekerregisterDataEntity(
     val identitetsnummer: String,
     val aggregertPeriode: AggregertPeriodeEntity?,
     val synkroniseringStatus: SynkroniseringStatus,
-    val radOpprettet: ZonedDateTime
+    val radOpprettet: ZonedDateTime,
+    val radSistEndret: ZonedDateTime
 )
 
 // Mapping fra database til opensearch modell

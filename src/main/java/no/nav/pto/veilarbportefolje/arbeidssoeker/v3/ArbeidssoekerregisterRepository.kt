@@ -241,6 +241,38 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
         return db.update(sql, fnrs.joinToString(",", "{", "}") { it.get() })
     }
 
+    fun hentRaderMedSynkroniseringStatus(statuser: List<SynkroniseringStatus>): List<ArbeidssoekerregisterDataEntity> {
+        if (statuser.isEmpty()) {
+            return emptyList()
+        }
+        val sql = """
+            SELECT * FROM ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = ANY (?::text[])
+            ORDER BY ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET}
+        """.trimIndent()
+        return db.query(
+            sql,
+            { rs, _ -> rs.toArbeidssoekerregisterDataEntity() },
+            statuser.joinToString(",", "{", "}") { it.name }
+        )
+    }
+
+    fun oppdaterSynkroniseringStatus(
+        identitetsnummer: String,
+        fraStatus: SynkroniseringStatus,
+        tilStatus: SynkroniseringStatus
+    ): Int {
+        val sql = """
+            UPDATE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}
+            SET
+                ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = ?,
+                ${ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET} = CURRENT_TIMESTAMP
+            WHERE ${ARBEIDSSOEKERREGISTER_DATA.IDENTITETSNUMMER} = ?
+            AND ${ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS} = ?
+        """.trimIndent()
+        return db.update(sql, tilStatus.name, identitetsnummer, fraStatus.name)
+    }
+
     private fun ResultSet.toArbeidssoekerregisterDataEntity(): ArbeidssoekerregisterDataEntity {
         val periodeId = getObject(ARBEIDSSOEKERREGISTER_DATA.PERIODE_ID, UUID::class.java)
         return ArbeidssoekerregisterDataEntity(
@@ -281,7 +313,8 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
                 )
             },
             synkroniseringStatus = SynkroniseringStatus.valueOf(getString(ARBEIDSSOEKERREGISTER_DATA.SYNKRONISERING_STATUS)),
-            radOpprettet = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET)!!
+            radOpprettet = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.RAD_OPPRETTET)!!,
+            radSistEndret = getZonedDateTime(ARBEIDSSOEKERREGISTER_DATA.RAD_SIST_ENDRET)!!
         )
     }
 
@@ -294,5 +327,6 @@ class ArbeidssoekerregisterRepository(private val db: JdbcTemplate) {
 enum class SynkroniseringStatus {
     SYNKRONISERT,
     USIKKERT_OM_BRUKER_HAR_DATA,
-    API_UTE_AV_SYNC
+    API_UTE_AV_SYNC,
+    API_KUNNE_IKKE_SYNKRONISERES
 }
