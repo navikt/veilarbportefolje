@@ -4,7 +4,7 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
@@ -460,7 +460,7 @@ object PortefoljebrukerFrontendModellMapper {
             filtervalg.harAktiviteterForenklet() -> {
                 val aktivitetDatoerBasertPaFiltervalg =
                     filtervalg.aktiviteterForenklet.mapNotNull { navn ->
-                        aktiviteter[navn.lowercase()]
+                        aktiviteter[navn.name.lowercase()]
                     }
 
                 nesteUtopsdatoForenkletFilter = aktivitetDatoerBasertPaFiltervalg.minOfOrNull { toLocalDateOrNull(it) }
@@ -472,8 +472,8 @@ object PortefoljebrukerFrontendModellMapper {
 
         val aktivitetDatoerBaserPaAvansertFiltervalg =
             filtervalg.aktiviteter.mapNotNull { (navn, valg) ->
-                if (valg == AktivitetFiltervalg.JA) {
-                    aktiviteter[navn.lowercase()]
+                if (valg == AktivitetAvansertFilterverdier.JA) {
+                    aktiviteter[navn.name.lowercase()]
                 } else {
                     null
                 }

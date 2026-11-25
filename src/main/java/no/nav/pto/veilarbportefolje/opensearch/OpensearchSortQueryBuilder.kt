@@ -3,10 +3,7 @@ package no.nav.pto.veilarbportefolje.opensearch
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseAapArena
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITET_MOTE_STARTDATO
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.AKTIVITET_UTLOPSDATOER
@@ -627,12 +624,11 @@ class OpensearchSortQueryBuilder {
         order: SortOrder?
     ): SearchSourceBuilder {
         val sorteringsAktiviteter: List<String> = when {
-            filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet
+            filtervalg.harAktiviteterForenklet() -> filtervalg.aktiviteterForenklet.map(AktivitetFilterverdier::name)
             filtervalg.tiltakstyper.isNotEmpty() -> listOf("TILTAK")
             else -> filtervalg.aktiviteter
-                .filter { it.value == AktivitetFiltervalg.JA }
-                .map { it.key ?: "" }
-                .filter { it.isNotEmpty() }
+                .filter { it.value == AktivitetAvansertFilterverdier.JA }
+                .map { it.key.name }
         }
 
         if (sorteringsAktiviteter.isEmpty()) {

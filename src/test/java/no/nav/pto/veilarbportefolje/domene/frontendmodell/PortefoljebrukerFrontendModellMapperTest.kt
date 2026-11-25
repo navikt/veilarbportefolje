@@ -4,15 +4,10 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ProfileringForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.*
 import no.nav.pto.veilarbportefolje.fargekategori.FargekategoriVerdi
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -763,7 +758,7 @@ class PortefoljebrukerFrontendModellMapperTest {
             opensearchBruker = opensearchBruker,
             ufordelt = true,
             filtervalg = getFiltervalgDefaults().copy(
-                aktiviteterForenklet = listOf("BEHANDLING", "MOTE")
+                aktiviteterForenklet = listOf(AktivitetFilterverdier.BEHANDLING, AktivitetFilterverdier.MOTE)
             )
         )
 
@@ -805,10 +800,10 @@ class PortefoljebrukerFrontendModellMapperTest {
             filtervalg = getFiltervalgDefaults().copy(
                 aktiviteter =
                     mapOf(
-                        "BEHANDLING" to AktivitetFiltervalg.JA,
-                        "MOTE" to AktivitetFiltervalg.JA,
-                        "STILLING" to AktivitetFiltervalg.NEI,
-                        "TILTAK" to AktivitetFiltervalg.NEI
+                        AktivitetFilterverdier.BEHANDLING to AktivitetAvansertFilterverdier.JA,
+                        AktivitetFilterverdier.MOTE to AktivitetAvansertFilterverdier.JA,
+                        AktivitetFilterverdier.STILLING to AktivitetAvansertFilterverdier.NEI,
+                        AktivitetFilterverdier.TILTAK to AktivitetAvansertFilterverdier.NEI
                     )
             )
         )
@@ -838,10 +833,10 @@ class PortefoljebrukerFrontendModellMapperTest {
             ufordelt = true,
             filtervalg = getFiltervalgDefaults().copy(
                 aktiviteter = mapOf(
-                    "BEHANDLING" to AktivitetFiltervalg.JA,
-                    "STILLING" to AktivitetFiltervalg.JA,
+                    AktivitetFilterverdier.BEHANDLING to AktivitetAvansertFilterverdier.JA,
+                    AktivitetFilterverdier.STILLING to AktivitetAvansertFilterverdier.JA,
                 ),
-                aktiviteterForenklet = listOf("TILTAK", "MOTE")
+                aktiviteterForenklet = listOf(AktivitetFilterverdier.TILTAK, AktivitetFilterverdier.MOTE)
             )
         )
 

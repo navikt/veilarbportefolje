@@ -851,16 +851,16 @@ class OpensearchFilterQueryBuilder {
         queryBuilder: BoolQueryBuilder
     ): List<BoolQueryBuilder> {
         return filtervalg.aktiviteter.entries.stream()
-            .map { entry: Map.Entry<String, AktivitetFiltervalg> ->
+            .map { entry: Map.Entry<AktivitetFilterverdier, AktivitetAvansertFilterverdier> ->
                 val navnPaaAktivitet = entry.key
                 val valg = entry.value
-                if (AktivitetFiltervalg.JA == valg) {
+                if (AktivitetAvansertFilterverdier.JA == valg) {
                     return@map queryBuilder.filter(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
-                } else if (AktivitetFiltervalg.NEI == valg && "TILTAK" == navnPaaAktivitet) {
+                } else if (AktivitetAvansertFilterverdier.NEI == valg && AktivitetFilterverdier.TILTAK == navnPaaAktivitet) {
                     return@map queryBuilder.filter(
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(TILTAK))
                     )
-                } else if (AktivitetFiltervalg.NEI == valg) {
+                } else if (AktivitetAvansertFilterverdier.NEI == valg) {
                     return@map queryBuilder.filter(
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet))
                     )

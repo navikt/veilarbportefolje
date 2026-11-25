@@ -5,7 +5,8 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient
 import no.nav.pto.veilarbportefolje.domene.*
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.frontendmodell.PortefoljebrukerFrontendModell
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchConfig.BRUKERINDEKS_ALIAS
@@ -415,11 +416,11 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
         OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == liste.size }
 
         val filtervalg1 = getFiltervalgDefaults().copy(
-            aktiviteterForenklet = listOf("EGEN", "MOTE"),
+            aktiviteterForenklet = listOf(AktivitetFilterverdier.EGEN, AktivitetFilterverdier.MOTE),
             ferdigfilterListe = listOf()
         )
         val filtervalg2 = getFiltervalgDefaults().copy(
-            aktiviteterForenklet = listOf("MOTE", "EGEN"),
+            aktiviteterForenklet = listOf(AktivitetFilterverdier.MOTE, AktivitetFilterverdier.EGEN),
             ferdigfilterListe = listOf()
         )
 
@@ -583,7 +584,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mapOf("SOKEAVTALE" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf(AktivitetFilterverdier.SOKEAVTALE to AktivitetAvansertFilterverdier.JA)
         )
 
         val response = opensearchService.hentBrukere(
@@ -635,7 +636,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mapOf("SOKEAVTALE" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf(AktivitetFilterverdier.SOKEAVTALE to AktivitetAvansertFilterverdier.NEI)
         )
 
         val response = opensearchService.hentBrukere(
@@ -689,7 +690,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mapOf("TILTAK" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf(AktivitetFilterverdier.TILTAK to AktivitetAvansertFilterverdier.JA)
         )
 
         val response = opensearchService.hentBrukere(
@@ -745,7 +746,7 @@ class OpensearchServiceIntegrationDiverseTest @Autowired constructor(
 
         val filterValg = getFiltervalgDefaults().copy(
             ferdigfilterListe = emptyList(),
-            aktiviteter = mapOf("TILTAK" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf(AktivitetFilterverdier.TILTAK to AktivitetAvansertFilterverdier.NEI)
         )
 
         val response = opensearchService.hentBrukere(
