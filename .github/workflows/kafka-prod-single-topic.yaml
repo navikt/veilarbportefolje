@@ -1,0 +1,29 @@
+name: Manuell deploy av kafka-topic til prod
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_single_file:
+        description: "Sti til en fil, eks: \".nais/kafka/prod/portefolje-filterhendelser-v1-topic.yaml\""
+        required: true
+        type: choice
+        options:
+          - ".nais/kafka/prod/portefolje-filterhendelser-v1-topic.yaml"
+          - ".nais/kafka/prod/tiltakshendelse-v1-topic.yaml"
+          - ".nais/kafka/prod/ytelser-v1-topic.yaml"
+
+jobs:
+  deploy-prod-manual:
+    name: Manuell deploy av kafka-topic til prod
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7.0.1
+      - name: Deploy kafka topics
+        uses: nais/deploy/actions/deploy@d003bddf74ce5b96fa3056ae60bd4b9b3bbc89ef # ratchet:nais/deploy/actions/deploy@v3
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: ${{ inputs.deploy_single_file }}
+          PRINT_PAYLOAD: true
