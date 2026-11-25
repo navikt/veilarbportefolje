@@ -473,6 +473,23 @@ class ArbeidssoekerregisterServiceTest(
     }
 
     @Test
+    fun `opplysninger og profilering pa kafka ignoreres nar brukeridenter er slettet`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        jdbcTemplate.execute("TRUNCATE TABLE bruker_identer")
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagOpplysningerKafkaMelding(sendtInn = opplysningTidspunkt.plusDays(1))
+        )
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagProfileringKafkaMelding(sendtInn = profileringTidspunkt.plusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
     fun `nyere opplysninger pa kafka skal lagres pa eksisterende periode`() {
         val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
         arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
@@ -530,6 +547,23 @@ class ArbeidssoekerregisterServiceTest(
 
         arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
             lagProfileringKafkaMelding(periodeId = UUID.randomUUID(), sendtInn = profileringTidspunkt.plusDays(1))
+        )
+
+        val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)
+        assertThat(lagret!!.aggregertPeriode).isEqualTo(eksisterende)
+    }
+
+    @Test
+    fun `opplysninger og profilering pa kafka ignoreres etter avsluttet oppfolging`() {
+        val eksisterende = lagAggregertPeriodeResponse().toAggregertPeriodeEntity()
+        arbeidssoekerregisterRepository.lagreSisteArbeidssoekerPeriode(fnr, eksisterende)
+        jdbcTemplate.execute("TRUNCATE TABLE oppfolging_data")
+
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagOpplysningerKafkaMelding(sendtInn = opplysningTidspunkt.plusDays(1))
+        )
+        arbeidssoekerregisterService.behandleKafkaMeldingLogikk(
+            lagProfileringKafkaMelding(sendtInn = profileringTidspunkt.plusDays(1))
         )
 
         val lagret = arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(fnr)

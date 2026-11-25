@@ -2,6 +2,7 @@ package no.nav.pto.veilarbportefolje.persononinfo;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.aap.AapService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
@@ -11,6 +12,7 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.BrukerIdenter;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
@@ -270,6 +272,31 @@ public class PdlIdentRepositoryTest {
         assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(aktorId.get())).isEqualTo(aktorId);
         assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(historiskAktorId.get())).isEqualTo(aktorId);
         assertThat(pdlIdentRepository.hentAktivAktorIdForPerson(randomFnr().get())).isNull();
+    }
+
+    @Test
+    public void hentBrukerIdenter__henter_aktive_og_historiske_identer_for_person() {
+        Fnr fnr = randomFnr();
+        Fnr historiskFnr = randomFnr();
+        AktorId aktorId = randomAktorId();
+        AktorId historiskAktorId = randomAktorId();
+        pdlIdentRepository.upsertIdenter(List.of(
+                new PDLIdent(fnr.get(), false, FOLKEREGISTERIDENT),
+                new PDLIdent(aktorId.get(), false, AKTORID),
+                new PDLIdent(historiskFnr.get(), true, FOLKEREGISTERIDENT),
+                new PDLIdent(historiskAktorId.get(), true, AKTORID)
+        ));
+
+        BrukerIdenter identer = pdlIdentRepository.hentBrukerIdenter(historiskFnr.get());
+
+        assertThat(identer).isNotNull();
+        assertThat(identer.getAktivNorskIdent()).isEqualTo(NorskIdent.of(fnr.get()));
+        assertThat(identer.getAktivAktorId()).isEqualTo(aktorId);
+        assertThat(identer.getAlleNorskeIdenter()).containsExactlyInAnyOrder(
+                NorskIdent.of(fnr.get()), NorskIdent.of(historiskFnr.get())
+        );
+        assertThat(identer.getAlleAktorId()).containsExactlyInAnyOrder(aktorId, historiskAktorId);
+        assertThat(pdlIdentRepository.hentBrukerIdenter(randomFnr().get())).isNull();
     }
 
     private List<PDLIdent> hentLokaleIdenter(AktorId ident) {

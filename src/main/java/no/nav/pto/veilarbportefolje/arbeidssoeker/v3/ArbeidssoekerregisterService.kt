@@ -9,6 +9,7 @@ import no.nav.pto.veilarbportefolje.kafka.KafkaCommonNonKeyedConsumerService
 import no.nav.pto.veilarbportefolje.opensearch.OpensearchIndexerPaDatafelt
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
+import no.nav.pto.veilarbportefolje.persononinfo.domene.BrukerIdenter
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.stereotype.Service
@@ -21,6 +22,8 @@ import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering as ProfileringKafkaMelding
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as OpplysningerOmArbeidssoekerKafkaMelding
+
+data class BrukerUnderOppfolging(val identer: BrukerIdenter, val oppfolgingStarttidspunkt: Instant)
 
 @Service
 class ArbeidssoekerregisterPeriodeKafkaMeldingService(
@@ -89,9 +92,9 @@ class ArbeidssoekerregisterService(
 
     fun behandleKafkaMeldingLogikk(periode: PeriodeKafkaMelding) {
         val fnr: Fnr = Fnr.ofValidFnr(periode.identitetsnummer.toString())
-        if (!erUnderOppfolging(fnr)) return
-        val aktorId = pdlIdentRepository.hentAktivAktorIdForPerson(fnr.toString())
-        val oppfolgingStarttidspunkt = hentOppfolgingStarttidspunkt(aktorId)
+        val brukerUnderOppfolging = hentBrukerUnderOppfolging(periode.identitetsnummer.toString()) ?: return
+        val aktorId = brukerUnderOppfolging.identer.aktivAktorId
+        val oppfolgingStarttidspunkt = brukerUnderOppfolging.oppfolgingStarttidspunkt
         val periodeEntity = periode.toPeriodeEntity()
 
         val sluttDatoArbeidssoekerperiode = periodeEntity.periodeAvsluttetTidspunkt
@@ -103,7 +106,7 @@ class ArbeidssoekerregisterService(
             return
         }
 
-        val alleFnrForPerson = hentAlleFnrForPerson(fnr)
+        val alleFnrForPerson = brukerUnderOppfolging.identer.alleNorskeIdenter.map { Fnr.of(it.get()) }
         val eksisterendePeriode = hentNyesteEksisterendePeriode(alleFnrForPerson)
         val erSammePeriode = eksisterendePeriode?.periodeId == periodeEntity.periodeId
 
@@ -211,6 +214,7 @@ class ArbeidssoekerregisterService(
             )
             return
         }
+        val brukerUnderOppfolging = hentBrukerUnderOppfolging(eksisterendePeriode.identitetsnummer) ?: return
 
         val sendtInnTidspunktKafka = opplysninger.sendtInnAv.tidspunkt
         val sendtInnTidspunktEksisterende = eksisterendePeriode.opplysninger?.opplysningSendtInnTidspunkt
@@ -232,7 +236,7 @@ class ArbeidssoekerregisterService(
             opplysningerOmArbeidssoekerEntity
         )
         opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
-            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
+            brukerUnderOppfolging.identer.aktivAktorId,
             eksisterendePeriode.copy(opplysninger = opplysningerOmArbeidssoekerEntity)
                 .toArbeidssoekerregisteretForOpensearch()
         )
@@ -253,6 +257,7 @@ class ArbeidssoekerregisterService(
             )
             return
         }
+        val brukerUnderOppfolging = hentBrukerUnderOppfolging(eksisterendePeriode.identitetsnummer) ?: return
 
         val sendtInnTidspunktKafka = profilering.sendtInnAv.tidspunkt
         val sendtInnTidspunktEksisterende = eksisterendePeriode.profilering?.profileringSendtInnTidspunkt
@@ -274,7 +279,7 @@ class ArbeidssoekerregisterService(
             profileringEntity
         )
         opensearchIndexerPaDatafelt.oppdaterArbeidssoekerregisteret(
-            pdlIdentRepository.hentAktivAktorIdForPerson(eksisterendePeriode.identitetsnummer),
+            brukerUnderOppfolging.identer.aktivAktorId,
             eksisterendePeriode.copy(profilering = profileringEntity).toArbeidssoekerregisteretForOpensearch()
         )
     }
@@ -335,6 +340,22 @@ class ArbeidssoekerregisterService(
 
     private fun hentAlleAktorIdForPerson(aktorId: AktorId): List<AktorId> =
         pdlIdentRepository.hentAktorIdenterForBruker(aktorId.get()).identer.map { AktorId.of(it) }
+
+    private fun hentBrukerUnderOppfolging(ident: String): BrukerUnderOppfolging? {
+        val identer = pdlIdentRepository.hentBrukerIdenter(ident)
+        if (identer == null) {
+            secureLog.info("Arbeidssøkerdata: Fant ikke gyldige identer for bruker med ident: $ident, ignorerer arbeidssøkerregister-melding.")
+            return null
+        }
+
+        val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(identer.alleAktorId)
+        val starttidspunkt = oppfolgingsdata.filter { it.oppfolging }.mapNotNull { it.startDato?.toInstant() }.maxOrNull()
+        if (starttidspunkt == null) {
+            secureLog.info("Arbeidssøkerdata: Bruker med ident: $ident er ikke under oppfølging, ignorerer arbeidssøkerregister-melding.")
+            return null
+        }
+        return BrukerUnderOppfolging(identer = identer, oppfolgingStarttidspunkt = starttidspunkt)
+    }
 
     private fun hentNyesteEksisterendePeriode(alleFnrForPerson: List<Fnr>): AggregertPeriodeEntity? =
         arbeidssoekerregisterRepository.hentArbeidssoekerregisterData(alleFnrForPerson)
