@@ -27,8 +27,8 @@ import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2
 import no.nav.pto.veilarbportefolje.oppfolging.domene.Veilarbportefoljeinfo
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
 import org.springframework.http.HttpStatus
@@ -348,52 +348,60 @@ class AdminController(
             try {
                 when (type) {
                     AdminDataType.DAGPENGER_DATA -> {
-                        secureLog.info("Starter datahenting for dagpenger for aktorId {}", request.aktorId)
-                        dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(request.aktorId)
+                        secureLog.info("Starter datahenting for dagpenger for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { dagpengerService.hentOgLagreDagpengerForBrukerVedOppfolgingStart(it) }
                     }
 
                     AdminDataType.ENSLIG_FORSORGER_DATA -> {
-                        secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", request.aktorId)
-                        ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(request.aktorId)
+                        secureLog.info("Starter datahenting for overgangsstønad for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { ensligForsorgerService.hentOgLagreEnsligForsorgerDataVedAdminjobb(it) }
                     }
 
                     AdminDataType.AAP_DATA -> {
-                        secureLog.info("Starter datahenting for AAP for aktorId {}", request.aktorId)
-                        aapService.hentOgLagreAapForBrukerVedOppfolgingStart(request.aktorId)
+                        secureLog.info("Starter datahenting for AAP for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { aapService.hentOgLagreAapForBrukerVedOppfolgingStart(it) }
                     }
 
                     AdminDataType.TILTAKSPENGER_DATA -> {
-                        secureLog.info("Starter datahenting for tiltakspenger for aktorId {}", request.aktorId)
-                        tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(request.aktorId)
+                        secureLog.info("Starter datahenting for tiltakspenger for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach {
+                            tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(
+                                it
+                            )
+                        }
                     }
 
                     AdminDataType.ARBEIDSSOKER_DATA -> {
-                        secureLog.info("Starter datahenting for arbeidssøker for aktorId {}", request.aktorId)
-                        arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(request.aktorId)
+                        secureLog.info("Starter datahenting for arbeidssøker for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(it) }
                     }
 
                     AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
-                        secureLog.info("Starter datahenting for arbeidssøker v3 for aktorId {}", request.aktorId)
-                        arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(request.aktorId)
+                        secureLog.info("Starter datahenting for arbeidssøker v3 for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach {
+                            arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(
+                                it
+                            )
+                        }
                     }
 
                     AdminDataType.UFORETRYGD_DATA -> {
-                        secureLog.info("Starter datahenting for uføretrygd for aktorId {}", request.aktorId)
-                        uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(request.aktorId)
+                        secureLog.info("Starter datahenting for uføretrygd for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { uforetrygdService.hentOgLagreUforetrygdVedAdminjobb(it) }
                     }
 
                     AdminDataType.SYKMELDT_DATA -> {
-                        secureLog.info("Starter datahenting for sykmeldtperiode for aktorId {}", request.aktorId)
-                        sykmeldtService.hentOgLagreSykmeldtperiodeVedAdminjobb(request.aktorId)
+                        secureLog.info("Starter datahenting for sykmeldtperiode for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { sykmeldtService.hentOgLagreSykmeldtperiodeVedAdminjobb(it) }
                     }
 
                     AdminDataType.PDL_DATA -> {
-                        secureLog.info("Starter datahenting for PDL for aktorId {}", request.aktorId)
-                        pdlService.hentOgLagrePdlData(request.aktorId)
+                        secureLog.info("Starter datahenting for PDL for aktorId {}", request.aktorIder)
+                        request.aktorIder.forEach { pdlService.hentOgLagrePdlData(it) }
                     }
                 }
             } catch (e: Exception) {
-                secureLog.error("Feil ved henting av ${type.name} for aktorId ${request.aktorId}", e)
+                secureLog.error("Feil ved henting av ${type.name} for aktorId ${request.aktorIder}", e)
                 feiledeValg.add(type.name)
             }
         }

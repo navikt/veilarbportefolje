@@ -21,6 +21,6 @@ data class AdminDataTypeResponse(
 )
 
 data class AdminDataForBrukerRequest(
-    val aktorId: AktorId,
+    val aktorIder: List<AktorId>,
     val valg: List<AdminDataType>
 )
