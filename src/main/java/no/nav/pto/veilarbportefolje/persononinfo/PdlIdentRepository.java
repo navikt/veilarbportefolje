@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.BrukerIdenter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -26,6 +27,18 @@ import static no.nav.pto.veilarbportefolje.util.SecureLog.secureLog;
 @RequiredArgsConstructor
 public class PdlIdentRepository {
     private final JdbcTemplate db;
+
+    public static String pdlIdentVerdi(PDLIdent ident) {
+        return ident.getIdent();
+    }
+
+    public static boolean pdlIdentErHistorisk(PDLIdent ident) {
+        return ident.isHistorisk();
+    }
+
+    public static PDLIdent.Gruppe pdlIdentGruppe(PDLIdent ident) {
+        return ident.getGruppe();
+    }
 
     @Transactional
     public void upsertIdenter(List<PDLIdent> identer) {
@@ -62,6 +75,19 @@ public class PdlIdentRepository {
                 .stream()
                 .map(PdlIdentRepository::mapTilident)
                 .toList();
+    }
+
+    public @Nullable BrukerIdenter hentBrukerIdenter(String ident) {
+        List<PDLIdent> identer = db.queryForList("""
+                        select bi2.ident, bi2.historisk, bi2.gruppe
+                        from bruker_identer bi1
+                        inner join bruker_identer bi2 on bi2.person = bi1.person
+                        where bi1.ident = ?
+                        """, ident)
+                .stream()
+                .map(PdlIdentRepository::mapTilident)
+                .toList();
+        return BrukerIdenter.fraPdlIdenter(identer);
     }
 
     public IdenterForBruker hentIdenterForBruker(String brukerId) {

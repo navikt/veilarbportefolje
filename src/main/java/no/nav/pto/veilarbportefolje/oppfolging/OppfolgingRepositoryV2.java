@@ -8,6 +8,8 @@ import no.nav.pto.veilarbportefolje.domene.VeilederId;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingData;
 import no.nav.pto.veilarbportefolje.oppfolging.domene.OppfolgingMedStartdato;
 import no.nav.pto.veilarbportefolje.util.DateUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -76,7 +78,7 @@ public class OppfolgingRepositoryV2 {
         );
     }
 
-    public UUID hentOppfolgingsperiodeId(AktorId aktoerId) {
+    public @Nullable UUID hentOppfolgingsperiodeId(AktorId aktoerId) {
         return Optional.ofNullable(queryForObjectOrNull(() ->
                 db.queryForObject("SELECT oppfolgingsperiode_id FROM oppfolging_data WHERE aktoerid = ?", (rs, i) -> rs.getString(OPPFOLGINGSPERIODE_ID), aktoerId.get())
         )).map(UUID::fromString).orElse(null);
@@ -116,7 +118,7 @@ public class OppfolgingRepositoryV2 {
         )).orElse(false);
     }
 
-    public Optional<OppfolgingMedStartdato> hentOppfolgingMedStartdato(AktorId aktoerId) {
+    public @NonNull Optional<@NonNull OppfolgingMedStartdato> hentOppfolgingMedStartdato(@NonNull AktorId aktoerId) {
         return hentOppfolgingData(aktoerId)
                 .map(data -> new OppfolgingMedStartdato(
                         data.getOppfolging(),
@@ -124,7 +126,7 @@ public class OppfolgingRepositoryV2 {
                 ));
     }
 
-    public List<OppfolgingMedStartdato> hentOppfolgingMedStartdato(List<AktorId> aktoerIder) {
+    public @NonNull List<@NonNull OppfolgingMedStartdato> hentOppfolgingMedStartdato(@NonNull List<@NonNull AktorId> aktoerIder) {
         return hentOppfolgingData(aktoerIder).stream()
                 .map(data -> new OppfolgingMedStartdato(
                         data.getOppfolging(),
