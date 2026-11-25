@@ -12,11 +12,14 @@ import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository
 import no.nav.pto.veilarbportefolje.persononinfo.domene.BrukerIdenter
 import no.nav.pto.veilarbportefolje.util.DateUtils.toZonedDateTime
 import no.nav.pto.veilarbportefolje.util.SecureLog.secureLog
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Duration
 import java.time.Instant
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as PeriodeKafkaMelding
@@ -70,6 +73,9 @@ class ArbeidssoekerregisterProfileringKafkaMeldingService(
  * - Data fra arbeidssøkerregisteret (Team PAW) sitt API er kun en sammenstilling av kafka-meldinger, ikke en database med masterdata.
  * Dette betyr at apiet kan være ute av sync, og at vi har rukket å få meldinger før de har konsumert sine egne. Pga dette
  * har vi en egen "synkronisering_status" der vi er usikre, som trigger henting på et senere tidspunkt.
+ * En cron-jobb (ArbeidssoekerregisterSynkroniseringScheduler) prøver hvert 10. minutt å hente data fra api for rader med
+ * status USIKKERT_OM_BRUKER_HAR_DATA eller API_UTE_AV_SYNC. Etter 2 timer uten treff slettes USIKKERT-rader, og
+ * API_UTE_AV_SYNC-rader får status API_KUNNE_IKKE_SYNKRONISERES.
  * - Identer - Kafka-meldinger har kun tilknytning til identen på det tidspunktet de ble sendt. Dvs, oppslag på ny aktiv
  * ident vil ikke finne treff selv om det er data på historisk ident. Håndteres i api-oppslag.
  * - Vi tar kun vare på siste arebeidssøkerperiode som er innenfor oppfølgingsperioden.
@@ -89,6 +95,7 @@ class ArbeidssoekerregisterService(
     transactionManager: PlatformTransactionManager
 ) {
     private val transactionTemplate = TransactionTemplate(transactionManager)
+    private val logger = LoggerFactory.getLogger(ArbeidssoekerregisterService::class.java)
 
     fun behandleKafkaMeldingLogikk(periode: PeriodeKafkaMelding) {
         val fnr: Fnr = Fnr.ofValidFnr(periode.identitetsnummer.toString())
@@ -335,6 +342,70 @@ class ArbeidssoekerregisterService(
         lagreSistePeriode(aktorId, fnr, sistePeriodeFraApi)
     }
 
+    fun synkroniserBrukereMedUsikkerStatus() {
+        val rader = arbeidssoekerregisterRepository.hentRaderMedSynkroniseringStatus(
+            listOf(SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA, SynkroniseringStatus.API_UTE_AV_SYNC)
+        )
+        logger.info("Arbeidssøkerdata: Fant ${rader.size} rader som skal forsøkes synkronisert med api")
+        rader.forEach { rad ->
+            try {
+                synkroniserRad(rad)
+            } catch (e: Exception) {
+                secureLog.error(
+                    "Arbeidssøkerdata: Feil ved synkronisering av bruker med fnr: ${rad.identitetsnummer}",
+                    e
+                )
+            }
+        }
+    }
+
+    private fun synkroniserRad(periode: ArbeidssoekerregisterDataEntity) {
+        val fnr: Fnr = Fnr.ofValidFnr(periode.identitetsnummer)
+        val brukerUnderOppfolging = hentBrukerUnderOppfolging(periode.identitetsnummer) ?: return
+        val aktorId = brukerUnderOppfolging.identer.aktivAktorId
+
+        val periodeFraApi = hentSistePeriodeIOppfolgingsperiode(aktorId, fnr)
+        if (periodeFraApi != null && periodeFraApiKanErstatteRad(periode.aggregertPeriode, periodeFraApi)) {
+            secureLog.info(
+                "Arbeidssøkerdata: Fant periode med id: ${periodeFraApi.periodeId} i api for bruker med fnr: $fnr " +
+                        "og status: ${periode.synkroniseringStatus}. Lagrer periode fra api."
+            )
+            lagreSistePeriode(aktorId, fnr, periodeFraApi)
+            return
+        }
+
+        if (periode.radSistEndret.isAfter(ZonedDateTime.now().minus(MAKS_TID_FOR_SYNKRONISERING))) {
+            return
+        }
+
+        when (periode.synkroniseringStatus) {
+            SynkroniseringStatus.USIKKERT_OM_BRUKER_HAR_DATA -> {
+                secureLog.info("Arbeidssøkerdata: Fant ikke data i api for bruker med fnr: ${periode.identitetsnummer} innen tidsfristen. Sletter rad for for bruker ${periode.identitetsnummer}.")
+                arbeidssoekerregisterRepository.slettArbeidssoekerregisterData(listOf(Fnr.of(periode.identitetsnummer)))
+            }
+
+            SynkroniseringStatus.API_UTE_AV_SYNC -> {
+                secureLog.info("Arbeidssøkerdata: Api ble ikke synkronisert for bruker med fnr: ${periode.identitetsnummer} innen tidsfristen. Setter status ${SynkroniseringStatus.API_KUNNE_IKKE_SYNKRONISERES}.")
+                arbeidssoekerregisterRepository.oppdaterSynkroniseringStatus(
+                    periode.identitetsnummer,
+                    SynkroniseringStatus.API_UTE_AV_SYNC,
+                    SynkroniseringStatus.API_KUNNE_IKKE_SYNKRONISERES
+                )
+            }
+
+            else -> {}
+        }
+    }
+
+    // Unngår at en eldre periode fra api overskriver en nyere periode mottatt på kafka
+    private fun periodeFraApiKanErstatteRad(
+        eksisterendePeriode: AggregertPeriodeEntity?,
+        periodeFraApi: AggregertPeriodeEntity
+    ): Boolean =
+        eksisterendePeriode == null ||
+                periodeFraApi.periodeId == eksisterendePeriode.periodeId ||
+                periodeFraApi.periodeStartTidspunkt.isAfter(eksisterendePeriode.periodeStartTidspunkt)
+
     private fun hentAlleFnrForPerson(fnr: Fnr): List<Fnr> =
         pdlIdentRepository.hentFnrIdenterForBruker(fnr.get()).identer.map { Fnr.of(it) }
 
@@ -349,7 +420,8 @@ class ArbeidssoekerregisterService(
         }
 
         val oppfolgingsdata = oppfolgingRepositoryV2.hentOppfolgingMedStartdato(identer.alleAktorId)
-        val starttidspunkt = oppfolgingsdata.filter { it.oppfolging }.mapNotNull { it.startDato?.toInstant() }.maxOrNull()
+        val starttidspunkt =
+            oppfolgingsdata.filter { it.oppfolging }.mapNotNull { it.startDato?.toInstant() }.maxOrNull()
         if (starttidspunkt == null) {
             secureLog.info("Arbeidssøkerdata: Bruker med ident: $ident er ikke under oppfølging, ignorerer arbeidssøkerregister-melding.")
             return null
@@ -500,4 +572,7 @@ class ArbeidssoekerregisterService(
         throw IllegalStateException("Arbeidssøkerdata: Bruker er ikke under oppfølging")
     }
 
+    companion object {
+        private val MAKS_TID_FOR_SYNKRONISERING: Duration = Duration.ofHours(2)
+    }
 }
