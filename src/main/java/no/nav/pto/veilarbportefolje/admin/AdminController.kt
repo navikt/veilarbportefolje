@@ -335,7 +335,8 @@ class AdminController(
     @PostMapping("hentData/hentDataForBruker/forValgte")
     @Operation(
         summary = "Hent data for bruker basert på valg",
-        description = "Henter spesifikk type data for en bruker basert på angitte valg."
+        description = "Starter datahenting i bakgrunnen for angitte brukere og valg. " +
+                "Returnerer en jobbreferanse som kan brukes til å følge kjøringen i loggene."
     )
     fun hentDataForBrukerForAngitteValg(@RequestBody request: AdminDataForBrukerRequest): ResponseEntity<String> {
         sjekkTilgangTilAdmin()
@@ -343,6 +344,13 @@ class AdminController(
             return ResponseEntity.badRequest().body("Ingen valg er angitt for datahenting")
         }
 
+        val jobbreferanse = JobRunner.runAsync("Admin_datahenting_for_valgte") {
+            hentDataForValgteBrukere(request)
+        }
+        return ResponseEntity.accepted().body(jobbreferanse)
+    }
+
+    private fun hentDataForValgteBrukere(request: AdminDataForBrukerRequest) {
         val feiledeValg = mutableListOf<String>()
         request.valg.forEach { type ->
             try {
@@ -406,11 +414,10 @@ class AdminController(
             }
         }
 
-        return if (feiledeValg.isEmpty()) {
-            ResponseEntity.ok("Alle datahentinger fullført uten feil")
-        } else {
-            ResponseEntity.internalServerError().body("Feil ved: ${feiledeValg.joinToString(", ")}")
+        check(feiledeValg.isEmpty()) {
+            "Feil ved: ${feiledeValg.joinToString(", ")}"
         }
+        log.info("Alle datahentinger fullført uten feil")
     }
 
     private fun sjekkTilgangTilAdmin() {
