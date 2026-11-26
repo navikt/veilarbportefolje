@@ -17,5 +17,6 @@ public enum Brukerstatus {
     UTGATTE_VARSEL,
     UDELT_SAMTALEREFERAT,
     KANDIDAT_FOR_UTMELDING,
+    CV_KAN_DELES_STILLING_FRA_NAV,
     MINE_FARGEKATEGORIER // Kun som checkboxvalg i frontend
 }

@@ -326,6 +326,8 @@ class OpensearchSortQueryBuilder {
                     sorterUdeltSamtalereferatHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING)) {
                     sorterKandidatForUtmeldingHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.CV_KAN_DELES_STILLING_FRA_NAV)) {
+                    sorterCvKanDelesStillingFraNavHendelseDato(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 }
                 searchSourceBuilder
             }
@@ -333,6 +335,8 @@ class OpensearchSortQueryBuilder {
             Sorteringsfelt.FILTERHENDELSE_DATO_FRIST -> {
                 if (filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING)) {
                     sorterKandidatForUtmeldingHendelseDatoFrist(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
+                } else if (filtervalg.ferdigfilterListe.contains(Brukerstatus.CV_KAN_DELES_STILLING_FRA_NAV)) {
+                    sorterCvKanDelesStillingFraNavHendelseDatoFrist(searchSourceBuilder, sorteringsrekkefolgeOpenSearch)
                 }
                 searchSourceBuilder
             }
@@ -530,6 +534,14 @@ class OpensearchSortQueryBuilder {
 
     fun sorterKandidatForUtmeldingHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
         searchSourceBuilder.sort("$HENDELSER.${Kategori.KANDIDAT_FOR_UTMELDING.name}.$HENDELSER_DATO", order)
+    }
+
+    fun sorterCvKanDelesStillingFraNavHendelseDato(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.SAMTYKKE_TIL_CVDELING.name}.$HENDELSER_DATO", order)
+    }
+
+    fun sorterCvKanDelesStillingFraNavHendelseDatoFrist(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {
+        searchSourceBuilder.sort("$HENDELSER.${Kategori.SAMTYKKE_TIL_CVDELING.name}.$HENDELSER_DATO_FRIST", order)
     }
 
     fun sorterKandidatForUtmeldingHendelseDatoFrist(searchSourceBuilder: SearchSourceBuilder, order: SortOrder?) {

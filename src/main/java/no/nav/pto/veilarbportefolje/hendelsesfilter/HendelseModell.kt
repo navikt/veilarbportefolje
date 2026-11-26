@@ -79,7 +79,8 @@ data class HendelseRecordValueV2(
 enum class Kategori {
     UTGATT_VARSEL,
     UDELT_SAMTALEREFERAT,
-    KANDIDAT_FOR_UTMELDING
+    KANDIDAT_FOR_UTMELDING,
+    SAMTYKKE_TIL_CVDELING
 }
 
 enum class Operasjon {

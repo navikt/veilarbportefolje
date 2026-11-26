@@ -1023,6 +1023,75 @@ class OpensearchServiceIntFargekatHendelserHuskelappTest @Autowired constructor(
         Assertions.assertThat(bruker2.aktoer_id).isEqualTo(response.brukere[2].aktoerid)
     }
 
+    @Test
+    fun skal_kunne_filtrere_og_sortere_pa_dato_for_hendelsefilter_cv_kan_deles_stilling_fra_nav() {
+        // Given
+        val cvKanDelesBruker1 = genererRandomHendelse(
+            kategori = Kategori.SAMTYKKE_TIL_CVDELING,
+            hendelseDato = ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        ).hendelse
+        val cvKanDelesBruker2 = genererRandomHendelse(
+            kategori = Kategori.SAMTYKKE_TIL_CVDELING,
+            hendelseDato = ZonedDateTime.of(2023, 1, 1, 12, 0, 0, 0, ZoneId.systemDefault())
+        ).hendelse
+        val annenHendelse = genererRandomHendelse(kategori = Kategori.KANDIDAT_FOR_UTMELDING).hendelse
+
+        val bruker1 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = AktorId.of("1111111111111").toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.SAMTYKKE_TIL_CVDELING to cvKanDelesBruker1),
+        )
+
+        val bruker2 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = AktorId.of("2222222222222").toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.SAMTYKKE_TIL_CVDELING to cvKanDelesBruker2),
+        )
+
+        val bruker3 = PortefoljebrukerOpensearchModell(
+            fnr = randomFnr().toString(),
+            aktoer_id = AktorId.of("3333333333333").toString(),
+            oppfolging = true,
+            veileder_id = TEST_VEILEDER_0,
+            enhet_id = TEST_ENHET,
+            hendelser = mapOf(Kategori.KANDIDAT_FOR_UTMELDING to annenHendelse),
+        )
+
+        val brukere = listOf(bruker1, bruker2, bruker3)
+
+        skrivBrukereTilTestindeks(brukere)
+        OpensearchTestClient.pollOpensearchUntil { opensearchTestClient.countDocuments() == brukere.size }
+
+        // When
+        val filterValg = getFiltervalgDefaults().copy(
+            ferdigfilterListe = listOf(Brukerstatus.CV_KAN_DELES_STILLING_FRA_NAV)
+        )
+
+        val response = opensearchService.hentBrukere(
+            TEST_ENHET,
+            Optional.empty(),
+            Sorteringsrekkefolge.STIGENDE,
+            Sorteringsfelt.FILTERHENDELSE_DATO,
+            filterValg,
+            null,
+            null
+        )
+        val statustall = opensearchService.hentStatustallForVeilederPortefolje(TEST_VEILEDER_0, TEST_ENHET)
+
+        // Then
+        Assertions.assertThat(response.antall).isEqualTo(2)
+        Assertions.assertThat(bruker2.aktoer_id).isEqualTo(response.brukere[0].aktoerid)
+        Assertions.assertThat(bruker1.aktoer_id).isEqualTo(response.brukere[1].aktoerid)
+        Assertions.assertThat(response.brukere[0].hendelse?.beskrivelse).isEqualTo(cvKanDelesBruker2.beskrivelse)
+        Assertions.assertThat(statustall.cvKanDelesStillingFraNav).isEqualTo(2)
+    }
+
     private fun skrivBrukereTilTestindeks(brukere: List<PortefoljebrukerOpensearchModell>) {
         opensearchIndexer.skrivBulkTilIndeks(BRUKERINDEKS_ALIAS, listOf(*brukere.toTypedArray()))
     }

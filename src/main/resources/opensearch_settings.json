@@ -308,6 +308,19 @@
                 "type": "date"
               }
             }
+          },
+          "SAMTYKKE_TIL_CVDELING": {
+            "properties": {
+              "beskrivelse": {
+                "type": "keyword"
+              },
+              "dato": {
+                "type": "date"
+              },
+              "datoFrist": {
+                "type": "date"
+              }
+            }
           }
         }
       },
