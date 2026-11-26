@@ -30,6 +30,7 @@ public class Statustall {
     private long utgatteVarsel;
     private long udelteSamtalereferat;
     private long kandidatForUtmelding;
+    private long cvKanDelesStillingFraNav;
 
     public Statustall() {
         this.totalt = 0;
@@ -55,6 +56,7 @@ public class Statustall {
         this.utgatteVarsel = 0;
         this.udelteSamtalereferat = 0;
         this.kandidatForUtmelding = 0;
+        this.cvKanDelesStillingFraNav = 0;
     }
 
     public Statustall(StatustallResponse.StatustallAggregation.StatustallFilter.StatustallBuckets buckets) {
@@ -81,5 +83,6 @@ public class Statustall {
         this.utgatteVarsel = buckets.getUtgatteVarsel().getDoc_count();
         this.udelteSamtalereferat = buckets.getUdelteSamtalereferat().getDoc_count();
         this.kandidatForUtmelding = buckets.getKandidatForUtmelding().getDoc_count();
+        this.cvKanDelesStillingFraNav = buckets.getCvKanDelesStillingFraNav().getDoc_count();
     }
 }

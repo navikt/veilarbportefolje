@@ -42,6 +42,7 @@ public class StatustallResponse {
                 Bucket utgatteVarsel;
                 Bucket udelteSamtalereferat;
                 Bucket kandidatForUtmelding;
+                Bucket cvKanDelesStillingFraNav;
             }
         }
     }
@@ -83,7 +84,8 @@ public class StatustallResponse {
         TILTAKSHENDELSER("tiltakshendelser"),
         UTGATTE_VARSEL("utgatteVarsel"),
         UDELTE_SAMTALEREFERAT("udelteSamtalereferat"),
-        KANDIDAT_FOR_UTMELDING("kandidatForUtmelding");
+        KANDIDAT_FOR_UTMELDING("kandidatForUtmelding"),
+        CV_KAN_DELES_STILLING_FRA_NAV("cvKanDelesStillingFraNav");
 
         public final String key;
 

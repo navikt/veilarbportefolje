@@ -383,6 +383,7 @@ object PortefoljebrukerFrontendModellMapper {
             filtervalg.ferdigfilterListe.contains(Brukerstatus.UTGATTE_VARSEL) -> Kategori.UTGATT_VARSEL
             filtervalg.ferdigfilterListe.contains(Brukerstatus.UDELT_SAMTALEREFERAT) -> Kategori.UDELT_SAMTALEREFERAT
             filtervalg.ferdigfilterListe.contains(Brukerstatus.KANDIDAT_FOR_UTMELDING) -> Kategori.KANDIDAT_FOR_UTMELDING
+            filtervalg.ferdigfilterListe.contains(Brukerstatus.CV_KAN_DELES_STILLING_FRA_NAV) -> Kategori.SAMTYKKE_TIL_CVDELING
             else -> return null
         }
 

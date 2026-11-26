@@ -46,6 +46,24 @@ class HendelseRepositoryTest(
         assertThat(resultatAvHenting).isNotNull
     }
 
+    @Test
+    fun `skal lagre Hendelse med lange tekstfelter`() {
+        val langTekst = "a".repeat(300)
+        val hendelse = genererRandomHendelse(
+            kategori = Kategori.SAMTYKKE_TIL_CVDELING,
+            hendelseBeskrivelse = langTekst,
+            hendelseLenke = java.net.URI.create("https://rekrutteringsbistand.intern.dev.nav.no/stilling/$langTekst").toURL(),
+            hendelseDetaljer = langTekst
+        )
+
+        hendelseRepository.insert(hendelse)
+
+        val lagretHendelse = hendelseRepository.get(hendelse.id)
+        assertThat(lagretHendelse.hendelse.beskrivelse).isEqualTo(langTekst)
+        assertThat(lagretHendelse.hendelse.lenke).isEqualTo(hendelse.hendelse.lenke)
+        assertThat(lagretHendelse.hendelse.detaljer).isEqualTo(langTekst)
+    }
+
     @ParameterizedTest
     @EnumSource(Kategori::class)
     fun `skal kaste HendelseIdEksistererAlleredeException ved opprettelse når hendelse med ID eksisterer fra før`(
