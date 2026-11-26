@@ -5,11 +5,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
 import no.nav.pto.veilarbportefolje.domene.Statsborgerskap
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
@@ -147,7 +143,6 @@ data class PortefoljebrukerOpensearchModell(
     // Annet
     var fargekategori: String? = null,
     var fargekategori_enhetId: String? = null,
-    var formidlingsgruppekode: String? = null,
     var huskelapp: HuskelappForBruker? = null,
     var tiltakshendelse: Tiltakshendelse? = null,
     var hendelser: Map<Kategori, Hendelse.HendelseInnhold>? = null,

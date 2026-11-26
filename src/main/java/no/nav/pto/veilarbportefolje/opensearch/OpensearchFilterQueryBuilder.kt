@@ -16,7 +16,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.S
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.SISTE_ENDRINGER_ER_SETT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Aktiviteter.TILTAK
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FARGEKATEGORI
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.FORMIDLINGSGRUPPE_KODE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HENDELSER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELAPP
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
@@ -295,7 +294,6 @@ class OpensearchFilterQueryBuilder {
             filtervalg.fodselsdagIMnd.stream().map { s: String -> s.toInt() }.collect(Collectors.toList())
 
         byggManuellFilter(fodseldagIMndQuery, queryBuilder, FODSELSDAG_I_MND)
-        byggManuellFilter(filtervalg.formidlingsgruppe, queryBuilder, FORMIDLINGSGRUPPE_KODE)
         byggManuellFilter(filtervalg.veiledere, queryBuilder, VEILEDER_ID)
         byggManuellFilter(filtervalg.manuellBrukerStatus, queryBuilder, MANUELL_BRUKER)
         byggManuellFilter(filtervalg.tiltakstyper, queryBuilder, TILTAK)
@@ -558,7 +556,9 @@ class OpensearchFilterQueryBuilder {
                 ArbeidssokerregisteretFilter.HAR_IKKE_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET ->
                     queryBuilder.must(
                         QueryBuilders.boolQuery()
-                            .should(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET)))
+                            .should(
+                                QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(ARBEIDSSOEKERREGISTERET))
+                            )
                             .should(QueryBuilders.rangeQuery(periodeAvsluttetDatoFelt).lt("now"))
                     )
             }
@@ -855,14 +855,20 @@ class OpensearchFilterQueryBuilder {
                 val navnPaaAktivitet = entry.key
                 val valg = entry.value
                 if (AktivitetAvansertFilterverdier.JA == valg) {
-                    return@map queryBuilder.filter(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet.name.lowercase()))
+                    return@map queryBuilder.filter(
+                        QueryBuilders.matchQuery(
+                            AKTIVITETER,
+                            navnPaaAktivitet.name.lowercase()
+                        )
+                    )
                 } else if (AktivitetAvansertFilterverdier.NEI == valg && AktivitetFilterverdier.TILTAK == navnPaaAktivitet) {
                     return@map queryBuilder.filter(
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(TILTAK))
                     )
                 } else if (AktivitetAvansertFilterverdier.NEI == valg) {
                     return@map queryBuilder.filter(
-                        QueryBuilders.boolQuery().mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet.name.lowercase()))
+                        QueryBuilders.boolQuery()
+                            .mustNot(QueryBuilders.matchQuery(AKTIVITETER, navnPaaAktivitet.name.lowercase()))
                     )
                 } else {
                     return@map queryBuilder

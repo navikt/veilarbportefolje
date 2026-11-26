@@ -167,7 +167,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             // Annet
             fargekategori = PortefoljebrukerOpensearchModell.FARGEKATEGORI,
             fargekategori_enhetId = PortefoljebrukerOpensearchModell.FARGEKATEGORI_ENHET_ID,
-            formidlingsgruppekode = PortefoljebrukerOpensearchModell.FORMIDLINGSGRUPPE_KODE,
             huskelapp = PortefoljebrukerOpensearchModell.HUSKELAPP,
             tiltakshendelse = PortefoljebrukerOpensearchModell.TILTAKSHENDELSE,
         )

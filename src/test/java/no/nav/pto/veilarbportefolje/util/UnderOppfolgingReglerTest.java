@@ -12,7 +12,6 @@ public class UnderOppfolgingReglerTest {
     public void skal_vaere_under_oppfolging() {
         var bruker = new PortefoljebrukerOpensearchModell();
         bruker.setFnr("00000000000");
-        bruker.setFormidlingsgruppekode("foo");
         bruker.setKvalifiseringsgruppekode("bar");
         bruker.setOppfolging(true);
 
@@ -24,7 +23,6 @@ public class UnderOppfolgingReglerTest {
     public void skal_ikke_vaere_under_oppfolging() {
         var bruker = new PortefoljebrukerOpensearchModell();
         bruker.setFnr("00000000000");
-        bruker.setFormidlingsgruppekode("foo");
         bruker.setKvalifiseringsgruppekode("bar");
         bruker.setOppfolging(false);
 

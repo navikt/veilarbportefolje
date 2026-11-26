@@ -10,7 +10,6 @@ fun getFiltervalgDefaults(): Filtervalg = Filtervalg(
     alder = emptyList(),
     kjonn = null,
     fodselsdagIMnd = emptyList(),
-    formidlingsgruppe = emptyList(),
     veiledere = emptyList(),
     aktiviteter = mapOf(),
     tiltakstyper = emptyList(),
