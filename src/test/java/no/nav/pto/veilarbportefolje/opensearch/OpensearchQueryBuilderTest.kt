@@ -5,10 +5,7 @@ import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningBestattSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningGodkjentSvar
-import no.nav.pto.veilarbportefolje.domene.filtervalg.UtdanningSvar
+import no.nav.pto.veilarbportefolje.domene.filtervalg.*
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.TestUtil
@@ -72,11 +69,10 @@ class OpensearchQueryBuilderTest {
 
     @Test
     fun skal_sortere_paa_aktiviteter_som_er_satt_til_ja() {
-        val navnPaAktivitet = "behandling"
         val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mapOf(
-                navnPaAktivitet to AktivitetFiltervalg.JA,
-                "egen" to AktivitetFiltervalg.NEI
+                AktivitetFilterverdier.BEHANDLING to AktivitetAvansertFilterverdier.JA,
+                AktivitetFilterverdier.EGEN to AktivitetAvansertFilterverdier.NEI
             )
         )
 
@@ -96,7 +92,7 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_nei_paa_tiltak() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.NEI)
+            aktiviteter = mapOf(AktivitetFilterverdier.TILTAK to AktivitetAvansertFilterverdier.NEI)
         )
 
         val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
@@ -110,7 +106,7 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_behandling() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mapOf("behandling" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf(AktivitetFilterverdier.BEHANDLING to AktivitetAvansertFilterverdier.JA)
         )
         val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
@@ -123,7 +119,7 @@ class OpensearchQueryBuilderTest {
     @Test
     fun skal_bygge_korrekt_json_om_man_velger_ja_paa_tiltak() {
         val filtervalg = getFiltervalgDefaults().copy(
-            aktiviteter = mapOf("tiltak" to AktivitetFiltervalg.JA)
+            aktiviteter = mapOf(AktivitetFilterverdier.TILTAK to AktivitetAvansertFilterverdier.JA)
         )
         val builders = filterQueryBuilder.byggAvansertAktivitetFilterQuery(filtervalg, QueryBuilders.boolQuery())
 
@@ -252,13 +248,23 @@ class OpensearchQueryBuilderTest {
         assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanning\"")
         assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanningBestatt")
         assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanningGodkjent")
-        assertThat(v3QueryString).doesNotContain("\"brukers_situasjoner\"", "\"utdanning\"", "\"utdanning_bestatt\"", "\"utdanning_godkjent\"")
+        assertThat(v3QueryString).doesNotContain(
+            "\"brukers_situasjoner\"",
+            "\"utdanning\"",
+            "\"utdanning_bestatt\"",
+            "\"utdanning_godkjent\""
+        )
 
         val v2Query = QueryBuilders.boolQuery()
         filterQueryBuilder.leggTilManuelleFilter(v2Query, filtervalg, brukV3AvArbeidssoekerregisteret = false)
         val v2QueryString = v2Query.toString()
 
-        assertThat(v2QueryString).contains("\"brukers_situasjoner\"", "\"utdanning\"", "\"utdanning_bestatt\"", "\"utdanning_godkjent\"")
+        assertThat(v2QueryString).contains(
+            "\"brukers_situasjoner\"",
+            "\"utdanning\"",
+            "\"utdanning_bestatt\"",
+            "\"utdanning_godkjent\""
+        )
         assertThat(v2QueryString).doesNotContain("arbeidssoekerregisteret")
     }
 

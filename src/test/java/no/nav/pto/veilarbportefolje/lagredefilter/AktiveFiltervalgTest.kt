@@ -2,7 +2,8 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 
 import no.nav.common.json.JsonUtils
 import no.nav.pto.veilarbportefolje.domene.Kjonn
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.*
 import org.assertj.core.api.Assertions.assertThat
@@ -56,8 +57,8 @@ class AktiveFiltervalgTest {
     fun `aktiviteter skal skippes naar alle verdier er NA`() {
         val filtervalg = getFiltervalgDefaults().copy(
             aktiviteter = mapOf(
-                "MOTE" to AktivitetFiltervalg.NA,
-                "EGEN" to AktivitetFiltervalg.NA
+                AktivitetFilterverdier.MOTE to AktivitetAvansertFilterverdier.NA,
+                AktivitetFilterverdier.EGEN to AktivitetAvansertFilterverdier.NA
             )
         )
 
@@ -70,9 +71,9 @@ class AktiveFiltervalgTest {
     @Test
     fun `aktiviteter skal beholdes i sin helhet naar minst en verdi er JA`() {
         val aktiviteter = mapOf(
-            "MOTE" to AktivitetFiltervalg.JA,
-            "EGEN" to AktivitetFiltervalg.NA,
-            "BEHANDLING" to AktivitetFiltervalg.NA
+            AktivitetFilterverdier.MOTE to AktivitetAvansertFilterverdier.JA,
+            AktivitetFilterverdier.EGEN to AktivitetAvansertFilterverdier.NA,
+            AktivitetFilterverdier.BEHANDLING to AktivitetAvansertFilterverdier.NA
         )
         val filtervalg = getFiltervalgDefaults().copy(aktiviteter = aktiviteter)
 
@@ -109,8 +110,8 @@ class AktiveFiltervalgTest {
             kjonn = Kjonn.M,
             sisteEndringKategori = "AVTALT_MOTE",
             aktiviteter = mapOf(
-                "MOTE" to AktivitetFiltervalg.JA,
-                "EGEN" to AktivitetFiltervalg.NA
+                AktivitetFilterverdier.MOTE to AktivitetAvansertFilterverdier.JA,
+                AktivitetFilterverdier.EGEN to AktivitetAvansertFilterverdier.NA
             )
         )
 

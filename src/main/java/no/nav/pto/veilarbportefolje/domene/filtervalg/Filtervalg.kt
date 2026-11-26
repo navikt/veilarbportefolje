@@ -13,8 +13,8 @@ data class Filtervalg(
     val fodselsdagIMnd: List<String>,
     val formidlingsgruppe: List<Formidlingsgruppe>,
     val veiledere: List<String>,
-    val aktiviteter: Map<String, AktivitetFiltervalg>,
-    val aktiviteterForenklet: List<String>,
+    val aktiviteter: Map<AktivitetFilterverdier, AktivitetAvansertFilterverdier>,
+    val aktiviteterForenklet: List<AktivitetFilterverdier>,
     val tiltakstyper: List<String>,
     val manuellBrukerStatus: List<ManuellBrukerStatus>,
     val navnEllerFnrQuery: String,
@@ -155,7 +155,7 @@ data class Filtervalg(
 
     fun harAktiviteterAvansert(): Boolean =
         aktiviteter.values.any {
-            it == AktivitetFiltervalg.JA || it == AktivitetFiltervalg.NEI
+            it == AktivitetAvansertFilterverdier.JA || it == AktivitetAvansertFilterverdier.NEI
         }
 
     fun harAktiviteterForenklet(): Boolean =

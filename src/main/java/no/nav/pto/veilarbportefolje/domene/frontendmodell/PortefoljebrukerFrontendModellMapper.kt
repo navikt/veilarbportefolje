@@ -4,7 +4,8 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFiltervalg
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
@@ -417,19 +418,19 @@ object PortefoljebrukerFrontendModellMapper {
         )
     }
 
-    private fun mapAktiviteter(opensearchBruker: PortefoljebrukerOpensearchModell): MutableMap<String, Timestamp> {
-        val aktiviteter = mutableMapOf<String, Timestamp>()
+    private fun mapAktiviteter(opensearchBruker: PortefoljebrukerOpensearchModell): MutableMap<AktivitetFilterverdier, Timestamp> {
+        val aktiviteter = mutableMapOf<AktivitetFilterverdier, Timestamp>()
 
         listOf(
-            "tiltak" to opensearchBruker.aktivitet_tiltak_utlopsdato,
-            "behandling" to opensearchBruker.aktivitet_behandling_utlopsdato,
-            "sokeavtale" to opensearchBruker.aktivitet_sokeavtale_utlopsdato,
-            "stilling" to opensearchBruker.aktivitet_stilling_utlopsdato,
-            "ijobb" to opensearchBruker.aktivitet_ijobb_utlopsdato,
-            "egen" to opensearchBruker.aktivitet_egen_utlopsdato,
-            "gruppeaktivitet" to opensearchBruker.aktivitet_gruppeaktivitet_utlopsdato,
-            "mote" to opensearchBruker.aktivitet_mote_utlopsdato,
-            "utdanningaktivitet" to opensearchBruker.aktivitet_utdanningaktivitet_utlopsdato
+            AktivitetFilterverdier.TILTAK to opensearchBruker.aktivitet_tiltak_utlopsdato,
+            AktivitetFilterverdier.BEHANDLING to opensearchBruker.aktivitet_behandling_utlopsdato,
+            AktivitetFilterverdier.SOKEAVTALE to opensearchBruker.aktivitet_sokeavtale_utlopsdato,
+            AktivitetFilterverdier.STILLING to opensearchBruker.aktivitet_stilling_utlopsdato,
+            AktivitetFilterverdier.IJOBB to opensearchBruker.aktivitet_ijobb_utlopsdato,
+            AktivitetFilterverdier.EGEN to opensearchBruker.aktivitet_egen_utlopsdato,
+            AktivitetFilterverdier.GRUPPEAKTIVITET to opensearchBruker.aktivitet_gruppeaktivitet_utlopsdato,
+            AktivitetFilterverdier.MOTE to opensearchBruker.aktivitet_mote_utlopsdato,
+            AktivitetFilterverdier.UTDANNINGAKTIVITET to opensearchBruker.aktivitet_utdanningaktivitet_utlopsdato
         ).forEach { (aktivitetstype, dato) ->
             val utlopsdato = dateToTimestamp(dato)
             if (utlopsdato != null && !isFarInTheFutureDate(utlopsdato)) {
@@ -460,20 +461,20 @@ object PortefoljebrukerFrontendModellMapper {
             filtervalg.harAktiviteterForenklet() -> {
                 val aktivitetDatoerBasertPaFiltervalg =
                     filtervalg.aktiviteterForenklet.mapNotNull { navn ->
-                        aktiviteter[navn.lowercase()]
+                        aktiviteter[navn]
                     }
 
                 nesteUtopsdatoForenkletFilter = aktivitetDatoerBasertPaFiltervalg.minOfOrNull { toLocalDateOrNull(it) }
             }
 
             filtervalg.tiltakstyper.isNotEmpty() ->
-                nesteUtopsdatoForenkletFilter = toLocalDateOrNull(aktiviteter["tiltak"])
+                nesteUtopsdatoForenkletFilter = toLocalDateOrNull(aktiviteter[AktivitetFilterverdier.TILTAK])
         }
 
         val aktivitetDatoerBaserPaAvansertFiltervalg =
             filtervalg.aktiviteter.mapNotNull { (navn, valg) ->
-                if (valg == AktivitetFiltervalg.JA) {
-                    aktiviteter[navn.lowercase()]
+                if (valg == AktivitetAvansertFilterverdier.JA) {
+                    aktiviteter[navn]
                 } else {
                     null
                 }
