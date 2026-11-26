@@ -1,0 +1,36 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: portefolje-hendelsesfilter-v1
+  namespace: obo
+  labels:
+    team: obo
+spec:
+  pool: nav-dev
+  config:
+    cleanupPolicy: delete # delete = Ingen compaction
+    retentionHours: -1 # til enden av universet
+    retentionBytes: -1
+    minimumInSyncReplicas: 1
+    partitions: 1
+    replication: 2
+  acl:
+    - team: obo
+      application: veilarbportefolje
+      access: read
+    - team: dab
+      application: dab-kafka-manager
+      access: read
+    - team: obo
+      application: obo-kafka-manager
+      access: read
+    - team: dab
+      application: veilarbdialog
+      access: write
+    - team: dab
+      application: veilarbaktivitet
+      access: write
+    - team: poao
+      application: veilarboppfolging
+      access: write
+

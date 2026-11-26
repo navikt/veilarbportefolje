@@ -1,0 +1,33 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: ytelser-v1
+  namespace: obo
+  labels:
+    team: obo
+spec:
+  pool: nav-dev
+  config:
+    cleanupPolicy: compact
+    minimumInSyncReplicas: 1
+    partitions: 2
+    replication: 2
+  acl:
+    - team: obo
+      application: veilarbportefolje
+      access: read
+    - team: obo
+      application: obo-kafka-manager
+      access: read
+    - team: aap
+      application: api-intern
+      access: write
+    - team: tpts
+      application: tiltakspenger-datadeling
+      access: write
+    - team: teamdagpenger
+      application: dp-datadeling
+      access: write
+    - team: pensjon-q2
+      application: pensjon-pen-q2
+      access: write
