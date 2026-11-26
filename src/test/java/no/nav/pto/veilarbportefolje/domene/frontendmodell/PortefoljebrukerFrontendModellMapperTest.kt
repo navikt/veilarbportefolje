@@ -370,12 +370,14 @@ class PortefoljebrukerFrontendModellMapperTest {
         val utgattVarselHendelse = genererRandomHendelse(Kategori.UTGATT_VARSEL).hendelse
         val udeltSamtalereferatHendelse = genererRandomHendelse(Kategori.UDELT_SAMTALEREFERAT).hendelse
         val kandidatForUtmeldingHendelse = genererRandomHendelse(Kategori.KANDIDAT_FOR_UTMELDING).hendelse
+        val samtykkeTilCvdelingHendelse = genererRandomHendelse(Kategori.SAMTYKKE_TIL_CVDELING).hendelse
         val opensearchBruker = PortefoljebrukerOpensearchModell(
             hendelser =
                 mapOf(
                     Kategori.UTGATT_VARSEL to utgattVarselHendelse,
                     Kategori.UDELT_SAMTALEREFERAT to udeltSamtalereferatHendelse,
-                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse
+                    Kategori.KANDIDAT_FOR_UTMELDING to kandidatForUtmeldingHendelse,
+                    Kategori.SAMTYKKE_TIL_CVDELING to samtykkeTilCvdelingHendelse
                 )
         )
 
@@ -406,7 +408,17 @@ class PortefoljebrukerFrontendModellMapperTest {
 
         val resultUtgåttVarsel = frontendBrukerUtgåttVarselFilter.hendelse
         val resultUdeltSamtalereferat = frontendBrukerUdeltSamtalereferatFilter.hendelse
+        val frontendBrukerCvKanDelesStillingFraNavFilter =
+            PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
+                opensearchBruker = opensearchBruker,
+                ufordelt = true,
+                filtervalg = getFiltervalgDefaults().copy(
+                    ferdigfilterListe = listOf(Brukerstatus.CV_KAN_DELES_STILLING_FRA_NAV)
+                )
+            )
+
         val resultKandidat = frontendBrukerKandidatForUtmeldingFilter.hendelse
+        val resultCvKanDeles = frontendBrukerCvKanDelesStillingFraNavFilter.hendelse
 
         Assertions.assertNotNull(resultUtgåttVarsel)
         Assertions.assertEquals(utgattVarselHendelse.beskrivelse, resultUtgåttVarsel!!.beskrivelse)
@@ -429,6 +441,11 @@ class PortefoljebrukerFrontendModellMapperTest {
             kandidatForUtmeldingHendelse.datoFrist?.dayOfMonth,
             resultKandidat.datoFrist?.dayOfMonth
         )
+
+        Assertions.assertNotNull(resultCvKanDeles)
+        Assertions.assertEquals(samtykkeTilCvdelingHendelse.beskrivelse, resultCvKanDeles!!.beskrivelse)
+        Assertions.assertEquals(samtykkeTilCvdelingHendelse.lenke, resultCvKanDeles.lenke)
+        Assertions.assertEquals(samtykkeTilCvdelingHendelse.dato.dayOfMonth, resultCvKanDeles.dato.dayOfMonth)
     }
 
     @Test
