@@ -94,11 +94,8 @@ public class BrukerRepositoryV2 {
                          left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
                          left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
-                         left join BRUKER_PROFILERING                           on BRUKER_PROFILERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join BRUKER_REGISTRERT_CV                         on BRUKER_REGISTRERT_CV.FNR = AKTIVE_IDENTER.FNR
-                         left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join YTELSE_STATUS_FOR_BRUKER                     on YTELSE_STATUS_FOR_BRUKER.AKTOERID = AKTIVE_IDENTER.AKTORID
-                         left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                 """;
