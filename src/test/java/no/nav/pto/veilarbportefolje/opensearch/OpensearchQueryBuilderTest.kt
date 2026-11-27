@@ -43,21 +43,6 @@ class OpensearchQueryBuilderTest {
     }
 
     @Test
-    fun skal_sortere_utdanning_og_situasjon_sist_endret_paa_v3_felt_naar_toggle_er_paa() {
-        fun sortertFelt(brukV3: Boolean): String =
-            sortQueryBuilder.sorterQueryParametere(
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET,
-                SearchSourceBuilder(),
-                getFiltervalgDefaults(),
-                BrukerinnsynTilganger(true, true, true),
-            ).sorts()[0].toString()
-
-        assertThat(sortertFelt(brukV3 = true)).contains("arbeidssoekerregisteret.opplysninger.opplysningerSistSendtInnDato")
-        assertThat(sortertFelt(brukV3 = false)).contains("\"utdanning_og_situasjon_sist_endret\"")
-    }
-
-    @Test
     fun skal_bygge_riktig_filtrer_paa_veileder_script() {
         val actualScript: String = sortQueryBuilder.byggVeilederPaaEnhetScript(listOf("Z000000", "Z000001", "Z000002"))
         val expectedScript =

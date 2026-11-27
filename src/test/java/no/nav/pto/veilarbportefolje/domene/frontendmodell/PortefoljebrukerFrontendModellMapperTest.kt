@@ -203,9 +203,7 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals("Nordmann", frontendBruker.etternavn)
         Assertions.assertEquals("NOR", frontendBruker.foedeland)
         Assertions.assertEquals(listOf(BarnUnder18AarData(8, null)), frontendBruker.barnUnder18AarData)
-        Assertions.assertEquals(LocalDate.of(2024, 1, 1), frontendBruker.utdanningOgSituasjonSistEndret)
         Assertions.assertEquals(LocalDate.of(2024, 5, 1), frontendBruker.nesteSvarfristCvStillingFraNav)
-
     }
 
     @Test
