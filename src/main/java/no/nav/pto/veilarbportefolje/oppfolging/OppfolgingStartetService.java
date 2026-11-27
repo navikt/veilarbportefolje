@@ -6,7 +6,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
 import no.nav.pto.veilarbportefolje.client.VeilarbVeilederClient;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
@@ -21,8 +20,8 @@ import no.nav.pto.veilarbportefolje.oppfolgingsbruker.OppfolgingsbrukerServiceV2
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14aVedtakService;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +45,6 @@ public class OppfolgingStartetService {
     private final PdlService pdlService;
     private final Siste14aVedtakService siste14aVedtakService;
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
-    private final ArbeidssoekerService arbeidssoekerService;
     private final EnsligeForsorgereService ensligeForsorgereService;
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
@@ -106,7 +104,6 @@ public class OppfolgingStartetService {
             oppfolgingRepositoryV2.settUnderOppfolging(aktorId, oppfolgingStartetDate, oppfolgingsperiodeId);
             siste14aVedtakService.hentOgLagreSiste14aVedtak(aktorId);
             oppfolgingsbrukerServiceV2.hentOgLagreOppfolgingsbruker(aktorId, navKontor);
-            arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId);
             ensligeForsorgereService.hentOgLagreEnsligForsorgerDataFraApi(aktorId);
             aapService.hentOgLagreAapForBrukerVedOppfolgingStart(aktorId);
             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId);

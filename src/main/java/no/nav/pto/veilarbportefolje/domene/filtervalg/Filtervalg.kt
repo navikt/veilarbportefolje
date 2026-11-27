@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.filtervalg
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal

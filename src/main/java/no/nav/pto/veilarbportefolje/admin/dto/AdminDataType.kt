@@ -9,7 +9,6 @@ enum class AdminDataType(val displayName: String) {
     AAP_DATA("Aap data (kelvin)"),
     DAGPENGER_DATA("Dagpenger (dpsak"),
     TILTAKSPENGER_DATA("Tiltakspenger (tpsak)"),
-    ARBEIDSSOKER_DATA("Arbeidssøkerdata"),
     ARBEIDSSOKER_DATA_V3("Arbeidssøkerdata v3"),
     UFORETRYGD_DATA("Uføretrygd"),
     SYKMELDT_DATA("Sykmeldt"),

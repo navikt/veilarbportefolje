@@ -2,7 +2,7 @@ package no.nav.pto.veilarbportefolje.lagredefilter.minefilter
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.common.json.JsonUtils
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.ManuellBrukerStatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.*

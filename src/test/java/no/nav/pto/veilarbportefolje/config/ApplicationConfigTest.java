@@ -17,11 +17,12 @@ import no.nav.pto.veilarbportefolje.aktiviteter.AktivitetService;
 import no.nav.pto.veilarbportefolje.aktiviteter.AktiviteterRepositoryV2;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.PortefoljeAktivitetKafkaMeldingRepository;
 import no.nav.pto.veilarbportefolje.aktiviteter.v1.TiltaksaktivitetRepository;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterClient;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
-import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.*;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.ArenaHendelseRepository;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.GruppeAktivitetRepositoryV2;
+import no.nav.pto.veilarbportefolje.arenapakafka.aktiviteter.UtdanningsAktivitetService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesRepositoryV2;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesService;
 import no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelsesStatusRepositoryV2;
@@ -70,20 +71,16 @@ import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPerson;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLPersonBarn;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.PersonOpprinnelseService;
-import no.nav.pto.veilarbportefolje.postgres.AktivitetOpensearchService;
-import no.nav.pto.veilarbportefolje.postgres.BrukerRepositoryV2;
-import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapper;
-import no.nav.pto.veilarbportefolje.postgres.PostgresOpensearchMapperV2;
-import no.nav.pto.veilarbportefolje.postgres.PostgresYtelserMapper;
+import no.nav.pto.veilarbportefolje.postgres.*;
 import no.nav.pto.veilarbportefolje.service.BrukerServiceV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringRepositoryV2;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
 import no.nav.pto.veilarbportefolje.sistelest.SistLestService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermedePersonerService;
 import no.nav.pto.veilarbportefolje.skjerming.SkjermingRepository;
-import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtRepository;
+import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseRepository;
 import no.nav.pto.veilarbportefolje.tiltakshendelse.TiltakshendelseService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
@@ -151,7 +148,6 @@ import static org.mockito.Mockito.when;
         DialogRepositoryV2.class,
         CVRepositoryV2.class,
         CVServiceV2.class,
-        ArbeidssokerRegistreringRepositoryV2.class,
         NyForVeilederService.class,
         VeilederTilordnetService.class,
         OppfolgingStartetService.class,
@@ -190,11 +186,6 @@ import static org.mockito.Mockito.when;
         HuskelappRepository.class,
         FargekategoriService.class,
         FargekategoriRepository.class,
-        ArbeidssoekerService.class,
-        OpplysningerOmArbeidssoekerRepository.class,
-        SisteArbeidssoekerPeriodeRepository.class,
-        ProfileringRepository.class,
-        ArbeidssoekerDataRepository.class,
         ArbeidssoekerregisterService.class,
         ArbeidssoekerregisterRepository.class,
         TiltakshendelseRepository.class,
@@ -384,11 +375,6 @@ public class ApplicationConfigTest {
         VeilarbarenaClient veilarbarenaClientMock = mock(VeilarbarenaClient.class);
         when(veilarbarenaClientMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(mock(OppfolgingsbrukerDTO.class)));
         return veilarbarenaClientMock;
-    }
-
-    @Bean
-    public OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient() {
-        return mock(OppslagArbeidssoekerregisteretClient.class);
     }
 
     @Bean

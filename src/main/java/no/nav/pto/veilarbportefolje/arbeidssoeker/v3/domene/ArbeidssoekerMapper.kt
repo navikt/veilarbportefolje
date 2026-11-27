@@ -1,4 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
 import no.nav.pto.veilarbportefolje.domene.filtervalg.DinSituasjonSvar
 

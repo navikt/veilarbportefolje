@@ -1,6 +1,6 @@
 package no.nav.pto.veilarbportefolje.domene.frontendmodell
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.Profileringsresultat
 import java.time.LocalDate
 
 data class Etiketter(

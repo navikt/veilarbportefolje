@@ -1,20 +1,5 @@
-package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
-import no.nav.common.types.identer.Fnr
-import java.time.ZonedDateTime
-data class ArbeidssoekerData(
-    val fnr: Fnr,
-    val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker? = null,
-    val profilering: Profilering? = null
-)
-
-data class OpplysningerOmArbeidssoeker(
-    val sendtInnTidspunkt: ZonedDateTime,
-    val utdanning: Utdanning,
-    val utdanningBestatt: JaNeiVetIkke? = null,
-    val utdanningGodkjent: JaNeiVetIkke? = null,
-    val jobbsituasjoner: List<JobbSituasjonBeskrivelse>
-)
 
 enum class Utdanning {
     INGEN_UTDANNING,
@@ -44,11 +29,6 @@ enum class JobbSituasjonBeskrivelse {
     ANNET,
     INGEN_DATA
 }
-
-data class Profilering(
-    val profileringsresultat: Profileringsresultat,
-    val sendtInnTidspunkt: ZonedDateTime
-)
 
 enum class Profileringsresultat {
     UKJENT_VERDI,

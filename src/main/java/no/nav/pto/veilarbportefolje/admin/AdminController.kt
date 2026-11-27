@@ -11,7 +11,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.*
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService
 import no.nav.pto.veilarbportefolje.auth.AuthUtils.hentApplikasjonFraContex
 import no.nav.pto.veilarbportefolje.auth.DownstreamApi
@@ -62,7 +61,6 @@ class AdminController(
     private val sykmeldtService: SykmeldtService,
     private val dagpengerService: DagpengerService,
     private val tiltakspengerService: TiltakspengerService,
-    private val arbeidssoekerService: ArbeidssoekerService,
     private val arbeidssoekerregisterService: ArbeidssoekerregisterService,
     private val defaultUnleash: DefaultUnleash
 ) {
@@ -281,10 +279,6 @@ class AdminController(
                             tiltakspengerService.hentOgLagreTiltakspengerForBrukerVedOppfolgingStart(aktorId)
                         }
 
-                        AdminDataType.ARBEIDSSOKER_DATA -> {
-                            arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(aktorId)
-                        }
-
                         AdminDataType.ARBEIDSSOKER_DATA_V3 -> {
                             arbeidssoekerregisterService.hentOgLagreArbeidssoekerdataVedAdminJobb(aktorId)
                         }
@@ -377,11 +371,6 @@ class AdminController(
                                 it
                             )
                         }
-                    }
-
-                    AdminDataType.ARBEIDSSOKER_DATA -> {
-                        secureLog.info("Starter datahenting for arbeidssøker for aktorId {}", request.aktorIder)
-                        request.aktorIder.forEach { arbeidssoekerService.hentOgLagreArbeidssoekerdataForBruker(it) }
                     }
 
                     AdminDataType.ARBEIDSSOKER_DATA_V3 -> {

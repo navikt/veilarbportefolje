@@ -2,8 +2,6 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.common.types.identer.Fnr
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
@@ -203,23 +201,10 @@ class OpensearchServiceSerderAlleFelterIntTest(
             val OPPFOLGING: Boolean = true
             val OPPFOLGING_STARTDATO: String = "2025-10-10T00:00:00.000000Z"
             val TILDELT_TIDSPUNKT: LocalDateTime = LocalDateTime.parse("2025-10-10T10:00:00.000000")
-            val TRENGER_VURDERING: Boolean = true
             val UTKAST_14_A_ANSVARLIG_VEILEDER: String = "Z999988"
             val UTKAST_14_A_STATUS: String = "UTKAST_OPPRETTET"
             val UTKAST_14_A_STATUS_ENDRET: String = "2025-10-11T12:00:00.000000Z"
             val VEILEDER_ID: String = "Z999999"
-
-            // Arbeidssøker
-            val BRUKERS_SITUASJON_SIST_ENDRET = LocalDate.parse("2025-10-10")
-            val BRUKERS_SITUASJONER: List<String> = listOf(JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB.name)
-            val PROFILERING_RESULTAT: Profileringsresultat = Profileringsresultat.ANTATT_GODE_MULIGHETER
-            val UTDANNING: String = "VIDEREGAENDE_FAGBREV_SVENNEBREV"
-            val UTDANNING_BESTATT: String = "JA"
-            val UTDANNING_GODKJENT: String = "JA"
-            val UTDANNING_OG_SITUASJON_SIST_ENDRET: LocalDate = LocalDate.parse("2024-07-18")
-
-            // Arbeidsforhold
-            val ER_SYKMELDT_MED_ARBEIDSGIVER: Boolean = false
 
             // Aktiviteter
             val AKTIVITET_BEHANDLING_UTLOPSDATO: String = "2025-10-10T10:00:00.000Z"
@@ -350,7 +335,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
                 LocalDate.parse("2020-10-10")
             )
             val PERM_UTLOP_UKE: Int = 20
-            val RETTIGHETSGRUPPE_KODE: String = "IYT"
             val TILTAKSPENGER: Boolean = true
             val TILTAKSPENGER_RETTIGHET: TiltakspengerRettighet = TiltakspengerRettighet.TILTAKSPENGER_OG_BARNETILLEGG
             val TILTAKSPENGER_VEDTAKSDATO_TOM: LocalDate = LocalDate.parse("2025-10-01")
@@ -384,7 +368,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             // Annet
             val FARGEKATEGORI: String = "FARGEKATEGORI_D"
             val FARGEKATEGORI_ENHET_ID: String = "0220"
-            val FORMIDLINGSGRUPPE_KODE: String = "ARBS"
             val HUSKELAPP = HuskelappForBruker(
                 LocalDate.parse("2025-10-10"),
                 "En kommentar",

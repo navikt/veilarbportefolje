@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.domene.opensearchmodell
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Utdanning
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.Utdanning
 import java.time.LocalDate
 
 data class ArbeidssoekerregisteretForOpensearch(
