@@ -205,15 +205,6 @@ public class PostgresTable {
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
-    public static final class BRUKER_PROFILERING {
-        private BRUKER_PROFILERING() { /* no-op */ }
-
-        public static final String TABLE_NAME = "BRUKER_PROFILERING";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-    }
-
     public static final class ARBEIDSSOEKERREGISTER_DATA {
         private ARBEIDSSOEKERREGISTER_DATA() { /* no-op */ }
 
@@ -274,17 +265,6 @@ public class PostgresTable {
         public static final String PERIODE_ID = "PERIODE_ID";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
-    }
-
-    public static final class BRUKER_CV {
-        private BRUKER_CV() { /* no-op */ }
-
-        public static final String TABLE_NAME = "BRUKER_CV";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
-        public static final String CV_EKSISTERER = "CV_EKSISTERER";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
     }
 
     public static final class BRUKER_REGISTRERT_CV {
