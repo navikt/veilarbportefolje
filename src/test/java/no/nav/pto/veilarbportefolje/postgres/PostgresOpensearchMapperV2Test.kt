@@ -2,11 +2,13 @@ package no.nav.pto.veilarbportefolje.postgres
 
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Utdanning
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.database.PostgresTable.*
+import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
+import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -41,9 +43,6 @@ class PostgresOpensearchMapperV2Test(
     @param:Autowired val hendelseRepository: HendelseRepository,
     @param:Autowired val jdbcTemplate: JdbcTemplate,
     @param:Autowired val sykmeldtRepository: SykmeldtRepository,
-    @param:Autowired val sisteArbeidssoekerPeriodeRepository: SisteArbeidssoekerPeriodeRepository,
-    @param:Autowired val opplysningerOmArbeidssoekerRepository: OpplysningerOmArbeidssoekerRepository,
-    @param:Autowired val profileringRepository: ProfileringRepository,
     @param:Autowired val arbeidssoekerregisterRepository: ArbeidssoekerregisterRepository,
 ) {
 
@@ -54,7 +53,6 @@ class PostgresOpensearchMapperV2Test(
         jdbcTemplate.update("TRUNCATE TABLE bruker_identer")
         jdbcTemplate.update("TRUNCATE TABLE nom_skjerming")
         jdbcTemplate.update("TRUNCATE TABLE ${HENDELSE.TABLE_NAME}")
-        jdbcTemplate.update("TRUNCATE TABLE ${SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} CASCADE")
         jdbcTemplate.update("TRUNCATE TABLE ${ARBEIDSSOEKERREGISTER_DATA.TABLE_NAME}")
     }
 
