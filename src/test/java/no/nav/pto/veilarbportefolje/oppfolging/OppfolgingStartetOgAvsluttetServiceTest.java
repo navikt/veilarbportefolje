@@ -124,7 +124,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
         jdbcTemplate.update("truncate bruker_data CASCADE");
         jdbcTemplate.update("truncate bruker_data_barn CASCADE");
         jdbcTemplate.update("truncate foreldreansvar");
-        jdbcTemplate.update("truncate siste_arbeidssoeker_periode cascade");
         mockHentSykmeldtResponse();
     }
 

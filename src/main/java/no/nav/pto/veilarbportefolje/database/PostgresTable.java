@@ -230,43 +230,6 @@ public class PostgresTable {
         public static final String RAD_SIST_ENDRET = "RAD_SIST_ENDRET";
     }
 
-    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER {
-        private OPPLYSNINGER_OM_ARBEIDSSOEKER() { /* no-op */ }
-
-        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER";
-        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
-        public static final String PERIODE_ID = "PERIODE_ID";
-        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
-        public static final String UTDANNING_NUS_KODE = "UTDANNING_NUS_KODE";
-        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
-        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-    }
-
-    public static final class OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON {
-        private OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON() { /* no-op */ }
-
-        public static final String TABLE_NAME = "OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON";
-        public static final String OPPLYSNINGER_OM_ARBEIDSSOEKER_ID = "OPPLYSNINGER_OM_ARBEIDSSOEKER_ID";
-        public static final String JOBBSITUASJON = "JOBBSITUASJON";
-    }
-
-    public static final class SISTE_ARBEIDSSOEKER_PERIODE {
-        private SISTE_ARBEIDSSOEKER_PERIODE() { /* no-op */ }
-
-        public static final String TABLE_NAME = "SISTE_ARBEIDSSOEKER_PERIODE";
-        public static final String ARBEIDSSOKER_PERIODE_ID = "ARBEIDSSOKER_PERIODE_ID";
-        public static final String FNR = "FNR";
-    }
-
-    public static final class PROFILERING {
-        private PROFILERING() { /* no-op */ }
-
-        public static final String TABLE_NAME = "PROFILERING";
-        public static final String PERIODE_ID = "PERIODE_ID";
-        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-        public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
-    }
-
     public static final class BRUKER_REGISTRERT_CV {
         private BRUKER_REGISTRERT_CV() { /* no-op */ }
 
