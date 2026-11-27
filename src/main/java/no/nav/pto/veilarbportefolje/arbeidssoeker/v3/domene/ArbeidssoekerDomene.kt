@@ -1,8 +1,4 @@
-package no.nav.pto.veilarbportefolje.arbeidssoeker.v2
-
-import no.nav.common.types.identer.Fnr
-import java.time.ZonedDateTime
-
+package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
 
 enum class Utdanning {
@@ -33,11 +29,6 @@ enum class JobbSituasjonBeskrivelse {
     ANNET,
     INGEN_DATA
 }
-
-data class Profilering(
-    val profileringsresultat: Profileringsresultat,
-    val sendtInnTidspunkt: ZonedDateTime
-)
 
 enum class Profileringsresultat {
     UKJENT_VERDI,

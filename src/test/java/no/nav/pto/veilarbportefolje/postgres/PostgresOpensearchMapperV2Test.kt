@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.postgres
 
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NorskIdent
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Utdanning
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.Profileringsresultat
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.Utdanning
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest

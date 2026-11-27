@@ -5,9 +5,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapClient;
 import no.nav.pto.veilarbportefolje.aap.dto.AapVedtakResponseDto;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OppslagArbeidssoekerregisteretClient;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.SisteArbeidssoekerPeriodeRepository;
 import no.nav.pto.veilarbportefolje.client.AktorClient;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerClient;
@@ -33,7 +30,6 @@ import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtClient;
 import no.nav.pto.veilarbportefolje.sykmeldt.dto.SykmeldtPersonDTO;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerClient;
 import no.nav.pto.veilarbportefolje.util.EndToEndTest;
-import no.nav.pto.veilarbportefolje.util.TestDataClient;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Hovedmal;
 import no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe;
 import no.nav.pto.veilarbportefolje.vedtakstotte.VedtaksstotteClient;
@@ -44,10 +40,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -62,8 +56,7 @@ import static no.nav.pto.veilarbportefolje.vedtakstotte.Innsatsgruppe.STANDARD_I
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = ApplicationConfigTest.class)
 class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
@@ -101,9 +94,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
     @Autowired
     private OppfolgingsbrukerServiceV2 oppfolgingsbrukerService;
 
-    @MockitoSpyBean
-    private SisteArbeidssoekerPeriodeRepository sisteArbeidssoekerPeriodeRepository;
-
     @Autowired
     private AapClient aapClient;
 
@@ -124,9 +114,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
     @MockitoBean
     private VeilarbarenaClient veilarbarenaClient;
-
-    @MockitoBean
-    private OppslagArbeidssoekerregisteretClient oppslagArbeidssoekerregisteretClient;
 
     private final Fnr fnr = Fnr.of("17858998980");
     private final AktorId aktorId = randomAktorId();
@@ -366,48 +353,6 @@ class OppfolgingStartetOgAvsluttetServiceTest extends EndToEndTest {
 
         Optional<OppfolgingsbrukerEntity> oppfolgingsbrukerEntityEtterAvsluttet = oppfolgingsbrukerTestRepository.getOppfolgingsBruker(fnr);
         assertThat(oppfolgingsbrukerEntityEtterAvsluttet).isEmpty();
-    }
-
-    @Test
-    void feil_ved_sletting_av_arbeidssoekerdata_bevarer_oppfolging_og_identer_for_retry() {
-        ZonedDateTime startDato = ZonedDateTime.now().minusDays(1);
-        UUID oppfolgingsperiodeId = UUID.randomUUID();
-        Fnr historiskFnr = randomFnr();
-        testDataClient.lagreBrukerUnderOppfolging(aktorId, fnr, startDato, oppfolgingsperiodeId);
-        pdlIdentRepository.upsertIdenter(List.of(
-                new PDLIdent(aktorId.get(), false, PDLIdent.Gruppe.AKTORID),
-                new PDLIdent(fnr.get(), false, PDLIdent.Gruppe.FOLKEREGISTERIDENT),
-                new PDLIdent(historiskFnr.get(), true, PDLIdent.Gruppe.FOLKEREGISTERIDENT)
-        ));
-        UUID aktivPeriodeId = UUID.randomUUID();
-        UUID historiskPeriodeId = UUID.randomUUID();
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-                new ArbeidssoekerPeriodeEntity(aktivPeriodeId, fnr.get()));
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-                new ArbeidssoekerPeriodeEntity(historiskPeriodeId, historiskFnr.get()));
-        var avsluttetMelding = genererAvsluttetOppfolgingsperiode(
-                aktorId, oppfolgingsperiodeId,
-                genererStartetOppfolgingsperiode(aktorId, startDato, oppfolgingsperiodeId));
-        var feil = new DataAccessResourceFailureException("Simulert databasefeil");
-        doThrow(feil).when(sisteArbeidssoekerPeriodeRepository).slettSisteArbeidssoekerPeriode(anyList());
-
-        var kastetFeil = assertThrows(DataAccessResourceFailureException.class,
-                () -> oppfolgingPeriodeService.behandleKafkaMeldingLogikk(avsluttetMelding));
-
-        assertThat(kastetFeil).isSameAs(feil);
-        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId).orElseThrow().getOppfolging()).isTrue();
-        assertThat(pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer())
-                .containsExactlyInAnyOrder(aktorId.get(), fnr.get(), historiskFnr.get());
-        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, aktivPeriodeId)).isNotNull();
-        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, historiskPeriodeId)).isNotNull();
-
-        reset(sisteArbeidssoekerPeriodeRepository);
-        oppfolgingPeriodeService.behandleKafkaMeldingLogikk(avsluttetMelding);
-
-        assertThat(oppfolgingRepositoryV2.hentOppfolgingData(aktorId)).isEmpty();
-        assertThat(pdlIdentRepository.hentIdenterForBruker(aktorId.get()).identer()).isEmpty();
-        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, aktivPeriodeId)).isNull();
-        assertThat(TestDataClient.getArbeidssoekerPeriodeFraDb(jdbcTemplate, historiskPeriodeId)).isNull();
     }
 
     @Test

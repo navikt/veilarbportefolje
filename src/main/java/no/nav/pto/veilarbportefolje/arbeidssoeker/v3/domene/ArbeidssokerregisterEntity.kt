@@ -1,7 +1,5 @@
 package no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.AggregertPeriodeResponse
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.SynkroniseringStatus
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch

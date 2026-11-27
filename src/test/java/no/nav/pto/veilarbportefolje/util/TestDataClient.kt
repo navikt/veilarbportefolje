@@ -2,11 +2,6 @@ package no.nav.pto.veilarbportefolje.util
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerPeriodeEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerJobbsituasjonEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
-import no.nav.pto.veilarbportefolje.database.PostgresTable
 import no.nav.pto.veilarbportefolje.domene.Kjonn
 import no.nav.pto.veilarbportefolje.domene.NavKontor
 import no.nav.pto.veilarbportefolje.domene.VeilederId
@@ -22,9 +17,7 @@ import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomFnr
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomNavKontor
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.randomVeilederId
 import no.nav.pto.veilarbportefolje.util.TestDataUtils.tilfeldigDatoTilbakeITid
-import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
@@ -47,11 +40,27 @@ class TestDataClient(
     }
 
     fun settBrukerUnderOppfolging(aktoerId: AktorId) {
-        lagreBrukerUnderOppfolging(aktoerId, randomFnr(), randomNavKontor(), null, ZonedDateTime.now(), null, oppfolgingsperiodeId = UUID.randomUUID())
+        lagreBrukerUnderOppfolging(
+            aktoerId,
+            randomFnr(),
+            randomNavKontor(),
+            null,
+            ZonedDateTime.now(),
+            null,
+            oppfolgingsperiodeId = UUID.randomUUID()
+        )
     }
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, startDato: ZonedDateTime) {
-        lagreBrukerUnderOppfolging(aktoerId, randomFnr(), randomNavKontor(), null, startDato, null, oppfolgingsperiodeId = UUID.randomUUID())
+        lagreBrukerUnderOppfolging(
+            aktoerId,
+            randomFnr(),
+            randomNavKontor(),
+            null,
+            startDato,
+            null,
+            oppfolgingsperiodeId = UUID.randomUUID()
+        )
     }
 
     fun lagreBrukerUnderOppfolging(
@@ -99,7 +108,15 @@ class TestDataClient(
     }
 
     fun lagreBrukerUnderOppfolging(aktoerId: AktorId, fnr: Fnr, startDato: ZonedDateTime, oppfolgingsperiodeId: UUID) {
-        lagreBrukerUnderOppfolging(aktoerId, fnr, randomNavKontor(), randomVeilederId(), startDato, null, oppfolgingsperiodeId)
+        lagreBrukerUnderOppfolging(
+            aktoerId,
+            fnr,
+            randomNavKontor(),
+            randomVeilederId(),
+            startDato,
+            null,
+            oppfolgingsperiodeId
+        )
     }
 
     private fun lagreBrukerUnderOppfolging(
@@ -136,105 +153,4 @@ class TestDataClient(
         opensearchTestClient.createUserInOpensearch(aktoerId)
     }
 
-    companion object {
-        @JvmStatic
-        fun getArbeidssoekerPeriodeFraDb(
-            jdbcTemplate: JdbcTemplate,
-            arbeidssoekerPeriodeId: UUID
-        ): ArbeidssoekerPeriodeEntity? {
-            return try {
-                jdbcTemplate.queryForObject(
-                    """SELECT * FROM ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.TABLE_NAME} WHERE ${PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID} =?""",
-                    { rs: ResultSet, _ ->
-                        ArbeidssoekerPeriodeEntity(
-                            rs.getObject(
-                                PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.ARBEIDSSOKER_PERIODE_ID,
-                                UUID::class.java
-                            ),
-                            rs.getString(PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE.FNR)
-                        )
-                    },
-                    arbeidssoekerPeriodeId
-                )
-            } catch (e: EmptyResultDataAccessException) {
-                null
-            }
-        }
-
-        @JvmStatic
-        fun getOpplysningerOmArbeidssoekerFraDb(
-            jdbcTemplate: JdbcTemplate,
-            arbeidssoekerPeriode: UUID
-        ): OpplysningerOmArbeidssoekerEntity? {
-            return try {
-                jdbcTemplate.queryForObject(
-                    """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID} =?""",
-                    { rs: ResultSet, _ ->
-                        val opplysningerOmArbeidssoekerId =
-                            rs.getObject(
-                                PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID,
-                                UUID::class.java
-                            )
-                        OpplysningerOmArbeidssoekerEntity(
-                            opplysningerOmArbeidssoekerId,
-                            rs.getObject(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.PERIODE_ID, UUID::class.java),
-                            rs.getTimestamp(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.SENDT_INN_TIDSPUNKT),
-                            rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_NUS_KODE),
-                            rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_BESTATT),
-                            rs.getString(PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER.UTDANNING_GODKJENT),
-                            OpplysningerOmArbeidssoekerJobbsituasjonEntity(opplysningerOmArbeidssoekerId, emptyList())
-                        )
-                    },
-                    arbeidssoekerPeriode
-                )
-            } catch (e: EmptyResultDataAccessException) {
-                null
-            }
-        }
-
-        @JvmStatic
-        fun getOpplysningerOmArbeidssoekerJobbsituasjonFraDb(
-            jdbcTemplate: JdbcTemplate,
-            opplysningerOmArbeidssoekerId: UUID
-        ): OpplysningerOmArbeidssoekerJobbsituasjonEntity? {
-            val jobbSituasjoner: List<String> = try {
-                jdbcTemplate.queryForList(
-                    """SELECT * FROM ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.TABLE_NAME} WHERE ${PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.OPPLYSNINGER_OM_ARBEIDSSOEKER_ID} =?""",
-                    opplysningerOmArbeidssoekerId
-                ).map { rs ->
-                    rs[PostgresTable.OPPLYSNINGER_OM_ARBEIDSSOEKER_JOBBSITUASJON.JOBBSITUASJON] as String
-                }
-            } catch (e: EmptyResultDataAccessException) {
-                return null
-            }
-
-            return if (jobbSituasjoner.isEmpty())
-                null
-            else
-                OpplysningerOmArbeidssoekerJobbsituasjonEntity(
-                    opplysningerOmArbeidssoekerId,
-                    jobbSituasjoner.map { (it) }
-                )
-
-        }
-
-        @JvmStatic
-        fun getProfileringFraDb(jdbcTemplate: JdbcTemplate, periodeId: UUID): ProfileringEntity? {
-            return try {
-                jdbcTemplate.queryForObject(
-                    """SELECT * FROM ${PostgresTable.PROFILERING.TABLE_NAME} WHERE ${PostgresTable.PROFILERING.PERIODE_ID} =?""",
-                    { rs: ResultSet, _ ->
-                        ProfileringEntity(
-                            rs.getObject(PostgresTable.PROFILERING.PERIODE_ID, UUID::class.java),
-                            rs.getString(PostgresTable.PROFILERING.PROFILERING_RESULTAT),
-                            rs.getTimestamp(PostgresTable.PROFILERING.SENDT_INN_TIDSPUNKT)
-                        )
-                    },
-                    periodeId
-                )
-            } catch (e: EmptyResultDataAccessException) {
-                null
-            }
-        }
-    }
 }

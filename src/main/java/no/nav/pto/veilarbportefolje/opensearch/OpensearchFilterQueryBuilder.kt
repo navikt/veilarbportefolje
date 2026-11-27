@@ -1,7 +1,7 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.JobbSituasjonBeskrivelse
+import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.inkludereSituasjonerFraBadeVeilarbregistreringOgArbeidssoekerregistrering
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
