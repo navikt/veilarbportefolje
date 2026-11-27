@@ -36,7 +36,12 @@ class PortefoljebrukerFrontendModellMapperTest {
             er_doed = true,
             ny_for_veileder = true,
             gjeldendeVedtak14a = null,
-            profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER,
+            arbeidssoekerregisteret = ArbeidssoekerregisteretForOpensearch(
+                profilering = ProfileringForOpensearch(Profileringsresultat.OPPGITT_HINDRINGER),
+                periodeStartDato = LocalDate.now().minusDays(5),
+                opplysninger = null,
+                periodeAvsluttetDato = null
+            ),
             egen_ansatt = false,
             skjermet_til = LocalDateTime.of(2020, 1, 1, 10, 0),
         )
@@ -58,33 +63,6 @@ class PortefoljebrukerFrontendModellMapperTest {
         Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, etiketter.profileringResultat)
         Assertions.assertEquals(false, etiketter.skjermet)
         Assertions.assertEquals(LocalDate.of(2020, 1, 1), etiketter.skjermetTil)
-    }
-
-    @Test
-    fun `profileringResultat skal hentes fra v3 når toggle er på`() {
-        val opensearchBruker = PortefoljebrukerOpensearchModell(
-            profilering_resultat = Profileringsresultat.OPPGITT_HINDRINGER,
-            arbeidssoekerregisteret = ArbeidssoekerregisteretForOpensearch(
-                periodeStartDato = LocalDate.of(2025, 1, 10),
-                profilering = ProfileringForOpensearch(Profileringsresultat.ANTATT_GODE_MULIGHETER)
-            )
-        )
-
-        val medToggle = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = getFiltervalgDefaults(),
-            brukV3AvArbeidssoekerregisteret = true
-        )
-        val utenToggle = PortefoljebrukerFrontendModellMapper.toPortefoljebrukerFrontendModell(
-            opensearchBruker = opensearchBruker,
-            ufordelt = true,
-            filtervalg = getFiltervalgDefaults(),
-            brukV3AvArbeidssoekerregisteret = false
-        )
-
-        Assertions.assertEquals(Profileringsresultat.ANTATT_GODE_MULIGHETER, medToggle.etiketter.profileringResultat)
-        Assertions.assertEquals(Profileringsresultat.OPPGITT_HINDRINGER, utenToggle.etiketter.profileringResultat)
     }
 
     @Test

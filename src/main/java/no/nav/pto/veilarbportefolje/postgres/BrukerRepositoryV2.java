@@ -81,7 +81,6 @@ public class BrukerRepositoryV2 {
                        UTKAST_14A_STATUS.VEDTAKSTATUS                           as UTKAST_14A_STATUS_VEDTAKSTATUS,
                        UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                        UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
-                       BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
                        BRUKER_REGISTRERT_CV.CV_EKSISTERER                       as BRUKER_CV_CV_EKSISTERER,
                        BRUKER_REGISTRERING.BRUKERS_SITUASJON                    as BRUKER_REGISTRERING_BRUKERS_SITUASJON,
                        BRUKER_REGISTRERING.REGISTRERING_OPPRETTET               as BRUKER_REGISTRERING_REGISTRERING_OPPRETTET,
@@ -166,7 +165,6 @@ public class BrukerRepositoryV2 {
         PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell();
         brukerOpensearchModell.setFnr(fnr);
         brukerOpensearchModell.setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID));
-        brukerOpensearchModell.setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null));
         brukerOpensearchModell.setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING));
         brukerOpensearchModell.setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT));
         brukerOpensearchModell.setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT));

@@ -70,18 +70,6 @@ class OpensearchIndexerPaDatafelt(
         update(aktoerId, content, "Oppdater opplysninger om arbeidssøker")
     }
 
-    fun updateProfilering(aktoerId: AktorId, profileringEntity: ProfileringEntity) {
-        val content = XContentFactory.jsonBuilder()
-            .startObject()
-            .field(
-                DatafeltKeys.Arbeidssoeker.PROFILERING_RESULTAT,
-                profileringEntity.profileringsresultat
-            )
-            .endObject()
-
-        update(aktoerId, content, "Oppdater profileringsresultat")
-    }
-
     fun updateHuskelapp(aktoerId: AktorId, huskelapp: HuskelappForBruker) {
         val content = XContentFactory.jsonBuilder()
             .startObject()
