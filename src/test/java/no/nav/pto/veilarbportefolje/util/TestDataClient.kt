@@ -30,15 +30,6 @@ class TestDataClient(
     private val pdlIdentRepository: PdlIdentRepository,
     private val pdlPersonRepository: PdlPersonRepository,
 ) {
-    fun upsertBrukerregistreringV1(aktorId: AktorId) {
-        jdbcTemplatePostgres.update(
-            """
-                        INSERT INTO BRUKER_REGISTRERING (AKTOERID) VALUES (?)
-                        ON CONFLICT (AKTOERID) DO NOTHING
-        """.trimIndent(), aktorId.get()
-        )
-    }
-
     fun settBrukerUnderOppfolging(aktoerId: AktorId) {
         lagreBrukerUnderOppfolging(
             aktoerId,
@@ -140,7 +131,6 @@ class TestDataClient(
         )
         oppfolgingRepositoryV2.settUnderOppfolging(aktoerId, startDato, oppfolgingsperiodeId)
         if (veilederId != null) oppfolgingRepositoryV2.settVeileder(aktoerId, veilederId)
-        upsertBrukerregistreringV1(aktoerId)
         oppfolgingsbrukerRepository.leggTilEllerEndreOppfolgingsbruker(
             OppfolgingsbrukerEntity(
                 fnr?.get(), null, null,
