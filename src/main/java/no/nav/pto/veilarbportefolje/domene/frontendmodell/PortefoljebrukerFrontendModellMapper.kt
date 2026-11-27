@@ -149,7 +149,7 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             moteMedNavIDag = mapMoteMedNavIDag(opensearchBruker),
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
-            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            utdanningOgSituasjonSistEndret = null, // TODO - slett denne etter frontend har fjerna den
             arbeidssoekerregisteret = mapArbeidssoekerregisteret(opensearchBruker.arbeidssoekerregisteret),
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             vedtak14a = mapVedtak14a(opensearchBruker),

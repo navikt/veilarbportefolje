@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPENSEARCHDATA.*;
@@ -82,11 +80,6 @@ public class BrukerRepositoryV2 {
                        UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                        UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
                        BRUKER_REGISTRERT_CV.CV_EKSISTERER                       as BRUKER_CV_CV_EKSISTERER,
-                       BRUKER_REGISTRERING.BRUKERS_SITUASJON                    as BRUKER_REGISTRERING_BRUKERS_SITUASJON,
-                       BRUKER_REGISTRERING.REGISTRERING_OPPRETTET               as BRUKER_REGISTRERING_REGISTRERING_OPPRETTET,
-                       BRUKER_REGISTRERING.UTDANNING                            as BRUKER_REGISTRERING_UTDANNING,
-                       BRUKER_REGISTRERING.UTDANNING_BESTATT                    as BRUKER_REGISTRERING_UTDANNING_BESTATT,
-                       BRUKER_REGISTRERING.UTDANNING_GODKJENT                   as BRUKER_REGISTRERING_UTDANNING_GODKJENT,
                        YTELSE_STATUS_FOR_BRUKER.YTELSE                          as YTELSE_STATUS_FOR_BRUKER_YTELSE,
                        YTELSE_STATUS_FOR_BRUKER.AAPMAXTIDUKE                    as YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE,
                        YTELSE_STATUS_FOR_BRUKER.AAPUNNTAKDAGERIGJEN             as YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN,
@@ -94,9 +87,7 @@ public class BrukerRepositoryV2 {
                        YTELSE_STATUS_FOR_BRUKER.PERMUTLOPUKE                    as YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE,
                        YTELSE_STATUS_FOR_BRUKER.UTLOPSDATO                      as YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO,
                        YTELSE_STATUS_FOR_BRUKER.ANTALLDAGERIGJEN                as YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN,
-                       YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO,
-                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON                 as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON,
-                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON_SIST_ENDRET     as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET
+                       YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
@@ -165,10 +156,6 @@ public class BrukerRepositoryV2 {
         PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell();
         brukerOpensearchModell.setFnr(fnr);
         brukerOpensearchModell.setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID));
-        brukerOpensearchModell.setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING));
-        brukerOpensearchModell.setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT));
-        brukerOpensearchModell.setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT));
-        brukerOpensearchModell.setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)));
         brukerOpensearchModell.setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER));
         brukerOpensearchModell.setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING));
         brukerOpensearchModell.setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER));

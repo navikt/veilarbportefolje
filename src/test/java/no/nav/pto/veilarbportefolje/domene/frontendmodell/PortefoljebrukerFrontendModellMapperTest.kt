@@ -189,7 +189,6 @@ class PortefoljebrukerFrontendModellMapperTest {
             etternavn = "Nordmann",
             foedelandFulltNavn = "NOR",
             barn_under_18_aar = listOf(BarnUnder18AarData(8, null)),
-            utdanning_og_situasjon_sist_endret = LocalDate.of(2024, 1, 1),
             neste_svarfrist_stilling_fra_nav = LocalDate.of(2024, 5, 1),
         )
 
