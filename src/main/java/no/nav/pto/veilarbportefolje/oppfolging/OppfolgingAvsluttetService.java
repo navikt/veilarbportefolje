@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssokerRegistreringRepositoryV2;
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService;
 import no.nav.pto.veilarbportefolje.cv.CVServiceV2;
@@ -20,8 +19,8 @@ import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.siste14aVedtak.Siste14a
 import no.nav.pto.veilarbportefolje.persononinfo.PdlIdentRepository;
 import no.nav.pto.veilarbportefolje.persononinfo.PdlService;
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringService;
-import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
+import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
 import no.nav.pto.veilarbportefolje.ungdomsprogram.UngdomsprogramService;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,6 @@ public class OppfolgingAvsluttetService {
     private final PdlIdentRepository pdlIdentRepository;
     private final FargekategoriService fargekategoriService;
     private final OppfolgingsbrukerServiceV2 oppfolgingsbrukerServiceV2;
-    private final ArbeidssoekerService arbeidssoekerService;
     private final ArbeidssokerRegistreringRepositoryV2 arbeidssokerRegistreringRepositoryV2;
     private final AapService aapService;
     private final TiltakspengerService tiltakspengerService;
@@ -81,7 +79,6 @@ public class OppfolgingAvsluttetService {
 
         Optional<Fnr> maybeFnr = Optional.ofNullable(pdlIdentRepository.hentFnrForAktivBruker(aktorId));
 
-        arbeidssoekerService.slettArbeidssoekerData(aktorId);
         oppfolgingRepositoryV2.slettOppfolgingData(aktorId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerRegistrering(aktorId);
         arbeidssokerRegistreringRepositoryV2.slettBrukerProfilering(aktorId);

@@ -8,7 +8,6 @@ import no.nav.common.utils.EnvironmentUtils
 import no.nav.pto.veilarbportefolje.aap.AapService
 import no.nav.pto.veilarbportefolje.admin.dto.AdminDataForBrukerRequest
 import no.nav.pto.veilarbportefolje.admin.dto.AdminDataType
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterService
 import no.nav.pto.veilarbportefolje.client.AktorClient
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService
@@ -26,15 +25,11 @@ import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.server.ResponseStatusException
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
@@ -59,7 +54,6 @@ class AdminControllerTest {
         sykmeldtService = mock(SykmeldtService::class.java),
         dagpengerService = dagpengerService,
         tiltakspengerService = mock(TiltakspengerService::class.java),
-        arbeidssoekerService = mock(ArbeidssoekerService::class.java),
         arbeidssoekerregisterService = mock(ArbeidssoekerregisterService::class.java),
         defaultUnleash = mock(DefaultUnleash::class.java)
     )

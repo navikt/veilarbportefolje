@@ -4,15 +4,14 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
 import no.nav.pto.veilarbportefolje.aap.AapService;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ArbeidssoekerService;
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest;
 import no.nav.pto.veilarbportefolje.dagpenger.DagpengerService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingPeriodeService;
 import no.nav.pto.veilarbportefolje.oppfolging.OppfolgingRepositoryV2;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
-import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.persononinfo.domene.BrukerIdenter;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.IdenterForBruker;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.NorskIdentMedHistorikk;
+import no.nav.pto.veilarbportefolje.persononinfo.domene.PDLIdent;
 import no.nav.pto.veilarbportefolje.sykmeldt.SykmeldtService;
 import no.nav.pto.veilarbportefolje.tiltakspenger.TiltakspengerService;
 import no.nav.pto.veilarbportefolje.uforetrygd.UforetrygdService;
@@ -44,9 +43,6 @@ public class PdlIdentRepositoryTest {
 
     @Autowired
     private OppfolgingRepositoryV2 oppfolgingRepositoryV2;
-
-    @MockitoBean
-    private ArbeidssoekerService arbeidssoekerService;
 
     @MockitoBean
     private AapService aapService;
