@@ -221,36 +221,6 @@ public class KafkaConfigCommon {
                                         Deserializers.jsonDeserializer(GruppeAktivitetDTO.class),
                                         gruppeAktivitetService::behandleKafkaRecord
                                 ),
-/*                        new KafkaConsumerClientBuilder.TopicConfig<Long, Periode>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ARBEIDSSOKERPERIODER_TOPIC.topicName,
-                                        Deserializers.longDeserializer(),
-                                        new AivenAvroDeserializer<Periode>().getDeserializer(),
-                                        arbeidssoekerPeriodeKafkaMeldingService::behandleKafkaRecordMedLongKey
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<Long, OpplysningerOmArbeidssoeker>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC.topicName,
-                                        Deserializers.longDeserializer(),
-                                        new AivenAvroDeserializer<OpplysningerOmArbeidssoeker>().getDeserializer(),
-                                        arbeidssoekerOpplysningerOmArbeidssoekerKafkaMeldingService::behandleKafkaRecordMedLongKey
-                                ),
-                        new KafkaConsumerClientBuilder.TopicConfig<Long, Profilering>()
-                                .withLogging()
-                                .withMetrics(prometheusMeterRegistry)
-                                .withStoreOnFailure(consumerRepository)
-                                .withConsumerConfig(
-                                        Topic.ARBEIDSSOEKER_PROFILERING_TOPIC.topicName,
-                                        Deserializers.longDeserializer(),
-                                        new AivenAvroDeserializer<Profilering>().getDeserializer(),
-                                        arbeidssoekerProfileringKafkaMeldingService::behandleKafkaRecordMedLongKey
-                                ),*/
                         new KafkaConsumerClientBuilder.TopicConfig<String, YtelsesDTO>()
                                 .withLogging()
                                 .withMetrics(prometheusMeterRegistry)
