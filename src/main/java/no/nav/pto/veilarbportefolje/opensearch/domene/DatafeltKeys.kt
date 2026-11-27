@@ -170,7 +170,6 @@ object DatafeltKeys {
     object Annet {
         val FARGEKATEGORI = PortefoljebrukerOpensearchModell::fargekategori.name
         val FARGEKATEGORI_ENHET_ID = PortefoljebrukerOpensearchModell::fargekategori_enhetId.name
-        val FORMIDLINGSGRUPPE_KODE = PortefoljebrukerOpensearchModell::formidlingsgruppekode.name
         val HUSKELAPP = PortefoljebrukerOpensearchModell::huskelapp.name
         val HUSKELAPP_FRIST = HuskelappForBruker::frist.name
         val HUSKELAPP_KOMMENTAR = HuskelappForBruker::kommentar.name

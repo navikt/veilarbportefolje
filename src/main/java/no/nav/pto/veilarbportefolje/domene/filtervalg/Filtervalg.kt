@@ -11,7 +11,6 @@ data class Filtervalg(
     val alder: List<String>,
     val kjonn: Kjonn?,
     val fodselsdagIMnd: List<String>,
-    val formidlingsgruppe: List<Formidlingsgruppe>,
     val veiledere: List<String>,
     val aktiviteter: Map<AktivitetFilterverdier, AktivitetAvansertFilterverdier>,
     val aktiviteterForenklet: List<AktivitetFilterverdier>,
@@ -57,7 +56,6 @@ data class Filtervalg(
                 alder.isNotEmpty() ||
                 harKjonnfilter() ||
                 fodselsdagIMnd.isNotEmpty() ||
-                formidlingsgruppe.isNotEmpty() ||
                 veiledere.isNotEmpty() ||
                 aktiviteter.isNotEmpty() ||
                 tiltakstyper.isNotEmpty() ||

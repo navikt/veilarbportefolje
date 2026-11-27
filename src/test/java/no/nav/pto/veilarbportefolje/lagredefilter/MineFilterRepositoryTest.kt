@@ -2,8 +2,8 @@ package no.nav.pto.veilarbportefolje.lagredefilter
 
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.database.PostgresTable.LAGREDE_FILTER_MINE_FILTER
+import no.nav.pto.veilarbportefolje.domene.filtervalg.ArbeidssokerregisteretFilter
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
-import no.nav.pto.veilarbportefolje.domene.filtervalg.Formidlingsgruppe
 import no.nav.pto.veilarbportefolje.domene.filtervalg.YtelseDagpenger
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.lagredefilter.minefilter.MineFilterRepository
@@ -213,13 +213,19 @@ class MineFilterRepositoryTest(
                     "SET ${LAGREDE_FILTER_MINE_FILTER.INFO_OM_SLETTET_FILTERVALG} = ? " +
                     "WHERE ${LAGREDE_FILTER_MINE_FILTER.FILTER_ID} = ?",
             { ps: PreparedStatement ->
-                ps.setArray(1, ps.connection.createArrayOf("text", arrayOf("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")))
+                ps.setArray(
+                    1,
+                    ps.connection.createArrayOf("text", arrayOf("ytelseDagpenger", "formidlingsgruppe med verdi ISERV"))
+                )
                 ps.setInt(2, lagretFilter.filterId)
             }
         )
 
         val hentetFilter = mineFilterRepository.hentFilterForVeileder(veilederIdent).filtre.single()
-        assertThat(hentetFilter.infoOmSlettetFiltervalg).containsExactly("ytelseDagpenger", "formidlingsgruppe med verdi ISERV")
+        assertThat(hentetFilter.infoOmSlettetFiltervalg).containsExactly(
+            "ytelseDagpenger",
+            "formidlingsgruppe med verdi ISERV"
+        )
 
         // oppdatering skal resette infoOmSlettetFiltervalg til null
         mineFilterRepository.oppdaterLagretFilterForVeileder(
@@ -227,7 +233,7 @@ class MineFilterRepositoryTest(
             OppdaterFilterRequest(
                 filterId = lagretFilter.filterId,
                 filterNavn = "Oppdatert navn",
-                filterValg = getFiltervalgDefaults().copy(formidlingsgruppe = listOf(Formidlingsgruppe.ARBS))
+                filterValg = getFiltervalgDefaults().copy(arbeidssoekerregisteret = (ArbeidssokerregisteretFilter.HAR_AKTIV_PERIODE_I_ARBEIDSSOEKERREGISTERET))
             )
         )
 

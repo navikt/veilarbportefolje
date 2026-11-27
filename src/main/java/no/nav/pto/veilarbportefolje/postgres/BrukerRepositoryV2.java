@@ -53,7 +53,6 @@ public class BrukerRepositoryV2 {
                        OPPFOLGING_DATA.TILDELT_TIDSPUNKT                        as OPPFOLGING_DATA_TILDELT_TIDSPUNKT,
                        AKTIVE_IDENTER.FNR                                       as AKTIVE_IDENTER_FNR,
                        OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR                     as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
-                       OPPFOLGINGSBRUKER_ARENA_V2.FORMIDLINGSGRUPPEKODE         as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                        AO_KONTOR.KONTOR_ID                                      as AO_KONTOR_KONTOR_ID,
                        OPPFOLGINGSBRUKER_ARENA_V2.KVALIFISERINGSGRUPPEKODE      as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE,
                        OPPFOLGINGSBRUKER_ARENA_V2.ENDRET_DATO                   as OPPFOLGINGSBRUKER_ARENA_V2_ENDRET_DATO,
@@ -136,7 +135,6 @@ public class BrukerRepositoryV2 {
                 db.queryForObject("""
                         select
                             FODSELSNR as OPPFOLGINGSBRUKER_ARENA_V2_FODSELSNR,
-                            FORMIDLINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE,
                             KVALIFISERINGSGRUPPEKODE as OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE
                         from OPPFOLGINGSBRUKER_ARENA_V2
                         where FODSELSNR in
@@ -232,11 +230,9 @@ public class BrukerRepositoryV2 {
             return brukerOpensearchModell;
         }
 
-        String formidlingsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_FORMIDLINGSGRUPPEKODE);
         String kvalifiseringsgruppekode = rs.getString(OPPFOLGINGSBRUKER_ARENA_V2_KVALIFISERINGSGRUPPEKODE);
 
         brukerOpensearchModell.setFnr(fnr);
-        brukerOpensearchModell.setFormidlingsgruppekode(formidlingsgruppekode);
         brukerOpensearchModell.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
 
         return brukerOpensearchModell;

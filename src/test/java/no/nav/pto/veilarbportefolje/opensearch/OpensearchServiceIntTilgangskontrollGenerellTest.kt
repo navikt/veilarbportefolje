@@ -668,7 +668,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
             oppfolging = true
             enhet_id = TEST_ENHET
             veileder_id = TEST_VEILEDER_0
-            formidlingsgruppekode = "IAKTIV"
             huskelapp = HuskelappForBruker(
                 LocalDate.now(),
                 "test huskelapp",
@@ -687,7 +686,6 @@ class OpensearchServiceIntTilgangskontrollGenerellTest @Autowired constructor(
             oppfolging = true
             enhet_id = TEST_ENHET
             veileder_id = TEST_VEILEDER_0
-            formidlingsgruppekode = "IARBS"
             kvalifiseringsgruppekode = "BATT"
             aktiviteter = setOf("egen")
             ny_for_veileder = true
