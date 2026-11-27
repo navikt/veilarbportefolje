@@ -2,14 +2,11 @@ package no.nav.pto.veilarbportefolje.opensearch
 
 import no.nav.common.types.identer.AktorId
 import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.OpplysningerOmArbeidssoekerEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.ProfileringEntity
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.mapTilUtdanning
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.dialog.DialogdataDto
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.domene.VeilederId
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
 import no.nav.pto.veilarbportefolje.ensligforsorger.dto.output.EnsligeForsorgerOvergangsstønadTiltakDto
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
@@ -43,48 +40,6 @@ class OpensearchIndexerPaDatafelt(
     val oppfolgingRepositoryV2: OppfolgingRepositoryV2,
     val restHighLevelClient: RestHighLevelClient
 ) {
-    fun updateOpplysningerOmArbeidssoeker(
-        aktoerId: AktorId,
-        opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoekerEntity
-    ) {
-        val content = XContentFactory.jsonBuilder()
-            .startObject()
-            .field(
-                DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER,
-                opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon.jobbsituasjon
-            )
-            .field(
-                DatafeltKeys.Arbeidssoeker.UTDANNING,
-                mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode)
-            )
-            .field(
-                DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT,
-                opplysningerOmArbeidssoeker.utdanningBestatt
-            )
-            .field(
-                DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT,
-                opplysningerOmArbeidssoeker.utdanningGodkjent
-            )
-            .field(
-                DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET,
-                DateUtils.toLocalDateOrNull(opplysningerOmArbeidssoeker.sendtInnTidspunkt)
-            )
-            .endObject()
-
-        update(aktoerId, content, "Oppdater opplysninger om arbeidssøker")
-    }
-
-    fun updateProfilering(aktoerId: AktorId, profileringEntity: ProfileringEntity) {
-        val content = XContentFactory.jsonBuilder()
-            .startObject()
-            .field(
-                DatafeltKeys.Arbeidssoeker.PROFILERING_RESULTAT,
-                profileringEntity.profileringsresultat
-            )
-            .endObject()
-
-        update(aktoerId, content, "Oppdater profileringsresultat")
-    }
 
     fun updateHuskelapp(aktoerId: AktorId, huskelapp: HuskelappForBruker) {
         val content = XContentFactory.jsonBuilder()
@@ -510,24 +465,42 @@ class OpensearchIndexerPaDatafelt(
         update(aktorId, content, "Slettet sykmeldt for aktorId: $aktorId")
     }
 
-    fun oppdaterArbeidssoekerregisteret(aktorId: AktorId, arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch) {
+    fun oppdaterArbeidssoekerregisteret(
+        aktorId: AktorId,
+        arbeidssoekerregisteret: ArbeidssoekerregisteretForOpensearch
+    ) {
         val opplysninger = arbeidssoekerregisteret.opplysninger
         val profilering = arbeidssoekerregisteret.profilering
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .startObject(DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET)
             .field(DatafeltKeys.Arbeidssoekerregisteret.PERIODE_START_DATO, arbeidssoekerregisteret.periodeStartDato)
-            .field(DatafeltKeys.Arbeidssoekerregisteret.PERIODE_AVSLUTTET_DATO, arbeidssoekerregisteret.periodeAvsluttetDato)
+            .field(
+                DatafeltKeys.Arbeidssoekerregisteret.PERIODE_AVSLUTTET_DATO,
+                arbeidssoekerregisteret.periodeAvsluttetDato
+            )
 
         if (opplysninger == null) {
             content.nullField(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER)
         } else {
             content.startObject(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER)
-                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_BRUKERS_SITUASJONER, opplysninger.brukersSituasjoner)
+                .field(
+                    DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_BRUKERS_SITUASJONER,
+                    opplysninger.brukersSituasjoner
+                )
                 .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING, opplysninger.utdanning)
-                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_BESTATT, opplysninger.utdanningBestatt)
-                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_GODKJENT, opplysninger.utdanningGodkjent)
-                .field(DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_SENDT_INN_DATO, opplysninger.opplysningerSistSendtInnDato)
+                .field(
+                    DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_BESTATT,
+                    opplysninger.utdanningBestatt
+                )
+                .field(
+                    DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_UTDANNING_GODKJENT,
+                    opplysninger.utdanningGodkjent
+                )
+                .field(
+                    DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_SENDT_INN_DATO,
+                    opplysninger.opplysningerSistSendtInnDato
+                )
                 .endObject()
         }
 

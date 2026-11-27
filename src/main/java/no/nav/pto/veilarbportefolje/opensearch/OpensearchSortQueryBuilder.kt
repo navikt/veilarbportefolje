@@ -27,7 +27,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELD
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_OPPRETTET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE_TEKST
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_OG_SITUASJON_SIST_ENDRET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_SENDT_INN_DATO
@@ -126,7 +125,6 @@ class OpensearchSortQueryBuilder {
         searchSourceBuilder: SearchSourceBuilder,
         filtervalg: Filtervalg,
         brukerinnsynTilganger: BrukerinnsynTilganger,
-        brukV3AvArbeidssoekerregisteret: Boolean = false
     ): SearchSourceBuilder {
         val sorteringsrekkefolgeOpenSearch =
             if (Sorteringsrekkefolge.STIGENDE == sorteringsrekkefolge) SortOrder.ASC else SortOrder.DESC
@@ -275,12 +273,10 @@ class OpensearchSortQueryBuilder {
             }
 
             Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET -> {
-                val felt = if (brukV3AvArbeidssoekerregisteret) {
-                    "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_SENDT_INN_DATO"
-                } else {
-                    UTDANNING_OG_SITUASJON_SIST_ENDRET
-                }
-                searchSourceBuilder.sort(felt, sorteringsrekkefolgeOpenSearch)
+                searchSourceBuilder.sort(
+                    "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_SENDT_INN_DATO",
+                    sorteringsrekkefolgeOpenSearch
+                )
                 searchSourceBuilder
             }
 

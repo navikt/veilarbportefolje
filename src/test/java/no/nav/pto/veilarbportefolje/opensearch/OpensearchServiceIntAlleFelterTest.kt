@@ -96,15 +96,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             utkast_14a_status_endret = PortefoljebrukerOpensearchModell.UTKAST_14_A_STATUS_ENDRET,
             veileder_id = PortefoljebrukerOpensearchModell.VEILEDER_ID,
 
-            // Arbeidssøker
-            brukers_situasjon_sist_endret = PortefoljebrukerOpensearchModell.BRUKERS_SITUASJON_SIST_ENDRET,
-            brukers_situasjoner = PortefoljebrukerOpensearchModell.BRUKERS_SITUASJONER,
-            profilering_resultat = PortefoljebrukerOpensearchModell.PROFILERING_RESULTAT,
-            utdanning = PortefoljebrukerOpensearchModell.UTDANNING,
-            utdanning_bestatt = PortefoljebrukerOpensearchModell.UTDANNING_BESTATT,
-            utdanning_godkjent = PortefoljebrukerOpensearchModell.UTDANNING_GODKJENT,
-            utdanning_og_situasjon_sist_endret = PortefoljebrukerOpensearchModell.UTDANNING_OG_SITUASJON_SIST_ENDRET,
-
             // Aktiviteter
             aktivitet_behandling_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_BEHANDLING_UTLOPSDATO,
             aktivitet_egen_utlopsdato = PortefoljebrukerOpensearchModell.AKTIVITET_EGEN_UTLOPSDATO,

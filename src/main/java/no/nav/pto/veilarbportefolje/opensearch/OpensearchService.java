@@ -26,11 +26,7 @@ import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.emptyList;
@@ -87,7 +83,7 @@ public class OpensearchService {
                     filter -> boolQuery.filter(filterQueryBuilder.leggTilFerdigFilter(filter, veiledereMedTilgangTilEnhet))
             );
 
-            filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg, FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash));
+            filterQueryBuilder.leggTilManuelleFilter(boolQuery, filtervalg);
         }
 
         if (filtervalg.harBarnUnder18AarFilter()) {
@@ -109,15 +105,14 @@ public class OpensearchService {
             filterQueryBuilder.leggTilBrukerinnsynTilgangFilter(boolQuery, brukerinnsynTilganger, BRUKERE_SOM_VEILEDER_HAR_INNSYNSRETT_PÅ);
         }
 
-        boolean brukV3AvArbeidssoekerregisteret = FeatureToggle.brukV3AvArbeidssoekerregisteret(defaultUnleash);
-        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, brukerinnsynTilganger, brukV3AvArbeidssoekerregisteret);
+        sortQueryBuilder.sorterQueryParametere(sorteringsrekkefolge, sorteringsfelt, searchSourceBuilder, filtervalg, brukerinnsynTilganger);
 
         OpensearchResponse response = search(searchSourceBuilder, BRUKERINDEKS_ALIAS, OpensearchResponse.class);
         int totalHits = response.hits().getTotal().getValue();
 
         List<PortefoljebrukerFrontendModell> brukere = response.hits().getHits().stream()
                 .map(Hit::get_source)
-                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger, brukV3AvArbeidssoekerregisteret))
+                .map(oppfolgingsBruker -> mapPortefoljebrukerFraOpensearchModellTilFrontendModell(oppfolgingsBruker, veiledereMedTilgangTilEnhet, filtervalg, brukerinnsynTilganger))
                 .collect(toList());
         return new BrukereMedAntall(totalHits, brukere);
     }
@@ -229,15 +224,13 @@ public class OpensearchService {
             PortefoljebrukerOpensearchModell brukerOpensearchModell,
             List<String> aktiveVeilederePaEnhet,
             Filtervalg filtervalg,
-            BrukerinnsynTilganger brukerinnsynTilganger,
-            boolean brukV3AvArbeidssoekerregisteret
+            BrukerinnsynTilganger brukerinnsynTilganger
     ) {
         return PortefoljebrukerFrontendModellMapper.INSTANCE.toSensurertPortefoljebrukerFrontendModell(
                 brukerOpensearchModell,
                 erUfordelt(brukerOpensearchModell, aktiveVeilederePaEnhet),
                 filtervalg,
-                brukerinnsynTilganger,
-                brukV3AvArbeidssoekerregisteret
+                brukerinnsynTilganger
         );
     }
 

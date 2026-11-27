@@ -4,8 +4,8 @@ import no.nav.pto.veilarbportefolje.aap.domene.AapRettighetstype
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.dagpenger.domene.DagpengerRettighetstype
 import no.nav.pto.veilarbportefolje.domene.YtelseMapping
-import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Brukerstatus
 import no.nav.pto.veilarbportefolje.domene.filtervalg.Filtervalg
 import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
@@ -28,9 +28,9 @@ object PortefoljebrukerFrontendModellMapper {
         ufordelt: Boolean,
         filtervalg: Filtervalg,
         brukerinnsynTilganger: BrukerinnsynTilganger,
-        brukV3AvArbeidssoekerregisteret: Boolean = false
     ): PortefoljebrukerFrontendModell {
-        val bruker = toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg, brukV3AvArbeidssoekerregisteret)
+        val bruker =
+            toPortefoljebrukerFrontendModell(opensearchBruker, ufordelt, filtervalg)
         bruker.barnUnder18AarData = bruker.barnUnder18AarData
             ?.filter { brukerinnsynTilganger.harTilgangTilAdressebeskyttelse(it.diskresjonskode) }
 
@@ -63,15 +63,8 @@ object PortefoljebrukerFrontendModellMapper {
     internal fun toPortefoljebrukerFrontendModell(
         opensearchBruker: PortefoljebrukerOpensearchModell,
         ufordelt: Boolean,
-        filtervalg: Filtervalg,
-        brukV3AvArbeidssoekerregisteret: Boolean = false
+        filtervalg: Filtervalg
     ): PortefoljebrukerFrontendModell {
-
-        val profileringResultat = if (brukV3AvArbeidssoekerregisteret) {
-            opensearchBruker.arbeidssoekerregisteret?.profilering?.profileringsResultat
-        } else {
-            opensearchBruker.profilering_resultat
-        }
         // Det gjøres kun en sjekk på BATT i frontend, forenkler derfor til å kunne sjekke denne.
         val innsatsgruppe =
             if (opensearchBruker.kvalifiseringsgruppekode == "BATT") opensearchBruker.kvalifiseringsgruppekode else null
@@ -99,7 +92,7 @@ object PortefoljebrukerFrontendModellMapper {
                 adressebeskyttelse = mapAdressebeskyttelse(opensearchBruker),
                 skjermet = opensearchBruker.egen_ansatt,
                 skjermetTil = fromLocalDateTimeToLocalDateOrNull(opensearchBruker.skjermet_til),
-                profileringResultat = profileringResultat,
+                profileringResultat =  opensearchBruker.arbeidssoekerregisteret?.profilering?.profileringsResultat,
                 kandidatForAvslutning = erKandidatForUtmelding(opensearchBruker),
                 sykmeldtMedArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == true,
                 sykmeldtUtenArbeidsgiver = opensearchBruker.sykmeldt?.harArbeidsgiver == false,
@@ -156,7 +149,7 @@ object PortefoljebrukerFrontendModellMapper {
             ),
             moteMedNavIDag = mapMoteMedNavIDag(opensearchBruker),
             sisteEndringAvBruker = mapSisteEndringerAvBrukerBasertPåFiltervalg(opensearchBruker, filtervalg),
-            utdanningOgSituasjonSistEndret = opensearchBruker.utdanning_og_situasjon_sist_endret,
+            utdanningOgSituasjonSistEndret = null, // TODO - slett denne etter frontend har fjerna den
             arbeidssoekerregisteret = mapArbeidssoekerregisteret(opensearchBruker.arbeidssoekerregisteret),
             nesteSvarfristCvStillingFraNav = opensearchBruker.neste_svarfrist_stilling_fra_nav,
             vedtak14a = mapVedtak14a(opensearchBruker),

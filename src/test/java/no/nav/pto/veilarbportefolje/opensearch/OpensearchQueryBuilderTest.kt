@@ -1,11 +1,11 @@
 package no.nav.pto.veilarbportefolje.opensearch
 
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.JobbSituasjonBeskrivelse
 import no.nav.pto.veilarbportefolje.auth.BrukerinnsynTilganger
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
 import no.nav.pto.veilarbportefolje.domene.Sorteringsfelt
 import no.nav.pto.veilarbportefolje.domene.Sorteringsrekkefolge
-import no.nav.pto.veilarbportefolje.domene.filtervalg.*
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetAvansertFilterverdier
+import no.nav.pto.veilarbportefolje.domene.filtervalg.AktivitetFilterverdier
 import no.nav.pto.veilarbportefolje.domene.getFiltervalgDefaults
 import no.nav.pto.veilarbportefolje.sisteendring.SisteEndringsKategori
 import no.nav.pto.veilarbportefolje.util.TestUtil
@@ -40,22 +40,6 @@ class OpensearchQueryBuilderTest {
         )
         val fieldName: String = searchSourceBuilder.sorts()[0].toString()
         assertThat(fieldName).contains(Sorteringsfelt.ETTERNAVN.sorteringsverdi)
-    }
-
-    @Test
-    fun skal_sortere_utdanning_og_situasjon_sist_endret_paa_v3_felt_naar_toggle_er_paa() {
-        fun sortertFelt(brukV3: Boolean): String =
-            sortQueryBuilder.sorterQueryParametere(
-                Sorteringsrekkefolge.STIGENDE,
-                Sorteringsfelt.UTDANNING_OG_SITUASJON_SIST_ENDRET,
-                SearchSourceBuilder(),
-                getFiltervalgDefaults(),
-                BrukerinnsynTilganger(true, true, true),
-                brukV3
-            ).sorts()[0].toString()
-
-        assertThat(sortertFelt(brukV3 = true)).contains("arbeidssoekerregisteret.opplysninger.opplysningerSistSendtInnDato")
-        assertThat(sortertFelt(brukV3 = false)).contains("\"utdanning_og_situasjon_sist_endret\"")
     }
 
     @Test
@@ -230,44 +214,6 @@ class OpensearchQueryBuilderTest {
         assertThat(queryString).contains("\"query\":\"ola\"")
         assertThat(queryString).contains("\"operator\":\"AND\"")
     }
-
-    @Test
-    fun `arbeidssoekerfilter skal bruke v3-felter når toggle er på`() {
-        val filtervalg = getFiltervalgDefaults().copy(
-            registreringstype = listOf(JobbSituasjonBeskrivelse.HAR_SAGT_OPP),
-            utdanning = listOf(UtdanningSvar.GRUNNSKOLE),
-            utdanningBestatt = listOf(UtdanningBestattSvar.JA),
-            utdanningGodkjent = listOf(UtdanningGodkjentSvar.INGEN_DATA)
-        )
-
-        val v3Query = QueryBuilders.boolQuery()
-        filterQueryBuilder.leggTilManuelleFilter(v3Query, filtervalg, brukV3AvArbeidssoekerregisteret = true)
-        val v3QueryString = v3Query.toString()
-
-        assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.brukersSituasjoner")
-        assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanning\"")
-        assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanningBestatt")
-        assertThat(v3QueryString).contains("arbeidssoekerregisteret.opplysninger.utdanningGodkjent")
-        assertThat(v3QueryString).doesNotContain(
-            "\"brukers_situasjoner\"",
-            "\"utdanning\"",
-            "\"utdanning_bestatt\"",
-            "\"utdanning_godkjent\""
-        )
-
-        val v2Query = QueryBuilders.boolQuery()
-        filterQueryBuilder.leggTilManuelleFilter(v2Query, filtervalg, brukV3AvArbeidssoekerregisteret = false)
-        val v2QueryString = v2Query.toString()
-
-        assertThat(v2QueryString).contains(
-            "\"brukers_situasjoner\"",
-            "\"utdanning\"",
-            "\"utdanning_bestatt\"",
-            "\"utdanning_godkjent\""
-        )
-        assertThat(v2QueryString).doesNotContain("arbeidssoekerregisteret")
-    }
-
 
     companion object {
         @JvmStatic

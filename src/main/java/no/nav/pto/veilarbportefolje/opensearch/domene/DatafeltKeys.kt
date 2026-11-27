@@ -2,13 +2,7 @@ package no.nav.pto.veilarbportefolje.opensearch.domene
 
 import no.nav.pto.veilarbportefolje.domene.EnsligeForsorgereOvergangsstonad
 import no.nav.pto.veilarbportefolje.domene.HuskelappForBruker
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ArbeidssoekerregisteretForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.DagpengerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.OpplysningerOmArbeidssoekerForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.ProfileringForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.SykmeldtForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UforetrygdForOpensearch
-import no.nav.pto.veilarbportefolje.domene.opensearchmodell.UngdomsprogramForOpensearch
+import no.nav.pto.veilarbportefolje.domene.opensearchmodell.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Hendelse
 import no.nav.pto.veilarbportefolje.oppfolgingsvedtak14a.gjeldende14aVedtak.GjeldendeVedtak14a
 import no.nav.pto.veilarbportefolje.persononinfo.barnUnder18Aar.BarnUnder18AarData
@@ -72,17 +66,6 @@ object DatafeltKeys {
         val TILDELT_TIDSPUNKT = PortefoljebrukerOpensearchModell::tildelt_tidspunkt.name
         val UTKAST_14A_STATUS = PortefoljebrukerOpensearchModell::utkast_14a_status.name
         val VEILEDER_ID = PortefoljebrukerOpensearchModell::veileder_id.name
-    }
-
-    object Arbeidssoeker {
-        val BRUKERS_SITUASJONER = PortefoljebrukerOpensearchModell::brukers_situasjoner.name
-        val BRUKERS_SITUASJON_SIST_ENDRET = PortefoljebrukerOpensearchModell::brukers_situasjon_sist_endret.name
-        val PROFILERING_RESULTAT = PortefoljebrukerOpensearchModell::profilering_resultat.name
-        val UTDANNING = PortefoljebrukerOpensearchModell::utdanning.name
-        val UTDANNING_BESTATT = PortefoljebrukerOpensearchModell::utdanning_bestatt.name
-        val UTDANNING_GODKJENT = PortefoljebrukerOpensearchModell::utdanning_godkjent.name
-        val UTDANNING_OG_SITUASJON_SIST_ENDRET =
-            PortefoljebrukerOpensearchModell::utdanning_og_situasjon_sist_endret.name
     }
 
     object Arbeidssoekerregisteret {

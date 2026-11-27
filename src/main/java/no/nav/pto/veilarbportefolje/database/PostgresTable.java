@@ -37,9 +37,7 @@ public class PostgresTable {
         public static final String BRUKER_DATA_TOLKBEHOVSISTOPPDATERT = "BRUKER_DATA_TOLKBEHOVSISTOPPDATERT";
         public static final String BRUKER_DATA_DISKRESJONKODE = "BRUKER_DATA_DISKRESJONKODE";
         public static final String BRUKER_DATA_SIKKERHETSTILTAK_TYPE = "BRUKER_DATA_SIKKERHETSTILTAK_TYPE";
-        public static final String BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA = "BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGFRA";
         public static final String BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL = "BRUKER_DATA_SIKKERHETSTILTAK_GYLDIGTIL";
-        public static final String BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE = "BRUKER_DATA_SIKKERHETSTILTAK_BESKRIVELSE";
         public static final String BRUKER_DATA_BYDELSNUMMER = "BRUKER_DATA_BYDELSNUMMER";
         public static final String BRUKER_DATA_KOMMUNENUMMER = "BRUKER_DATA_KOMMUNENUMMER";
         public static final String BRUKER_DATA_BOSTEDSISTOPPDATERT = "BRUKER_DATA_BOSTEDSISTOPPDATERT";
@@ -55,18 +53,8 @@ public class PostgresTable {
         public static final String UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN = "UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN";
         public static final String UTKAST_14A_STATUS_ENDRET_TIDSPUNKT = "UTKAST_14A_STATUS_ENDRET_TIDSPUNKT";
 
-        // BRUKER_PROFILERING
-        public static final String BRUKER_PROFILERING_PROFILERING_RESULTAT = "BRUKER_PROFILERING_PROFILERING_RESULTAT";
-
         // BRUKER_CV
         public static final String BRUKER_CV_CV_EKSISTERER = "BRUKER_CV_CV_EKSISTERER";
-
-        // BRUKER_REGISTRERING
-        public static final String BRUKER_REGISTRERING_BRUKERS_SITUASJON = "BRUKER_REGISTRERING_BRUKERS_SITUASJON";
-        public static final String BRUKER_REGISTRERING_REGISTRERING_OPPRETTET = "BRUKER_REGISTRERING_REGISTRERING_OPPRETTET";
-        public static final String BRUKER_REGISTRERING_UTDANNING = "BRUKER_REGISTRERING_UTDANNING";
-        public static final String BRUKER_REGISTRERING_UTDANNING_BESTATT = "BRUKER_REGISTRERING_UTDANNING_BESTATT";
-        public static final String BRUKER_REGISTRERING_UTDANNING_GODKJENT = "BRUKER_REGISTRERING_UTDANNING_GODKJENT";
 
         // YTELSE_STATUS_FOR_BRUKER
         public static final String YTELSE_STATUS_FOR_BRUKER_YTELSE = "YTELSE_STATUS_FOR_BRUKER_YTELSE";
@@ -78,9 +66,6 @@ public class PostgresTable {
         public static final String YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN = "YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN";
         public static final String YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO = "YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO";
 
-        // ENDRING_I_REGISTRERING
-        public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON";
-        public static final String ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET = "ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET";
     }
 
     // AKTIVE_IDENTER
@@ -220,29 +205,6 @@ public class PostgresTable {
         public static final String HENDELSE_ID = "HENDELSE_ID";
     }
 
-    public static final class BRUKER_PROFILERING {
-        private BRUKER_PROFILERING() { /* no-op */ }
-
-        public static final String TABLE_NAME = "BRUKER_PROFILERING";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
-        public static final String PROFILERING_TIDSPUNKT = "PROFILERING_TIDSPUNKT";
-    }
-
-    public static final class BRUKER_REGISTRERING {
-        private BRUKER_REGISTRERING() { /* no-op */ }
-
-        public static final String TABLE_NAME = "BRUKER_REGISTRERING";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String BRUKERS_SITUASJON = "BRUKERS_SITUASJON";
-        public static final String REGISTRERING_OPPRETTET = "REGISTRERING_OPPRETTET";
-        public static final String UTDANNING = "UTDANNING";
-        public static final String UTDANNING_BESTATT = "UTDANNING_BESTATT";
-        public static final String UTDANNING_GODKJENT = "UTDANNING_GODKJENT";
-    }
-
     public static final class ARBEIDSSOEKERREGISTER_DATA {
         private ARBEIDSSOEKERREGISTER_DATA() { /* no-op */ }
 
@@ -303,17 +265,6 @@ public class PostgresTable {
         public static final String PERIODE_ID = "PERIODE_ID";
         public static final String PROFILERING_RESULTAT = "PROFILERING_RESULTAT";
         public static final String SENDT_INN_TIDSPUNKT = "SENDT_INN_TIDSPUNKT";
-    }
-
-    public static final class BRUKER_CV {
-        private BRUKER_CV() { /* no-op */ }
-
-        public static final String TABLE_NAME = "BRUKER_CV";
-
-        public static final String AKTOERID = "AKTOERID";
-        public static final String SISTE_MELDING_MOTTATT = "SISTE_MELDING_MOTTATT";
-        public static final String CV_EKSISTERER = "CV_EKSISTERER";
-        public static final String HAR_DELT_CV = "HAR_DELT_CV";
     }
 
     public static final class BRUKER_REGISTRERT_CV {

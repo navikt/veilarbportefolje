@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.Profileringsresultat;
 import no.nav.pto.veilarbportefolje.kodeverk.KodeverkService;
 import no.nav.pto.veilarbportefolje.opensearch.domene.PortefoljebrukerOpensearchModell;
 import no.nav.pto.veilarbportefolje.persononinfo.personopprinelse.Landgruppe;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.pto.veilarbportefolje.arenapakafka.ytelser.YtelseUtils.konverterDagerTilUker;
 import static no.nav.pto.veilarbportefolje.database.PostgresTable.OPENSEARCHDATA.*;
@@ -81,13 +79,7 @@ public class BrukerRepositoryV2 {
                        UTKAST_14A_STATUS.VEDTAKSTATUS                           as UTKAST_14A_STATUS_VEDTAKSTATUS,
                        UTKAST_14A_STATUS.ANSVARLIG_VEILDERNAVN                  as UTKAST_14A_STATUS_ANSVARLIG_VEILDERNAVN,
                        UTKAST_14A_STATUS.ENDRET_TIDSPUNKT                       as UTKAST_14A_STATUS_ENDRET_TIDSPUNKT,
-                       BRUKER_PROFILERING.PROFILERING_RESULTAT                  as BRUKER_PROFILERING_PROFILERING_RESULTAT,
                        BRUKER_REGISTRERT_CV.CV_EKSISTERER                       as BRUKER_CV_CV_EKSISTERER,
-                       BRUKER_REGISTRERING.BRUKERS_SITUASJON                    as BRUKER_REGISTRERING_BRUKERS_SITUASJON,
-                       BRUKER_REGISTRERING.REGISTRERING_OPPRETTET               as BRUKER_REGISTRERING_REGISTRERING_OPPRETTET,
-                       BRUKER_REGISTRERING.UTDANNING                            as BRUKER_REGISTRERING_UTDANNING,
-                       BRUKER_REGISTRERING.UTDANNING_BESTATT                    as BRUKER_REGISTRERING_UTDANNING_BESTATT,
-                       BRUKER_REGISTRERING.UTDANNING_GODKJENT                   as BRUKER_REGISTRERING_UTDANNING_GODKJENT,
                        YTELSE_STATUS_FOR_BRUKER.YTELSE                          as YTELSE_STATUS_FOR_BRUKER_YTELSE,
                        YTELSE_STATUS_FOR_BRUKER.AAPMAXTIDUKE                    as YTELSE_STATUS_FOR_BRUKER_AAPMAXTIDUKE,
                        YTELSE_STATUS_FOR_BRUKER.AAPUNNTAKDAGERIGJEN             as YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN,
@@ -95,20 +87,15 @@ public class BrukerRepositoryV2 {
                        YTELSE_STATUS_FOR_BRUKER.PERMUTLOPUKE                    as YTELSE_STATUS_FOR_BRUKER_PERMUTLOPUKE,
                        YTELSE_STATUS_FOR_BRUKER.UTLOPSDATO                      as YTELSE_STATUS_FOR_BRUKER_UTLOPSDATO,
                        YTELSE_STATUS_FOR_BRUKER.ANTALLDAGERIGJEN                as YTELSE_STATUS_FOR_BRUKER_ANTALLDAGERIGJEN,
-                       YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO,
-                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON                 as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON,
-                       ENDRING_I_REGISTRERING.BRUKERS_SITUASJON_SIST_ENDRET     as ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET
+                       YTELSE_STATUS_FOR_BRUKER.ENDRET_DATO                     as YTELSE_STATUS_FOR_BRUKER_ENDRET_DATO
                 from OPPFOLGING_DATA
                          inner join AKTIVE_IDENTER                              on OPPFOLGING_DATA.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join OPPFOLGINGSBRUKER_ARENA_V2                   on OPPFOLGINGSBRUKER_ARENA_V2.FODSELSNR = AKTIVE_IDENTER.FNR
                          left join BRUKER_DATA                                  on BRUKER_DATA.FREG_IDENT = AKTIVE_IDENTER.FNR
                          left join DIALOG                                       on DIALOG.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join UTKAST_14A_STATUS                            on UTKAST_14A_STATUS.AKTOERID = AKTIVE_IDENTER.AKTORID
-                         left join BRUKER_PROFILERING                           on BRUKER_PROFILERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join BRUKER_REGISTRERT_CV                         on BRUKER_REGISTRERT_CV.FNR = AKTIVE_IDENTER.FNR
-                         left join BRUKER_REGISTRERING                          on BRUKER_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join YTELSE_STATUS_FOR_BRUKER                     on YTELSE_STATUS_FOR_BRUKER.AKTOERID = AKTIVE_IDENTER.AKTORID
-                         left join ENDRING_I_REGISTRERING                       on ENDRING_I_REGISTRERING.AKTOERID = AKTIVE_IDENTER.AKTORID
                          left join AO_KONTOR                                    on AO_KONTOR.AKTORID = AKTIVE_IDENTER.AKTORID
                          where AKTIVE_IDENTER.AKTORID = any (?::varchar[])
                 """;
@@ -166,11 +153,6 @@ public class BrukerRepositoryV2 {
         PortefoljebrukerOpensearchModell brukerOpensearchModell = new PortefoljebrukerOpensearchModell();
         brukerOpensearchModell.setFnr(fnr);
         brukerOpensearchModell.setAktoer_id(rs.getString(OPPFOLGING_DATA_AKTOERID));
-        brukerOpensearchModell.setProfilering_resultat(Optional.ofNullable(rs.getString(BRUKER_PROFILERING_PROFILERING_RESULTAT)).map(Profileringsresultat::valueOf).orElse(null));
-        brukerOpensearchModell.setUtdanning(rs.getString(BRUKER_REGISTRERING_UTDANNING));
-        brukerOpensearchModell.setUtdanning_bestatt(rs.getString(BRUKER_REGISTRERING_UTDANNING_BESTATT));
-        brukerOpensearchModell.setUtdanning_godkjent(rs.getString(BRUKER_REGISTRERING_UTDANNING_GODKJENT));
-        brukerOpensearchModell.setUtdanning_og_situasjon_sist_endret(toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET)));
         brukerOpensearchModell.setCv_eksistere(rs.getBoolean(BRUKER_CV_CV_EKSISTERER));
         brukerOpensearchModell.setOppfolging(rs.getBoolean(OPPFOLGING_DATA_OPPFOLGING));
         brukerOpensearchModell.setNy_for_veileder(rs.getBoolean(OPPFOLGING_DATA_NY_FOR_VEILEDER));
@@ -195,8 +177,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)));
         brukerOpensearchModell.setEnhet_id(rs.getString(AO_KONTOR_KONTOR_ID));
 
-        setBrukersSituasjon(brukerOpensearchModell, rs);
-
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
 
@@ -208,19 +188,6 @@ public class BrukerRepositoryV2 {
         }
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setBrukersSituasjon(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        boolean harOppdatertBrukersSituasjon = rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) != null && rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET) != null;
-        LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDateOrNull(rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET));
-        LocalDate brukesSituasjonOpprettetDato = toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
-        boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
-        String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) : rs.getString(BRUKER_REGISTRERING_BRUKERS_SITUASJON);
-        LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
-
-        brukerOpensearchModell.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
-        brukerOpensearchModell.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 
     @SneakyThrows

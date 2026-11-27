@@ -79,10 +79,6 @@ class ArbeidssoekerregisterProfileringKafkaMeldingService(
  * - Identer - Kafka-meldinger har kun tilknytning til identen på det tidspunktet de ble sendt. Dvs, oppslag på ny aktiv
  * ident vil ikke finne treff selv om det er data på historisk ident. Håndteres i api-oppslag.
  * - Vi tar kun vare på siste arebeidssøkerperiode som er innenfor oppfølgingsperioden.
- *
- * Gamle tabeller fra veilarbregistrering (BRUKER_REGISTRERING, BRUKER_PROFILERING og ENDRING_I_REGISTRERING)
- * oppdateres ikke lenger. De leses kun fra og supplerer dataene over ved indeksering til opensearch. De slettes også ved
- * avslutt oppfølging.
  */
 @Service
 class ArbeidssoekerregisterService(
