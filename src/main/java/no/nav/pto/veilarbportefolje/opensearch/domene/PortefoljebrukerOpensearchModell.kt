@@ -70,7 +70,6 @@ data class PortefoljebrukerOpensearchModell(
     var veileder_id: String? = null,
 
     // Arbeidssøker
-    var brukers_situasjon_sist_endret: LocalDate? = null, // TODO: denne skrives til kun fra gamle tabeller og brukes ikke videre, tipper det er en glipp når man bytta til utdanning_og_situasjon_sist_endret
     var brukers_situasjoner: List<String>? = null,
     var profilering_resultat: Profileringsresultat? = null,
     var utdanning: String? = null,

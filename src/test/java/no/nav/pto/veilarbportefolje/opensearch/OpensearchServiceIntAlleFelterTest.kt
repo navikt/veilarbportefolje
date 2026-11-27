@@ -97,7 +97,6 @@ class OpensearchServiceSerderAlleFelterIntTest(
             veileder_id = PortefoljebrukerOpensearchModell.VEILEDER_ID,
 
             // Arbeidssøker
-            brukers_situasjon_sist_endret = PortefoljebrukerOpensearchModell.BRUKERS_SITUASJON_SIST_ENDRET,
             brukers_situasjoner = PortefoljebrukerOpensearchModell.BRUKERS_SITUASJONER,
             profilering_resultat = PortefoljebrukerOpensearchModell.PROFILERING_RESULTAT,
             utdanning = PortefoljebrukerOpensearchModell.UTDANNING,

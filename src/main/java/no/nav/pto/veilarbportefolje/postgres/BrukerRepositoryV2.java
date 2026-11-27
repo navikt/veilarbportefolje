@@ -217,10 +217,8 @@ public class BrukerRepositoryV2 {
         LocalDate brukesSituasjonOpprettetDato = toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
         boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
         String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) : rs.getString(BRUKER_REGISTRERING_BRUKERS_SITUASJON);
-        LocalDate brukersSituasjonSistEndretDato = harEndretSituasjonEttterRegistrering ? oppdatertBrukesSituasjonSistEndretDato : brukesSituasjonOpprettetDato;
 
         brukerOpensearchModell.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
-        brukerOpensearchModell.setBrukers_situasjon_sist_endret(brukersSituasjonSistEndretDato);
     }
 
     @SneakyThrows

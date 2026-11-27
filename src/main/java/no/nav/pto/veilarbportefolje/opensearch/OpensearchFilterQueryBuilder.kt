@@ -21,10 +21,6 @@ import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.HUSKELA
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.SYKMELDT_HAR_ARBEIDSGIVER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Annet.TILTAKSHENDELSE
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_BESTATT
-import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoeker.UTDANNING_GODKJENT
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.ARBEIDSSOEKERREGISTERET
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER
 import no.nav.pto.veilarbportefolje.opensearch.domene.DatafeltKeys.Arbeidssoekerregisteret.OPPLYSNINGER_BRUKERS_SITUASJONER
@@ -271,19 +267,7 @@ class OpensearchFilterQueryBuilder {
     fun leggTilManuelleFilter(
         queryBuilder: BoolQueryBuilder,
         filtervalg: Filtervalg,
-        brukV3AvArbeidssoekerregisteret: Boolean = false
     ) {
-        fun opplysningerFelt(felt: String): String = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$felt"
-
-        val brukersSituasjonerFelt =
-            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_BRUKERS_SITUASJONER) else BRUKERS_SITUASJONER
-        val utdanningFelt =
-            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING) else UTDANNING
-        val utdanningBestattFelt =
-            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING_BESTATT) else UTDANNING_BESTATT
-        val utdanningGodkjentFelt =
-            if (brukV3AvArbeidssoekerregisteret) opplysningerFelt(OPPLYSNINGER_UTDANNING_GODKJENT) else UTDANNING_GODKJENT
-
         if (filtervalg.alder.isNotEmpty()) {
             val subQuery = QueryBuilders.boolQuery()
             filtervalg.alder.forEach(Consumer { alder: String -> byggAlderQuery(alder, subQuery) })
@@ -757,6 +741,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harDinSituasjonSvar()) {
+            val brukersSituasjonerFelt = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_BRUKERS_SITUASJONER"
             val brukerensSituasjonSubQuery = QueryBuilders.boolQuery()
             filtervalg.registreringstype.forEach(Consumer { jobbSituasjonBeskrivelse: JobbSituasjonBeskrivelse ->
                 if (jobbSituasjonBeskrivelse == JobbSituasjonBeskrivelse.INGEN_DATA) {
@@ -780,6 +765,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harUtdanningSvar()) {
+            val utdanningFelt = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_UTDANNING"
             val brukerensUtdanningSubQuery = QueryBuilders.boolQuery()
             filtervalg.utdanning.forEach(Consumer { utdanningSvar: UtdanningSvar ->
                 if (utdanningSvar == UtdanningSvar.INGEN_DATA) {
@@ -795,6 +781,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harUtdanningBestattSvar()) {
+            val utdanningBestattFelt = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_UTDANNING_BESTATT"
             val brukerensUtdanningSubQuery = QueryBuilders.boolQuery()
             filtervalg.utdanningBestatt.forEach(Consumer { utdanningSvar: UtdanningBestattSvar ->
                 if (utdanningSvar == UtdanningBestattSvar.INGEN_DATA) {
@@ -810,6 +797,7 @@ class OpensearchFilterQueryBuilder {
         }
 
         if (filtervalg.harUtdanningGodkjentSvar()) {
+            val utdanningGodkjentFelt = "$ARBEIDSSOEKERREGISTERET.$OPPLYSNINGER.$OPPLYSNINGER_UTDANNING_GODKJENT"
             val brukerensUtdanningSubQuery = QueryBuilders.boolQuery()
             filtervalg.utdanningGodkjent.forEach(Consumer { utdanningSvar: UtdanningGodkjentSvar ->
                 if (utdanningSvar == UtdanningGodkjentSvar.INGEN_DATA) {
