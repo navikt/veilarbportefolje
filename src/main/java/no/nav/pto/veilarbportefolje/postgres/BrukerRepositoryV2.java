@@ -195,8 +195,6 @@ public class BrukerRepositoryV2 {
         brukerOpensearchModell.setAapunntakukerigjen(konverterDagerTilUker(rs.getObject(YTELSE_STATUS_FOR_BRUKER_AAPUNNTAKDAGERIGJEN, Integer.class)));
         brukerOpensearchModell.setEnhet_id(rs.getString(AO_KONTOR_KONTOR_ID));
 
-        setBrukersSituasjon(brukerOpensearchModell, rs);
-
         // ARENA DB LENKE: skal fjernes på sikt
         flettInnOppfolgingsbruker(brukerOpensearchModell, rs);
 
@@ -208,17 +206,6 @@ public class BrukerRepositoryV2 {
         }
 
         return brukerOpensearchModell;
-    }
-
-    @SneakyThrows
-    private void setBrukersSituasjon(PortefoljebrukerOpensearchModell brukerOpensearchModell, ResultSet rs) {
-        boolean harOppdatertBrukersSituasjon = rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) != null && rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET) != null;
-        LocalDate oppdatertBrukesSituasjonSistEndretDato = toLocalDateOrNull(rs.getTimestamp(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON_SIST_ENDRET));
-        LocalDate brukesSituasjonOpprettetDato = toLocalDateOrNull(rs.getTimestamp(BRUKER_REGISTRERING_REGISTRERING_OPPRETTET));
-        boolean harEndretSituasjonEttterRegistrering = harOppdatertBrukersSituasjon && isEqualOrAfterWithNullCheck(oppdatertBrukesSituasjonSistEndretDato, brukesSituasjonOpprettetDato);
-        String brukersSisteSituasjon = harEndretSituasjonEttterRegistrering ? rs.getString(ENDRING_I_REGISTRERING_BRUKERS_SITUASJON) : rs.getString(BRUKER_REGISTRERING_BRUKERS_SITUASJON);
-
-        brukerOpensearchModell.setBrukers_situasjoner(brukersSisteSituasjon == null ? emptyList() : List.of(brukersSisteSituasjon));
     }
 
     @SneakyThrows

@@ -75,7 +75,6 @@ object DatafeltKeys {
     }
 
     object Arbeidssoeker {
-        val BRUKERS_SITUASJONER = PortefoljebrukerOpensearchModell::brukers_situasjoner.name
         val PROFILERING_RESULTAT = PortefoljebrukerOpensearchModell::profilering_resultat.name
         val UTDANNING = PortefoljebrukerOpensearchModell::utdanning.name
         val UTDANNING_BESTATT = PortefoljebrukerOpensearchModell::utdanning_bestatt.name

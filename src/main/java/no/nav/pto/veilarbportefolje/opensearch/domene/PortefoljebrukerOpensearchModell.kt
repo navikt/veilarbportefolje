@@ -70,7 +70,6 @@ data class PortefoljebrukerOpensearchModell(
     var veileder_id: String? = null,
 
     // Arbeidssøker
-    var brukers_situasjoner: List<String>? = null,
     var profilering_resultat: Profileringsresultat? = null,
     var utdanning: String? = null,
     var utdanning_bestatt: String? = null,

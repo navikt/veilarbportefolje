@@ -6,9 +6,7 @@ import no.nav.pto.veilarbportefolje.arbeidssoeker.v2.*
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.ArbeidssoekerregisterRepository
 import no.nav.pto.veilarbportefolje.arbeidssoeker.v3.domene.AggregertPeriodeEntity
 import no.nav.pto.veilarbportefolje.config.ApplicationConfigTest
-import no.nav.pto.veilarbportefolje.database.PostgresTable.ARBEIDSSOEKERREGISTER_DATA
-import no.nav.pto.veilarbportefolje.database.PostgresTable.HENDELSE
-import no.nav.pto.veilarbportefolje.database.PostgresTable.SISTE_ARBEIDSSOEKER_PERIODE
+import no.nav.pto.veilarbportefolje.database.PostgresTable.*
 import no.nav.pto.veilarbportefolje.hendelsesfilter.HendelseRepository
 import no.nav.pto.veilarbportefolje.hendelsesfilter.Kategori
 import no.nav.pto.veilarbportefolje.hendelsesfilter.genererRandomHendelse
@@ -196,38 +194,6 @@ class PostgresOpensearchMapperV2Test(
         assertThat(brukerMedUtloptPeriode.sykmeldt).isNull()
     }
 
-
-    @Test
-    fun `flettInnArbeidssoekerData skal finne data lagret på historisk fnr`() {
-        val fnr = randomFnr().get()
-        val historiskFnr = randomFnr().get()
-        val periodeId = UUID.randomUUID()
-        lagreIdenter(fnr, historisk = listOf(historiskFnr))
-        sisteArbeidssoekerPeriodeRepository.insertSisteArbeidssoekerPeriode(
-            ArbeidssoekerPeriodeEntity(
-                periodeId,
-                historiskFnr
-            )
-        )
-        opplysningerOmArbeidssoekerRepository.insertOpplysningerOmArbeidssoekerOgJobbsituasjon(
-            genererRandomOpplysningerOmArbeidssoekerEntity(periodeId, UUID.randomUUID())
-        )
-        profileringRepository.insertProfilering(
-            ProfileringEntity(
-                periodeId,
-                Profileringsresultat.OPPGITT_HINDRINGER.name,
-                Timestamp.valueOf(LocalDateTime.now())
-            )
-        )
-
-        val bruker = PortefoljebrukerOpensearchModell(fnr = fnr)
-        postgresOpensearchMapperV2.flettInnData(listOf(bruker))
-
-        assertThat(bruker.utdanning).isNotNull()
-        assertThat(bruker.brukers_situasjoner).isNotEmpty()
-        assertThat(bruker.profilering_resultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
-    }
-
     @Test
     fun `flettInnArbeidssoekerregisteret skal finne data lagret på historisk fnr`() {
         val fnr = randomFnr().get()
@@ -265,7 +231,13 @@ class PostgresOpensearchMapperV2Test(
         assertThat(arbeidssoekerregisteret.periodeAvsluttetDato).isNull()
         assertThat(arbeidssoekerregisteret.opplysninger?.brukersSituasjoner).containsExactly("ER_PERMITTERT")
         assertThat(arbeidssoekerregisteret.opplysninger?.utdanning).isEqualTo(Utdanning.VIDEREGAENDE_GRUNNUTDANNING)
-        assertThat(arbeidssoekerregisteret.opplysninger?.opplysningerSistSendtInnDato).isEqualTo(LocalDate.of(2024, 4, 24))
+        assertThat(arbeidssoekerregisteret.opplysninger?.opplysningerSistSendtInnDato).isEqualTo(
+            LocalDate.of(
+                2024,
+                4,
+                24
+            )
+        )
         assertThat(arbeidssoekerregisteret.profilering?.profileringsResultat).isEqualTo(Profileringsresultat.OPPGITT_HINDRINGER)
     }
 

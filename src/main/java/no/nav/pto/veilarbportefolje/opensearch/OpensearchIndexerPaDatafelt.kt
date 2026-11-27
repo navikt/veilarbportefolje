@@ -50,10 +50,6 @@ class OpensearchIndexerPaDatafelt(
         val content = XContentFactory.jsonBuilder()
             .startObject()
             .field(
-                DatafeltKeys.Arbeidssoeker.BRUKERS_SITUASJONER,
-                opplysningerOmArbeidssoeker.opplysningerOmJobbsituasjon.jobbsituasjon
-            )
-            .field(
                 DatafeltKeys.Arbeidssoeker.UTDANNING,
                 mapTilUtdanning(opplysningerOmArbeidssoeker.utdanningNusKode)
             )

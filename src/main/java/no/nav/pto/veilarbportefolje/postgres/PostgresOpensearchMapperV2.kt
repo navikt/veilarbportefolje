@@ -120,7 +120,6 @@ class PostgresOpensearchMapperV2(
             bruker.utdanning = opplysninger?.utdanning?.name
             bruker.utdanning_bestatt = opplysninger?.utdanningBestatt?.name
             bruker.utdanning_godkjent = opplysninger?.utdanningGodkjent?.name
-            bruker.brukers_situasjoner = opplysninger?.jobbsituasjoner?.map { it.name }
             bruker.utdanning_og_situasjon_sist_endret = opplysninger?.sendtInnTidspunkt?.toLocalDate()
             bruker.profilering_resultat = arbeidssoekerData?.profilering?.profileringsresultat
         }
